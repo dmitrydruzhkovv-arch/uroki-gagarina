@@ -1,0 +1,279 @@
+/* deck.css — движок презентации для уроков. Единый стиль всех слайдов.
+   Сцена ФИКСИРОВАННАЯ 1600×900 и масштабируется целиком:
+   что вижу на маке — то же на проекторе, ничего не переверстывается.
+   Правило: размеры шрифтов и отступы берутся ТОЛЬКО отсюда, в разметке их не пишут. */
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+/* ─── шрифты (локальные, работают без интернета) ─── */
+@import url('fonts/gf.css');
+
+:root{
+  --paper:#faf7f2; --card:#ffffff;
+  --ink:#1c1917; --sub:#57534e; --muted:#a8a29e;
+  --line:#e7e0d4; --line-soft:#f2ede4;
+  --gold:#d97706; --gold-soft:#fbbf24; --gold-dim:#fef3c7; --gold-pale:#fffbeb;
+  --red:#dc2626; --red-pale:#fef2f2; --red-dim:#fee2e2;
+  --blue:#0369a1; --blue-dim:#dbeafe;
+  --indigo:#4f46e5; --teal:#0d9488; --green:#16a34a;
+  --fig:#1c1917; --fig-dim:#a8a29e;
+  --W:1600px; --H:900px;
+}
+
+html,body{ height:100%; background:#0f0e0d; overflow:hidden; }
+body{
+  font-family:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color:var(--ink); -webkit-font-smoothing:antialiased;
+  display:flex; align-items:center; justify-content:center;
+}
+.mono{ font-family:'JetBrains Mono',ui-monospace,Menlo,monospace; }
+
+/* ═══════════ СЦЕНА ═══════════ */
+#stage{ width:var(--W); height:var(--H); position:relative; transform-origin:center center; }
+.slide{
+  position:absolute; inset:0; background:var(--paper);
+  padding:34px 52px 56px; display:none; flex-direction:column;
+  border-radius:6px; overflow:hidden;
+}
+.slide.on{ display:flex; }
+
+/* ─── шапка слайда ─── */
+.top{ display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:16px; flex:0 0 auto; }
+.crumbs{ font-size:15px; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); font-weight:700; }
+.crumbs b{ color:var(--gold); }
+.badges{ display:flex; gap:8px; }
+.bdg{ font-weight:800; font-size:14px; padding:4px 12px; border-radius:999px; border:1.6px solid var(--ink); letter-spacing:.04em; }
+.bdg.lm{ background:var(--ink); color:#fff; }
+
+/* ─── этап ─── */
+.step{
+  display:inline-flex; align-items:center; gap:9px; font-size:14px; font-weight:800;
+  letter-spacing:.12em; text-transform:uppercase; color:#fff; background:var(--ink);
+  padding:6px 15px; border-radius:999px; margin-bottom:14px; align-self:flex-start; flex:0 0 auto;
+}
+.step.gold{ background:var(--gold); } .step.red{ background:var(--red); }
+.step.blue{ background:var(--blue); } .step.indigo{ background:var(--indigo); }
+.step.teal{ background:var(--teal); }
+
+/* ─── заголовки ─── */
+h1{ font-size:56px; font-weight:800; letter-spacing:-1.4px; line-height:1.05; flex:0 0 auto; }
+h2{ font-size:42px; font-weight:800; letter-spacing:-.9px; line-height:1.08; flex:0 0 auto; }
+h1 .g,h2 .g{ color:var(--gold); }
+.lead{ font-size:23px; color:var(--sub); margin-top:12px; max-width:1150px; flex:0 0 auto; }
+
+/* ─── сетка ─── */
+.body{ flex:1 1 auto; display:grid; gap:22px; align-items:stretch; min-height:0; margin-top:18px; }
+.body.c2{ grid-template-columns:1fr 1fr; }
+.body.c2w{ grid-template-columns:1.22fr .78fr; }
+.body.c2n{ grid-template-columns:.78fr 1.22fr; }
+.body.c3{ grid-template-columns:repeat(3,1fr); }
+.body.c1{ grid-template-columns:1fr; grid-auto-rows:min-content; align-content:start; }
+.stack{ display:flex; flex-direction:column; gap:18px; min-height:0; justify-content:center; }
+.stack.gap-s{ gap:12px; }
+.grow{ flex:1 1 auto; }
+
+/* ─── карточка ─── */
+.card{
+  background:var(--card); border:1.5px solid var(--line); border-radius:18px;
+  padding:20px 24px; display:flex; flex-direction:column; gap:12px;
+  box-shadow:0 2px 10px rgba(28,25,23,.05);
+}
+.card.tight{ padding:14px 18px; gap:9px; }
+.card.mid{ justify-content:center; }
+.card.hero{ background:linear-gradient(135deg,var(--gold-pale),var(--gold-dim)); border:2.5px solid var(--gold-soft); }
+.card.dark{ background:var(--ink); color:#fff; border-color:var(--ink); }
+.card.dark .card-h{ color:var(--gold-soft); }
+.card.dark .katex{ color:#fff; }
+.card-h{ font-size:15px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); flex:0 0 auto; }
+.card p, .txt{ font-size:21px; line-height:1.42; }
+.card p b, .txt b{ font-weight:700; }
+.sm{ font-size:17px; color:var(--sub); line-height:1.4; }
+
+/* ─── определение: главная рамка урока ─── */
+.def{ border:3px solid var(--ink); border-radius:16px; background:#fff; padding:18px 22px; display:flex; flex-direction:column; gap:14px; }
+.def-t{ font-size:15px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; color:var(--gold); }
+.def p{ font-size:22px; line-height:1.45; }
+
+/* ─── вывод-стрелка ─── */
+.note{ display:flex; align-items:flex-start; gap:14px; background:var(--gold-pale); border-left:6px solid var(--gold); border-radius:0 12px 12px 0; padding:15px 20px; }
+.note .ar{ font-size:24px; line-height:1.15; color:var(--gold); flex:0 0 auto; }
+.note .tx{ font-size:21px; font-weight:500; line-height:1.4; }
+.note.alarm{ background:var(--red-pale); border-left-color:var(--red); }
+.note.alarm .ar{ color:var(--red); }
+.note.dark{ background:var(--ink); border-left-color:var(--gold-soft); color:#fff; }
+.note.dark .ar{ color:var(--gold-soft); }
+.note.dark .katex{ color:#fff; }
+
+/* ─── математика (KaTeX) ─── */
+.katex{ font-size:1em; }
+.m{ font-size:26px; }                    /* формула в строке текста       */
+.m-lg{ font-size:34px; }                 /* формула-высказывание          */
+.m-xl{ font-size:44px; }                 /* формула-герой, одна на слайд  */
+.nw{ white-space:nowrap; }
+.mrow{ display:flex; flex-wrap:wrap; align-items:center; gap:12px 34px; }
+.mrow > *{ flex:0 0 auto; }
+.mline{ display:block; }
+.mline + .mline{ margin-top:14px; }
+.hl{ background:linear-gradient(transparent 56%, var(--gold-soft) 56%); padding:0 3px; }
+.hl-b{ background:linear-gradient(transparent 56%, #bfdbfe 56%); padding:0 3px; }
+.hl-r{ background:linear-gradient(transparent 56%, #fecaca 56%); padding:0 3px; }
+.ink-r{ color:var(--red); } .ink-b{ color:var(--blue); } .ink-g{ color:var(--gold); }
+.ink-i{ color:var(--indigo); } .ink-t{ color:var(--teal); } .ink-m{ color:var(--muted); }
+.tag{ font-size:15px; font-weight:700; padding:3px 10px; border-radius:6px; letter-spacing:.03em; white-space:nowrap; }
+.tag.y{ background:var(--blue-dim); color:var(--blue); }
+.tag.x{ background:var(--red-dim); color:var(--red); }
+.tag.n{ background:var(--gold-dim); color:#92400e; }
+
+/* ─── список-шаги ─── */
+/* ВАЖНО: пункт — блок, а не flex. Внутри живёт математика KaTeX,
+   а во flex-контейнере каждая формула стала бы отдельным «кубиком» и текст рассыпался. */
+ol.steps{ list-style:none; counter-reset:s; display:flex; flex-direction:column; gap:12px; }
+ol.steps li{ counter-increment:s; font-size:21px; line-height:1.42; position:relative; padding-left:46px; min-height:32px; }
+ol.steps li::before{
+  content:counter(s); position:absolute; left:0; top:1px; width:32px; height:32px; border-radius:9px;
+  background:var(--indigo); color:#fff; font-weight:800; font-size:17px;
+  display:flex; align-items:center; justify-content:center;
+}
+ol.steps li.r::before{ background:var(--red); } ol.steps li.b::before{ background:var(--blue); }
+ol.steps li.g::before{ background:var(--green); } ol.steps li.d::before{ background:var(--ink); }
+ul.dots{ list-style:none; display:flex; flex-direction:column; gap:10px; }
+ul.dots li{ font-size:21px; line-height:1.36; padding-left:22px; position:relative; }
+ul.dots li::before{ content:''; position:absolute; left:2px; top:11px; width:8px; height:8px; border-radius:50%; background:var(--gold); }
+
+/* ─── таблица ─── */
+table{ border-collapse:collapse; width:100%; }
+th,td{ border:1.5px solid var(--line); padding:8px 6px; text-align:center; font-size:22px; }
+thead th{ background:var(--ink); color:#fff; font-weight:700; border-color:var(--ink); font-size:20px; }
+tbody th{ background:var(--gold-dim); font-weight:800; width:96px; }
+td{ font-weight:600; height:58px; }
+td.was{ background:#eef4fb; }
+
+/* ─── чертёж ─── */
+.fig{ background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:12px 14px; display:flex; flex-direction:column; justify-content:center; }
+.fig svg{ display:block; width:100%; height:auto; max-width:960px; margin:0 auto; }
+.fig-cap{ font-size:16px; color:var(--sub); text-align:center; margin-top:8px; line-height:1.35; }
+.fig-cap b{ color:var(--gold); }
+.ln{ fill:none; stroke:var(--fig); stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+.ln-aux{ fill:none; stroke:var(--fig-dim); stroke-width:1.9; stroke-dasharray:6 5; stroke-linecap:round; }
+.ln-r{ stroke:var(--red); stroke-width:3.4; } .ln-b{ stroke:var(--blue); stroke-width:3.4; }
+.ln-g{ stroke:var(--gold); stroke-width:3; }  .ln-i{ stroke:var(--indigo); stroke-width:3; }
+.ax{ stroke:var(--fig); stroke-width:2.2; fill:none; }
+.ax-h{ fill:var(--fig); stroke:none; }
+.crc{ fill:none; stroke:var(--gold); stroke-width:3.4; }
+.crc-b{ fill:none; stroke:var(--blue); stroke-width:3.4; }
+.arc{ fill:none; stroke:var(--gold); stroke-width:2.4; }
+.arc-b{ fill:none; stroke:var(--indigo); stroke-width:2.4; }
+.arc-r{ fill:none; stroke:var(--red); stroke-width:2.4; }
+.tick{ stroke:var(--fig); stroke-width:2.2; }
+.dt{ fill:var(--fig); } .dt-g{ fill:var(--gold); } .dt-r{ fill:var(--red); } .dt-b{ fill:var(--blue); }
+.vx{ font-family:'Onest',sans-serif; font-weight:800; fill:var(--ink); }
+.an{ font-family:'Onest',sans-serif; font-weight:800; fill:var(--gold); text-anchor:middle; dominant-baseline:middle; }
+.an-d{ font-family:'Onest',sans-serif; font-weight:700; fill:var(--sub); text-anchor:middle; dominant-baseline:middle; }
+.an-r{ fill:var(--red); } .an-b{ fill:var(--blue); } .an-i{ fill:var(--indigo); }
+
+/* ─── ответы: показываются по клавише «О» ─── */
+.key{ visibility:hidden; }
+body.keys .key{ visibility:visible; }
+.pill{ display:inline-block; background:var(--gold-dim); border:1.6px solid var(--gold-soft); border-radius:999px; padding:4px 14px; font-size:18px; font-weight:700; }
+
+/* ─── пошаговое раскрытие ─── */
+.rv{ opacity:0; transition:opacity .18s ease; }
+.rv.shown{ opacity:1; }
+body.noanim .rv{ opacity:1 !important; }
+
+/* ─── ссылка на живой чертёж ─── */
+.golink{
+  display:inline-flex; align-items:center; gap:9px; align-self:flex-start;
+  font-size:18px; font-weight:700; color:var(--ink); text-decoration:none;
+  background:#fff; border:2px solid var(--gold); border-radius:999px; padding:8px 18px;
+}
+.golink:hover{ background:var(--gold); color:#fff; }
+.golink span{ color:var(--gold); font-size:15px; }
+.golink:hover span{ color:#fff; }
+
+/* ─── низ слайда ─── */
+.pg{ position:absolute; right:52px; bottom:20px; font-size:15px; font-weight:700; color:var(--muted); letter-spacing:.1em; }
+.bar{ position:absolute; left:0; bottom:0; height:5px; background:var(--gold); transition:width .18s ease; }
+
+/* ─── подсказка по клавишам ─── */
+#help{
+  position:fixed; left:16px; bottom:14px; z-index:50; color:#8a837a; font-size:13px;
+  font-family:'JetBrains Mono',monospace; letter-spacing:.03em; user-select:none;
+}
+#help b{ color:#d6cec1; font-weight:700; }
+
+@page{ size:1600px 900px; margin:0; }
+@media print{
+  html,body{ overflow:visible; background:#fff; height:auto; display:block; }
+  #stage{ transform:none !important; width:1600px; height:auto; }
+  .slide{ position:static; display:flex !important; height:900px; page-break-after:always; border-radius:0; }
+  .rv{ opacity:1 !important; }
+  #help{ display:none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ТЕЛЕФОН И ПЛАНШЕТ — режим ленты
+   На узком экране жёсткая сцена 1600×900 съёжилась бы до нечитаемого.
+   Поэтому сцена распускается: слайды идут лентой сверху вниз, колонки
+   схлопываются в одну, кегли уменьшаются. Одна и та же презентация
+   работает и на проекторе, и как конспект в телефоне ученика.
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width:1000px){
+  html,body{ overflow:auto; height:auto; background:var(--paper); display:block; }
+  #stage{ width:100% !important; height:auto !important; transform:none !important; }
+
+  .slide{
+    position:static; display:flex !important; inset:auto;
+    min-height:0; height:auto; padding:22px 16px 30px;
+    border-radius:0; border-bottom:10px solid var(--line-soft);
+  }
+  .slide:last-child{ border-bottom:none; }
+
+  .top{ margin-bottom:10px; }
+  .crumbs{ font-size:11px; letter-spacing:.1em; }
+  .bdg{ font-size:11px; padding:3px 9px; }
+  .step{ font-size:11px; padding:5px 12px; margin-bottom:10px; }
+
+  h1{ font-size:27px; letter-spacing:-.6px; }
+  h2{ font-size:24px; letter-spacing:-.4px; }
+  .lead{ font-size:16px; margin-top:8px; }
+
+  .body{ grid-template-columns:1fr !important; gap:14px; margin-top:14px; }
+  .stack{ gap:12px; justify-content:flex-start; }
+  .card{ padding:14px 16px; border-radius:14px; gap:9px; }
+  .card.tight{ padding:12px 14px; }
+  .card-h{ font-size:11px; letter-spacing:.1em; }
+  .card p,.txt{ font-size:16px; }
+  .sm{ font-size:14px; }
+  .def{ padding:14px 16px; border-width:2.5px; }
+  .def p{ font-size:16px; }
+  .note{ padding:12px 14px; gap:10px; }
+  .note .ar{ font-size:19px; }
+  .note .tx{ font-size:16px; }
+
+  .m{ font-size:17px; } .m-lg{ font-size:21px; } .m-xl{ font-size:26px; }
+  .mrow{ gap:8px 18px; }
+  .mline + .mline{ margin-top:9px; }
+
+  ol.steps li,ul.dots li{ font-size:16px; }
+  ol.steps li{ padding-left:38px; min-height:26px; }
+  ol.steps li::before{ width:26px; height:26px; font-size:14px; border-radius:8px; }
+
+  .fig{ padding:8px 8px 4px; }
+  .fig svg{ max-width:100%; }
+  .fig-cap{ font-size:13px; }
+
+  /* таблица шире экрана — прокручивается внутри себя, страница не едет вбок */
+  .body > table,.stack > table{ display:block; overflow-x:auto; white-space:nowrap; }
+  th,td{ font-size:16px; padding:6px 8px; }
+  thead th{ font-size:14px; }
+  tbody th{ width:auto; }
+  td{ height:44px; }
+
+  /* в ленте всё видно сразу: шагов и клавиш тут нет */
+  .rv{ opacity:1 !important; }
+  .key{ visibility:visible !important; }
+  .pg{ position:static; align-self:flex-end; margin-top:12px; font-size:12px; }
+  .bar,#help{ display:none; }
+  .golink{ font-size:15px; padding:9px 16px; }
+}

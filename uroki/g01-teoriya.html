@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Синус, косинус и тангенс угла от 0° до 180° — геометрия 9</title>
+<link rel="stylesheet" href="../_движок/katex/katex.min.css">
+<link rel="stylesheet" href="../_движок/deck.css">
+<style>
+  /* заливка треугольника под чертежами этого урока */
+  .tri-fill{ fill:#fef3c7; stroke:none; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+<!-- ═════════ 1 · РАЗМИНКА ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 1 | <b>Разминка</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step">Что мы уже умеем</span>
+  <h1>Синус, косинус, тангенс — <span class="g">но только острого угла</span></h1>
+  <p class="lead">Это было в 8 классе. Все три определения — через стороны прямоугольного треугольника.</p>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 560 360" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln" d="M60 300 L450 62 L450 300 Z"/>
+  <path class="arc" d="M450 280 L430 280 L430 300"/>
+  <path class="arc" d="M112 300 A52 52 0 0 0 104.4 272.9"/>
+  <text class="an" x="121.9" y="282.6" font-size="21">α</text>
+  <text class="vx" x="38.3" y="306.1" font-size="22" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="vx" x="461.1" y="42.3" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="vx" x="466" y="316" font-size="22" text-anchor="middle" dominant-baseline="middle">C</text>
+  <text class="an" x="241" y="158.1" font-size="18" text-anchor="middle" dominant-baseline="middle">c</text>
+  <text class="an" x="473.4" y="181" font-size="18" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text class="an" x="255" y="325" font-size="18" text-anchor="middle" dominant-baseline="middle">b</text>
+</svg>
+      <div class="fig-cap">Угол <b>α</b> острый, потому что в прямоугольном треугольнике другого и быть не может</div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Определения 8 класса</div>
+        <div class="mrow m-lg"><span>$\sin\alpha=\dfrac{a}{c}$</span><span>$\cos\alpha=\dfrac{b}{c}$</span><span>$\tg\alpha=\dfrac{a}{b}$</span></div>
+        <div class="sm"><b>a</b> — противолежащий катет, <b>b</b> — прилежащий, <b>c</b> — гипотенуза</div>
+      </div>
+      <div class="card tight">
+        <div class="card-h">Устно</div>
+        <p>В треугольнике $ABC$ угол $C$ прямой, $BC=6$, $AB=10$.<br>Найдите $\sin A$, $\cos A$, $\tg A$.</p>
+        <div class="mrow key"><span class="pill">$\sin A=0{,}6$</span><span class="pill">$\cos A=0{,}8$</span><span class="pill">$\tg A=0{,}75$</span></div>
+      </div>
+      <div class="note rv">
+        <span class="ar">➜</span>
+        <span class="tx">В тетради у вас записано: синус, косинус и тангенс <span class="hl">острого</span> угла. Сегодня уберём слово «острого».</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">1 / 10</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 2 · ЛОВУШКА ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 1 | <b>Ловушка</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step red">Проблема</span>
+  <h2>Задача, которую вы <span class="g">уже умеете решать</span></h2>
+
+  <div class="body c2n">
+    <div class="stack">
+      <div class="card hero">
+        <div class="card-h">Ваша же формула</div>
+        <div class="m-lg">$S=a\cdot b\cdot\sin\alpha$</div>
+        <div class="sm">Площадь параллелограмма — произведение сторон на синус угла между ними</div>
+      </div>
+      <div class="card tight">
+        <div class="card-h">Условие</div>
+        <p>Стороны параллелограмма $8$ и $5$, угол между ними <b class="ink-r">$120^\circ$</b>. Найдите площадь.</p>
+      </div>
+      <div class="note alarm rv">
+        <span class="ar">✕</span>
+        <span class="tx">Прямоугольного треугольника с углом $120^\circ$ <b>не существует</b>. Значит, $\sin 120^\circ$ по старому определению взять <b>неоткуда</b>.</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="fig grow"><svg viewBox="0 0 640 340" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln" d="M200 285 L456 285 L376 146.4 L120 146.4 Z"/>
+  <path class="arc-r" d="M254 285 A54 54 0 0 0 173 238.2"/>
+  <text class="an" x="233.1" y="227.6" font-size="21" style="fill:#dc2626">120°</text>
+  <text class="vx" x="188.7" y="304.6" font-size="22" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="vx" x="475.6" y="296.3" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="vx" x="387.3" y="126.9" font-size="22" text-anchor="middle" dominant-baseline="middle">C</text>
+  <text class="vx" x="100.4" y="135.1" font-size="22" text-anchor="middle" dominant-baseline="middle">D</text>
+  <text class="an" x="328" y="312" font-size="18" text-anchor="middle" dominant-baseline="middle">8</text>
+  <text class="an" x="184.4" y="201.6" font-size="18" text-anchor="middle" dominant-baseline="middle">5</text>
+</svg>
+        <div class="fig-cap">В параллелограмме тупой угол есть всегда — кроме прямоугольника</div>
+      </div>
+      <div class="card dark rv">
+        <div class="card-h">Вопрос урока</div>
+        <div class="m-lg">Чему равен $\sin 120^\circ$?</div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">2 / 10</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 3 · ОПРЕДЕЛЕНИЕ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 1 | <b>Новое определение</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step gold">Записать в тетрадь</span>
+  <h2>Единичная полуокружность: угол <span class="g">без всякого треугольника</span></h2>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln ax" d="M56 320 L700 320"/><path class="ln ax-h" d="M700 320 L689 325 L689 315 Z"/>
+  <path class="ln ax" d="M340 400 L340 40"/><path class="ln ax-h" d="M340 40 L345 51 L335 51 Z"/>
+  <text class="an-d" x="686" y="352" font-size="18">x</text>
+  <text class="an-d" x="308" y="56" font-size="18">y</text>
+  <path class="crc" d="M590 320 A250 250 0 0 0 90 320"/>
+  <path class="ln ln-r" d="M476.2 110.3 L476.2 320"/>
+  <path class="ln ln-b" d="M340 320 L476.2 320"/>
+  <path class="ln" d="M340 320 L476.2 110.3"/>
+  <path class="ln-aux" d="M476.2 110.3 L340 110.3"/>
+  <path class="arc" d="M476.2 304 L460.2 304 L460.2 320"/>
+  <path class="arc" d="M398 320 A58 58 0 0 0 371.6 271.4"/>
+  <text class="an" x="401.8" y="286.5" font-size="21">α</text>
+  <text class="an" x="386.8" y="201.4" font-size="18" text-anchor="middle" dominant-baseline="middle">1</text>
+  <circle class="dt" cx="476.2" cy="110.3" r="6"/>
+  <text class="vx" x="500.5" y="72.8" font-size="22" text-anchor="middle" dominant-baseline="middle">M (x ; y)</text>
+  <circle class="dt" cx="340" cy="320" r="5"/>
+  <text class="vx" x="321.6" y="332.9" font-size="22" text-anchor="middle" dominant-baseline="middle">O</text>
+  <circle class="dt-g" cx="590" cy="320" r="5"/>
+  <text class="an-d" x="597.8" y="349.1" font-size="18" text-anchor="middle" dominant-baseline="middle">A (1 ; 0)</text>
+  <circle class="dt-g" cx="90" cy="320" r="5"/>
+  <text class="an-d" x="81.8" y="350.5" font-size="18" text-anchor="middle" dominant-baseline="middle">B (−1 ; 0)</text>
+  <text class="an" x="408.1" y="350.2" font-size="21" style="fill:#0369a1" text-anchor="middle" dominant-baseline="middle">x</text>
+  <text class="an" x="449.9" y="215.2" font-size="21" style="fill:#dc2626" text-anchor="middle" dominant-baseline="middle">y</text>
+</svg>
+      <div class="fig-cap">Полуокружность радиуса <b>1</b> с центром в начале координат. Каждому углу $\alpha$ отвечает ровно одна точка $M$ на ней</div>
+    </div>
+    <div class="stack">
+      <div class="def">
+        <div class="def-t">Определение (учебник, п. 1)</div>
+        <p><b>Косинусом</b> и <b>синусом</b> угла $\alpha$ ($0^\circ\leqslant\alpha\leqslant 180^\circ$) называют соответственно <b>абсциссу</b> и <b>ординату</b> точки $M$ единичной полуокружности, соответствующей углу $\alpha$.</p>
+      </div>
+      <div class="card">
+        <div class="mrow m-lg">
+          <span>$\cos\alpha=x$</span><span class="tag y">абсцисса M</span>
+        </div>
+        <div class="mrow m-lg">
+          <span>$\sin\alpha=y$</span><span class="tag x">ордината M</span>
+        </div>
+      </div>
+      <div class="note rv">
+        <span class="ar">➜</span>
+        <span class="tx">Никакого треугольника. Угол <span class="hl">любой</span> от $0^\circ$ до $180^\circ$ — синус и косинус у него есть.</span>
+      </div>
+      <a class="golink rv" href="g01-chertyozh.html"><span>▶</span> Живой чертёж — потянуть точку</a>
+    </div>
+  </div>
+  <div class="pg">3 / 10</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 4 · СТАРОЕ = НОВОЕ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 1 | <b>Проверка совести</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step blue">Почему нам можно верить</span>
+  <h2>А старое определение <span class="g">не сломалось?</span></h2>
+  <p class="lead">Возьмём острый угол и посчитаем его синус двумя способами. Если ответы разойдутся — новое определение никуда не годится.</p>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln ax" d="M56 320 L700 320"/><path class="ln ax-h" d="M700 320 L689 325 L689 315 Z"/>
+  <path class="ln ax" d="M340 400 L340 40"/><path class="ln ax-h" d="M340 40 L345 51 L335 51 Z"/>
+  <text class="an-d" x="686" y="352" font-size="18">x</text>
+  <text class="an-d" x="308" y="56" font-size="18">y</text>
+  <path class="tri-fill" d="M340 320 L476.2 320 L476.2 110.3 Z"/>
+  <path class="crc" d="M590 320 A250 250 0 0 0 90 320"/>
+  <path class="ln" d="M340 320 L476.2 320"/>
+  <path class="ln" d="M476.2 320 L476.2 110.3"/>
+  <path class="ln" d="M340 320 L476.2 110.3"/>
+  <path class="arc" d="M476.2 304 L460.2 304 L460.2 320"/>
+  <path class="arc" d="M398 320 A58 58 0 0 0 371.6 271.4"/>
+  <text class="an" x="401.8" y="286.5" font-size="21">α</text>
+  <circle class="dt" cx="476.2" cy="110.3" r="6"/>
+  <text class="vx" x="489.2" y="90.3" font-size="22" text-anchor="middle" dominant-baseline="middle">M</text>
+  <circle class="dt" cx="340" cy="320" r="5"/>
+  <text class="vx" x="321.6" y="332.9" font-size="22" text-anchor="middle" dominant-baseline="middle">O</text>
+  <text class="vx" x="488.1" y="340.6" font-size="22" text-anchor="middle" dominant-baseline="middle">N</text>
+  <text class="an" x="369.9" y="190.4" font-size="18" text-anchor="middle" dominant-baseline="middle">OM = 1</text>
+  <text class="an-d" x="529.2" y="215.2" font-size="18" text-anchor="middle" dominant-baseline="middle">MN = y</text>
+  <text class="an-d" x="408.1" y="349" font-size="18" text-anchor="middle" dominant-baseline="middle">ON = x</text>
+</svg>
+      <div class="fig-cap">Треугольник $OMN$ прямоугольный, гипотенуза $OM$ — это радиус, а он равен <b>1</b></div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">По-старому, через треугольник $OMN$</div>
+        <div class="mline m-lg">$\cos\alpha=\dfrac{ON}{OM}=\dfrac{x}{1}=x$</div>
+        <div class="mline m-lg">$\sin\alpha=\dfrac{MN}{OM}=\dfrac{y}{1}=y$</div>
+      </div>
+      <div class="note rv">
+        <span class="ar">➜</span>
+        <span class="tx">Получились <span class="hl">те же самые</span> $x$ и $y$. Для острых углов новое определение даёт ровно старый ответ — а вдобавок работает там, где старое молчало.</span>
+      </div>
+      <div class="card tight rv">
+        <div class="card-h">Это и есть математическая честность</div>
+        <p class="sm">Расширяя понятие, обязаны проверить: на старой области всё осталось как было. Иначе это не расширение, а подмена.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pg">4 / 10</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 5 · ГРАНИЦЫ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 1 | <b>Опорные точки</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step teal">Читаем прямо с чертежа</span>
+  <h2>Три угла, которые <span class="g">не надо запоминать</span></h2>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln ax" d="M56 320 L700 320"/><path class="ln ax-h" d="M700 320 L689 325 L689 315 Z"/>
+  <path class="ln ax" d="M340 400 L340 40"/><path class="ln ax-h" d="M340 40 L345 51 L335 51 Z"/>
+  <text class="an-d" x="686" y="352" font-size="18">x</text>
+  <text class="an-d" x="308" y="56" font-size="18">y</text>
+  <path class="crc" d="M590 320 A250 250 0 0 0 90 320"/>
+  <path class="ln ln-g" d="M340 320 L340 70"/>
+  <circle class="dt-g" cx="590" cy="320" r="6"/>
+  <circle class="dt-g" cx="340" cy="70" r="6"/>
+  <circle class="dt-g" cx="90" cy="320" r="6"/>
+  <circle class="dt" cx="340" cy="320" r="5"/>
+  <text class="vx" x="332" y="342" font-size="22" text-anchor="middle" dominant-baseline="middle">O</text>
+  <text class="an-d" x="617.4" y="352.7" font-size="18" text-anchor="middle" dominant-baseline="middle">A (1 ; 0)</text>
+  <text class="an-d" x="388.4" y="50.5" font-size="18" text-anchor="middle" dominant-baseline="middle">C (0 ; 1)</text>
+  <text class="an-d" x="60.4" y="355.3" font-size="18" text-anchor="middle" dominant-baseline="middle">B (−1 ; 0)</text>
+  <text class="an" x="631.8" y="304.8" font-size="18" text-anchor="middle" dominant-baseline="middle">α = 0°</text>
+  <text class="an" x="382.4" y="96.5" font-size="18" text-anchor="middle" dominant-baseline="middle">α = 90°</text>
+  <text class="an" x="38.6" y="301.3" font-size="18" text-anchor="middle" dominant-baseline="middle">α = 180°</text>
+</svg>
+      <div class="fig-cap">Координаты точек $A$, $C$, $B$ и есть значения косинуса и синуса</div>
+    </div>
+    <div class="stack gap-s">
+      <table>
+        <thead><tr><th>$\alpha$</th><th>$0^\circ$</th><th>$90^\circ$</th><th>$180^\circ$</th></tr></thead>
+        <tbody>
+          <tr><th>$\cos\alpha$</th><td>$1$</td><td>$0$</td><td>$-1$</td></tr>
+          <tr><th>$\sin\alpha$</th><td>$0$</td><td>$1$</td><td>$0$</td></tr>
+        </tbody>
+      </table>
+      <div class="card tight rv">
+        <div class="card-h">Границы значений</div>
+        <div class="mrow m-lg"><span>$0\leqslant\sin\alpha\leqslant 1$</span><span>$-1\leqslant\cos\alpha\leqslant 1$</span></div>
+        <p class="sm">Верхняя половина окружности: ордината никогда не отрицательна, а абсцисса гуляет от $-1$ до $1$.</p>
+      </div>
+      <div class="note rv">
+        <span class="ar">➜</span>
+        <span class="tx">Точка тупого угла стоит <b>левее</b> оси $y$ — значит <span class="hl">косинус тупого угла отрицателен</span>. И обратно: если $\cos\alpha&lt;0$, угол тупой.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">5 / 10</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 6 · ЗЕРКАЛО ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 1 | <b>Формулы приведения</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step indigo">Выводим сами</span>
+  <h2>Углы $\alpha$ и $180^\circ-\alpha$ — <span class="g">зеркальные</span></h2>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln ax" d="M56 320 L700 320"/><path class="ln ax-h" d="M700 320 L689 325 L689 315 Z"/>
+  <path class="ln ax" d="M340 400 L340 40"/><path class="ln ax-h" d="M340 40 L345 51 L335 51 Z"/>
+  <text class="an-d" x="686" y="352" font-size="18">x</text>
+  <text class="an-d" x="308" y="56" font-size="18">y</text>
+  <path class="crc" d="M590 320 A250 250 0 0 0 90 320"/>
+  <path class="ln" d="M340 320 L476.2 110.3"/>
+  <path class="ln" d="M340 320 L203.8 110.3"/>
+  <path class="ln-aux" d="M203.8 110.3 L476.2 110.3"/>
+  <path class="ln ln-r" d="M476.2 110.3 L476.2 320"/>
+  <path class="ln ln-r" d="M203.8 110.3 L203.8 320"/>
+  <path class="arc" d="M398 320 A58 58 0 0 0 371.6 271.4"/>
+  <text class="an" x="401.8" y="286.5" font-size="21">α</text>
+  <path class="arc" d="M282 320 A58 58 0 0 1 308.4 271.4"/>
+  <text class="an" x="278.2" y="286.5" font-size="21">α</text>
+  <text class="an-d" x="150" y="64" font-size="18" style="fill:#4f46e5">∠AON = 180° − α</text>
+  <circle class="dt" cx="476.2" cy="110.3" r="6"/>
+  <text class="vx" x="519" y="85.6" font-size="18" text-anchor="middle" dominant-baseline="middle">M (x ; y)</text>
+  <circle class="dt" cx="203.8" cy="110.3" r="6"/>
+  <text class="vx" x="156.8" y="83.2" font-size="18" text-anchor="middle" dominant-baseline="middle">N (−x ; y)</text>
+  <circle class="dt" cx="340" cy="320" r="5"/>
+  <text class="vx" x="328.8" y="342" font-size="22" text-anchor="middle" dominant-baseline="middle">O</text>
+</svg>
+      <div class="fig-cap">Оба угла при основании равны <b>α</b>: треугольники равны по гипотенузе и острому углу. Высоты одинаковые, абсциссы противоположные</div>
+    </div>
+    <div class="stack">
+      <div class="def">
+        <div class="def-t">Формулы приведения</div>
+        <div class="mline m-lg">$\sin(180^\circ-\alpha)=\sin\alpha$</div>
+        <div class="mline m-lg">$\cos(180^\circ-\alpha)=-\cos\alpha$</div>
+      </div>
+      <div class="note dark rv">
+        <span class="ar">➜</span>
+        <div>
+          <div class="card-h" style="margin-bottom:8px">Возвращаемся к ловушке</div>
+          <div class="mline m-lg">$\sin 120^\circ=\sin(180^\circ-60^\circ)$</div>
+          <div class="mline m-lg">$=\sin 60^\circ=\dfrac{\sqrt3}{2}$</div>
+        </div>
+      </div>
+      <div class="card tight rv">
+        <p class="sm">Вот почему в 8 классе вы подставляли в формулу площади острый угол — и попадали. Формулой пользовались вслепую, теперь знаете, <b>почему</b> она работает.</p>
+      </div>
+      <a class="golink rv" href="g01-chertyozh.html"><span>▶</span> Живой чертёж — потянуть точку</a>
+    </div>
+  </div>
+  <div class="pg">6 / 10</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 7 · ТАНГЕНС ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 1 | <b>Тангенс</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step gold">Записать в тетрадь</span>
+  <h2>Тангенс: <span class="g">одна дробь на все углы</span></h2>
+
+  <div class="body c2">
+    <div class="stack">
+      <div class="def">
+        <div class="def-t">Определение (учебник, п. 1)</div>
+        <p><b>Тангенсом</b> угла $\alpha$, где $0^\circ\leqslant\alpha\leqslant180^\circ$ и $\alpha\neq90^\circ$, называют отношение</p>
+        <div class="m-xl" style="text-align:center">$\tg\alpha=\dfrac{\sin\alpha}{\cos\alpha}$</div>
+      </div>
+      <div class="note alarm rv">
+        <span class="ar">✕</span>
+        <span class="tx">$\cos 90^\circ=0$, а на ноль не делят. Поэтому $\tg 90^\circ$ <b>не существует</b> — не «равен нулю», не «равен бесконечности», а <span class="hl-r">не определён</span>.</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Выводим формулу приведения</div>
+        <div class="mline m-lg">$\tg(180^\circ-\alpha)=\dfrac{\sin(180^\circ-\alpha)}{\cos(180^\circ-\alpha)}$</div>
+        <div class="mline m-lg">$=\dfrac{\sin\alpha}{-\cos\alpha}=-\dfrac{\sin\alpha}{\cos\alpha}=-\tg\alpha$</div>
+        <div class="note" style="margin-top:6px">
+          <span class="ar">➜</span>
+          <span class="tx">$\tg(180^\circ-\alpha)=-\tg\alpha$&nbsp; — тангенс тупого угла отрицателен</span>
+        </div>
+      </div>
+      <div class="card tight rv" style="border-style:dashed">
+        <div class="card-h">Сверх учебника — понадобится в дидактике</div>
+        <div class="mrow m-lg"><span>$\ctg\alpha=\dfrac{\cos\alpha}{\sin\alpha}$</span><span>$\ctg(180^\circ-\alpha)=-\ctg\alpha$</span></div>
+        <p class="sm">Не определён при $\alpha=0^\circ$ и $\alpha=180^\circ$: там $\sin\alpha=0$.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pg">7 / 10</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 8 · ТОЖДЕСТВО ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 1 | <b>Основное тождество</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step indigo">Выводим сами</span>
+  <h2>Пифагор <span class="g">никуда не делся</span></h2>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln ax" d="M56 320 L700 320"/><path class="ln ax-h" d="M700 320 L689 325 L689 315 Z"/>
+  <path class="ln ax" d="M340 400 L340 40"/><path class="ln ax-h" d="M340 40 L345 51 L335 51 Z"/>
+  <text class="an-d" x="686" y="352" font-size="18">x</text>
+  <text class="an-d" x="308" y="56" font-size="18">y</text>
+  <path class="tri-fill" d="M340 320 L186.1 320 L186.1 123 Z"/>
+  <path class="crc" d="M590 320 A250 250 0 0 0 90 320"/>
+  <path class="ln ln-b" d="M340 320 L186.1 320"/>
+  <path class="ln ln-r" d="M186.1 320 L186.1 123"/>
+  <path class="ln" d="M340 320 L186.1 123"/>
+  <path class="arc" d="M186.1 304 L202.1 304 L202.1 320"/>
+  <path class="arc-b" d="M414 320 A74 74 0 0 0 294.4 261.7"/>
+  <text class="an" x="377.8" y="242.4" font-size="21" style="fill:#4f46e5">α</text>
+  <circle class="dt" cx="186.1" cy="123" r="6"/>
+  <text class="vx" x="160.1" y="89.7" font-size="18" text-anchor="middle" dominant-baseline="middle">M (x ; y)</text>
+  <circle class="dt" cx="340" cy="320" r="5"/>
+  <text class="vx" x="352.4" y="341.5" font-size="22" text-anchor="middle" dominant-baseline="middle">O</text>
+  <text class="an" x="285.1" y="204.3" font-size="21" text-anchor="middle" dominant-baseline="middle">1</text>
+  <text class="an" x="263" y="351" font-size="18" style="fill:#0369a1" text-anchor="middle" dominant-baseline="middle">| x |</text>
+  <text class="an" x="231.7" y="221.5" font-size="18" style="fill:#dc2626" text-anchor="middle" dominant-baseline="middle">| y |</text>
+</svg>
+      <div class="fig-cap">Угол тупой, абсцисса отрицательна — но в катет идёт длина $|x|$, а при возведении в квадрат минус пропадает</div>
+    </div>
+    <div class="stack">
+      <ol class="steps">
+        <li class="d">Катеты треугольника — $|x|$ и $|y|$, гипотенуза — радиус, он равен $1$.</li>
+        <li class="d">По теореме Пифагора $x^2+y^2=1$.</li>
+        <li class="d">Но $x=\cos\alpha$, а $y=\sin\alpha$. Подставляем.</li>
+      </ol>
+      <div class="def rv">
+        <div class="def-t">Основное тригонометрическое тождество</div>
+        <div class="m-xl" style="text-align:center">$\sin^2\alpha+\cos^2\alpha=1$</div>
+        <p class="sm">Верно для любого $\alpha$ от $0^\circ$ до $180^\circ$, включая $0^\circ$, $90^\circ$ и $180^\circ$.</p>
+      </div>
+      <div class="note rv">
+        <span class="ar">➜</span>
+        <span class="tx">Знаете одно из двух — <span class="hl">находите второе</span>. Только не забудьте про знак: у синуса он всегда плюс, у косинуса зависит от того, острый угол или тупой.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">8 / 10</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 9 · ТАБЛИЦА ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 1 | <b>Таблица</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step">Заполняем вместе</span>
+  <h2>Таблица от $0^\circ$ до $180^\circ$ — <span class="g">правая половина считается сама</span></h2>
+  <p class="lead">Голубые столбцы вы знаете с 8 класса. Белые получаются из них зеркалом: $\sin$ переписываем, у $\cos$ и $\tg$ меняем знак.</p>
+
+  <div class="body c1">
+    <table>
+      <thead><tr><th>$\alpha$</th><th class="was">$0^\circ$</th><th class="was">$30^\circ$</th><th class="was">$45^\circ$</th><th class="was">$60^\circ$</th><th class="was">$90^\circ$</th><th>$120^\circ$</th><th>$135^\circ$</th><th>$150^\circ$</th><th>$180^\circ$</th></tr></thead>
+      <tbody>
+        <tr><th>$\sin\alpha$</th>
+          <td class="was">$0$</td><td class="was">$\dfrac12$</td><td class="was">$\dfrac{\sqrt2}{2}$</td><td class="was">$\dfrac{\sqrt3}{2}$</td><td class="was">$1$</td>
+          <td class="key">$\dfrac{\sqrt3}{2}$</td><td class="key">$\dfrac{\sqrt2}{2}$</td><td class="key">$\dfrac12$</td><td class="key">$0$</td></tr>
+        <tr><th>$\cos\alpha$</th>
+          <td class="was">$1$</td><td class="was">$\dfrac{\sqrt3}{2}$</td><td class="was">$\dfrac{\sqrt2}{2}$</td><td class="was">$\dfrac12$</td><td class="was">$0$</td>
+          <td class="key">$-\dfrac12$</td><td class="key">$-\dfrac{\sqrt2}{2}$</td><td class="key">$-\dfrac{\sqrt3}{2}$</td><td class="key">$-1$</td></tr>
+        <tr><th>$\tg\alpha$</th>
+          <td class="was">$0$</td><td class="was">$\dfrac{\sqrt3}{3}$</td><td class="was">$1$</td><td class="was">$\sqrt3$</td><td class="was ink-m">не опр.</td>
+          <td class="key">$-\sqrt3$</td><td class="key">$-1$</td><td class="key">$-\dfrac{\sqrt3}{3}$</td><td class="key">$0$</td></tr>
+      </tbody>
+    </table>
+    <div class="note rv">
+      <span class="ar">➜</span>
+      <span class="tx">Учить правую половину <b>не нужно</b>. Нужно уметь за две секунды написать $150^\circ=180^\circ-30^\circ$ — дальше всё делает зеркало.</span>
+    </div>
+  </div>
+  <div class="pg">9 / 10</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 10 · ИТОГ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 1 | <b>Итог</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step gold">Ловушка закрыта</span>
+  <h2>Та самая задача — <span class="g">теперь решается</span></h2>
+
+  <div class="body c2">
+    <div class="card hero mid">
+      <div class="card-h">Стороны 8 и 5, угол 120°</div>
+      <div class="mline m-lg">$S=8\cdot5\cdot\sin120^\circ$</div>
+      <div class="mline m-lg">$=40\cdot\dfrac{\sqrt3}{2}=20\sqrt3$</div>
+      <p class="sm">В 8 классе эта задача была нерешаемой. Разница — один чертёж.</p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Что должно быть в тетради</div>
+        <ul class="dots">
+          <li>чертёж единичной полуокружности с точкой $M$;</li>
+          <li>определение: $\cos\alpha=x$, $\sin\alpha=y$;</li>
+          <li>тангенс — отношение синуса к косинусу, при $\alpha=90^\circ$ не определён;</li>
+          <li>две формулы приведения и основное тождество.</li>
+        </ul>
+      </div>
+      <div class="note dark">
+        <span class="ar">➜</span>
+        <span class="tx">Дома — восемь задач. Если где-то встанете, вернитесь к чертежу: почти всё читается прямо с него — где точка, какой знак у координаты, в какую сторону зеркалить.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">10 / 10</div><div class="bar"></div>
+</section>
+
+</div>
+
+<div id="help">
+  <b>→</b> дальше &nbsp; <b>←</b> назад &nbsp; <b>↓↑</b> слайд целиком &nbsp; <b>О</b> ответы &nbsp; <b>Ф</b> во весь экран
+</div>
+
+<script defer src="../_движок/katex/katex.min.js"></script>
+<script defer src="../_движок/katex/auto-render.min.js"></script>
+<script defer src="../_движок/deck.js"></script>
+</body>
+</html>

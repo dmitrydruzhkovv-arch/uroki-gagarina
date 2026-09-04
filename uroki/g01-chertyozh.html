@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Единичная полуокружность — живой чертёж</title>
+<link rel="stylesheet" href="../_движок/katex/katex.min.css">
+<link rel="stylesheet" href="../_движок/deck.css">
+<style>
+  /* ── только то, чего нет в движке ── */
+  .fig.live{ padding:6px 10px; cursor:grab; touch-action:none; user-select:none; }
+  .fig.live.drag{ cursor:grabbing; }
+
+  .os-x{ stroke:var(--blue); stroke-width:9; stroke-linecap:round; }   /* косинус на оси Ox */
+  .os-y{ stroke:var(--red);  stroke-width:9; stroke-linecap:round; }   /* синус  на оси Oy */
+  .os-m{ stroke:var(--indigo); stroke-width:9; stroke-linecap:round; opacity:.55; }
+  .drop{ stroke:var(--fig-dim); stroke-width:2; stroke-dasharray:7 6; fill:none; }
+  .drop-m{ stroke:#a5b4fc; stroke-width:2; stroke-dasharray:7 6; fill:none; }
+  .rad-m{ stroke:var(--indigo); stroke-width:2.6; fill:none; opacity:.65; }
+  .grab{ fill:var(--gold); stroke:#fff; stroke-width:3; cursor:grab; }
+  .grab-halo{ fill:var(--gold); opacity:.16; }
+  .tk{ stroke:var(--fig); stroke-width:2; }
+  .tk-t{ font:600 17px 'Onest',sans-serif; fill:var(--muted); text-anchor:middle; }
+  .pt-t{ font:800 22px 'Onest',sans-serif; fill:var(--ink); }
+  .ax-t{ font:700 20px 'Onest',sans-serif; fill:var(--sub); }
+  .mirror-off .mir{ display:none; }
+
+  /* ── панель значений ── */
+  .val{ display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:0 16px; padding:11px 0; border-bottom:1.5px solid var(--line-soft); }
+  .val:last-child{ border-bottom:none; }
+  .val .nm{ font-size:30px; }
+  .val .ex{ font-size:30px; text-align:right; }
+  .val .num{ font-family:'JetBrains Mono',monospace; font-size:26px; font-weight:700; text-align:right; min-width:112px; }
+  .val.s .num, .val.s .ex{ color:var(--red); }
+  .val.c .num, .val.c .ex{ color:var(--blue); }
+  .val.t .num, .val.t .ex{ color:var(--gold); }
+  .hide-num .num{ visibility:hidden; }
+  .hide-num .ex{ visibility:hidden; }
+
+  .ang{ display:flex; align-items:baseline; gap:14px; }
+  .ang b{ font-family:'JetBrains Mono',monospace; font-size:56px; font-weight:700; letter-spacing:-2px; }
+  .ang i{ font-style:normal; font-size:20px; color:var(--sub); }
+
+  .keys-row{ display:flex; flex-wrap:wrap; gap:7px; }
+  .kb{
+    font-family:'Onest',sans-serif; font-size:17px; font-weight:700; color:var(--ink);
+    background:#fff; border:1.6px solid var(--line); border-radius:9px; padding:6px 11px; cursor:pointer;
+  }
+  .kb:hover{ border-color:var(--gold); color:var(--gold); }
+  .kb.on{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .kb.wide{ flex:1 1 auto; text-align:center; }
+
+  /* ── телефон: чертёж сверху, панель под ним ── */
+  @media (max-width:1000px){
+    .val{ padding:8px 0; gap:0 10px; }
+    .val .nm{ font-size:20px; } .val .ex{ font-size:20px; }
+    .val .num{ font-size:19px; min-width:78px; }
+    .ang b{ font-size:38px; } .ang i{ font-size:15px; }
+    .kb{ font-size:15px; padding:8px 12px; }        /* палец, не курсор */
+    .keys-row{ gap:6px; }
+    .fig.live{ padding:4px 4px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+<section class="slide on" id="sl">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 1 | <b>Живой чертёж</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step gold">Тяни точку M</span>
+  <h2>Синус и косинус — это <span class="g">длины отрезков на осях</span></h2>
+
+  <div class="body c2w">
+    <div class="fig live" id="fig">
+      <svg id="sv" viewBox="0 0 1000 560">
+        <!-- оси -->
+        <path class="ln ax" d="M60 430 L950 430"/>
+        <path class="ln ax-h" d="M962 430 L946 436 L946 424 Z"/>
+        <path class="ln ax" d="M500 512 L500 48"/>
+        <path class="ln ax-h" d="M500 36 L506 52 L494 52 Z"/>
+        <text class="ax-t" x="948" y="462">x</text>
+        <text class="ax-t" x="522" y="52">y</text>
+
+        <!-- деления -->
+        <g id="ticks"></g>
+
+        <!-- полуокружность -->
+        <path class="crc" d="M860 430 A360 360 0 0 0 140 430"/>
+
+        <!-- отрезок косинуса зеркальной точки (на оси Ox) -->
+        <line class="os-m mir" id="osM" x1="500" y1="430" x2="500" y2="430"/>
+        <!-- отрезки sin и cos -->
+        <line class="os-x" id="osX" x1="500" y1="430" x2="500" y2="430"/>
+        <line class="os-y" id="osY" x1="500" y1="430" x2="500" y2="430"/>
+
+        <!-- пунктиры к осям -->
+        <path class="drop-m mir" id="dropM" d=""/>
+        <path class="drop" id="dropA" d=""/>
+        <path class="drop" id="dropB" d=""/>
+
+        <!-- радиусы -->
+        <path class="rad-m mir" id="radM" d=""/>
+        <path class="ln" id="rad" d="M500 430 L500 430"/>
+
+        <!-- дуга угла -->
+        <path class="arc" id="arc" d="" style="stroke-width:3"/>
+        <text class="an" id="arcT" x="0" y="0" font-size="24"></text>
+
+        <!-- зеркальная точка -->
+        <g class="mir">
+          <circle id="dotM" cx="500" cy="430" r="9" fill="#4f46e5"/>
+          <text class="pt-t" id="dotMT" x="0" y="0" fill="#4f46e5">N</text>
+        </g>
+
+        <!-- точка M -->
+        <circle class="grab-halo" id="halo" cx="500" cy="430" r="26"/>
+        <circle class="grab" id="dot" cx="500" cy="430" r="13"/>
+        <text class="pt-t" id="dotT" x="0" y="0">M</text>
+
+        <!-- начало координат -->
+        <circle cx="500" cy="430" r="6" fill="#1c1917"/>
+        <text class="pt-t" x="466" y="464">O</text>
+      </svg>
+      <div class="fig-cap">Красный отрезок на оси <b>y</b> — синус, синий на оси <b>x</b> — косинус. Радиус всё время равен <b>1</b></div>
+    </div>
+
+    <div class="stack gap-s">
+      <div class="card tight">
+        <div class="card-h">Угол</div>
+        <div class="ang"><b id="deg">57°</b><i id="degHint">острый</i></div>
+      </div>
+
+      <div class="card" id="vals">
+        <div class="val s"><span class="nm" id="nmS"></span><span class="ex" id="exS"></span><span class="num" id="vS">0,84</span></div>
+        <div class="val c"><span class="nm" id="nmC"></span><span class="ex" id="exC"></span><span class="num" id="vC">0,54</span></div>
+        <div class="val t"><span class="nm" id="nmT"></span><span class="ex" id="exT"></span><span class="num" id="vT">1,54</span></div>
+      </div>
+
+      <div class="card tight mir">
+        <div class="card-h">Зеркальная точка <span style="color:#4f46e5">N</span></div>
+        <div class="val" style="padding:4px 0"><span class="nm" id="nmMir" style="font-size:24px"></span><span></span><span class="num" id="vMir" style="font-size:22px">123°</span></div>
+        <p class="sm">Синус тот же, косинус — противоположный. Это и есть формулы приведения.</p>
+      </div>
+
+      <div class="card tight">
+        <div class="card-h">Опорные углы</div>
+        <div class="keys-row" id="kb"></div>
+      </div>
+
+      <div class="keys-row">
+        <button class="kb wide on" id="bSnap">Прилипание</button>
+        <button class="kb wide on" id="bMir">Зеркало</button>
+        <button class="kb wide on" id="bNum">Числа</button>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div id="help">
+  тяни <b>M</b> мышью &nbsp; <b>← →</b> угол по 1° &nbsp; <b>Shift + ← →</b> по 5° &nbsp; <b>Ф</b> во весь экран
+</div>
+
+<script defer src="../_движок/katex/katex.min.js"></script>
+<script>
+window.addEventListener('load', () => {
+  const O = [500, 430], R = 360, RAD = Math.PI / 180;
+  const $ = id => document.getElementById(id);
+  const K = (tex, el) => katex.render(tex, el, { throwOnError: false });
+
+  /* ── подписи-формулы рисуем один раз ── */
+  K('\\sin\\alpha =', $('nmS')); K('\\cos\\alpha =', $('nmC'));
+  K('\\operatorname{tg}\\alpha =', $('nmT')); K('180^\\circ-\\alpha =', $('nmMir'));
+
+  /* ── точные значения в опорных углах ── */
+  const EXACT = {
+    0:   ['0', '1', '0'],
+    30:  ['\\tfrac12', '\\tfrac{\\sqrt3}{2}', '\\tfrac{\\sqrt3}{3}'],
+    45:  ['\\tfrac{\\sqrt2}{2}', '\\tfrac{\\sqrt2}{2}', '1'],
+    60:  ['\\tfrac{\\sqrt3}{2}', '\\tfrac12', '\\sqrt3'],
+    90:  ['1', '0', null],
+    120: ['\\tfrac{\\sqrt3}{2}', '-\\tfrac12', '-\\sqrt3'],
+    135: ['\\tfrac{\\sqrt2}{2}', '-\\tfrac{\\sqrt2}{2}', '-1'],
+    150: ['\\tfrac12', '-\\tfrac{\\sqrt3}{2}', '-\\tfrac{\\sqrt3}{3}'],
+    180: ['0', '-1', '0'],
+  };
+  const STOPS = Object.keys(EXACT).map(Number);
+  const HTML = {};                                   // готовый KaTeX-HTML, чтобы не считать при каждом движении
+  for (const a of STOPS) HTML[a] = EXACT[a].map(t => t === null ? '' : katex.renderToString(t, { throwOnError: false }));
+
+  /* ── деления на осях ── */
+  {
+    let s = '';
+    for (const u of [-1, -0.5, 0.5, 1]) {
+      const x = O[0] + u * R;
+      s += `<path class="tk" d="M${x} 423 L${x} 437"/><text class="tk-t" x="${x}" y="${462}">${String(u).replace('.', ',').replace('-', '\u2212')}</text>`;
+    }
+    for (const u of [0.5, 1]) {
+      const y = O[1] - u * R;
+      s += `<path class="tk" d="M493 ${y} L507 ${y}"/><text class="tk-t" x="${470}" y="${y + 6}">${String(u).replace('.', ',')}</text>`;
+    }
+    $('ticks').innerHTML = s;
+  }
+
+  const fmt = v => (Math.abs(v) < 5e-4 ? '0' : v.toFixed(2)).replace('.', ',').replace(/^-/, '−');
+  const pol = d => [O[0] + R * Math.cos(d * RAD), O[1] - R * Math.sin(d * RAD)];
+
+  let deg = 57, snap = true;
+
+  function draw() {
+    const rd = deg * RAD, c = Math.cos(rd), s = Math.sin(rd);
+    const M = pol(deg), N = pol(180 - deg);
+    const px = O[0] + c * R, py = O[1] - s * R;
+
+    /* отрезки на осях */
+    $('osX').setAttribute('x2', px);
+    $('osY').setAttribute('y2', py);
+    $('osM').setAttribute('x2', O[0] - c * R);
+
+    /* пунктиры от точки к осям */
+    $('dropA').setAttribute('d', `M${M[0]} ${M[1]} L${M[0]} ${O[1]}`);
+    $('dropB').setAttribute('d', `M${M[0]} ${M[1]} L${O[0]} ${M[1]}`);
+    $('dropM').setAttribute('d', `M${N[0]} ${N[1]} L${N[0]} ${O[1]} M${N[0]} ${N[1]} L${O[0]} ${N[1]}`);
+
+    /* радиусы */
+    $('rad').setAttribute('d', `M${O[0]} ${O[1]} L${M[0]} ${M[1]}`);
+    $('radM').setAttribute('d', `M${O[0]} ${O[1]} L${N[0]} ${N[1]}`);
+
+    /* дуга угла + подпись на биссектрисе */
+    const ar = 74;
+    const a1 = pol(0), p1 = [O[0] + ar, O[1]], p2 = [O[0] + ar * c, O[1] - ar * s];
+    $('arc').setAttribute('d', deg < 0.4 ? '' :
+      `M${p1[0]} ${p1[1]} A${ar} ${ar} 0 ${deg > 180 ? 1 : 0} 0 ${p2[0]} ${p2[1]}`);
+    // подпись ставим у КОНЦА дуги, а не на биссектрисе: при 120° биссектриса
+    // совпадает с зеркальным радиусом ON и подпись легла бы прямо на него
+    const bd = deg - Math.min(17, deg * 0.45), bl = ar + 30;
+    $('arcT').setAttribute('x', O[0] + bl * Math.cos(bd * RAD));
+    $('arcT').setAttribute('y', O[1] - bl * Math.sin(bd * RAD) + 6);
+    $('arcT').textContent = deg < 6 ? '' : 'α';
+
+    /* точки и их буквы */
+    for (const [id, P] of [['dot', M], ['halo', M], ['dotM', N]]) {
+      $(id).setAttribute('cx', P[0]); $(id).setAttribute('cy', P[1]);
+    }
+    const off = (P, d) => [P[0] + 30 * Math.cos(d * RAD), P[1] - 30 * Math.sin(d * RAD) + 7];
+    const [mx, my] = off(M, deg < 100 ? deg : deg);
+    $('dotT').setAttribute('x', mx - 8); $('dotT').setAttribute('y', my);
+    const [nx, ny] = off(N, 180 - deg);
+    $('dotMT').setAttribute('x', nx - 8); $('dotMT').setAttribute('y', ny);
+
+    /* числа */
+    $('deg').textContent = deg.toFixed(0) + '°';
+    $('degHint').textContent = deg === 0 || deg === 180 ? 'вырожденный'
+      : deg < 90 ? 'острый' : deg === 90 ? 'прямой' : 'тупой';
+    $('vS').textContent = fmt(s);
+    $('vC').textContent = fmt(c);
+    $('vT').textContent = deg === 90 ? 'не опр.' : fmt(s / c);
+    $('vMir').textContent = (180 - deg).toFixed(0) + '°';
+
+    const ex = HTML[deg];
+    $('exS').innerHTML = ex ? ex[0] : '';
+    $('exC').innerHTML = ex ? ex[1] : '';
+    $('exT').innerHTML = ex ? ex[2] : '';
+
+    for (const b of document.querySelectorAll('#kb .kb')) b.classList.toggle('on', +b.dataset.a === deg);
+  }
+
+  /* ── установка угла ── */
+  function set(d, doSnap) {
+    d = Math.max(0, Math.min(180, d));
+    if (doSnap && snap) {
+      const near = STOPS.reduce((a, b) => Math.abs(b - d) < Math.abs(a - d) ? b : a);
+      if (Math.abs(near - d) <= 5) d = near;
+    }
+    deg = Math.round(d);
+    draw();
+  }
+
+  /* ── перетаскивание ── */
+  const sv = $('sv'), fig = $('fig');
+  let drag = false;
+  const toUser = e => {
+    const p = sv.createSVGPoint();
+    p.x = e.clientX; p.y = e.clientY;
+    return p.matrixTransform(sv.getScreenCTM().inverse());
+  };
+  const aim = e => {
+    const u = toUser(e);
+    set(Math.atan2(O[1] - u.y, u.x - O[0]) / RAD, true);
+  };
+  fig.addEventListener('pointerdown', e => { drag = true; fig.classList.add('drag'); fig.setPointerCapture(e.pointerId); aim(e); });
+  fig.addEventListener('pointermove', e => { if (drag) aim(e); });
+  const stop = () => { drag = false; fig.classList.remove('drag'); };
+  fig.addEventListener('pointerup', stop);
+  fig.addEventListener('pointercancel', stop);
+
+  /* ── кнопки опорных углов ── */
+  $('kb').innerHTML = STOPS.map(a => `<button class="kb" data-a="${a}">${a}°</button>`).join('');
+  $('kb').addEventListener('click', e => { const b = e.target.closest('.kb'); if (b) set(+b.dataset.a, false); });
+
+  /* ── переключатели ── */
+  const toggle = (btn, cls, init) => {
+    let on = init;
+    const apply = () => { document.body.classList.toggle(cls, !on); btn.classList.toggle('on', on); };
+    btn.addEventListener('click', () => { on = !on; apply(); });
+    apply();
+  };
+  toggle($('bMir'), 'mirror-off', true);
+  toggle($('bNum'), 'hide-num', true);
+  $('bSnap').addEventListener('click', () => { snap = !snap; $('bSnap').classList.toggle('on', snap); });
+
+  /* ── клавиши ── */
+  addEventListener('keydown', e => {
+    const st = e.shiftKey ? 5 : 1;
+    if (e.key === 'ArrowRight') { e.preventDefault(); set(deg + st, false); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); set(deg - st, false); }
+    else if (e.key === 'ф' || e.key === 'Ф' || e.key === 'a' || e.key === 'A')
+      document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  });
+
+  /* ── сцена вписывается в окно ── */
+  const stage = $('stage');
+  const lenta = () => matchMedia('(max-width:1000px)').matches;   // телефон: сцена распускается (deck.css)
+  const fit = () => {
+    if (lenta()) { stage.style.transform = ''; return; }
+    const k = Math.min(innerWidth / stage.offsetWidth, innerHeight / stage.offsetHeight);
+    stage.style.transform = `scale(${k})`;
+  };
+  addEventListener('resize', fit);
+  fit(); setTimeout(fit, 300);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+
+  draw();
+});
+</script>
+</body>
+</html>
