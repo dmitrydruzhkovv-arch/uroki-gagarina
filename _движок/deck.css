@@ -207,7 +207,10 @@ body.noanim .rv{ opacity:1 !important; }
   html,body{ overflow:visible; background:#fff; height:auto; display:block; }
   #stage{ transform:none !important; width:1600px; height:auto; }
   .slide{ position:static; display:flex !important; height:900px; page-break-after:always; border-radius:0; }
+  /* PDF — это ПОЛНАЯ версия урока: шаги раскрыты, таблицы заполнены, ответы на месте.
+     Скрывать что-то имеет смысл только на живом экране, где D открывает по нажатию. */
   .rv{ opacity:1 !important; }
+  .key{ visibility:visible !important; }
   #help{ display:none; }
 }
 
@@ -218,7 +221,7 @@ body.noanim .rv{ opacity:1 !important; }
    схлопываются в одну, кегли уменьшаются. Одна и та же презентация
    работает и на проекторе, и как конспект в телефоне ученика.
    ═══════════════════════════════════════════════════════════════ */
-@media (max-width:1000px){
+@media screen and (max-width:1000px){
   html,body{ overflow:auto; height:auto; background:var(--paper); display:block; }
   #stage{ width:100% !important; height:auto !important; transform:none !important; }
 
