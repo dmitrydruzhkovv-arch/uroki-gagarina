@@ -109,6 +109,11 @@ nav.tabs{
   border:1.8px dashed var(--line); border-radius:16px; padding:22px 18px;
   text-align:center; color:var(--muted); font-size:15px;
 }
+/* урок без своих материалов — обычное дело, а не дырка */
+.nomat{
+  margin-top:14px; font-size:14px; color:var(--sub);
+  background:var(--line-soft); border-radius:11px; padding:11px 14px;
+}
 
 /* ─── учебники ─── */
 .books{ margin-top:34px; }
@@ -195,11 +200,12 @@ footer a{ color:var(--sub); }
       </div>
       <h3>${esc(u.title)}</h3>
       ${u.lead ? `<p class="u-lead">${esc(u.lead)}</p>` : ''}
-      <div class="mats">${u.mat.map(m => `
+      ${(u.mat && u.mat.length) ? `<div class="mats">${u.mat.map(m => `
         <a class="mat ${m.kind}" href="${m.out}"${m.out.endsWith('.pdf') ? ' target="_blank" rel="noopener"' : ''}>
           <span class="ic">${ICON[m.kind] || '📄'}</span>
           <span class="tx"><b>${esc(m.label)}</b>${m.hint ? `<i>${esc(m.hint)}</i>` : ''}</span>
-        </a>`).join('')}</div>
+        </a>`).join('')}</div>`
+        : `<div class="nomat">Урок вели по учебнику — своих материалов к нему нет</div>`}
       ${u.dzBook ? `<div class="dzbook"><b>Домашка из учебника:</b> ${esc(u.dzBook)}</div>` : ''}
     </article>`;
   }
