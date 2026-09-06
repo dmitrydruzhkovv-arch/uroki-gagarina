@@ -15,7 +15,41 @@
 
 <div id="stage">
 
-<!-- ═════════ 1 · КРЮЧОК ═════════ -->
+<!-- ═════════ 1 · ТЕМА ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>7 сентября</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step">Тема урока</span>
+  <h1>Среднее, медиана, размах — <span class="g">и разброс</span></h1>
+  <p class="lead">Всё это вы считали в прошлом году и закончили как раз на дисперсии и стандартном отклонении. Сегодня разберёмся, <b>ради чего</b> их считают.</p>
+
+  <div class="body c2">
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Что делаем сегодня</div>
+        <ul class="dots">
+          <li>Вспомним, чем среднее отличается от медианы — и когда каждое врёт.</li>
+          <li>Разберёмся, зачем нужен <b>разброс</b>, если центр уже известен.</li>
+          <li>Поставим опыт и посчитаем <span class="hl">свои собственные данные</span>.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card hero mid">
+        <div class="card-h">Главный вопрос урока</div>
+        <p>Два набора чисел с <b>одинаковым средним</b> могут описывать совершенно разные вещи.</p>
+        <div class="mline m-lg">$7,\ 7,\ 7,\ 7,\ 7$</div>
+        <div class="mline m-lg">$10,\ 4,\ 10,\ 4,\ 7$</div>
+        <div class="sm">Среднее и там и там 7. Каким числом показать, что это разные стрелки?</div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">1 / 10</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 2 · КРЮЧОК ═════════ -->
 <section class="slide">
   <div class="top">
     <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Крючок</b></div>
@@ -68,10 +102,10 @@
       </div>
     </div>
   </div>
-  <div class="pg">1 / 9</div><div class="bar"></div>
+  <div class="pg">2 / 10</div><div class="bar"></div>
 </section>
 
-<!-- ═════════ 2 · ОПОРА ═════════ -->
+<!-- ═════════ 3 · ОПОРА ═════════ -->
 <section class="slide">
   <div class="top">
     <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Опора</b></div>
@@ -94,53 +128,17 @@
     </div>
     <div class="stack">
       <div class="def">
-        <div class="def-t">Определение · учебник, ч. 1, § 8</div>
-        <p><b>Медианой</b> числового массива называют такое число $m$, что хотя бы половина чисел массива не больше числа $m$ и хотя бы половина чисел массива не меньше числа $m$.</p>
+        <div class="def-t">Медиана · учебник, ч. 1, § 8</div>
+        <p><b>Медиана — это середина ряда.</b> Выстроил все числа по возрастанию и взял то, что стоит посередине.</p>
+        <div class="sm">Если чисел чётное количество, серединных два — берут их полусумму. В учебнике то же самое сказано строже: такое число $m$, что хотя бы половина чисел не больше $m$ и хотя бы половина не меньше.</div>
       </div>
       <div class="note">
         <span class="ar">➜</span>
-        <span class="tx">Смотрит только на <b>середину</b> ряда. Директору её не сдвинуть: как была 25, так и осталась.</span>
+        <span class="tx">Директору её не сдвинуть: как была 25, так и осталась. <span class="hl">Медиане важно только, с какой стороны выброс</span>, а не насколько он велик.</span>
       </div>
     </div>
   </div>
-  <div class="pg">2 / 9</div><div class="bar"></div>
-</section>
-
-<!-- ═════════ 3 · ОБОЗНАЧЕНИЯ ═════════ -->
-<section class="slide">
-  <div class="top">
-    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Обозначения</b></div>
-    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
-  </div>
-  <span class="step blue">Чтобы не запутаться весь год</span>
-  <h2>В тетради $D$ и $\sigma$, в учебнике <span class="g">$S^2$ и $S$</span></h2>
-  <p class="lead">Величина одна и та же. Разошлись только буквы — и об этом лучше договориться сегодня.</p>
-
-  <div class="body c2w">
-    <div class="stack">
-     <div class="card">
-      <div class="card-h">Одно и то же разными буквами</div>
-      <table>
-        <thead><tr><th>В тетради 8 класса</th><th>В учебнике</th><th>Что это</th></tr></thead>
-        <tbody>
-          <tr><td class="was">$D$</td><td>$S^2$</td><td>дисперсия</td></tr>
-          <tr><td class="was">$\sigma$</td><td>$S$</td><td>стандартное отклонение</td></tr>
-        </tbody>
-      </table>
-     </div>
-    </div>
-    <div class="stack">
-      <div class="note alarm">
-        <span class="ar">!</span>
-        <span class="tx">В конце года буква $D$ <b>вернётся</b> — но будет значить другое: дисперсию случайной величины $DX$. Тогда и разведём.</span>
-      </div>
-      <div class="card tight">
-        <div class="card-h">Договорились</div>
-        <p>Пишем как в учебнике: $S^2$ и $S$. Увидели в старой тетради $D$ и $\sigma$ — читаем то же самое.</p>
-      </div>
-    </div>
-  </div>
-  <div class="pg">3 / 9</div><div class="bar"></div>
+  <div class="pg">3 / 10</div><div class="bar"></div>
 </section>
 
 <!-- ═════════ 4 · УСТНЫЙ СЧЁТ ═════════ -->
@@ -210,17 +208,55 @@
       </div>
     </div>
   </div>
-  <div class="pg">4 / 9</div><div class="bar"></div>
+  <div class="pg">4 / 10</div><div class="bar"></div>
 </section>
 
-<!-- ═════════ 5 · ФОРМУЛЫ ═════════ -->
+<!-- ═════════ 5 · ОБОЗНАЧЕНИЯ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Обозначения</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step blue">Чтобы не запутаться весь год</span>
+  <h2>В тетради $D$ и $\sigma$, в учебнике <span class="g">$S^2$ и $S$</span></h2>
+  <p class="lead">Величина одна и та же. Разошлись только буквы — и об этом лучше договориться сегодня.</p>
+
+  <div class="body c2w">
+    <div class="stack">
+     <div class="card">
+      <div class="card-h">Одно и то же разными буквами</div>
+      <table>
+        <thead><tr><th>В тетради 8 класса</th><th>В учебнике</th><th>Что это</th></tr></thead>
+        <tbody>
+          <tr><td class="was">$D$</td><td>$S^2$</td><td>дисперсия</td></tr>
+          <tr><td class="was">$\sigma$</td><td>$S$</td><td>стандартное отклонение</td></tr>
+        </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="stack">
+      <div class="note alarm">
+        <span class="ar">!</span>
+        <span class="tx">В конце года буква $D$ <b>вернётся</b> — но будет значить другое: дисперсию случайной величины $DX$. Тогда и разведём.</span>
+      </div>
+      <div class="card tight">
+        <div class="card-h">Договорились</div>
+        <p>Пишем как в учебнике: $S^2$ и $S$. Увидели в старой тетради $D$ и $\sigma$ — читаем то же самое.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pg">5 / 10</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 6 · ФОРМУЛЫ ═════════ -->
 <section class="slide">
   <div class="top">
     <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Записать в тетрадь</b></div>
     <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
   </div>
-  <span class="step">Два определения</span>
+  <span class="step">Сначала своими словами</span>
   <h2>Дисперсия и <span class="g">стандартное отклонение</span></h2>
+  <p class="lead">Вы это считали весь прошлый год. Прежде чем открывать учебник — скажите своими словами: что показывает дисперсия? А стандартное отклонение?</p>
 
   <div class="body c2">
     <div class="stack">
@@ -244,10 +280,10 @@
       </div>
     </div>
   </div>
-  <div class="pg">5 / 9</div><div class="bar"></div>
+  <div class="pg">6 / 10</div><div class="bar"></div>
 </section>
 
-<!-- ═════════ 6 · ЛАБОРАТОРНАЯ ═════════ -->
+<!-- ═════════ 7 · ЛАБОРАТОРНАЯ ═════════ -->
 <section class="slide">
   <div class="top">
     <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Лабораторная</b></div>
@@ -283,10 +319,10 @@
       </div>
     </div>
   </div>
-  <div class="pg">6 / 9</div><div class="bar"></div>
+  <div class="pg">7 / 10</div><div class="bar"></div>
 </section>
 
-<!-- ═════════ 7 · ИТОГИ КЛАССА ═════════ -->
+<!-- ═════════ 8 · ИТОГИ КЛАССА ═════════ -->
 <section class="slide">
   <div class="top">
     <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Итоги класса</b></div>
@@ -317,10 +353,10 @@
       </div>
     </div>
   </div>
-  <div class="pg">7 / 9</div><div class="bar"></div>
+  <div class="pg">8 / 10</div><div class="bar"></div>
 </section>
 
-<!-- ═════════ 8 · ЛОВУШКА ═════════ -->
+<!-- ═════════ 9 · ЛОВУШКА ═════════ -->
 <section class="slide">
   <div class="top">
     <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Ловушка</b></div>
@@ -353,10 +389,10 @@
       </div>
     </div>
   </div>
-  <div class="pg">8 / 9</div><div class="bar"></div>
+  <div class="pg">9 / 10</div><div class="bar"></div>
 </section>
 
-<!-- ═════════ 9 · ИТОГ ═════════ -->
+<!-- ═════════ 10 · ИТОГ ═════════ -->
 <section class="slide">
   <div class="top">
     <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Итог</b></div>
@@ -387,7 +423,7 @@
       </div>
     </div>
   </div>
-  <div class="pg">9 / 9</div><div class="bar"></div>
+  <div class="pg">10 / 10</div><div class="bar"></div>
 </section>
 
 </div>
