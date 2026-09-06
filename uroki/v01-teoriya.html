@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Среднее, медиана, размах, дисперсия — вероятность и статистика 9</title>
+<link rel="stylesheet" href="../_движок/katex/katex.min.css">
+<link rel="stylesheet" href="../_движок/deck.css">
+<style>
+  /* заливка столбцов диаграммы этого урока */
+  .bar-fill{ fill:#fde68a; stroke:none; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+<!-- ═════════ 1 · КРЮЧОК ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Крючок</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step red">Объявление о работе</span>
+  <h1>«Средняя зарплата в магазине — <span class="g">60 000 ₽</span>»</h1>
+  <p class="lead">Магазин ищет продавца. Идёшь устраиваться?</p>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 940 340" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln ax" d="M70 165 L890 165"/><path class="ln ax-h" d="M890 165 L879 170 L879 160 Z"/>
+  <path class="ax" d="M70 169.5 L70 160.5"/>
+  <path class="ax" d="M265 169.5 L265 160.5"/>
+  <path class="ax" d="M460 169.5 L460 160.5"/>
+  <path class="ax" d="M655 169.5 L655 160.5"/>
+  <path class="ax" d="M850 169.5 L850 160.5"/>
+  <text class="an-d" x="70" y="186.9" font-size="15" text-anchor="middle" dominant-baseline="middle">0</text>
+  <text class="an-d" x="265" y="186.9" font-size="15" text-anchor="middle" dominant-baseline="middle">100</text>
+  <text class="an-d" x="460" y="186.9" font-size="15" text-anchor="middle" dominant-baseline="middle">200</text>
+  <text class="an-d" x="655" y="186.9" font-size="15" text-anchor="middle" dominant-baseline="middle">300</text>
+  <text class="an-d" x="850" y="186.9" font-size="15" text-anchor="middle" dominant-baseline="middle">400</text>
+  <circle class="dt-b" cx="118.8" cy="165" r="11"/>
+  <text class="an-b" x="118.8" y="136" font-size="18" text-anchor="middle" dominant-baseline="middle">9 продавцов</text>
+  <circle class="dt-r" cx="801.3" cy="165" r="11"/>
+  <text class="an-r" x="801.3" y="136" font-size="18" text-anchor="middle" dominant-baseline="middle">директор</text>
+  <path class="ln ln-b" d="M118.8 205 L118.8 177"/>
+  <text class="an-b" x="118.8" y="227.2" font-size="21" text-anchor="middle" dominant-baseline="middle">медиана 25</text>
+  <path class="ln ln-g" d="M187 265 L187 177"/>
+  <text class="an" x="187" y="287.2" font-size="21" text-anchor="middle" dominant-baseline="middle">среднее 60</text>
+  <text class="an-d" x="884" y="138.8" font-size="16" text-anchor="middle" dominant-baseline="middle">тыс ₽</text>
+</svg>
+      <div class="fig-cap">Все десять зарплат на одной прямой</div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Кто сколько получает</div>
+        <table>
+          <thead><tr><th>Кто</th><th>Тыс ₽</th></tr></thead>
+          <tbody>
+            <tr><td>9 продавцов</td><td>25</td></tr>
+            <tr><td>директор</td><td>375</td></tr>
+          </tbody>
+        </table>
+        <div class="mline m-lg">$\bar x=\dfrac{25\cdot 9+375}{10}=60$</div>
+      </div>
+      <div class="note alarm rv">
+        <span class="ar">➜</span>
+        <span class="tx">В объявлении <span class="hl-r">не соврали</span>. Но 60 000 не получает <b>ни один</b> человек в магазине.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">1 / 9</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 2 · ОПОРА ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Опора</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step">Это вы уже умеете</span>
+  <h2>Два числа про один набор — <span class="g">и они не совпадают</span></h2>
+
+  <div class="body c2">
+    <div class="stack">
+      <div class="def">
+        <div class="def-t">Определение · учебник, ч. 1, § 7</div>
+        <p><b>Средним арифметическим</b> $\bar x$ числового массива называется отношение суммы всех чисел массива к их количеству $n$.</p>
+        <div class="mline m-lg">$\bar x=\dfrac{x_1+x_2+\ldots+x_n}{n}$</div>
+      </div>
+      <div class="note">
+        <span class="ar">➜</span>
+        <span class="tx">Считает <b>все</b> числа. Поэтому один директор сдвигает его на 35 тысяч.</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="def">
+        <div class="def-t">Определение · учебник, ч. 1, § 8</div>
+        <p><b>Медианой</b> числового массива называют такое число $m$, что хотя бы половина чисел массива не больше числа $m$ и хотя бы половина чисел массива не меньше числа $m$.</p>
+      </div>
+      <div class="note">
+        <span class="ar">➜</span>
+        <span class="tx">Смотрит только на <b>середину</b> ряда. Директору её не сдвинуть: как была 25, так и осталась.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">2 / 9</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 3 · ОБОЗНАЧЕНИЯ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Обозначения</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step blue">Чтобы не запутаться весь год</span>
+  <h2>В тетради $D$ и $\sigma$, в учебнике <span class="g">$S^2$ и $S$</span></h2>
+  <p class="lead">Величина одна и та же. Разошлись только буквы — и об этом лучше договориться сегодня.</p>
+
+  <div class="body c2w">
+    <div class="stack">
+     <div class="card">
+      <div class="card-h">Одно и то же разными буквами</div>
+      <table>
+        <thead><tr><th>В тетради 8 класса</th><th>В учебнике</th><th>Что это</th></tr></thead>
+        <tbody>
+          <tr><td class="was">$D$</td><td>$S^2$</td><td>дисперсия</td></tr>
+          <tr><td class="was">$\sigma$</td><td>$S$</td><td>стандартное отклонение</td></tr>
+        </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="stack">
+      <div class="note alarm">
+        <span class="ar">!</span>
+        <span class="tx">В конце года буква $D$ <b>вернётся</b> — но будет значить другое: дисперсию случайной величины $DX$. Тогда и разведём.</span>
+      </div>
+      <div class="card tight">
+        <div class="card-h">Договорились</div>
+        <p>Пишем как в учебнике: $S^2$ и $S$. Увидели в старой тетради $D$ и $\sigma$ — читаем то же самое.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pg">3 / 9</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 4 · УСТНЫЙ СЧЁТ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Устный счёт</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step teal">Устно, без тетради</span>
+  <h2>Иван неделю записывал, <span class="g">сколько ждал автобус</span></h2>
+
+  <div class="body c2">
+    <div class="fig"><svg viewBox="0 0 820 460" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln ax" d="M92 372 L770 372"/><path class="ln ax-h" d="M770 372 L759 377 L759 367 Z"/>
+  <path class="ln ax" d="M92 372 L92 42"/><path class="ln ax-h" d="M92 42 L97 53 L87 53 Z"/>
+  <path class="ax" d="M87.5 294 L96.5 294"/>
+  <path class="ax" d="M87.5 216 L96.5 216"/>
+  <path class="ax" d="M87.5 138 L96.5 138"/>
+  <path class="ax" d="M87.5 60 L96.5 60"/>
+  <text class="an-d" x="71.5" y="294" font-size="15" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text class="an-d" x="71.5" y="216" font-size="15" text-anchor="middle" dominant-baseline="middle">4</text>
+  <text class="an-d" x="71.5" y="138" font-size="15" text-anchor="middle" dominant-baseline="middle">6</text>
+  <text class="an-d" x="71.5" y="60" font-size="15" text-anchor="middle" dominant-baseline="middle">8</text>
+  <path class="bar-fill" d="M126 372 L126 255 L188 255 L188 372 Z"/>
+  <path class="ln" d="M126 372 L126 255 L188 255 L188 372"/>
+  <path class="bar-fill" d="M234 372 L234 177 L296 177 L296 372 Z"/>
+  <path class="ln" d="M234 372 L234 177 L296 177 L296 372"/>
+  <path class="bar-fill" d="M342 372 L342 216 L404 216 L404 372 Z"/>
+  <path class="ln" d="M342 372 L342 216 L404 216 L404 372"/>
+  <path class="bar-fill" d="M450 372 L450 60 L512 60 L512 372 Z"/>
+  <path class="ln" d="M450 372 L450 60 L512 60 L512 372"/>
+  <path class="bar-fill" d="M558 372 L558 138 L620 138 L620 372 Z"/>
+  <path class="ln" d="M558 372 L558 138 L620 138 L620 372"/>
+  <path class="bar-fill" d="M666 372 L666 216 L728 216 L728 372 Z"/>
+  <path class="ln" d="M666 372 L666 216 L728 216 L728 372"/>
+  <text class="an" x="157" y="230.8" font-size="21" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text class="an" x="265" y="152.8" font-size="21" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text class="an" x="373" y="191.8" font-size="21" text-anchor="middle" dominant-baseline="middle">4</text>
+  <text class="an" x="481" y="35.8" font-size="21" text-anchor="middle" dominant-baseline="middle">8</text>
+  <text class="an" x="589" y="113.8" font-size="21" text-anchor="middle" dominant-baseline="middle">6</text>
+  <text class="an" x="697" y="191.8" font-size="21" text-anchor="middle" dominant-baseline="middle">4</text>
+  <text class="an-d" x="157" y="397" font-size="18" text-anchor="middle" dominant-baseline="middle">Пн</text>
+  <text class="an-d" x="265" y="397" font-size="18" text-anchor="middle" dominant-baseline="middle">Вт</text>
+  <text class="an-d" x="373" y="397" font-size="18" text-anchor="middle" dominant-baseline="middle">Ср</text>
+  <text class="an-d" x="481" y="397" font-size="18" text-anchor="middle" dominant-baseline="middle">Чт</text>
+  <text class="an-d" x="589" y="397" font-size="18" text-anchor="middle" dominant-baseline="middle">Пт</text>
+  <text class="an-d" x="697" y="397" font-size="18" text-anchor="middle" dominant-baseline="middle">Сб</text>
+  <text class="an-d" x="136.4" y="42" font-size="16" text-anchor="middle" dominant-baseline="middle">мин</text>
+</svg>
+      <div class="fig-cap">Минуты ожидания с понедельника по субботу</div>
+    </div>
+    <div class="stack gap-s">
+      <div class="card tight">
+        <div class="card-h">Вопросы</div>
+        <ol class="steps">
+          <li>Сколько всего минут Иван прождал за неделю?</li>
+          <li>Сколько в среднем в день?</li>
+          <li>Чему равна медиана?</li>
+          <li>Чему равен размах?</li>
+          <li>В какие дни он ждал дольше среднего?</li>
+          <li>Чему равна сумма всех отклонений от среднего?</li>
+        </ol>
+      </div>
+      <div class="mrow key">
+        <span class="pill">30 мин</span><span class="pill">$\bar x=5$</span><span class="pill">$m=4{,}5$</span>
+        <span class="pill">размах 5</span><span class="pill">Чт и Пт</span><span class="pill">0</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">4 / 9</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 5 · ФОРМУЛЫ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Записать в тетрадь</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step">Два определения</span>
+  <h2>Дисперсия и <span class="g">стандартное отклонение</span></h2>
+
+  <div class="body c2">
+    <div class="stack">
+      <div class="def">
+        <div class="def-t">Определение · учебник, ч. 1, § 43</div>
+        <p>Среднее арифметическое квадратов отклонений чисел от их среднего арифметического называется <b>дисперсией</b> набора чисел.</p>
+        <p class="sm">Обычно говорят короче: дисперсия — это средний квадрат отклонений.</p>
+      </div>
+      <div class="mline m-lg">$S^2=\dfrac{(x_1-\bar x)^2+\ldots+(x_n-\bar x)^2}{n}$</div>
+    </div>
+    <div class="stack">
+      <div class="def">
+        <div class="def-t">Определение · учебник, ч. 1, § 44</div>
+        <p><b>Стандартным отклонением</b> числового массива называется квадратный корень из дисперсии этого массива.</p>
+      </div>
+      <div class="mline m-lg">$S=\sqrt{S^2}$</div>
+      <div class="card hero tight">
+        <div class="card-h">Короткая формула — та самая, из тетради</div>
+        <div class="mline m-lg">$S^2=\overline{x^2}-\bar x^2$</div>
+        <div class="sm">Читается так: дисперсия равна среднему квадрату без квадрата среднего.</div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">5 / 9</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 6 · ЛАБОРАТОРНАЯ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Лабораторная</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step teal">Работаем руками</span>
+  <h2>Насколько точен <span class="g">твой глазомер</span></h2>
+  <p class="lead">Дальше считаем не чужие числа из задачника, а свои собственные. Лист перед тобой, линейка пока в стороне.</p>
+
+  <div class="body c3">
+    <div class="card mid">
+      <div class="card-h">Шаг 1 · рисуем вслепую</div>
+      <p>Ручку на точку, <b>глаза закрыл</b>, ведёшь вправо и останавливаешься, где чувствуешь 10 см. Пять попыток.</p>
+      <div class="note alarm">
+        <span class="ar">!</span>
+        <span class="tx">Линейку не трогаем до конца всех пяти. Линия уехала вбок — не страшно, меряем длину.</span>
+      </div>
+    </div>
+    <div class="card mid">
+      <div class="card-h">Шаг 2 · измеряем</div>
+      <p>Теперь линейкой. Записываем длину каждого отрезка <b>в миллиметрах</b>, целыми числами.</p>
+      <div class="note">
+        <span class="ar">➜</span>
+        <span class="tx">Цель была 10 см, то есть <span class="hl">100 мм</span>.</span>
+      </div>
+    </div>
+    <div class="card mid">
+      <div class="card-h">Шаг 3 · считаем</div>
+      <p>Среднее, отклонения, дисперсию и стандартное отклонение — по своим пяти числам.</p>
+      <div class="note">
+        <span class="ar">➜</span>
+        <span class="tx">Проверка: сумма отклонений — <b>ноль</b>.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">6 / 9</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 7 · ИТОГИ КЛАССА ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Итоги класса</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step indigo">Собираем результаты</span>
+  <h2>Два вопроса — <span class="g">и это могут быть разные люди</span></h2>
+
+  <div class="body c2">
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Вопрос 1 · точность</div>
+        <p>У кого <b>среднее ближе всего к 100 мм</b>? Это про смещение: систематически рисуешь короче или длиннее.</p>
+        <div class="note">
+          <span class="ar">➜</span>
+          <span class="tx">Смещение <span class="hl">лечится сразу</span>: знаешь, что рисуешь на 8 мм короче — добавь 8 мм.</span>
+        </div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Вопрос 2 · стабильность</div>
+        <p>У кого <b>самое маленькое $S$</b>? Это про разброс: насколько рука повторяет саму себя.</p>
+        <div class="note alarm">
+          <span class="ar">!</span>
+          <span class="tx">Разброс так просто <span class="hl-r">не исправишь</span> — он про то, что каждый раз выходит по-разному.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">7 / 9</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 8 · ЛОВУШКА ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Ловушка</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step red">Хлебозавод, две линии</span>
+  <h2>Булка должна весить <span class="g">200 г</span></h2>
+  <p class="lead">Контрольное взвешивание десяти проб с каждой линии. Учебник, ч. 1, § 44, таблица 57.</p>
+
+  <div class="body c2w">
+    <div class="stack">
+     <div class="card">
+      <table>
+        <thead><tr><th></th><th>Линия 1</th><th>Линия 2</th></tr></thead>
+        <tbody>
+          <tr><th>Среднее, г</th><td>193,9</td><td class="was">198,6</td></tr>
+          <tr><th>Стандартное отклонение, г</th><td class="was">1,30</td><td>4,18</td></tr>
+        </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Вопрос</div>
+        <p>У линии 2 среднее <b>ближе к 200 г</b>. Значит, она работает лучше?</p>
+      </div>
+      <div class="note alarm rv">
+        <span class="ar">➜</span>
+        <span class="tx">Нет. У линии 2 разброс <b>больше чем втрое</b>: $4{,}18$ против $1{,}30$. Она изношена, и одна булка от другой отличается сильно.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">8 / 9</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 9 · ИТОГ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика 9 | Урок 1 | <b>Итог</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step">Что забираем с урока</span>
+  <h2>Одно число про набор — <span class="g">и всегда мало</span></h2>
+
+  <div class="body c2w">
+    <div class="card">
+      <div class="card-h">Четыре вывода</div>
+      <ul class="dots">
+        <li><b>Среднее</b> считает все числа сразу. Один выброс двигает его куда угодно.</li>
+        <li><b>Медиана</b> держится за середину ряда, выброса не боится.</li>
+        <li><b>Дисперсия</b> и <b>стандартное отклонение</b> отвечают на другой вопрос: насколько числа разбросаны.</li>
+        <li>Смещение среднего лечится регулировкой, большой разброс — ремонтом.</li>
+      </ul>
+    </div>
+    <div class="stack">
+      <div class="card hero">
+        <div class="card-h">Домашнее задание</div>
+        <p>Карточка «Описательная статистика», 6 задач.</p>
+        <div class="sm">Задачи 3 и 4 — про то, где среднее одно, а жить по-разному.</div>
+      </div>
+      <div class="note">
+        <span class="ar">➜</span>
+        <span class="tx">Проверка себя в любой задаче: <b>сумма отклонений от среднего равна нулю</b>. Не сошлось — ищи ошибку.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">9 / 9</div><div class="bar"></div>
+</section>
+
+</div>
+
+<script defer src="../_движок/katex/katex.min.js"></script>
+<script defer src="../_движок/katex/auto-render.min.js"></script>
+<script defer src="../_движок/deck.js"></script>
+</body>
+</html>

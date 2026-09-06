@@ -1,0 +1,160 @@
+/* read.css — стиль длинных документов для D: методички, сценарии уроков, разборы.
+   Не для учеников и не для проектора. Это чтение с экрана и с распечатки.
+   Подключается вместе с ../_движок/katex/katex.min.css.
+   Шрифты и KaTeX — локальные, работает без интернета.                        */
+
+@import url('fonts/gf.css');
+
+:root{
+  --ink:#1c1917; --sub:#44403c; --muted:#78716c;
+  --paper:#fbf9f4; --card:#ffffff; --line:#e7e0d4;
+  --gold:#d97706; --gold-soft:#fbbf24; --gold-dim:#fef3c7; --gold-pale:#fffbeb;
+  --indigo:#4f46e5; --indigo-pale:#eef2ff;
+  --blue:#0369a1; --blue-pale:#eff6ff;
+  --red:#dc2626; --red-pale:#fef2f2;
+  --teal:#0d9488; --teal-pale:#f0fdfa;
+  --green:#16a34a;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:'Onest',system-ui,sans-serif; font-size:17px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{ max-width:920px; margin:0 auto; padding:38px 26px 90px; }
+
+/* ── шапка документа ── */
+.doc-head{
+  background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 45%,#fde68a 100%);
+  border:2px solid var(--gold-soft); border-radius:16px;
+  padding:22px 28px 24px; margin-bottom:34px;
+}
+.doc-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:10px; }
+.doc-kick{ font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700;
+  letter-spacing:1.7px; text-transform:uppercase; color:var(--gold); }
+.doc-badges{ display:flex; gap:6px; }
+.bdg{ width:24px; height:24px; border-radius:7px; display:flex; align-items:center; justify-content:center;
+  font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; }
+.bdg.di{ background:var(--ink); color:#fff; } .bdg.lm{ background:var(--gold); color:#fff; }
+.doc-title{ font-size:31px; font-weight:800; letter-spacing:-.7px; line-height:1.14; }
+.doc-title span{ color:var(--gold); }
+.doc-lead{ margin-top:10px; font-size:16px; color:var(--sub); line-height:1.5;
+  border-top:1px solid rgba(217,119,6,.22); padding-top:10px; }
+
+/* ── оглавление ── */
+.toc{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 22px; margin-bottom:38px; }
+.toc-t{ font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; letter-spacing:1.5px;
+  text-transform:uppercase; color:var(--muted); margin-bottom:9px; }
+.toc ol{ list-style:none; counter-reset:t; display:flex; flex-direction:column; gap:5px; }
+.toc li{ counter-increment:t; font-size:15.5px; padding-left:30px; position:relative; }
+.toc li::before{ content:counter(t); position:absolute; left:0; top:2px; width:21px; height:21px; border-radius:6px;
+  background:var(--gold-dim); color:var(--gold); font-family:'JetBrains Mono',monospace;
+  font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; }
+.toc a{ color:var(--ink); text-decoration:none; border-bottom:1px solid transparent; }
+.toc a:hover{ border-bottom-color:var(--gold); color:var(--gold); }
+
+/* ── структура ── */
+h2{ font-size:25px; font-weight:800; letter-spacing:-.45px; line-height:1.2; margin:44px 0 6px;
+  padding-bottom:9px; border-bottom:2px solid var(--line); scroll-margin-top:16px; }
+h2 .n{ font-family:'JetBrains Mono',monospace; font-size:15px; color:var(--gold); margin-right:10px; }
+h3{ font-size:19px; font-weight:700; margin:26px 0 6px; }
+h3.q{ color:var(--indigo); }
+p{ margin:11px 0; }
+p.lead-p{ font-size:18px; color:var(--sub); }
+ul,ol{ margin:11px 0 11px 22px; }
+li{ margin:5px 0; }
+b,strong{ font-weight:700; }
+a{ color:var(--gold); }
+
+/* ── подсветки ── */
+.hl{ background:linear-gradient(transparent 58%, var(--gold-soft) 58%); padding:0 2px; }
+.hl-b{ background:linear-gradient(transparent 58%, #bfdbfe 58%); padding:0 2px; }
+.hl-r{ background:linear-gradient(transparent 58%, #fecaca 58%); padding:0 2px; }
+.mono{ font-family:'JetBrains Mono',monospace; font-size:.92em; background:#f5f1e8;
+  border:1px solid var(--line); border-radius:5px; padding:1px 6px; }
+
+/* ── блоки ── */
+.box{ border:1px solid var(--line); border-radius:13px; background:var(--card); padding:15px 20px; margin:18px 0; }
+.box-t{ font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; letter-spacing:1.4px;
+  text-transform:uppercase; color:var(--muted); margin-bottom:7px; }
+.box.key{ border:2.5px solid var(--ink); }
+.box.key .box-t{ color:var(--gold); }
+.box.gold{ background:linear-gradient(135deg,var(--gold-pale),var(--gold-dim)); border-color:var(--gold-soft); }
+.box.gold .box-t{ color:var(--gold); }
+.box.indigo{ background:var(--indigo-pale); border-color:#c7d2fe; }
+.box.indigo .box-t{ color:var(--indigo); }
+.box.blue{ background:var(--blue-pale); border-color:#bfdbfe; }
+.box.blue .box-t{ color:var(--blue); }
+.box.red{ background:var(--red-pale); border-color:#fecaca; }
+.box.red .box-t{ color:var(--red); }
+.box.teal{ background:var(--teal-pale); border-color:#99f6e4; }
+.box.teal .box-t{ color:var(--teal); }
+.box.dark{ background:var(--ink); color:#fff; border-color:var(--ink); }
+.box.dark .box-t{ color:var(--gold-soft); }
+.box.dark .katex{ color:#fff; }
+.box p:first-of-type{ margin-top:0; } .box p:last-child{ margin-bottom:0; }
+
+/* ── формула отдельной строкой ── */
+.eq{ display:block; text-align:center; margin:16px 0; font-size:1.16em; }
+.eq.big{ font-size:1.42em; margin:20px 0; }
+
+/* ── таблица ── */
+table{ border-collapse:collapse; width:100%; margin:18px 0; background:var(--card); font-size:15.5px; }
+th,td{ border:1px solid var(--line); padding:9px 12px; text-align:left; vertical-align:top; }
+thead th{ background:var(--ink); color:#fff; font-weight:700; font-size:14px; border-color:var(--ink); }
+tbody th{ background:var(--gold-dim); font-weight:700; width:118px; }
+td.c{ text-align:center; }
+
+/* ── сценарий: шаги ── */
+.step{ display:grid; grid-template-columns:96px 1fr; gap:0; border:1px solid var(--line);
+  border-radius:13px; background:var(--card); margin:16px 0; overflow:hidden; }
+.step-time{ background:var(--gold-dim); border-right:1px solid var(--line); padding:14px 10px;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:4px; }
+.step-time .mm{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15px; color:var(--gold); }
+.step-time .dur{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--muted); }
+.step-time .sl{ font-size:10.5px; font-family:'JetBrains Mono',monospace; color:var(--ink);
+  background:#fff; border:1px solid var(--line); border-radius:5px; padding:1px 6px; margin-top:3px; }
+.step-body{ padding:14px 20px 16px; }
+.step-body h4{ font-size:19px; font-weight:800; margin-bottom:4px; }
+.step.hot .step-time{ background:var(--indigo-pale); border-right-color:#c7d2fe; }
+.step.hot .step-time .mm{ color:var(--indigo); }
+
+.say{ border-left:4px solid var(--gold); background:var(--gold-pale); border-radius:0 9px 9px 0;
+  padding:10px 15px; margin:10px 0; font-size:16.5px; line-height:1.55; }
+.say::before{ content:'Говорю'; display:block; font-family:'JetBrains Mono',monospace; font-size:10px;
+  font-weight:700; letter-spacing:1.3px; text-transform:uppercase; color:var(--gold); margin-bottom:4px; }
+
+/* что в этот момент делают ученики — главная строка сценария */
+.do{ border-left:4px solid var(--green); background:#f0fdf4; border-radius:0 9px 9px 0;
+  padding:10px 15px; margin:10px 0; font-size:16.5px; line-height:1.55; }
+.do::before{ content:'Дети делают'; display:block; font-family:'JetBrains Mono',monospace; font-size:10px;
+  font-weight:700; letter-spacing:1.3px; text-transform:uppercase; color:var(--green); margin-bottom:4px; }
+.act{ font-size:15.5px; color:var(--sub); margin:8px 0; padding-left:26px; position:relative; }
+.act::before{ content:'▸'; position:absolute; left:8px; color:var(--muted); }
+.note-line{ display:flex; gap:10px; align-items:flex-start; font-size:15.5px; margin:9px 0;
+  background:var(--blue-pale); border:1px solid #dbeafe; border-radius:9px; padding:9px 13px; }
+.note-line .tag{ font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:1px;
+  text-transform:uppercase; color:var(--blue); background:#fff; border:1px solid #bfdbfe;
+  border-radius:5px; padding:2px 7px; white-space:nowrap; flex:0 0 auto; margin-top:2px; }
+.note-line.warn{ background:var(--red-pale); border-color:#fecaca; }
+.note-line.warn .tag{ color:var(--red); border-color:#fecaca; }
+
+.ft{ margin-top:52px; padding-top:14px; border-top:1px solid var(--line);
+  font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
+  display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+
+@media print{
+  @page{ size:A4 portrait; margin:14mm; }
+  body{ background:#fff; font-size:11.5px; }
+  .wrap{ max-width:none; padding:0; }
+  .doc-head,.box,.step,.toc{ break-inside:avoid; }
+  h2{ break-after:avoid; font-size:19px; margin-top:22px; }
+  .step{ margin:9px 0; } .say{ font-size:11.5px; }
+}
+@media (max-width:640px){
+  body{ font-size:16px; } .wrap{ padding:22px 15px 60px; }
+  .doc-title{ font-size:24px; } h2{ font-size:21px; }
+  .step{ grid-template-columns:1fr; }
+  .step-time{ flex-direction:row; border-right:0; border-bottom:1px solid var(--line); justify-content:flex-start; gap:10px; }
+}
