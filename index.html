@@ -76,7 +76,8 @@ nav.tabs{
   font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#fff;
   background:var(--gold); border-radius:7px; padding:3px 9px; letter-spacing:.02em;
 }
-.u-date{ font-size:13px; font-weight:700; color:var(--muted); }
+.u-date{ font-size:13px; font-weight:600; color:var(--muted); }
+.u-date b{ font-weight:800; color:var(--sub); text-transform:capitalize; }
 .u-para{ font-size:12px; font-weight:700; color:var(--sub); background:var(--line-soft); border-radius:6px; padding:3px 9px; }
 .urok h3{ font-size:19px; font-weight:800; line-height:1.25; letter-spacing:-.2px; }
 .u-lead{ font-size:14.5px; color:var(--sub); margin-top:6px; }
@@ -183,6 +184,21 @@ footer a{ color:var(--sub); }
     `<button class="tab${i === 0 ? ' on' : ''}" data-k="${k.id}"><i>${k.icon}</i>${esc(k.name)}` +
     `<b>${k.uroki.length || ''}</b></button>`).join('');
 
+  /* ── дата урока: '08.09' → 'вторник, 8 сентября'
+        Год берём из учебного: сентябрь—декабрь — первый, январь—август — второй. ── */
+  const MES = ['января','февраля','марта','апреля','мая','июня','июля','августа',
+               'сентября','октября','ноября','декабря'];
+  const DNI = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+  function dateFull(str) {
+    const m = /^(\d{1,2})\.(\d{1,2})$/.exec((str || '').trim());
+    if (!m) return { day: '', full: str || '' };
+    const d = +m[1], mo = +m[2];
+    const years = (DATA.site.year || '').match(/\d{4}/g) || [];
+    const y = +(mo >= 9 ? years[0] : years[1]) || new Date().getFullYear();
+    const dt = new Date(y, mo - 1, d);
+    return { day: DNI[dt.getDay()], full: d + ' ' + (MES[mo - 1] || '') };
+  }
+
   /* ── курсы ── */
   $('#main').innerHTML = DATA.kursy.map((k, i) => `
     <section class="kurs${i === 0 ? ' on' : ''}" id="k-${k.id}">
@@ -192,10 +208,11 @@ footer a{ color:var(--sub); }
     </section>`).join('');
 
   function urokHTML(u) {
+    const dt = dateFull(u.date);
     return `<article class="urok">
       <div class="u-top">
         <span class="u-n">Урок ${u.n}</span>
-        <span class="u-date">${esc(u.date)}</span>
+        <span class="u-date"><b>${esc(dt.day)}</b>, ${esc(dt.full)}</span>
         ${u.para ? `<span class="u-para">${esc(u.para)}</span>` : ''}
       </div>
       <h3>${esc(u.title)}</h3>
