@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Площадь треугольника — живой чертёж</title>
+<link rel="stylesheet" href="../_движок/katex/katex.min.css">
+<link rel="stylesheet" href="../_движок/deck.css">
+<style>
+  /* ── только то, чего нет в движке ── */
+  .fig.live{ padding:6px 10px; cursor:grab; touch-action:none; user-select:none; }
+  .fig.live.drag{ cursor:grabbing; }
+
+  .tri-fill{ fill:#fef3c7; stroke:none; }            /* сам треугольник ABC        */
+  .rt-fill{ fill:#fecaca; stroke:none; opacity:.75; } /* прямоугольный с высотой   */
+  .base-ext{ stroke:var(--fig-dim); stroke-width:2.2; stroke-dasharray:8 6; fill:none; }
+  .hgt{ stroke:var(--red); stroke-width:4; stroke-linecap:round; fill:none; }
+  .grab{ fill:var(--gold); stroke:#fff; stroke-width:3; cursor:grab; }
+  .grab-halo{ fill:var(--gold); opacity:.16; }
+  .pt-t{ font:800 22px 'Onest',sans-serif; fill:var(--ink); }
+  .sd-t{ font:800 21px 'Onest',sans-serif; fill:var(--gold); text-anchor:middle; }
+  .hd-t{ font:800 21px 'Onest',sans-serif; fill:var(--red); text-anchor:middle; }
+  .ang-t{ font:800 22px 'Onest',sans-serif; fill:var(--gold); text-anchor:middle; dominant-baseline:middle; }
+  .ang-t.i{ fill:var(--indigo); font-size:19px; }
+  .hide-h .hgt,.hide-h .rt-fill,.hide-h #hLab,.hide-h #hFoot,.hide-h #rtMark,.hide-h #ext{ display:none; }
+
+  /* ── панель значений ── */
+  .val{ display:grid; grid-template-columns:1fr auto; align-items:center; gap:0 14px;
+        padding:9px 0; border-bottom:1.5px solid var(--line-soft); }
+  .val:last-child{ border-bottom:none; }
+  .val .nm{ font-size:25px; }
+  .val .num{ font-family:'JetBrains Mono',monospace; font-size:25px; font-weight:700; text-align:right; min-width:104px; }
+  .val.h .num{ color:var(--red); }
+  .val.s .num{ color:var(--gold); }
+  .hide-num .num{ visibility:hidden; }
+
+  .ang{ display:flex; align-items:baseline; gap:14px; }
+  .ang b{ font-family:'JetBrains Mono',monospace; font-size:52px; font-weight:700; letter-spacing:-2px; }
+  .ang i{ font-style:normal; font-size:20px; font-weight:700; color:var(--sub); }
+  .ang i.ost{ color:var(--blue); } .ang i.pr{ color:var(--green); } .ang i.tup{ color:var(--red); }
+
+  .keys-row{ display:flex; flex-wrap:wrap; gap:7px; }
+  .kb{ font-family:'Onest',sans-serif; font-size:17px; font-weight:700; color:var(--ink);
+       background:#fff; border:1.6px solid var(--line); border-radius:9px; padding:6px 11px; cursor:pointer; }
+  .kb:hover{ border-color:var(--gold); color:var(--gold); }
+  .kb.on{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .kb.wide{ flex:1 1 auto; text-align:center; }
+  .kb.play{ background:var(--red); color:#fff; border-color:var(--red); font-size:18px; }
+
+  @media screen and (max-width:1000px){
+    .val{ padding:7px 0; }
+    .val .nm{ font-size:17px; } .val .num{ font-size:17px; min-width:74px; }
+    .ang b{ font-size:36px; } .ang i{ font-size:15px; }
+    .kb{ font-size:15px; padding:8px 12px; }
+    .fig.live{ padding:4px 4px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+<section class="slide on">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Живой чертёж</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step gold">Тяни вершину B</span>
+  <h2>Высота меняется, но <span class="g">всегда равна $a\sin C$</span></h2>
+
+  <div class="body c2w">
+    <div class="fig live" id="fig">
+      <svg id="sv" viewBox="0 0 1000 520">
+        <path class="tri-fill" id="fill" d=""/>
+        <path class="rt-fill"  id="rfill" d=""/>
+
+        <path class="base-ext" id="ext" d=""/>          <!-- продолжение стороны CA -->
+        <path class="ln" id="base" d="M500 430 L950 430"/>
+        <path class="ln" id="sideA" d=""/>              <!-- CB -->
+        <path class="ln" id="sideC" d=""/>              <!-- BA -->
+        <path class="hgt" id="hgt" d=""/>               <!-- высота BH -->
+        <path class="arc" id="rtMark" d="" style="stroke:#dc2626;stroke-width:2.4"/>
+
+        <path class="arc"   id="arcC" d="" style="stroke-width:3"/>
+        <path class="arc-b" id="arcS" d="" style="stroke-width:2.6"/>
+        <text class="ang-t"   id="labC" x="0" y="0"></text>
+        <text class="ang-t i" id="labS" x="0" y="0"></text>
+
+        <text class="sd-t" id="labA" x="0" y="0">a = 5</text>
+        <text class="sd-t" x="880" y="470">b = 7</text>
+        <text class="hd-t" id="hLab" x="0" y="0">h</text>
+
+        <circle cx="500" cy="430" r="6" fill="#1c1917"/>
+        <text class="pt-t" x="480" y="468">C</text>
+        <circle cx="950" cy="430" r="6" fill="#1c1917"/>
+        <text class="pt-t" x="964" y="468">A</text>
+        <circle id="hFoot" cx="500" cy="430" r="5" fill="#dc2626"/>
+        <text class="pt-t" id="hFootT" x="0" y="0" fill="#dc2626">H</text>
+
+        <circle class="grab-halo" id="halo" cx="500" cy="109" r="26"/>
+        <circle class="grab" id="dot" cx="500" cy="109" r="13"/>
+        <text class="pt-t" id="dotT" x="0" y="0">B</text>
+      </svg>
+      <div class="fig-cap">Красный отрезок — высота. Когда угол <b>C</b> становится тупым, её основание <b>уезжает за сторону</b>, но длина по-прежнему $a\sin C$</div>
+    </div>
+
+    <div class="stack gap-s">
+      <div class="card tight">
+        <div class="card-h">Угол C</div>
+        <div class="ang"><b id="deg">90°</b><i id="degHint" class="pr">прямой</i></div>
+      </div>
+
+      <div class="card" id="vals">
+        <div class="val h"><span class="nm" id="nmH"></span><span class="num" id="vH">5,00</span></div>
+        <div class="val s"><span class="nm" id="nmS1"></span><span class="num" id="vS1">17,50</span></div>
+        <div class="val s"><span class="nm" id="nmS2"></span><span class="num" id="vS2">17,50</span></div>
+      </div>
+
+      <div class="note" id="mirNote">
+        <span class="ar">➜</span>
+        <span class="tx" id="mirTx">Смежный угол: <b id="mirV">90°</b>. Синус тот же — площадь тоже.</span>
+      </div>
+
+      <div class="card tight">
+        <div class="card-h">Опорные углы</div>
+        <div class="keys-row" id="kb"></div>
+      </div>
+
+      <div class="keys-row">
+        <button class="kb wide play" id="bPlay">▶ Прогнать три случая</button>
+      </div>
+      <div class="keys-row">
+        <button class="kb wide on" id="bSnap">Прилипание</button>
+        <button class="kb wide on" id="bHgt">Высота</button>
+        <button class="kb wide on" id="bNum">Числа</button>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div id="help">
+  тяни <b>B</b> мышью &nbsp; <b>← →</b> угол по 1° &nbsp; <b>Shift + ← →</b> по 5° &nbsp; <b>П</b> прогон &nbsp; <b>Ф</b> во весь экран
+</div>
+
+<script defer src="../_движок/katex/katex.min.js"></script>
+<script defer src="../_движок/katex/auto-render.min.js"></script>
+<script>
+window.addEventListener('load', () => {
+  const RAD = Math.PI / 180;
+  const C = [500, 430], A = [950, 430];      // основание CA лежит горизонтально
+  const AU = 5, BU = 7, PX = 450 / 7;        // a = 5, b = 7, пикселей в одной единице
+  const RA = AU * PX;                        // длина стороны CB на экране
+  const MIN = 20, MAX = 160;                 // за этими углами подписи начинают тесниться
+  const $ = id => document.getElementById(id);
+  const K = (tex, el) => katex.render(tex, el, { throwOnError: false });
+
+  // формулы в заголовке и подписи — рисуем один раз, до всего остального
+  if (window.renderMathInElement) renderMathInElement(document.body, {
+    delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+    throwOnError: false, strict: false,
+  });
+
+  K('h=a\\sin C=', $('nmH'));
+  K('S=\\tfrac12\\,b\\,h=', $('nmS1'));
+  K('S=\\tfrac12\\,ab\\sin C=', $('nmS2'));
+
+  const STOPS = [30, 45, 60, 90, 120, 135, 150];
+  const fmt = v => v.toFixed(2).replace('.', ',');
+  const pol = (P, r, d) => [P[0] + r * Math.cos(d * RAD), P[1] - r * Math.sin(d * RAD)];
+
+  let deg = 90, snap = true, anim = null;
+
+  function draw() {
+    const rd = deg * RAD, s = Math.sin(rd);
+    const B = pol(C, RA, deg);
+    const H = [B[0], C[1]];                  // основание высоты на прямой CA
+    const out = B[0] < C[0];                 // угол тупой → H уехал за вершину C
+
+    $('fill').setAttribute('d', `M${C[0]} ${C[1]} L${A[0]} ${A[1]} L${B[0]} ${B[1]} Z`);
+    $('rfill').setAttribute('d', `M${C[0]} ${C[1]} L${H[0]} ${H[1]} L${B[0]} ${B[1]} Z`);
+    $('ext').setAttribute('d', out ? `M${C[0]} ${C[1]} L${H[0]} ${H[1]}` : '');
+    $('sideA').setAttribute('d', `M${C[0]} ${C[1]} L${B[0]} ${B[1]}`);
+    $('sideC').setAttribute('d', `M${B[0]} ${B[1]} L${A[0]} ${A[1]}`);
+    $('hgt').setAttribute('d', `M${B[0]} ${B[1]} L${H[0]} ${H[1]}`);
+
+    /* уголок прямого угла при основании высоты */
+    const sx = out ? 1 : -1, m = 17;
+    $('rtMark').setAttribute('d',
+      `M${H[0] + sx * m} ${H[1]} L${H[0] + sx * m} ${H[1] - m} L${H[0]} ${H[1] - m}`);
+
+    /* дуга угла C и, если он тупой, дуга смежного угла */
+    const r1 = 78, p0 = [C[0] + r1, C[1]], p1 = pol(C, r1, deg);
+    $('arcC').setAttribute('d', `M${p0[0]} ${p0[1]} A${r1} ${r1} 0 0 0 ${p1[0]} ${p1[1]}`);
+    const bis = deg / 2, dc = 96 + (deg < 40 ? (40 - deg) * 1.4 : 0);
+    const lc = pol(C, dc, bis);
+    $('labC').setAttribute('x', lc[0]); $('labC').setAttribute('y', lc[1]);
+    $('labC').textContent = 'C';
+
+    if (out) {
+      const r2 = 116, q0 = [C[0] - r2, C[1]], q1 = pol(C, r2, deg);
+      $('arcS').setAttribute('d', `M${q0[0]} ${q0[1]} A${r2} ${r2} 0 0 1 ${q1[0]} ${q1[1]}`);
+      const ls = pol(C, 186, (180 + deg) / 2);   // дальше радиуса дуги (116), иначе она режет подпись
+      $('labS').setAttribute('x', ls[0]); $('labS').setAttribute('y', ls[1]);
+      $('labS').textContent = '180° − C';
+    } else { $('arcS').setAttribute('d', ''); $('labS').textContent = ''; }
+
+    /* точки и буквы */
+    for (const id of ['dot', 'halo']) { $(id).setAttribute('cx', B[0]); $(id).setAttribute('cy', B[1]); }
+    const bl = pol(B, 34, deg);
+    $('dotT').setAttribute('x', bl[0] - 9); $('dotT').setAttribute('y', bl[1] + 8);
+    // при C = 90° основание высоты совпадает с вершиной C — буква H там лишняя
+    const merged = Math.abs(H[0] - C[0]) < 26;
+    $('hFoot').style.display = merged ? 'none' : '';
+    $('hFootT').style.display = merged ? 'none' : '';
+    $('hFoot').setAttribute('cx', H[0]);
+    $('hFootT').setAttribute('x', H[0] - 9); $('hFootT').setAttribute('y', H[1] + 38);
+
+    /* подписи сторон и высоты */
+    const ma = [(C[0] + B[0]) / 2, (C[1] + B[1]) / 2];
+    const na = pol([0, 0], 26, deg - 90);   // внутрь треугольника: снаружи мешает дуга смежного угла
+    $('labA').setAttribute('x', ma[0] + na[0]); $('labA').setAttribute('y', ma[1] + na[1] + 7);
+    $('hLab').setAttribute('x', H[0] + (out ? 26 : -26));
+    $('hLab').setAttribute('y', (B[1] + H[1]) / 2 + 7);
+
+    /* числа */
+    const h = AU * s, S = BU * h / 2;
+    $('deg').textContent = deg + '°';
+    const hint = $('degHint');
+    hint.textContent = deg < 90 ? 'острый' : deg === 90 ? 'прямой' : 'тупой';
+    hint.className = deg < 90 ? 'ost' : deg === 90 ? 'pr' : 'tup';
+    $('vH').textContent = fmt(h);
+    $('vS1').textContent = fmt(S);
+    $('vS2').textContent = fmt(S);
+    $('mirV').textContent = (180 - deg) + '°';
+    $('mirNote').style.display = deg === 90 ? 'none' : '';
+
+    for (const b of document.querySelectorAll('#kb .kb')) b.classList.toggle('on', +b.dataset.a === deg);
+  }
+
+  function set(d, doSnap) {
+    d = Math.max(MIN, Math.min(MAX, d));
+    if (doSnap && snap) {
+      const near = STOPS.reduce((x, y) => Math.abs(y - d) < Math.abs(x - d) ? y : x);
+      if (Math.abs(near - d) <= 5) d = near;
+    }
+    deg = Math.round(d);
+    draw();
+  }
+
+  /* ── прогон трёх случаев: острый → прямой → тупой ──
+     Скорость выбрана так, чтобы класс успел увидеть момент, когда
+     основание высоты переходит через вершину C. */
+  const ROUTE = [[45, 900], [45, 700], [90, 900], [90, 700], [140, 1400], [140, 900], [60, 1000]];
+  function play() {
+    if (anim) { cancelAnimationFrame(anim.id); anim = null; $('bPlay').classList.remove('on'); draw(); return; }
+    $('bPlay').classList.add('on');
+    let i = 0, from = deg, t0 = performance.now();
+    const tick = now => {
+      const [to, ms] = ROUTE[i];
+      const k = Math.min(1, (now - t0) / ms);
+      const e = k < 0.5 ? 2 * k * k : 1 - 2 * (1 - k) * (1 - k);     // плавный старт и стоп
+      deg = Math.round(from + (to - from) * e);
+      draw();
+      if (k < 1) { anim.id = requestAnimationFrame(tick); return; }
+      i++;
+      if (i >= ROUTE.length) { anim = null; $('bPlay').classList.remove('on'); return; }
+      from = deg; t0 = now;
+      anim.id = requestAnimationFrame(tick);
+    };
+    anim = { id: requestAnimationFrame(tick) };
+  }
+
+  /* ── перетаскивание вершины B ── */
+  const sv = $('sv'), fig = $('fig');
+  let drag = false;
+  const toUser = e => {
+    const p = sv.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
+    return p.matrixTransform(sv.getScreenCTM().inverse());
+  };
+  const aim = e => {
+    const u = toUser(e);
+    set(Math.atan2(C[1] - u.y, u.x - C[0]) / RAD, true);
+  };
+  const stopAnim = () => { if (anim) { cancelAnimationFrame(anim.id); anim = null; $('bPlay').classList.remove('on'); } };
+  fig.addEventListener('pointerdown', e => {
+    if (e.target.closest('button')) return;
+    stopAnim(); drag = true; fig.classList.add('drag'); fig.setPointerCapture(e.pointerId); aim(e);
+  });
+  fig.addEventListener('pointermove', e => { if (drag) aim(e); });
+  const stop = () => { drag = false; fig.classList.remove('drag'); };
+  fig.addEventListener('pointerup', stop);
+  fig.addEventListener('pointercancel', stop);
+
+  /* ── кнопки ── */
+  $('kb').innerHTML = STOPS.map(a => `<button class="kb" data-a="${a}">${a}°</button>`).join('');
+  $('kb').addEventListener('click', e => { const b = e.target.closest('.kb'); if (b) { stopAnim(); set(+b.dataset.a, false); } });
+  $('bPlay').addEventListener('click', play);
+
+  const toggle = (btn, cls, init) => {
+    let on = init;
+    const apply = () => { document.body.classList.toggle(cls, !on); btn.classList.toggle('on', on); };
+    btn.addEventListener('click', () => { on = !on; apply(); });
+    apply();
+  };
+  toggle($('bHgt'), 'hide-h', true);
+  toggle($('bNum'), 'hide-num', true);
+  $('bSnap').addEventListener('click', () => { snap = !snap; $('bSnap').classList.toggle('on', snap); });
+
+  addEventListener('keydown', e => {
+    const st = e.shiftKey ? 5 : 1;
+    if (e.key === 'ArrowRight') { e.preventDefault(); stopAnim(); set(deg + st, false); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); stopAnim(); set(deg - st, false); }
+    else if (e.key === 'п' || e.key === 'П') play();
+    else if (e.key === 'ф' || e.key === 'Ф' || e.key === 'a' || e.key === 'A')
+      document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  });
+
+  /* ── сцена вписывается в окно ── */
+  const stage = $('stage');
+  const lenta = () => matchMedia('(max-width:1000px)').matches;
+  const fit = () => {
+    if (lenta()) { stage.style.transform = ''; return; }
+    const k = Math.min(innerWidth / stage.offsetWidth, innerHeight / stage.offsetHeight);
+    stage.style.transform = `scale(${k})`;
+  };
+  addEventListener('resize', fit);
+  fit(); setTimeout(fit, 300);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+
+  draw();
+});
+</script>
+</body>
+</html>

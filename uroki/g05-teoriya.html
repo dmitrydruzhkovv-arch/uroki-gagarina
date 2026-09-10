@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Координаты точки. Теорема о площади треугольника — геометрия 9</title>
+<link rel="stylesheet" href="../_движок/katex/katex.min.css">
+<link rel="stylesheet" href="../_движок/deck.css">
+<style>
+  /* заливка прямоугольного треугольника с высотой — только в этом уроке */
+  .tri-fill{ fill:#fef3c7; stroke:none; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+<!-- ═════════ 1 · КООРДИНАТЫ ТОЧКИ — ФОРМУЛА ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Часть 1 · координаты точки</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step gold">Записать в тетрадь</span>
+  <h2>Точка на окружности: <span class="g">косинус даёт x, синус даёт y</span></h2>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 720 430" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln ax" d="M54 330 L700 330"/><path class="ln ax-h" d="M700 330 L689 335 L689 325 Z"/>
+  <path class="ln ax" d="M340 408 L340 44"/><path class="ln ax-h" d="M340 44 L345 55 L335 55 Z"/>
+  <text class="an-d" x="686" y="360" font-size="18">x</text>
+  <text class="an-d" x="308" y="60" font-size="18">y</text>
+  <path class="crc" d="M580 330 A240 240 0 0 0 100 330"/>
+  <path class="ln-aux" d="M467.2 126.5 L467.2 330"/>
+  <path class="ln-aux" d="M467.2 126.5 L340 126.5"/>
+  <path class="ln ln-b" d="M340 330 L467.2 330"/>
+  <path class="ln ln-r" d="M340 330 L340 126.5"/>
+  <path class="ln" d="M340 330 L467.2 126.5"/>
+  <path class="arc" d="M467.2 314 L451.2 314 L451.2 330"/>
+  <path class="arc" d="M396 330 A56 56 0 0 0 369.7 282.5"/>
+  <text class="an" x="399.7" y="296.9" font-size="21">α</text>
+  <text class="an" x="380.1" y="213.6" font-size="21" text-anchor="middle" dominant-baseline="middle">R</text>
+  <circle class="dt" cx="467.2" cy="126.5" r="6"/>
+  <text class="vx" x="480.4" y="105.4" font-size="22" text-anchor="middle" dominant-baseline="middle">K</text>
+  <circle class="dt" cx="340" cy="330" r="5"/>
+  <text class="vx" x="326.3" y="349.6" font-size="22" text-anchor="middle" dominant-baseline="middle">O</text>
+  <text class="an" x="403.6" y="362.2" font-size="21" style="fill:#0369a1" text-anchor="middle" dominant-baseline="middle">x</text>
+  <text class="an" x="309.7" y="228.2" font-size="21" style="fill:#dc2626" text-anchor="middle" dominant-baseline="middle">y</text>
+</svg>
+      <div class="fig-cap">Синий отрезок на оси <b>x</b> — это абсцисса, красный на оси <b>y</b> — ордината. Пунктиры показывают, откуда они взялись</div>
+    </div>
+    <div class="stack">
+      <div class="def">
+        <div class="def-t">Формула · Атанасян, п. 99</div>
+        <p>Точка $K$ лежит на окружности радиуса $R$ с центром в начале координат. Радиус $OK$ образует с положительной полуосью $Ox$ угол $\alpha$. Тогда</p>
+        <div class="mrow m-lg"><span>$x=R\cos\alpha$</span><span>$y=R\sin\alpha$</span></div>
+      </div>
+      <div class="note">
+        <span class="ar">➜</span>
+        <span class="tx">Читаем так: $\cos\alpha$ — какая <b>доля</b> радиуса ложится на ось $x$, $\sin\alpha$ — какая доля поднимается по оси $y$. Радиус растянули в $R$ раз — обе доли выросли в $R$ раз.</span>
+      </div>
+      <div class="card tight">
+        <div class="card-h">Знак берётся сам</div>
+        <p class="sm">Угол тупой — косинус отрицательный, и $x$ выходит со знаком минус. Отдельно про знаки думать не нужно, формула одна на все углы от $0^\circ$ до $180^\circ$.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pg">1 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 2 · ПОЧЕМУ ТАК ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Откуда формула</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step blue">Выводим сами</span>
+  <h2>Это <span class="g">прошлый урок</span>, просто радиус не единичный</h2>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 720 430" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln ax" d="M54 330 L700 330"/><path class="ln ax-h" d="M700 330 L689 335 L689 325 Z"/>
+  <path class="ln ax" d="M340 408 L340 44"/><path class="ln ax-h" d="M340 44 L345 55 L335 55 Z"/>
+  <text class="an-d" x="686" y="360" font-size="18">x</text>
+  <text class="an-d" x="308" y="60" font-size="18">y</text>
+  <path class="crc" d="M580 330 A240 240 0 0 0 100 330"/>
+  <path class="ln-aux" d="M467.2 126.5 L467.2 330"/>
+  <path class="ln-aux" d="M467.2 126.5 L340 126.5"/>
+  <path class="ln ln-b" d="M340 330 L467.2 330"/>
+  <path class="ln ln-r" d="M340 330 L340 126.5"/>
+  <path class="ln" d="M340 330 L467.2 126.5"/>
+  <path class="arc" d="M467.2 314 L451.2 314 L451.2 330"/>
+  <path class="arc" d="M396 330 A56 56 0 0 0 369.7 282.5"/>
+  <text class="an" x="399.7" y="296.9" font-size="21">α</text>
+  <text class="an" x="380.1" y="213.6" font-size="21" text-anchor="middle" dominant-baseline="middle">R</text>
+  <circle class="dt" cx="467.2" cy="126.5" r="6"/>
+  <text class="vx" x="480.4" y="105.4" font-size="22" text-anchor="middle" dominant-baseline="middle">K</text>
+  <circle class="dt" cx="340" cy="330" r="5"/>
+  <text class="vx" x="326.3" y="349.6" font-size="22" text-anchor="middle" dominant-baseline="middle">O</text>
+  <text class="an" x="403.6" y="362.2" font-size="21" style="fill:#0369a1" text-anchor="middle" dominant-baseline="middle">x</text>
+  <text class="an" x="309.7" y="228.2" font-size="21" style="fill:#dc2626" text-anchor="middle" dominant-baseline="middle">y</text>
+</svg>
+      <div class="fig-cap">Треугольник $OKN$ прямоугольный: угол при $N$ прямой по построению</div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Ход рассуждения</div>
+        <ol class="steps">
+          <li>Опускаем из $K$ перпендикуляр на ось $x$, основание — точка $N$.</li>
+          <li>В прямоугольном треугольнике $OKN$ гипотенуза $OK=R$, а угол при вершине $O$ равен $\alpha$.</li>
+          <li>Прилежащий катет: $ON=OK\cos\alpha=R\cos\alpha$ — это и есть $x$.</li>
+          <li>Противолежащий катет: $KN=OK\sin\alpha=R\sin\alpha$ — это и есть $y$.</li>
+        </ol>
+      </div>
+      <div class="note dark rv">
+        <span class="ar">➜</span>
+        <span class="tx">На единичной полуокружности было $K(\cos\alpha\,;\ \sin\alpha)$. Здесь радиус в $R$ раз больше — и координаты в $R$ раз больше.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">2 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 3 · ПРИМЕР 1 ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Пример 1</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step">Разбор с доски</span>
+  <h2>Тупой угол: <span class="g">абсцисса уходит влево</span></h2>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 720 430" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln ax" d="M54 330 L700 330"/><path class="ln ax-h" d="M700 330 L689 335 L689 325 Z"/>
+  <path class="ln ax" d="M340 408 L340 44"/><path class="ln ax-h" d="M340 44 L345 55 L335 55 Z"/>
+  <text class="an-d" x="686" y="360" font-size="18">x</text>
+  <text class="an-d" x="308" y="60" font-size="18">y</text>
+  <path class="crc" d="M580 330 A240 240 0 0 0 100 330"/>
+  <path class="ln-aux" d="M132.2 210 L132.2 330"/>
+  <path class="ln-aux" d="M132.2 210 L340 210"/>
+  <path class="ln ln-b" d="M340 330 L132.2 330"/>
+  <path class="ln ln-r" d="M340 330 L340 210"/>
+  <path class="ln" d="M340 330 L132.2 210"/>
+  <path class="arc" d="M132.2 314 L148.2 314 L148.2 330"/>
+  <path class="arc" d="M398 330 A58 58 0 0 0 289.8 301"/>
+  <text class="an" x="271" y="231.5" font-size="21" text-anchor="middle" dominant-baseline="middle">150°</text>
+  <text class="an" x="222" y="294.5" font-size="21" text-anchor="middle" dominant-baseline="middle">7</text>
+  <circle class="dt" cx="132.2" cy="210" r="6"/>
+  <text class="vx" x="110.3" y="197.4" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dt" cx="340" cy="330" r="5"/>
+  <text class="vx" x="353.7" y="349.6" font-size="22" text-anchor="middle" dominant-baseline="middle">O</text>
+  <text class="an" x="236.1" y="362.2" font-size="21" style="fill:#0369a1" text-anchor="middle" dominant-baseline="middle">x</text>
+  <text class="an" x="309.7" y="270" font-size="21" style="fill:#dc2626" text-anchor="middle" dominant-baseline="middle">y</text>
+</svg>
+      <div class="fig-cap">Точка ушла во вторую четверть — синий отрезок лёг на <b>отрицательную</b> полуось</div>
+    </div>
+    <div class="stack gap-s">
+      <div class="card tight">
+        <div class="card-h">Дано</div>
+        <p>Точка $B$ на окружности с центром $O$ в начале координат, $OB=7$, угол между $OB$ и положительной полуосью $Ox$ равен $150^\circ$.</p>
+        <div class="card-h">Найти</div>
+        <p>Координаты точки $B$.</p>
+      </div>
+      <div class="card">
+        <div class="card-h">Решение</div>
+        <div class="mline m-lg">$x=7\cos 150^\circ=7\cdot\left(-\dfrac{\sqrt3}{2}\right)$</div>
+        <div class="mline m-lg">$x=-\dfrac{7\sqrt3}{2}\approx-6{,}1$</div>
+        <div class="mline m-lg">$y=7\sin 150^\circ=7\cdot\dfrac12=3{,}5$</div>
+      </div>
+      <div class="note">
+        <span class="ar">✓</span>
+        <span class="tx"><b>Ответ:</b> $B\left(-\dfrac{7\sqrt3}{2}\ ;\ 3{,}5\right)$, то есть примерно $(-6{,}1\ ;\ 3{,}5)$.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">3 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 4 · ПРИМЕР 2 И УСТНО ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Пример 2 и устный счёт</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step teal">Теперь сам</span>
+  <h2>Одна формула — <span class="g">и больше ничего не нужно</span></h2>
+
+  <div class="body c2">
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Пример 2 · с решением</div>
+        <p class="sm">$R=4$, угол $\alpha=120^\circ$. Найти координаты точки $M$.</p>
+        <div class="mline m-lg">$x=4\cos 120^\circ=4\cdot\left(-\dfrac12\right)=-2$</div>
+        <div class="mline m-lg">$y=4\sin 120^\circ=4\cdot\dfrac{\sqrt3}{2}=2\sqrt3$</div>
+        <div class="note">
+          <span class="ar">✓</span>
+          <span class="tx"><b>Ответ:</b> $M(-2\ ;\ 2\sqrt3)$.</span>
+        </div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Устно · ответы по клавише О</div>
+        <p>1) $R=6$, $\alpha=90^\circ$</p>
+        <div class="mrow key"><span class="pill">$(0\ ;\ 6)$</span></div>
+        <p>2) $R=10$, $\alpha=180^\circ$</p>
+        <div class="mrow key"><span class="pill">$(-10\ ;\ 0)$</span></div>
+        <p>3) $R=8$, $\alpha=45^\circ$</p>
+        <div class="mrow key"><span class="pill">$(4\sqrt2\ ;\ 4\sqrt2)$</span></div>
+      </div>
+      <div class="note alarm">
+        <span class="ar">!</span>
+        <span class="tx">Частая ошибка: перепутать местами. <b>Косинус всегда к $x$</b>, синус всегда к $y$ — как в алфавите: c раньше s, x раньше y.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">4 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 5 · МОСТ В НОВУЮ ТЕМУ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Часть 2 · вопрос урока</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step red">Проблема</span>
+  <h2>Вы это <span class="g">уже посчитали в домашке</span>. А почему работает?</h2>
+
+  <div class="body c2n">
+    <div class="stack">
+      <div class="card tight">
+        <div class="card-h">Задача 7 из домашней работы</div>
+        <p>Стороны параллелограмма $12$ и $7$, угол между ними $150^\circ$. Найти площадь.</p>
+        <div class="mline m-lg">$S=12\cdot 7\cdot\sin 150^\circ=12\cdot 7\cdot 0{,}5=42$</div>
+      </div>
+      <div class="note alarm rv">
+        <span class="ar">?</span>
+        <span class="tx">Формулу вы применили. Но <b>откуда она взялась</b>? Почему площадь считается через синус, а не через высоту, как в 8 классе?</span>
+      </div>
+      <div class="card dark rv">
+        <div class="card-h">Вопрос урока</div>
+        <div class="m-lg">Докажем формулу — сначала для треугольника.</div>
+      </div>
+    </div>
+    <div class="fig"><svg viewBox="0 0 620 340" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln" d="M230 300 L494 300 L360.6 223 L96.6 223 Z"/>
+  <path class="arc-r" d="M282 300 A52 52 0 0 0 185 274"/>
+  <text class="an" x="246.6" y="237.9" font-size="21" style="fill:#dc2626">150°</text>
+  <text class="vx" x="224.2" y="321.8" font-size="22" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="vx" x="515.8" y="305.8" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="vx" x="366.5" y="201.2" font-size="22" text-anchor="middle" dominant-baseline="middle">C</text>
+  <text class="vx" x="74.8" y="217.2" font-size="22" text-anchor="middle" dominant-baseline="middle">D</text>
+  <text class="an" x="362" y="327" font-size="18" text-anchor="middle" dominant-baseline="middle">12</text>
+  <text class="an" x="177.7" y="236.6" font-size="18" text-anchor="middle" dominant-baseline="middle">7</text>
+</svg>
+      <div class="fig-cap">Высоту здесь никто не строил — а площадь нашлась</div>
+    </div>
+  </div>
+  <div class="pg">5 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 6 · ТЕОРЕМА ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Теорема о площади</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step gold">Записать в тетрадь</span>
+  <h2>Теорема о площади треугольника</h2>
+
+  <div class="body c2">
+    <div class="stack">
+      <div class="def">
+        <div class="def-t">Теорема · дословно, Атанасян, п. 100</div>
+        <p>Площадь треугольника равна половине произведения двух его сторон на синус угла между ними.</p>
+      </div>
+      <div class="card hero mid">
+        <div class="m-xl">$S=\dfrac12\,ab\sin C$</div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Что в формуле</div>
+        <ul class="dots">
+          <li>$a$ и $b$ — <b>две стороны</b>, выходящие из одной вершины;</li>
+          <li>$C$ — угол <b>между ними</b>, то есть при этой самой вершине;</li>
+          <li>высота в формуле не участвует — её строить не нужно.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <span class="ar">➜</span>
+        <span class="tx">Проверочный вопрос к каждой задаче: <b>эти две стороны выходят из одной вершины?</b> Если да — угол между ними и есть нужный.</span>
+      </div>
+      <a class="golink" href="g05-chertyozh.html">Живой чертёж <span>тяни вершину B →</span></a>
+    </div>
+  </div>
+  <div class="pg">6 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 7 · ДОКАЗАТЕЛЬСТВО · ОБЩЕЕ НАЧАЛО ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Доказательство · начало</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step indigo">Доказываем</span>
+  <h2>Одно начало — <span class="g">и три случая дальше</span></h2>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 640 380" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln" d="M560 320 L330 100 L110 320 Z"/>
+  <path class="ln ln-r" d="M330 100 L330 320"/>
+  <path class="arc" d="M330 302 L312 302 L312 320"/>
+  <text class="vx" x="581" y="328.4" font-size="22" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="vx" x="329.7" y="77.4" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="vx" x="89.1" y="328.6" font-size="22" text-anchor="middle" dominant-baseline="middle">C</text>
+  <text class="vx" x="330" y="344.6" font-size="22" text-anchor="middle" dominant-baseline="middle">H</text>
+  <text class="an" x="199.6" y="189.6" font-size="18" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text class="an" x="461" y="351" font-size="18" text-anchor="middle" dominant-baseline="middle">b</text>
+  <text class="an" x="303.7" y="210" font-size="21" style="fill:#dc2626" text-anchor="middle" dominant-baseline="middle">h</text>
+</svg>
+      <div class="fig-cap">Высота $BH$ проведена <b>к прямой</b> $AC$ — это важно, дальше основание может уехать за сторону</div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Дано и построение</div>
+        <p class="sm">$\triangle ABC$, $BC=a$, $AC=b$, угол между ними — $\angle C$. Проводим высоту $BH$ к прямой $AC$, обозначаем $BH=h$.</p>
+      </div>
+      <div class="card hero">
+        <div class="card-h">Площадь по формуле 8 класса</div>
+        <div class="m-lg">$S=\dfrac12\,AC\cdot BH=\dfrac12\,b\,h$</div>
+      </div>
+      <div class="note dark rv">
+        <span class="ar">➜</span>
+        <span class="tx">Всё доказательство сводится к одному вопросу: <b>чему равна высота $h$?</b> Разбираем три случая по углу $C$.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">7 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 8 · СЛУЧАЙ 1 ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Случай 1 из 3</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step indigo">Доказываем</span>
+  <h2>Случай 1. Угол $C$ <span class="g">острый</span></h2>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 640 380" xmlns="http://www.w3.org/2000/svg">
+  <path class="tri-fill" d="M110 320 L330 320 L330 100 Z"/>
+  <path class="ln" d="M560 320 L330 100 L110 320 Z"/>
+  <path class="ln ln-r" d="M330 100 L330 320"/>
+  <path class="arc" d="M330 302 L312 302 L312 320"/>
+  <path class="arc" d="M162 320 A52 52 0 0 0 146.8 283.2"/>
+  <text class="an" x="169.4" y="295.4" font-size="21">C</text>
+  <text class="vx" x="581" y="328.4" font-size="22" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="vx" x="329.7" y="77.4" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="vx" x="89.1" y="328.6" font-size="22" text-anchor="middle" dominant-baseline="middle">C</text>
+  <text class="vx" x="330" y="344.6" font-size="22" text-anchor="middle" dominant-baseline="middle">H</text>
+  <text class="an" x="199.6" y="189.6" font-size="18" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text class="an" x="303.7" y="210" font-size="21" style="fill:#dc2626" text-anchor="middle" dominant-baseline="middle">h</text>
+</svg>
+      <div class="fig-cap">Основание высоты $H$ попало <b>внутрь</b> стороны $CA$</div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Рассуждение</div>
+        <ol class="steps">
+          <li>Треугольник $BHC$ прямоугольный, гипотенуза $BC=a$.</li>
+          <li>Катет $BH$ лежит <b>против</b> угла $C$.</li>
+          <li>Значит, $BH$ равен гипотенузе на синус этого угла.</li>
+        </ol>
+      </div>
+      <div class="card hero mid rv">
+        <div class="m-xl">$h=a\sin C$</div>
+      </div>
+      <div class="note rv">
+        <span class="ar">➜</span>
+        <span class="tx">Здесь ничего нового: это определение синуса острого угла из 8 класса.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">8 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 9 · СЛУЧАЙ 2 — ГЛАВНЫЙ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Случай 2 из 3</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step red">Ради этого весь прошлый урок</span>
+  <h2>Случай 2. Угол $C$ <span class="g">тупой</span></h2>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg">
+  <path class="tri-fill" d="M320 320 L140 320 L140 110 Z"/>
+  <path class="ln" d="M640 320 L140 110 L320 320 Z"/>
+  <path class="ln-aux" d="M320 320 L140 320"/>
+  <path class="ln ln-r" d="M140 110 L140 320"/>
+  <path class="arc" d="M140 302 L158 302 L158 320"/>
+  <path class="arc" d="M366 320 A46 46 0 0 0 290.1 285.1"/>
+  <text class="an" x="344.4" y="267" font-size="21">C</text>
+  <path class="arc-b" d="M240 320 A80 80 0 0 1 267.9 259.3"/>
+  <text class="an" x="203.7" y="266.5" font-size="18" style="fill:#4f46e5" text-anchor="middle" dominant-baseline="middle">180° − C</text>
+  <text class="vx" x="662.1" y="324.5" font-size="22" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="vx" x="121.8" y="96.7" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="vx" x="310.6" y="340.5" font-size="22" text-anchor="middle" dominant-baseline="middle">C</text>
+  <text class="vx" x="131" y="344.8" font-size="22" text-anchor="middle" dominant-baseline="middle">H</text>
+  <text class="an" x="251.8" y="196.3" font-size="18" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text class="an" x="166.3" y="215" font-size="21" style="fill:#dc2626" text-anchor="middle" dominant-baseline="middle">h</text>
+</svg>
+      <div class="fig-cap">Основание высоты <b>вышло за сторону</b>. В треугольнике $BHC$ при вершине $C$ стоит уже не $\angle C$, а смежный с ним угол</div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Рассуждение</div>
+        <ol class="steps">
+          <li class="r">Прямоугольного треугольника с углом $C$ внутри просто <b>нет</b> — угол тупой.</li>
+          <li>В треугольнике $BHC$ острый угол при $C$ равен $180^\circ-C$.</li>
+          <li>Поэтому $h=a\sin(180^\circ-C)$.</li>
+          <li class="g">Формула приведения: $\sin(180^\circ-C)=\sin C$.</li>
+        </ol>
+      </div>
+      <div class="card hero mid rv">
+        <div class="m-xl">$h=a\sin C$</div>
+      </div>
+      <div class="note dark rv">
+        <span class="ar">➜</span>
+        <span class="tx"><b>Та же самая высота</b>, что и в первом случае. Вот зачем нам был синус тупого угла.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">9 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 10 · СЛУЧАЙ 3 ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Случай 3 из 3</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step indigo">Доказываем</span>
+  <h2>Случай 3. Угол $C$ <span class="g">прямой</span></h2>
+
+  <div class="body c2w">
+    <div class="fig"><svg viewBox="0 0 600 380" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln" d="M540 320 L180 100 L180 320 Z"/>
+  <path class="arc" d="M200 320 L200 300 L180 300"/>
+  <text class="vx" x="561.7" y="326.1" font-size="22" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="vx" x="169" y="80.3" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="vx" x="164" y="336" font-size="22" text-anchor="middle" dominant-baseline="middle">C</text>
+  <text class="an" x="130.8" y="210" font-size="21" style="fill:#dc2626" text-anchor="middle" dominant-baseline="middle">a = h</text>
+  <text class="an" x="360" y="353" font-size="18" text-anchor="middle" dominant-baseline="middle">b</text>
+</svg>
+      <div class="fig-cap">Высота из $B$ ложится <b>на саму сторону</b> $CB$ — строить нечего</div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Рассуждение</div>
+        <ol class="steps">
+          <li>Высота совпадает со стороной $CB$, значит $h=a$.</li>
+          <li>При этом $\sin 90^\circ=1$.</li>
+          <li>Значит, $a=a\cdot 1=a\sin C$ — запись та же.</li>
+        </ol>
+      </div>
+      <div class="card hero mid rv">
+        <div class="m-xl">$h=a\sin C$</div>
+      </div>
+      <div class="note rv">
+        <span class="ar">➜</span>
+        <span class="tx">Проверка на прочность: формула $S=\tfrac12 ab\sin C$ при $C=90^\circ$ превращается в $S=\tfrac12 ab$ — площадь прямоугольного треугольника через катеты.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">10 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 11 · СБОРКА ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Доказательство · итог</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step gold">Собираем</span>
+  <h2>Во всех трёх случаях <span class="g">высота одна и та же</span></h2>
+
+  <div class="body c1">
+    <div class="body c3">
+      <div class="card tight">
+        <div class="card-h">Угол острый</div>
+        <div class="m">$h=a\sin C$</div>
+      </div>
+      <div class="card tight">
+        <div class="card-h">Угол тупой</div>
+        <div class="m">$h=a\sin(180^\circ-C)=a\sin C$</div>
+      </div>
+      <div class="card tight">
+        <div class="card-h">Угол прямой</div>
+        <div class="m">$h=a=a\sin C$</div>
+      </div>
+    </div>
+    <div class="card hero">
+      <div class="card-h">Подставляем в площадь</div>
+      <div class="mline m-lg">$S=\dfrac12\,b\,h=\dfrac12\,b\cdot a\sin C=\dfrac12\,ab\sin C$</div>
+    </div>
+    <div class="card dark mid">
+      <div class="card-h">Теорема доказана</div>
+      <div class="m-xl">$S=\dfrac12\,ab\sin C$</div>
+    </div>
+    <div class="body c2">
+      <div class="note rv">
+        <span class="ar">➜</span>
+        <span class="tx">Почему синус на промежутке от $0^\circ$ до $180^\circ$ <b>неотрицателен</b>: будь он отрицательным для тупого угла — площадь вышла бы отрицательной.</span>
+      </div>
+      <div class="note alarm rv">
+        <span class="ar">!</span>
+        <span class="tx">В домашнем доказательстве нужны <b>все три случая</b>. Кто написал только острый угол — сделал треть работы.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">11 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 12 · № 1020 (а) — ОБРАЗЕЦ ОФОРМЛЕНИЯ ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>№ 1020 (а)</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step blue">Образец оформления</span>
+  <h2>Так задача <span class="g">записывается в тетради</span></h2>
+
+  <div class="body c2n">
+    <div class="fig"><svg viewBox="0 0 380 380" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln" d="M70 330 L184.3 132 L158 330 Z"/>
+  <path class="arc" d="M116 330 A46 46 0 0 0 93 290.2"/>
+  <text class="an" x="119" y="301.7" font-size="18">60°</text>
+  <text class="vx" x="50.4" y="341.3" font-size="22" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="vx" x="191.6" y="110.6" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="vx" x="172.9" y="347" font-size="22" text-anchor="middle" dominant-baseline="middle">C</text>
+</svg>
+      <div class="fig-cap">Чертёж — первым делом. Числа с корнями на нём не пишут, они живут в «Дано»</div>
+    </div>
+    <div class="stack gap-s">
+      <div class="card tight">
+        <div class="card-h">Дано</div>
+        <p>$\triangle ABC$, $AB=6\sqrt3$ см, $AC=4$ см, $\angle A=60^\circ$.</p>
+        <div class="card-h">Найти</div>
+        <p>$S_{ABC}$.</p>
+      </div>
+      <div class="card">
+        <div class="card-h">Решение</div>
+        <p class="sm">Стороны $AB$ и $AC$ выходят из вершины $A$, значит $\angle A$ — угол между ними. По теореме о площади:</p>
+        <div class="mline m-lg">$S=\dfrac12\cdot AB\cdot AC\cdot\sin A$</div>
+        <div class="mline m-lg">$S=\dfrac12\cdot 6\sqrt3\cdot 4\cdot\sin 60^\circ=12\sqrt3\cdot\dfrac{\sqrt3}{2}=18$</div>
+      </div>
+      <div class="note">
+        <span class="ar">✓</span>
+        <span class="tx"><b>Ответ:</b> $18$ см$^2$.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">12 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 13 · № 1020 (б, в) ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>№ 1020 (б, в)</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step blue">Разбор</span>
+  <h2>Ещё два примера — <span class="g">и оба на корни</span></h2>
+
+  <div class="body c2">
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Пункт б</div>
+        <p class="sm"><b>Дано:</b> $BC=3$ см, $AB=18\sqrt2$ см, $\angle B=45^\circ$. Стороны $BC$ и $AB$ выходят из вершины $B$ — сходится.</p>
+        <div class="mline m-lg">$S=\dfrac12\cdot 3\cdot 18\sqrt2\cdot\dfrac{\sqrt2}{2}$</div>
+        <div class="mline m-lg">$S=\dfrac12\cdot 3\cdot 18=27$</div>
+        <div class="note"><span class="ar">✓</span><span class="tx"><b>Ответ:</b> $27$ см$^2$.</span></div>
+      </div>
+      <div class="card tight">
+        <div class="card-h">Ключевой шаг</div>
+        <p class="sm">$18\sqrt2\cdot\dfrac{\sqrt2}{2}=\dfrac{18\cdot 2}{2}=18$. Корни ушли — задача на это и рассчитана. Чертёж здесь не помогает: стороны $3$ и $18\sqrt2$ дают узкую полоску.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-h">Пункт в</div>
+        <p class="sm"><b>Дано:</b> $AC=14$ см, $CB=7$ см, $\angle C=48^\circ$.</p>
+        <div class="mline m-lg">$S=\dfrac12\cdot 14\cdot 7\cdot\sin 48^\circ=49\sin 48^\circ$</div>
+        <div class="mline m-lg">$S\approx 49\cdot 0{,}743\approx 36{,}4$</div>
+        <div class="note"><span class="ar">✓</span><span class="tx"><b>Ответ:</b> примерно $36{,}4$ см$^2$.</span></div>
+      </div>
+      <div class="note alarm">
+        <span class="ar">!</span>
+        <span class="tx">$48^\circ$ — не табличный угол. Синус берётся из таблицы в конце учебника, ответ получается <b>приближённый</b>, и в записи ставится знак $\approx$, а не $=$.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">13 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 14 · № 1023 ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>№ 1023</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step blue">Разбор</span>
+  <h2>Прямоугольник: <span class="g">и снова формула приведения</span></h2>
+
+  <div class="body c2n">
+    <div class="stack gap-s">
+      <div class="fig"><svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln" d="M142.3 175.6 L142.3 64.4 L557.7 64.4 L557.7 175.6 Z"/>
+  <path class="ln ln-b" d="M142.3 175.6 L557.7 64.4"/>
+  <path class="ln ln-b" d="M142.3 64.4 L557.7 175.6"/>
+  <path class="arc-r" d="M288.2 136.6 A64 64 0 0 1 288.2 103.4"/>
+  <text class="an" x="273.7" y="120" font-size="21" style="fill:#dc2626">30°</text>
+  <text class="vx" x="126.4" y="191.6" font-size="22" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="vx" x="126.4" y="48.4" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="vx" x="573.6" y="48.4" font-size="22" text-anchor="middle" dominant-baseline="middle">C</text>
+  <text class="vx" x="573.6" y="191.6" font-size="22" text-anchor="middle" dominant-baseline="middle">D</text>
+  <circle class="dt" cx="350" cy="120" r="5"/>
+  <text class="vx" x="350" y="97.4" font-size="22" text-anchor="middle" dominant-baseline="middle">O</text>
+</svg>
+        <div class="fig-cap">Диагонали точкой $O$ делятся пополам, поэтому все четыре отрезка равны $5$ см</div>
+      </div>
+      <div class="card tight">
+        <div class="card-h">Дано</div>
+        <p class="sm">Прямоугольник $ABCD$, диагональ $10$ см, угол между диагоналями $30^\circ$. <b>Найти:</b> площадь.</p>
+      </div>
+    </div>
+    <div class="stack gap-s">
+      <div class="card">
+        <div class="card-h">Решение</div>
+        <p class="sm">Диагонали разбивают прямоугольник на четыре треугольника. Углы при точке $O$ попарно смежные: два по $30^\circ$ и два по $150^\circ$.</p>
+        <div class="mline m-lg">$S_{30^\circ}=\dfrac12\cdot 5\cdot 5\cdot\sin 30^\circ=6{,}25$</div>
+        <div class="mline m-lg">$S_{150^\circ}=\dfrac12\cdot 5\cdot 5\cdot\sin 150^\circ=6{,}25$</div>
+      </div>
+      <div class="note dark">
+        <span class="ar">➜</span>
+        <span class="tx">$\sin 150^\circ=\sin 30^\circ$, поэтому все четыре треугольника <b>равновелики</b>: $S=4\cdot 6{,}25=25$ см$^2$.</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg">14 / 15</div><div class="bar"></div>
+</section>
+
+<!-- ═════════ 15 · ДОМАШНЯЯ РАБОТА ═════════ -->
+<section class="slide">
+  <div class="top">
+    <div class="crumbs">Геометрия 9 | Урок 2 | <b>Домашняя работа к 16.09</b></div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+  <span class="step gold">Записать в дневник</span>
+  <h2>Домой: <span class="g">п. 100, № 1021, № 1022</span></h2>
+  <p class="lead">И выучить доказательство теоремы — <b>все три случая</b>. Спрошу у доски.</p>
+
+  <div class="body c2">
+    <div class="stack gap-s">
+      <div class="card tight">
+        <div class="card-h">№ 1021</div>
+        <p class="sm">Докажите, что площадь параллелограмма равна произведению двух его смежных сторон на синус угла между ними.</p>
+      </div>
+      <div class="fig"><svg viewBox="0 0 620 340" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln" d="M120 290 L420 290 L492.3 135 L192.3 135 Z"/>
+  <path class="ln ln-i" d="M420 290 L192.3 135"/>
+  <path class="arc" d="M168 290 A48 48 0 0 0 140.3 246.5"/>
+  <text class="an" x="170.8" y="257.6" font-size="21">α</text>
+  <text class="vx" x="101" y="302.1" font-size="22" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="vx" x="432.1" y="309" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="vx" x="511.3" y="122.9" font-size="22" text-anchor="middle" dominant-baseline="middle">C</text>
+  <text class="vx" x="180.1" y="116" font-size="22" text-anchor="middle" dominant-baseline="middle">D</text>
+  <text class="an" x="270" y="319" font-size="18" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text class="an" x="183.2" y="225.1" font-size="18" text-anchor="middle" dominant-baseline="middle">b</text>
+</svg>
+        <div class="fig-cap">Проведи диагональ $BD$ — параллелограмм распадётся на два треугольника</div>
+      </div>
+    </div>
+    <div class="stack gap-s">
+      <div class="card tight">
+        <div class="card-h">№ 1022</div>
+        <p class="sm">Площадь треугольника $ABC$ равна $60$ см$^2$. Найдите сторону $AB$, если $AC=15$ см, $\angle A=30^\circ$.</p>
+      </div>
+      <div class="fig"><svg viewBox="0 0 440 250" xmlns="http://www.w3.org/2000/svg">
+  <path class="ln" d="M80 210 L301.7 82 L320 210 Z"/>
+  <path class="arc" d="M134 210 A54 54 0 0 0 126.8 183"/>
+  <text class="an" x="156.5" y="189.5" font-size="18">30°</text>
+  <text class="vx" x="58.2" y="215.8" font-size="22" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="vx" x="311.6" y="61.7" font-size="22" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="vx" x="337.1" y="224.8" font-size="22" text-anchor="middle" dominant-baseline="middle">C</text>
+  <text class="an" x="200" y="241" font-size="18" text-anchor="middle" dominant-baseline="middle">15</text>
+  <text class="an" x="174.7" y="118.1" font-size="21" text-anchor="middle" dominant-baseline="middle">?</text>
+</svg>
+        <div class="fig-cap">Формула та же, но <b>неизвестное стоит внутри</b> — получится уравнение</div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">15 / 15</div><div class="bar"></div>
+</section>
+
+</div>
+
+<div id="help">
+  <b>→</b> дальше &nbsp; <b>←</b> назад &nbsp; <b>О</b> ответы &nbsp; <b>В</b> раскрыть всё &nbsp; <b>Ф</b> во весь экран
+</div>
+
+<script defer src="../_движок/katex/katex.min.js"></script>
+<script defer src="../_движок/katex/auto-render.min.js"></script>
+<script defer src="../_движок/deck.js"></script>
+</body>
+</html>
