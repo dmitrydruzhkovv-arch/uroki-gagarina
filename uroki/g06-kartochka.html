@@ -30,7 +30,7 @@
     -webkit-print-color-adjust:exact; print-color-adjust:exact;
   }
   .sheet:last-of-type { page-break-after:auto; }
-  .body { flex:1 1 auto; display:flex; flex-direction:column; gap:6px; min-height:0; }
+  .body { flex:1 1 auto; display:flex; flex-direction:column; gap:5px; min-height:0; }
   .ft {
     display:flex; align-items:center; justify-content:space-between;
     margin-top:5px; padding-top:5px; border-top:1px solid var(--border-soft);
@@ -158,27 +158,35 @@
   .why { font-size:9.5px; color:var(--text-muted); line-height:1.3; }
   .ans { align-self:flex-start; margin-top:auto; background:#fef2f2; border:1px solid #fecaca; border-radius:999px; padding:2px 11px; font-size:12px; font-weight:700; color:var(--err); }
 
-  /* ═══════ ДОМАШКА ═══════ */
-  .hw { border:2px solid var(--gold-soft); border-radius:12px; background:linear-gradient(135deg,#fffbeb,var(--gold-dim)); padding:8px 13px; flex:0 0 auto; }
-  .hw-t { font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700; letter-spacing:1.3px; text-transform:uppercase; color:var(--gold); margin-bottom:5px; display:flex; align-items:center; gap:7px; }
-  .hw-t span { margin-left:auto; text-transform:none; letter-spacing:.3px; color:var(--text-sub); font-weight:600; }
-  .hw-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .hw-item { background:#fff; border:1px solid var(--gold-soft); border-radius:9px; padding:6px 9px; display:flex; gap:9px; }
-  .hw-item .num { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:#fff; background:var(--gold); padding:2px 7px; border-radius:4px; height:fit-content; }
-  .hw-item .txt { flex:1 1 auto; font-size:10.5px; line-height:1.35; font-family:'Cambria','Georgia',serif; min-width:0; }
-  .hw-item .txt .tip { display:block; font-family:'Onest',sans-serif; font-size:9px; color:var(--text-muted); margin-top:3px; }
-  .hw-item .fg { flex:0 0 38%; }
-  .hw-note { margin-top:6px; font-size:10.5px; color:var(--text-main); font-family:'Cambria','Georgia',serif; border-top:1px solid rgba(217,119,6,.25); padding-top:5px; }
-  .hw-note b { color:var(--err); }
+  /* ═══════ ДОМАШКА — ТЁМНАЯ ЗОНА ═══════
+     Нарочно не золотая: лист теории светлый, домашка должна читаться
+     как другая часть листа с первого взгляда, а не как ещё один блок. */
+  .hwzone { border-radius:12px; background:var(--text-main); padding:8px 11px 9px; flex:0 0 auto; }
+  .hwzone-t { display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:10px;
+              font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:var(--gold-soft); margin-bottom:7px; }
+  .hwzone-t .cnt { margin-left:auto; text-transform:none; letter-spacing:.3px; color:#a8a29e; font-weight:600; }
+  .hwgrid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; align-items:stretch; }
+  .hwtask { background:#fff; border-radius:9px; padding:6px 9px 7px; display:flex; flex-direction:column; gap:4px; border-top:4px solid var(--zc); }
+  .hwtask .hh { display:flex; align-items:center; gap:6px; }
+  .hwtask .nn { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:#fff; background:var(--zc); padding:2px 7px; border-radius:4px; }
+  .hwtask .nm { font-size:12px; font-weight:800; color:var(--zc); letter-spacing:-.2px; }
+  .hwtask .tx { font-size:10.5px; line-height:1.35; font-family:'Cambria','Georgia',serif; }
+  .hwtask .tip { font-size:9.5px; line-height:1.3; color:var(--text-muted); }
+  .hwtask .tip b { color:var(--text-sub); }
+  .hwtask .fg { margin-top:auto; padding-top:3px; }
+  .hwtask .fig svg { max-width:130px; margin:0 auto; }
+  .chips { display:flex; gap:4px; flex-wrap:wrap; margin-top:auto; padding-top:5px; }
+  .chips span { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; padding:3px 7px; border-radius:5px;
+                background:#eef2ff; color:var(--ind); border:1px solid #c7d2fe; }
 
   /* ═══════ ФИНАЛ ═══════ */
-  .card-finale { flex:0 0 auto; margin-top:auto; text-align:center; padding:7px 20px; position:relative; overflow:hidden;
+  .card-finale { flex:0 0 auto; margin-top:auto; text-align:center; padding:5px 20px; position:relative; overflow:hidden;
                  border:2px solid var(--gold-soft); border-radius:12px; background:linear-gradient(135deg,#fffbeb,var(--gold-dim)); }
   .card-finale > * { position:relative; z-index:2; }
   .card-finale-diamonds { font-size:9px; letter-spacing:5px; color:var(--gold); opacity:.75; }
   .card-finale-title { font-size:13.5px; font-weight:800; letter-spacing:-.3px; margin-top:2px; }
   .card-finale-title span { color:var(--gold); }
-  .card-finale-sub { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-sub); margin-top:3px; line-height:1.45; }
+  .card-finale-sub { font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text-sub); margin-top:2px; line-height:1.4; }
 
   @media print { body { background:#fff; } * { animation:none !important; } }
 
@@ -215,12 +223,10 @@
     .ans { font-size:14px; margin-top:6px; }
     .sintab { display:block; overflow-x:auto; white-space:nowrap; }
     .sintab tbody td { font-size:15px; padding:4px 9px; }
-    .hw-row { grid-template-columns:1fr; }
-    .hw-item { flex-direction:column; gap:6px; }
-    .hw-item .fg { flex:0 0 auto; }
-    .hw-item .txt { font-size:13px; }
-    .hw-item .txt .tip { font-size:11.5px; }
-    .hw-note { font-size:12.5px; }
+    .hwgrid { grid-template-columns:1fr; gap:8px; }
+    .hwtask .tx { font-size:13px; }
+    .hwtask .tip { font-size:11.5px; }
+    .hwtask .nm { font-size:14px; }
     .card-finale { margin-top:14px; }
     .card-finale-sub { font-size:10.5px; }
     .ft { font-size:9px; flex-direction:column; align-items:flex-start; gap:3px; }
@@ -241,7 +247,7 @@
       <div class="fest-title">Координаты точки и площадь треугольника — <span>обе формулы через синус</span></div>
       <div class="fest-message">
         Два пункта одного урока, и держатся они на одном: <b>синус и косинус превращают угол в длину</b>.
-        В первом — в координаты точки, во втором — в высоту треугольника. Лист не выбрасывай: он нужен до контрольной 14 октября.
+        В первом — в координаты точки, во втором — в высоту треугольника.
       </div>
     </div>
 
@@ -436,7 +442,7 @@
         <div class="scol b2">
           <div class="scol-t">Частые ошибки</div>
           <div class="err-item">Взяли угол, который <b>не между</b> этими сторонами. Формула тогда не работает вообще.</div>
-          <div class="err-item">Забыли <b>половину</b>. Ответ ровно вдвое больше — и это самая обидная потеря балла.</div>
+          <div class="err-item">Забыли <b>половину</b>. Ответ выходит ровно вдвое больше верного.</div>
           <div class="err-item">Угол нетабличный (например \(48^\circ\)) — значит ответ <b>приближённый</b>, и в записи стоит \(\approx\), а не \(=\).</div>
         </div>
       </div>
@@ -522,10 +528,10 @@
         </div></div>
         <div class="t-sol">
           <div class="cond"><b>Дано:</b> прямоугольник \(ABCD\), диагональ \(10\) см, угол между диагоналями \(30^\circ\). <b>Найти:</b> \(S\).</div>
-          <div class="why">Диагонали режут прямоугольник на четыре треугольника. Углы при \(O\) попарно смежные: два по \(30^\circ\) и два по \(150^\circ\).</div>
+          <div class="why">Диагонали режут прямоугольник на четыре треугольника; углы при \(O\) — два по \(30^\circ\) и два по \(150^\circ\).</div>
           <div class="step">\(S_{30^\circ}=\tfrac12\cdot 5\cdot 5\cdot\sin 30^\circ=6{,}25\)</div>
           <div class="step">\(S_{150^\circ}=\tfrac12\cdot 5\cdot 5\cdot\sin 150^\circ=6{,}25\)</div>
-          <div class="why">Та же самая, ведь \(\sin 150^\circ=\sin 30^\circ\) — все четыре треугольника равновелики.</div>
+          <div class="why">\(\sin 150^\circ=\sin 30^\circ\), поэтому все четыре треугольника равновелики.</div>
           <div class="step">\(S=4\cdot 6{,}25=25\)</div>
           <div class="ans">25 см²</div>
         </div>
@@ -533,49 +539,54 @@
     </div>
 
     <!-- ── ДОМАШКА ── -->
-    <div class="hw">
-      <div class="hw-t">🏠 Домой к среде 16.09 <span>чертёж — первым делом, потом «Дано»</span></div>
-      <div class="hw-row">
-        <div class="hw-item">
-          <span class="num">1021</span>
-          <span class="txt">Докажите, что площадь параллелограмма равна произведению двух его смежных сторон на синус угла между ними.
-            <span class="tip">Проведи диагональ \(BD\) — параллелограмм распадётся на два равных треугольника.</span></span>
-          <span class="fg"><div class="fig"><svg viewBox="0 0 310 174" xmlns="http://www.w3.org/2000/svg">
-  <path class="ln" d="M45 138 L195 138 L228.8 65.5 L78.8 65.5 Z"/>
-  <path class="ln ln-i" d="M195 138 L78.8 65.5"/>
-  <path class="arc" d="M75 138 A30 30 0 0 0 57.7 110.8"/>
-  <text class="an" x="78.7" y="116.5" font-size="17">α</text>
-  <text class="vx" x="27.3" y="149.3" font-size="18" text-anchor="middle" dominant-baseline="middle">A</text>
-  <text class="vx" x="206.3" y="155.7" font-size="18" text-anchor="middle" dominant-baseline="middle">B</text>
-  <text class="vx" x="246.5" y="54.2" font-size="18" text-anchor="middle" dominant-baseline="middle">C</text>
-  <text class="vx" x="67.5" y="47.8" font-size="18" text-anchor="middle" dominant-baseline="middle">D</text>
-  <text class="an" x="120" y="160.9" font-size="15" text-anchor="middle" dominant-baseline="middle">a</text>
-  <text class="an" x="40.6" y="91.8" font-size="15" text-anchor="middle" dominant-baseline="middle">b</text>
-</svg></div></span>
+    <div class="hwzone">
+      <div class="hwzone-t">🏠 Домашняя работа к среде 16.09 <span class="cnt">три задания · оформление: чертёж → Дано → Найти → Решение</span></div>
+      <div class="hwgrid">
+        <div class="hwtask" style="--zc:var(--err)">
+          <div class="hh"><span class="nn">1</span><span class="nm">п. 100 — теория</span></div>
+          <div class="tx">Выучить формулировку теоремы о площади треугольника и уметь её доказать.</div>
+          <div class="tip">Доказательство — это <b>три случая</b>, а не пересказ. У каждого свой чертёж.</div>
+          <div class="chips"><span>острый</span><span>тупой</span><span>прямой</span></div>
         </div>
-        <div class="hw-item">
-          <span class="num">1022</span>
-          <span class="txt">Площадь треугольника \(ABC\) равна \(60\) см². Найдите сторону \(AB\), если \(AC=15\) см, \(\angle A=30^\circ\).
-            <span class="tip">Тот же ход, что в образце «обратная задача» слева.</span></span>
-          <span class="fg"><div class="fig"><svg viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg">
-  <path class="ln" d="M35 130 L138.9 70 L147.5 130 Z"/>
-  <path class="arc" d="M67 130 A32 32 0 0 0 62.7 114"/>
-  <text class="an" x="99.4" y="112.7" font-size="15">30°</text>
-  <text class="vx" x="14.7" y="135.4" font-size="18" text-anchor="middle" dominant-baseline="middle">A</text>
-  <text class="vx" x="148.1" y="51.1" font-size="18" text-anchor="middle" dominant-baseline="middle">B</text>
-  <text class="vx" x="163.4" y="143.8" font-size="18" text-anchor="middle" dominant-baseline="middle">C</text>
-  <text class="an" x="91.3" y="151.9" font-size="15" text-anchor="middle" dominant-baseline="middle">15</text>
-  <text class="an" x="75.8" y="80.7" font-size="17" text-anchor="middle" dominant-baseline="middle">?</text>
-</svg></div></span>
+        <div class="hwtask" style="--zc:var(--ind)">
+          <div class="hh"><span class="nn">2</span><span class="nm">№ 1021</span></div>
+          <div class="tx">Докажите, что площадь параллелограмма равна произведению двух его смежных сторон на синус угла между ними.</div>
+          <div class="tip">Диагональ \(BD\) делит параллелограмм на два равных треугольника.</div>
+          <div class="fg"><div class="fig"><svg viewBox="0 0 310 174" xmlns="http://www.w3.org/2000/svg">
+              <path class="ln" d="M45 138 L195 138 L228.8 65.5 L78.8 65.5 Z"/>
+              <path class="ln ln-i" d="M195 138 L78.8 65.5"/>
+              <path class="arc" d="M75 138 A30 30 0 0 0 57.7 110.8"/>
+              <text class="an" x="78.7" y="116.5" font-size="17">α</text>
+              <text class="vx" x="27.3" y="149.3" font-size="18" text-anchor="middle" dominant-baseline="middle">A</text>
+              <text class="vx" x="206.3" y="155.7" font-size="18" text-anchor="middle" dominant-baseline="middle">B</text>
+              <text class="vx" x="246.5" y="54.2" font-size="18" text-anchor="middle" dominant-baseline="middle">C</text>
+              <text class="vx" x="67.5" y="47.8" font-size="18" text-anchor="middle" dominant-baseline="middle">D</text>
+              <text class="an" x="120" y="160.9" font-size="15" text-anchor="middle" dominant-baseline="middle">a</text>
+              <text class="an" x="40.6" y="91.8" font-size="15" text-anchor="middle" dominant-baseline="middle">b</text>
+            </svg></div></div>
+        </div>
+        <div class="hwtask" style="--zc:var(--z4)">
+          <div class="hh"><span class="nn">3</span><span class="nm">№ 1022</span></div>
+          <div class="tx">Площадь треугольника \(ABC\) равна \(60\) см². Найдите сторону \(AB\), если \(AC=15\) см, \(\angle A=30^\circ\).</div>
+          <div class="tip">Тот же ход, что в образце «обратная задача» выше.</div>
+          <div class="fg"><div class="fig"><svg viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg">
+              <path class="ln" d="M35 130 L138.9 70 L147.5 130 Z"/>
+              <path class="arc" d="M67 130 A32 32 0 0 0 62.7 114"/>
+              <text class="an" x="99.4" y="112.7" font-size="15">30°</text>
+              <text class="vx" x="14.7" y="135.4" font-size="18" text-anchor="middle" dominant-baseline="middle">A</text>
+              <text class="vx" x="148.1" y="51.1" font-size="18" text-anchor="middle" dominant-baseline="middle">B</text>
+              <text class="vx" x="163.4" y="143.8" font-size="18" text-anchor="middle" dominant-baseline="middle">C</text>
+              <text class="an" x="91.3" y="151.9" font-size="15" text-anchor="middle" dominant-baseline="middle">15</text>
+              <text class="an" x="75.8" y="80.7" font-size="17" text-anchor="middle" dominant-baseline="middle">?</text>
+            </svg></div></div>
         </div>
       </div>
-      <div class="hw-note">И <b>выучить доказательство теоремы — все три случая</b>. Кто напишет только острый угол, сделал треть работы: спрошу у доски.</div>
     </div>
 
     <div class="card-finale diapat">
       <div class="card-finale-diamonds">◆ ◆ ◆</div>
       <div class="card-finale-title">Два листа — и весь пункт <span>помещается в голове</span></div>
-      <div class="card-finale-sub">Одна формула, три случая, один проверочный вопрос. Дальше будет теорема синусов — и она вырастет ровно отсюда. Ты уже держишь её половину. 💪</div>
+      <div class="card-finale-sub">Одна формула, три случая, один проверочный вопрос. Следующая теорема — синусов — вырастет ровно отсюда. 💪</div>
     </div>
 
   </div>
