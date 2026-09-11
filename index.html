@@ -6,145 +6,14 @@
 <title>Математика 9 класс — Школа Гагарина</title>
 <meta name="description" content="Материалы уроков математики: теория, живые чертежи, домашние задания.">
 <meta name="theme-color" content="#1c1917">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="_движок/fonts/gf.css">
-<style>
-*{ box-sizing:border-box; margin:0; padding:0; }
-:root{
-  --paper:#faf7f2; --card:#fff;
-  --ink:#1c1917; --sub:#57534e; --muted:#a8a29e;
-  --line:#e7e0d4; --line-soft:#f2ede4;
-  --gold:#d97706; --gold-soft:#fbbf24; --gold-dim:#fef3c7; --gold-pale:#fffbeb;
-  --indigo:#4f46e5; --indigo-pale:#eef2ff;
-  --blue:#0369a1; --red:#dc2626;
-}
-html{ -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
-body{
-  background:var(--paper); color:var(--ink);
-  font-family:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
-  line-height:1.45; -webkit-font-smoothing:antialiased;
-  padding:0 0 48px;
-}
-.wrap{ max-width:840px; margin:0 auto; padding:0 16px; }
-.mono{ font-family:'JetBrains Mono',ui-monospace,Menlo,monospace; }
-
-/* ─── шапка ─── */
-header{
-  background:var(--ink); color:#fff; padding:26px 0 30px;
-  border-bottom:6px solid var(--gold);
-}
-.hrow{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
-.school{ font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold-soft); font-weight:800; }
-h1{ font-size:32px; font-weight:800; letter-spacing:-.8px; line-height:1.08; margin-top:8px; }
-header p{ font-size:15px; color:#d6cec1; margin-top:12px; max-width:52ch; }
-.badges{ display:flex; gap:7px; flex:0 0 auto; }
-.bdg{ font-weight:800; font-size:12px; padding:4px 11px; border-radius:999px; border:1.6px solid #fff; }
-.bdg.lm{ background:#fff; color:var(--ink); }
-
-/* ─── вкладки курсов ─── */
-nav.tabs{
-  position:sticky; top:0; z-index:20; background:rgba(250,247,242,.94);
-  backdrop-filter:blur(8px); border-bottom:1.5px solid var(--line);
-  margin-bottom:22px;
-}
-.tabs-in{ display:flex; gap:8px; overflow-x:auto; padding:10px 16px; max-width:840px; margin:0 auto; scrollbar-width:none; }
-.tabs-in::-webkit-scrollbar{ display:none; }
-.tab{
-  flex:0 0 auto; display:inline-flex; align-items:center; gap:7px;
-  font-size:15px; font-weight:700; color:var(--sub); background:#fff;
-  border:1.6px solid var(--line); border-radius:999px; padding:9px 16px; cursor:pointer;
-  font-family:inherit; white-space:nowrap;
-}
-.tab.on{ background:var(--ink); color:#fff; border-color:var(--ink); }
-.tab i{ font-style:normal; font-size:16px; }
-.tab b{ font-weight:800; font-size:12px; opacity:.6; }
-
-/* ─── курс ─── */
-.kurs{ display:none; }
-.kurs.on{ display:block; }
-.kurs-h{ display:flex; align-items:baseline; gap:10px; margin:4px 0 16px; }
-.kurs-h h2{ font-size:23px; font-weight:800; letter-spacing:-.4px; }
-.kurs-h span{ font-size:13px; color:var(--muted); font-weight:600; }
-
-/* ─── карточка урока ─── */
-.urok{
-  background:var(--card); border:1.5px solid var(--line); border-radius:18px;
-  padding:18px 18px 16px; margin-bottom:14px;
-  box-shadow:0 2px 10px rgba(28,25,23,.05);
-}
-.u-top{ display:flex; align-items:center; gap:10px; margin-bottom:9px; flex-wrap:wrap; }
-.u-n{
-  font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#fff;
-  background:var(--gold); border-radius:7px; padding:3px 9px; letter-spacing:.02em;
-}
-.u-date{ font-size:13px; font-weight:600; color:var(--muted); }
-.u-date b{ font-weight:800; color:var(--sub); text-transform:capitalize; }
-.u-para{ font-size:12px; font-weight:700; color:var(--sub); background:var(--line-soft); border-radius:6px; padding:3px 9px; }
-.urok h3{ font-size:19px; font-weight:800; line-height:1.25; letter-spacing:-.2px; }
-.u-lead{ font-size:14.5px; color:var(--sub); margin-top:6px; }
-
-.mats{ display:flex; flex-wrap:wrap; gap:9px; margin-top:15px; }
-.mat{
-  display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink);
-  border:1.8px solid var(--line); border-radius:13px; padding:11px 14px;
-  flex:1 1 240px; min-width:0; background:#fff;
-}
-.mat:active{ transform:scale(.985); }
-.mat .ic{ font-size:20px; flex:0 0 auto; line-height:1; }
-.mat .tx{ min-width:0; }
-.mat .tx b{ display:block; font-size:15px; font-weight:800; }
-.mat .tx i{ display:block; font-style:normal; font-size:12.5px; color:var(--muted); margin-top:1px; }
-.mat.teoriya{ border-color:var(--gold-soft); background:var(--gold-pale); }
-.mat.live{ border-color:#c7d2fe; background:var(--indigo-pale); }
-.mat.live .tx b{ color:var(--indigo); }
-.mat.dz{ border-color:var(--line); }
-.mat.pdf{ border-style:dashed; }
-.mat.pdf .tx b{ font-weight:700; color:var(--sub); }
-
-.dzbook{
-  margin-top:13px; font-size:14px; background:var(--gold-pale);
-  border-left:4px solid var(--gold); border-radius:0 9px 9px 0; padding:9px 13px;
-}
-.dzbook b{ font-weight:800; }
-
-.empty{
-  border:1.8px dashed var(--line); border-radius:16px; padding:22px 18px;
-  text-align:center; color:var(--muted); font-size:15px;
-}
-/* урок без своих материалов — обычное дело, а не дырка */
-.nomat{
-  margin-top:14px; font-size:14px; color:var(--sub);
-  background:var(--line-soft); border-radius:11px; padding:11px 14px;
-}
-
-/* ─── учебники ─── */
-.books{ margin-top:34px; }
-.books h2{ font-size:20px; font-weight:800; margin-bottom:12px; }
-.book{
-  display:flex; align-items:center; gap:13px; text-decoration:none; color:var(--ink);
-  background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:14px 16px; margin-bottom:10px;
-}
-.book .ic{ font-size:26px; flex:0 0 auto; }
-.book b{ display:block; font-size:16px; font-weight:800; }
-.book span{ display:block; font-size:13px; color:var(--muted); margin-top:2px; }
-.book em{ display:block; font-style:normal; font-size:13px; color:var(--sub); margin-top:4px; }
-
-footer{
-  margin-top:36px; padding-top:18px; border-top:1.5px solid var(--line);
-  font-size:13px; color:var(--muted); display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center;
-}
-footer a{ color:var(--sub); }
-
-@media (min-width:700px){
-  h1{ font-size:40px; }
-  header{ padding:34px 0 38px; }
-  .urok{ padding:22px 22px 20px; }
-  .urok h3{ font-size:21px; }
-}
-</style>
+<link rel="stylesheet" href="style.css?v=dbc02c84">
 </head>
 <body>
 
-<header>
+<!-- тёмная панель: кто мы + какой сегодня день + расписание -->
+<div class="panel">
   <div class="wrap">
     <div class="hrow">
       <div>
@@ -153,106 +22,27 @@ footer a{ color:var(--sub); }
       </div>
       <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
     </div>
-    <p id="lead"></p>
+    <div id="cal"></div>
   </div>
-</header>
+</div>
 
-<nav class="tabs"><div class="tabs-in" id="tabs"></div></nav>
+<nav class="upravlenie">
+  <div class="modes" id="modes"></div>
+  <div class="filters-in" id="filters"></div>
+</nav>
 
-<main class="wrap" id="main"></main>
+<main class="wrap" id="feed"></main>
 
 <div class="wrap">
   <section class="books" id="books"></section>
   <footer id="foot"></footer>
 </div>
 
-<script src="data.js"></script>
-<script>
-(() => {
-  const $ = s => document.querySelector(s);
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-
-  $('#school').textContent = DATA.site.school + ' · ' + DATA.site.year;
-  $('#title').textContent = DATA.site.title;
-  $('#lead').textContent = DATA.site.lead;
-  document.title = DATA.site.title + ' — ' + DATA.site.school;
-
-  const ICON = { teoriya: '📘', live: '🎯', dz: '✏️', pdf: '⤓', karta: '🗺' };
-
-  /* ── вкладки ── */
-  $('#tabs').innerHTML = DATA.kursy.map((k, i) =>
-    `<button class="tab${i === 0 ? ' on' : ''}" data-k="${k.id}"><i>${k.icon}</i>${esc(k.name)}` +
-    `<b>${k.uroki.length || ''}</b></button>`).join('');
-
-  /* ── дата урока: '08.09' → 'вторник, 8 сентября'
-        Год берём из учебного: сентябрь—декабрь — первый, январь—август — второй. ── */
-  const MES = ['января','февраля','марта','апреля','мая','июня','июля','августа',
-               'сентября','октября','ноября','декабря'];
-  const DNI = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
-  function dateFull(str) {
-    const m = /^(\d{1,2})\.(\d{1,2})$/.exec((str || '').trim());
-    if (!m) return { day: '', full: str || '' };
-    const d = +m[1], mo = +m[2];
-    const years = (DATA.site.year || '').match(/\d{4}/g) || [];
-    const y = +(mo >= 9 ? years[0] : years[1]) || new Date().getFullYear();
-    const dt = new Date(y, mo - 1, d);
-    return { day: DNI[dt.getDay()], full: d + ' ' + (MES[mo - 1] || '') };
-  }
-
-  /* ── курсы ── */
-  $('#main').innerHTML = DATA.kursy.map((k, i) => `
-    <section class="kurs${i === 0 ? ' on' : ''}" id="k-${k.id}">
-      <div class="kurs-h"><h2>${k.icon} ${esc(k.name)}</h2><span>${esc(k.day)}</span></div>
-      ${k.uroki.length ? k.uroki.map(u => urokHTML(u)).join('')
-        : '<div class="empty">Материалов пока нет — появятся после первых уроков</div>'}
-    </section>`).join('');
-
-  function urokHTML(u) {
-    const dt = dateFull(u.date);
-    return `<article class="urok">
-      <div class="u-top">
-        <span class="u-n">Урок ${u.n}</span>
-        <span class="u-date"><b>${esc(dt.day)}</b>, ${esc(dt.full)}</span>
-        ${u.para ? `<span class="u-para">${esc(u.para)}</span>` : ''}
-      </div>
-      <h3>${esc(u.title)}</h3>
-      ${u.lead ? `<p class="u-lead">${esc(u.lead)}</p>` : ''}
-      ${(u.mat && u.mat.length) ? `<div class="mats">${u.mat.map(m => `
-        <a class="mat ${m.kind}" href="${m.out}"${m.out.endsWith('.pdf') ? ' target="_blank" rel="noopener"' : ''}>
-          <span class="ic">${ICON[m.kind] || '📄'}</span>
-          <span class="tx"><b>${esc(m.label)}</b>${m.hint ? `<i>${esc(m.hint)}</i>` : ''}</span>
-        </a>`).join('')}</div>`
-        : `<div class="nomat">Урок вели по учебнику — своих материалов к нему нет</div>`}
-      ${u.dzBook ? `<div class="dzbook"><b>Домашка из учебника:</b> ${esc(u.dzBook)}</div>` : ''}
-    </article>`;
-  }
-
-  /* ── переключение ── */
-  $('#tabs').addEventListener('click', e => {
-    const b = e.target.closest('.tab'); if (!b) return;
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t === b));
-    document.querySelectorAll('.kurs').forEach(s => s.classList.toggle('on', s.id === 'k-' + b.dataset.k));
-    try { localStorage.setItem('kurs', b.dataset.k); } catch (_) {}
-    scrollTo({ top: 0, behavior: 'smooth' });
-  });
-  try {
-    const saved = localStorage.getItem('kurs');
-    const b = saved && document.querySelector(`.tab[data-k="${saved}"]`);
-    if (b) b.click(), scrollTo(0, 0);
-  } catch (_) {}
-
-  /* ── учебники (секция прячется, пока список пуст) ── */
-  $('#books').innerHTML = !DATA.knigi.length ? '' : '<h2>Учебник</h2>' + DATA.knigi.map(b => `
-    <a class="book" href="${b.out}" target="_blank" rel="noopener">
-      <span class="ic">📗</span>
-      <span><b>${esc(b.title)}</b><span>${esc(b.author)}</span><em>${esc(b.note)}</em></span>
-    </a>`).join('');
-
-  /* ── подвал ── */
-  $('#foot').innerHTML =
-    `<span>${esc(DATA.site.school)} · ${esc(DATA.site.year)}</span>` +
-    (DATA.ktp ? `<a href="${DATA.ktp.url}" target="_blank" rel="noopener">${esc(DATA.ktp.label)} →</a>` : '');
-})();
-</script>
+<script src="plan.js?v=cad5f7e4"></script>
+<script src="raspisanie.js?v=c191abc8"></script>
+<script src="covers.js?v=0f8de688"></script>
+<script src="data.js?v=ede1e281"></script>
+<script src="calendar.js?v=4ff9ef7e"></script>
+<script src="app.js?v=35cce757"></script>
 </body>
 </html>
