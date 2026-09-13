@@ -113,8 +113,10 @@ function nomerHTML(x){
 }
 
 function grpHTML(icon, title, note, inner){
+  /* уточнение («лист урока, оборот») — отдельной плашкой, а не через «·»:
+     точка у нас знак умножения, разделителем её не ставим */
   return `<div class="dz-grp"><h4>${icon} ${esc(title)}` +
-    (note ? ` · ${esc(note)}` : '') + `</h4>${inner}</div>`;
+    (note ? `<span class="dz-pod">${esc(note)}</span>` : '') + `</h4>${inner}</div>`;
 }
 
 /* opt.bezSroka  — без строки «К вторнику…» (срок уже сказан рядом);
@@ -159,7 +161,7 @@ function dzHTML(u, opt){
   }
   if (!body) return '';
 
-  return `<div class="dz">
+  return `<div class="dz-blok">
     ${opt.bezSroka ? '' : `<div class="dz-due">📌 ${esc(head)}${badge}</div>`}
     ${body}
     ${opt.bezKnopki ? '' : `<button class="dz-copy" data-copy="${esc(dzText(u))}">📋 Скопировать домашку</button>`}
