@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Скачки на двух кубиках — живой опыт</title>
+<link rel="stylesheet" href="../_движок/katex/katex.min.css">
+<link rel="stylesheet" href="../_движок/deck.css">
+<style>
+  /* ── только то, чего нет в движке ── */
+  .slide{ padding:24px 44px 28px; }
+  .top{ margin-bottom:12px; }
+  .tabs{ display:flex; gap:8px; }
+  .tab{ font:800 17px 'Onest',sans-serif; padding:9px 18px; border-radius:999px; border:2px solid var(--line);
+        background:#fff; color:var(--sub); cursor:pointer; }
+  .tab .k{ font-family:'JetBrains Mono',monospace; font-size:13px; opacity:.55; margin-right:6px; }
+  .tab.on{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .ttl{ font-size:34px; font-weight:800; letter-spacing:-.7px; margin-bottom:12px; flex:0 0 auto; }
+  .ttl .g{ color:var(--gold); }
+  .pane{ display:none; flex:1 1 auto; min-height:0; gap:22px; }
+  .pane.on{ display:grid; }
+  #p1{ grid-template-columns:1.34fr .66fr; }
+  #p2{ grid-template-columns:.9fr 1.1fr; }
+  #p3, #p4{ grid-template-columns:1.3fr .7fr; }
+  .panel{ background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:16px 20px; position:relative;
+          display:flex; flex-direction:column; gap:12px; min-height:0; }
+
+  /* ── дорожки ── */
+  .track{ display:grid; grid-template-rows:repeat(12,1fr); gap:4px; padding:12px 16px; }
+  .lane{ display:grid; grid-template-columns:52px 48px 1fr 44px; align-items:center; gap:10px; cursor:pointer;
+         border-radius:10px; padding:0 6px; user-select:none; }
+  .lane:hover{ background:var(--gold-pale); }
+  .lane .no{ font:800 26px 'JetBrains Mono',monospace; text-align:center; }
+  .lane .start{ font-size:30px; text-align:center; }
+  .cells{ display:grid; gap:5px; height:46px; }
+  .cell{ border-radius:8px; background:var(--line-soft); display:flex; align-items:center; justify-content:center; font-size:30px; }
+  .cell.done{ background:var(--gold-soft); }
+  .lane.win .cell.done{ background:var(--indigo); }
+  .lane.win .no{ color:var(--indigo); }
+  .flag{ font-size:28px; text-align:center; }
+  .lane.nope{ animation:shake .45s; background:var(--red-pale); }
+  @keyframes shake{ 20%{transform:translateX(-10px)} 40%{transform:translateX(10px)} 60%{transform:translateX(-7px)} 80%{transform:translateX(7px)} }
+  .toast{ position:absolute; left:50%; top:14px; transform:translateX(-50%); background:var(--red); color:#fff;
+          font-weight:800; font-size:22px; padding:10px 20px; border-radius:12px; display:none; z-index:5; white-space:nowrap; }
+  .winner{ background:var(--ink); color:#fff; border-radius:14px; margin-top:auto;
+           padding:14px 18px; font-size:26px; font-weight:800; display:none; line-height:1.2; }
+  .winner .g{ color:var(--gold-soft); }
+  .winner .sm{ color:#d6d3d1; font-size:19px; font-weight:500; margin-top:4px; }
+
+  /* ── кубики ── */
+  .dice{ display:flex; gap:22px; justify-content:center; margin-top:6px; }
+  .die{ width:128px; height:128px; border-radius:24px; display:grid; grid-template-columns:repeat(3,1fr);
+        grid-template-rows:repeat(3,1fr); padding:18px; box-shadow:0 6px 18px rgba(28,25,23,.18); }
+  .die.y{ background:var(--gold-soft); } .die.z{ background:var(--green); }
+  .pip{ width:24px; height:24px; border-radius:50%; margin:auto; background:transparent; }
+  .pip.on{ background:var(--ink); }
+  .die.z .pip.on{ background:#fff; }
+  .die.blank{ opacity:.35; }
+  .die-cap{ display:flex; gap:22px; justify-content:center; font-size:15px; color:var(--muted); font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+  .die-cap span{ width:128px; text-align:center; }
+  .sum{ text-align:center; font-size:30px; font-weight:800; }
+  .sum b{ font-size:52px; color:var(--gold); }
+  .btn{ font:800 22px 'Onest',sans-serif; border:none; border-radius:14px; padding:14px 18px; cursor:pointer;
+        background:var(--ink); color:#fff; }
+  .btn.gold{ background:var(--gold); }
+  .btn.ghost{ background:#fff; color:var(--ink); border:2px solid var(--line); font-size:18px; padding:10px 14px; }
+  .btn .k{ font-family:'JetBrains Mono',monospace; font-size:14px; opacity:.6; margin-left:8px; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .row .btn{ flex:1 1 auto; }
+  .stat{ font-size:22px; } .stat b{ font-family:'JetBrains Mono',monospace; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; min-height:36px; }
+  .chip{ font:700 18px 'JetBrains Mono',monospace; padding:4px 10px; border-radius:8px; background:var(--line-soft); }
+  .chip:last-child{ background:var(--gold-dim); }
+  .fin{ display:flex; gap:6px; align-items:center; font-size:18px; color:var(--sub); }
+  .fin button{ font:800 18px 'JetBrains Mono',monospace; width:44px; height:38px; border-radius:9px; border:2px solid var(--line); background:#fff; cursor:pointer; }
+  .fin button.on{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .hint{ font-size:17px; color:var(--sub); line-height:1.4; margin-top:auto; }
+
+  /* ── таблица 36 ── */
+  .t36{ display:grid; grid-template-columns:repeat(7,1fr); grid-template-rows:repeat(7,1fr); gap:6px; flex:1 1 auto; }
+  .t36 div{ border-radius:10px; display:flex; align-items:center; justify-content:center; font:800 30px 'Onest',sans-serif; transition:background .25s, color .25s; }
+  .t36 .hy{ color:#b45309; background:var(--gold-dim); font-family:'JetBrains Mono',monospace; }
+  .t36 .hz{ color:var(--green); background:#dcfce7; font-family:'JetBrains Mono',monospace; }
+  .t36 .corner{ font-size:15px; color:var(--muted); font-weight:700; line-height:1.1; text-align:center; }
+  .t36 .sc{ background:var(--line-soft); color:transparent; }
+  .t36 .sc.open{ color:var(--ink); }
+  .t36 .sc.sel{ background:var(--indigo) !important; color:#fff !important; }
+  .schips{ display:grid; grid-template-columns:repeat(11,1fr); gap:6px; }
+  .schip{ font:800 22px 'JetBrains Mono',monospace; padding:10px 0; border-radius:10px; border:2px solid var(--line); background:#fff; cursor:pointer; }
+  .schip.on{ background:var(--indigo); color:#fff; border-color:var(--indigo); }
+  .readout{ display:flex; align-items:center; gap:26px; min-height:120px; }
+  .readout .ev{ font-size:24px; font-weight:700; }
+  .readout .m-lg{ white-space:nowrap; }
+  .def p{ font-size:20px; }
+
+  /* ── графики ── */
+  svg.chart{ width:100%; height:100%; display:block; }
+  .ax{ stroke:var(--line); stroke-width:1.5; }
+  .axt{ font:600 17px 'JetBrains Mono',monospace; fill:var(--muted); }
+  .cbar{ fill:var(--gold-soft); }            /* не .bar: в движке это полоска с фиксированной высотой */
+  .cbar.hi{ fill:var(--gold); }
+  .tick{ stroke:var(--indigo); stroke-width:5; stroke-linecap:round; }
+  .blab{ font:800 22px 'JetBrains Mono',monospace; fill:var(--ink); text-anchor:middle; }
+  .bval{ font:700 16px 'JetBrains Mono',monospace; fill:var(--sub); text-anchor:middle; }
+  .big{ font-size:46px; font-weight:800; font-family:'JetBrains Mono',monospace; }
+  .big.g{ color:var(--gold); } .big.i{ color:var(--indigo); }
+  .lbl{ font-size:16px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+  .legend{ display:flex; gap:18px; font-size:17px; color:var(--sub); align-items:center; }
+  .legend i{ display:inline-block; width:26px; height:14px; border-radius:4px; vertical-align:middle; margin-right:6px; }
+
+  /* ── телефон: лента ── */
+  @media (max-width:1000px){
+    html,body{ overflow:auto; height:auto; background:var(--paper); display:block; }
+    #stage{ width:auto; height:auto; transform:none !important; }
+    .slide{ position:static; padding:14px 16px 30px; }
+    .top{ flex-wrap:wrap; }
+    .tabs{ flex-wrap:wrap; }
+    .ttl{ font-size:26px; }
+    .pane.on{ display:flex; flex-direction:column; }
+    .track{ min-height:640px; }
+    .lane{ grid-template-columns:34px 30px 1fr 26px; gap:5px; }
+    .lane .no{ font-size:18px; } .cell{ font-size:18px; } .cells{ height:34px; gap:3px; }
+    .lane .start,.flag{ font-size:18px; }
+    .die{ width:92px; height:92px; padding:12px; } .pip{ width:17px; height:17px; }
+    .die-cap span{ width:92px; }
+    .t36{ min-height:360px; } .t36 div{ font-size:18px; }
+    .schips{ grid-template-columns:repeat(6,1fr); }
+    .readout{ flex-wrap:wrap; }
+    svg.chart{ height:auto; }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+<div class="slide on">
+
+  <div class="top">
+    <div class="crumbs">Вероятность и статистика | урок 2 | <b>живой опыт</b></div>
+    <div class="tabs">
+      <button class="tab on" data-t="1"><span class="k">1</span>Скачки</button>
+      <button class="tab" data-t="2"><span class="k">2</span>36 исходов</button>
+      <button class="tab" data-t="3"><span class="k">3</span>Тысяча бросков</button>
+      <button class="tab" data-t="4"><span class="k">4</span>Сто скачек</button>
+    </div>
+    <div class="badges"><span class="bdg lm">Λ</span><span class="bdg">D.</span></div>
+  </div>
+
+  <!-- ═══════════ 1. СКАЧКИ ═══════════ -->
+  <div class="ttl" id="ttl1">Скачки на двух кубиках: <span class="g">какая лошадь быстрее?</span></div>
+  <div class="pane on" id="p1">
+    <div class="panel track" id="track">
+      <div class="toast" id="toast">Сумма 1 на двух кубиках не выпадает</div>
+    </div>
+    <div class="panel">
+      <div class="lbl">Бросок</div>
+      <div class="dice"><div class="die y" id="d1"></div><div class="die z" id="d2"></div></div>
+      <div class="die-cap"><span>жёлтый</span><span>зелёный</span></div>
+      <div class="sum" id="sumOut">Сумма: <b>—</b></div>
+      <button class="btn gold" id="rollBtn">🎲 Бросить на экране<span class="k">пробел</span></button>
+      <div class="stat">Бросков: <b id="rollsOut">0</b></div>
+      <div class="chips" id="chips"></div>
+      <div class="fin">До финиша шагов:
+        <button data-f="4">4</button><button data-f="6" class="on">6</button><button data-f="8">8</button>
+      </div>
+      <button class="btn ghost" id="resetBtn">↺ Новая скачка<span class="k">R</span></button>
+      <div class="winner" id="winner"></div>
+      <div class="hint" id="hint">Бросаете <b>настоящие</b> кубики — нажмите на дорожку лошади с выпавшей суммой.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 2. 36 ИСХОДОВ ═══════════ -->
+  <div class="ttl" id="ttl2" hidden>Почему семёрка: <span class="g">36 равновозможных исходов</span></div>
+  <div class="pane" id="p2">
+    <div class="panel"><div class="t36" id="t36"></div></div>
+    <div class="panel">
+      <div class="row">
+        <button class="btn" id="openBtn">Открыть таблицу<span class="k">О</span></button>
+      </div>
+      <div class="lbl">Событие «сумма равна …» — нажмите число</div>
+      <div class="schips" id="schips"></div>
+      <div class="readout" id="readout"><div class="ev" style="color:var(--muted)">Выберите сумму</div></div>
+      <div class="def" style="margin-top:auto">
+        <div class="def-t">Правило | ч. 1, § 40</div>
+        <p>Если в случайном опыте конечное число элементарных событий и все они равновозможны, то вероятность события $A$ равна отношению числа элементарных событий, благоприятствующих событию $A$, к общему числу элементарных событий:</p>
+        <div class="mline m-lg" id="ruleF"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 3. ТЫСЯЧА БРОСКОВ ═══════════ -->
+  <div class="ttl" id="ttl3" hidden>Частота и вероятность: <span class="g">бросаем много раз</span></div>
+  <div class="pane" id="p3">
+    <div class="panel">
+      <div class="legend"><span><i style="background:var(--gold-soft)"></i>частота суммы в опыте</span><span><i style="background:var(--indigo);height:5px"></i>вероятность по таблице</span></div>
+      <svg class="chart" id="ch3" viewBox="0 0 960 620" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <div class="panel">
+      <div class="lbl">Всего бросков</div>
+      <div class="big" id="n3">0</div>
+      <div class="row">
+        <button class="btn ghost" data-add="1">+1</button><button class="btn ghost" data-add="10">+10</button>
+        <button class="btn ghost" data-add="100">+100</button><button class="btn gold" data-add="1000">+1000</button>
+      </div>
+      <div class="lbl" style="margin-top:6px">Сумма 7</div>
+      <div class="row" style="gap:28px">
+        <div><div class="sm">частота</div><div class="big g" id="f7">—</div></div>
+        <div><div class="sm">вероятность</div><div class="big i" id="p7"></div></div>
+      </div>
+      <div class="note" style="margin-top:auto"><div class="ar">→</div><div class="tx" style="font-size:18px">Если опыт повторять достаточно много раз, то почти наверняка окажется, что частота события близка к его вероятности. <span class="ink-m">(ч. 1, § 28)</span></div></div>
+      <button class="btn ghost" id="reset3">↺ Сбросить<span class="k">R</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════ 4. СТО СКАЧЕК ═══════════ -->
+  <div class="ttl" id="ttl4" hidden>Семёрка — лучшая ставка. <span class="g">Но всегда ли она побеждает?</span></div>
+  <div class="pane" id="p4">
+    <div class="panel">
+      <div class="legend"><span><i style="background:var(--gold-soft)"></i>сколько скачек выиграла лошадь</span></div>
+      <svg class="chart" id="ch4" viewBox="0 0 960 620" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <div class="panel">
+      <div class="lbl">Проведено скачек <span id="fin4"></span></div>
+      <div class="big" id="n4">0</div>
+      <div class="row">
+        <button class="btn ghost" data-race="1">1 скачка</button><button class="btn ghost" data-race="10">10</button>
+        <button class="btn gold" data-race="100">100 скачек</button>
+      </div>
+      <div class="lbl" style="margin-top:6px">Лошадь № 7 выиграла</div>
+      <div class="big i" id="w7">—</div>
+      <div class="note alarm" id="moral4" style="margin-top:auto; visibility:hidden"><div class="ar">!</div><div class="tx" style="font-size:19px">Самая вероятная лошадь выигрывает <b>меньше половины</b> скачек. Вероятность говорит, <b>как часто</b>, а не <b>кто победит сегодня</b>.</div></div>
+      <button class="btn ghost" id="reset4">↺ Сбросить<span class="k">R</span></button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="../_движок/katex/katex.min.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const K = (tex, disp) => katex.renderToString(tex, { throwOnError:false, displayMode:!!disp });
+  const rnd = () => 1 + Math.floor(Math.random() * 6);
+  const comma = (x, d) => x.toFixed(d).replace('.', ',');
+  const WAYS = [0,0,1,2,3,4,5,6,5,4,3,2,1];        // число клеток таблицы 6×6 с данной суммой
+  const FRAC = { 1:'\\dfrac{1}{36}', 2:'\\dfrac{2}{36}=\\dfrac{1}{18}', 3:'\\dfrac{3}{36}=\\dfrac{1}{12}',
+                 4:'\\dfrac{4}{36}=\\dfrac{1}{9}', 5:'\\dfrac{5}{36}', 6:'\\dfrac{6}{36}=\\dfrac{1}{6}' };
+
+  /* KaTeX в разметке — один раз при загрузке */
+  document.querySelectorAll('.def p').forEach(p => {
+    p.innerHTML = p.innerHTML.replace(/\$(.+?)\$/g, (_, t) => K(t));
+  });
+  $('ruleF').innerHTML = K('P(A)=\\dfrac{N(A)}{N}');
+  $('p7').innerHTML = K('\\tfrac{1}{6}\\approx 0{,}167');
+
+  /* ─────────── вкладки ─────────── */
+  let tab = 1;
+  function show(n){
+    tab = n;
+    document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', +b.dataset.t === n));
+    for (let i = 1; i <= 4; i++){ $('p'+i).classList.toggle('on', i === n); $('ttl'+i).hidden = i !== n; }
+  }
+  document.querySelectorAll('.tab').forEach(b => b.onclick = () => show(+b.dataset.t));
+
+  /* ─────────── 1. скачки ─────────── */
+  const PIPS = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+  function drawDie(el, v){
+    el.innerHTML = '';
+    el.classList.toggle('blank', !v);
+    for (let i = 0; i < 9; i++){
+      const p = document.createElement('div');
+      p.className = 'pip' + (v && PIPS[v].includes(i) ? ' on' : '');
+      el.appendChild(p);
+    }
+  }
+  let FIN = 6, pos, rolls, over, hist, busy = false;
+  function buildTrack(){
+    const tr = $('track');
+    tr.querySelectorAll('.lane').forEach(l => l.remove());
+    for (let h = 1; h <= 12; h++){
+      const lane = document.createElement('div');
+      lane.className = 'lane'; lane.id = 'lane' + h;
+      let cells = '';
+      for (let c = 0; c < FIN; c++) cells += '<div class="cell"></div>';
+      lane.innerHTML = `<div class="no">${h}</div><div class="start">🏇</div>
+        <div class="cells" style="grid-template-columns:repeat(${FIN},1fr)">${cells}</div><div class="flag">🏁</div>`;
+      lane.onclick = () => { if (!busy) step(h, 0, 0); };
+      tr.appendChild(lane);
+    }
+  }
+  function resetRace(){
+    pos = Array(13).fill(0); rolls = 0; over = false; hist = [];
+    buildTrack(); drawDie($('d1'), 0); drawDie($('d2'), 0);
+    $('sumOut').innerHTML = 'Сумма: <b>—</b>'; $('rollsOut').textContent = '0';
+    $('chips').innerHTML = ''; $('winner').style.display = 'none'; $('hint').style.display = '';
+  }
+  function renderLane(h){
+    const lane = $('lane' + h), cs = lane.querySelectorAll('.cell');
+    cs.forEach((c, i) => { c.classList.toggle('done', i < pos[h]); c.textContent = (i === pos[h] - 1) ? '🏇' : ''; });
+    lane.querySelector('.start').textContent = pos[h] ? '' : '🏇';
+  }
+  function step(h, a, b){
+    if (over) return;
+    if (h === 1){
+      const lane = $('lane1'); lane.classList.remove('nope'); void lane.offsetWidth; lane.classList.add('nope');
+      $('toast').style.display = 'block'; clearTimeout(step.t);
+      step.t = setTimeout(() => { $('toast').style.display = 'none'; lane.classList.remove('nope'); }, 1800);
+      return;
+    }
+    if (!a){ drawDie($('d1'), 0); drawDie($('d2'), 0); }
+    rolls++; pos[h]++; hist.push(h);
+    $('sumOut').innerHTML = `Сумма: <b>${h}</b>`; $('rollsOut').textContent = rolls;
+    $('chips').innerHTML = hist.slice(-14).map(s => `<span class="chip">${s}</span>`).join('');
+    renderLane(h);
+    if (pos[h] >= FIN){
+      over = true; $('lane' + h).classList.add('win');
+      const w = $('winner');
+      w.innerHTML = `🏆 Победила лошадь <span class="g">№ ${h}</span> за ${rolls} бросков
+        <div class="sm">Почему лошадь № 1 так и не сдвинулась с места? А почему № 2 и № 12 почти стоят?</div>`;
+      w.style.display = 'block'; $('hint').style.display = 'none';
+    }
+  }
+  function roll(){
+    if (over || busy) return;
+    busy = true; let k = 0;
+    const t = setInterval(() => {
+      drawDie($('d1'), rnd()); drawDie($('d2'), rnd());
+      if (++k >= 9){
+        clearInterval(t);
+        const a = rnd(), b = rnd();
+        drawDie($('d1'), a); drawDie($('d2'), b);
+        busy = false; step(a + b, a, b);
+      }
+    }, 55);
+  }
+  $('rollBtn').onclick = roll;
+  $('resetBtn').onclick = resetRace;
+  document.querySelectorAll('.fin button').forEach(b => b.onclick = () => {
+    FIN = +b.dataset.f;
+    document.querySelectorAll('.fin button').forEach(x => x.classList.toggle('on', x === b));
+    resetRace(); reset4();
+  });
+
+  /* ─────────── 2. таблица 36 ─────────── */
+  const t36 = $('t36');
+  t36.innerHTML = '<div class="corner">жёлт. ↓<br>зелён. →</div>' +
+    [1,2,3,4,5,6].map(j => `<div class="hz">${j}</div>`).join('');
+  for (let i = 1; i <= 6; i++){
+    t36.innerHTML += `<div class="hy">${i}</div>`;
+    for (let j = 1; j <= 6; j++) t36.innerHTML += `<div class="sc" data-s="${i+j}">${i+j}</div>`;
+  }
+  let opened = false, selS = 0;
+  function tint(el){
+    const w = WAYS[+el.dataset.s];
+    el.style.background = `rgba(79,70,229,${0.08 + w * 0.07})`;
+  }
+  function openTable(){
+    if (opened) return; opened = true;
+    [...t36.querySelectorAll('.sc')].forEach((el, i) => setTimeout(() => { el.classList.add('open'); tint(el); }, i * 45));
+  }
+  $('openBtn').onclick = openTable;
+  const sch = $('schips');
+  for (let s = 2; s <= 12; s++){
+    const b = document.createElement('button'); b.className = 'schip'; b.textContent = s;
+    b.onclick = () => pickSum(s); sch.appendChild(b);
+  }
+  const READ = {};
+  for (let s = 2; s <= 12; s++){
+    READ[s] = `<div class="ev">«сумма равна ${s}»</div>` +
+      `<div class="m-lg">${K('N(A)=' + WAYS[s])}</div>` +
+      `<div class="m-lg">${K('P(A)=' + FRAC[WAYS[s]])}</div>`;
+  }
+  function pickSum(s){
+    openTable(); selS = s;
+    sch.querySelectorAll('.schip').forEach(b => b.classList.toggle('on', +b.textContent === s));
+    t36.querySelectorAll('.sc').forEach(el => el.classList.toggle('sel', +el.dataset.s === s));
+    $('readout').innerHTML = READ[s];
+  }
+
+  /* ─────────── графики ─────────── */
+  const NS = 'http://www.w3.org/2000/svg';
+  function chart(svg, labels, yMax, yStep, yFmt){
+    svg.innerHTML = '';
+    const L = 78, R = 940, T = 20, B = 560, n = labels.length, bw = (R - L) / n;
+    const Y = v => B - (Math.min(v, yMax) / yMax) * (B - T);
+    for (let v = 0; v <= yMax + 1e-9; v += yStep){
+      const y = Y(v);
+      svg.insertAdjacentHTML('beforeend', `<line class="ax" x1="${L}" x2="${R}" y1="${y}" y2="${y}"/>` +
+        `<text class="axt" x="${L - 12}" y="${y + 6}" text-anchor="end">${yFmt(v)}</text>`);
+    }
+    const bars = [], vals = [];
+    labels.forEach((lab, i) => {
+      const x = L + i * bw;
+      svg.insertAdjacentHTML('beforeend', `<text class="blab" x="${x + bw / 2}" y="${B + 36}">${lab}</text>`);
+      const r = document.createElementNS(NS, 'rect');
+      r.setAttribute('class', 'cbar' + (lab === 7 ? ' hi' : '')); r.setAttribute('x', x + bw * .16);
+      r.setAttribute('width', bw * .68); r.setAttribute('y', B); r.setAttribute('height', 0);
+      svg.appendChild(r); bars.push(r);
+      const t = document.createElementNS(NS, 'text'); t.setAttribute('class', 'bval');
+      t.setAttribute('x', x + bw / 2); t.setAttribute('y', B - 8); svg.appendChild(t); vals.push(t);
+    });
+    return { bars, vals, Y, B, L, bw,
+      /* v2 — отметка вероятности: подпись встаёт выше и столбика, и отметки */
+      set(i, v, txt, v2){ const y = Y(v); bars[i].setAttribute('y', y); bars[i].setAttribute('height', B - y);
+                          const yl = v2 == null ? y : Math.min(y, Y(v2));
+                          vals[i].setAttribute('y', yl - 12); vals[i].textContent = txt; } };
+  }
+
+  /* ─────────── 3. тысяча бросков ─────────── */
+  const SUMS = [2,3,4,5,6,7,8,9,10,11,12];
+  let c3, cnt3, n3 = 0, anim3 = null;
+  function reset3(){
+    if (anim3){ clearInterval(anim3); anim3 = null; }
+    cnt3 = Array(13).fill(0); n3 = 0;
+    c3 = chart($('ch3'), SUMS, 0.3, 0.05, v => comma(v, 2));
+    SUMS.forEach((s, i) => {
+      const y = c3.Y(WAYS[s] / 36), x = c3.L + i * c3.bw;
+      $('ch3').insertAdjacentHTML('beforeend', `<line class="tick" x1="${x + c3.bw * .08}" x2="${x + c3.bw * .92}" y1="${y}" y2="${y}"/>`);
+    });
+    draw3();
+  }
+  function draw3(){
+    SUMS.forEach((s, i) => c3.set(i, n3 ? cnt3[s] / n3 : 0, n3 ? comma(cnt3[s] / n3, 2) : '', WAYS[s] / 36));
+    $('n3').textContent = n3; $('f7').textContent = n3 ? comma(cnt3[7] / n3, 3) : '—';
+  }
+  function add3(k){
+    if (anim3) return;
+    const chunk = Math.max(1, Math.ceil(k / 40)); let left = k;
+    const go = () => {
+      const m = Math.min(chunk, left);
+      for (let j = 0; j < m; j++){ cnt3[rnd() + rnd()]++; n3++; }
+      left -= m; draw3();
+      if (left <= 0){ clearInterval(anim3); anim3 = null; }
+    };
+    if (k <= 10){ left = k; while (left > 0) go(); return; }
+    anim3 = setInterval(go, 30);
+  }
+  document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => add3(+b.dataset.add));
+  $('reset3').onclick = reset3;
+
+  /* ─────────── 4. сто скачек ─────────── */
+  const HORSES = [1,2,3,4,5,6,7,8,9,10,11,12];
+  let c4, wins, n4 = 0, anim4 = null;
+  function race(){
+    const p = Array(13).fill(0);
+    for (;;){ const s = rnd() + rnd(); if (++p[s] >= FIN) return s; }
+  }
+  function reset4(){
+    if (anim4){ clearInterval(anim4); anim4 = null; }
+    wins = Array(13).fill(0); n4 = 0;
+    c4 = chart($('ch4'), HORSES, 50, 10, v => v);
+    $('fin4').textContent = `(до ${FIN} шагов)`;
+    draw4();
+  }
+  function draw4(){
+    const top = Math.max(...wins);
+    if (top > 50 && c4.yMaxNow !== 'big'){
+      c4 = chart($('ch4'), HORSES, Math.ceil(top / 100) * 100 + 100, 50, v => v); c4.yMaxNow = 'big';
+    }
+    HORSES.forEach((h, i) => c4.set(i, wins[h], n4 ? String(wins[h]) : ''));
+    $('n4').textContent = n4;
+    $('w7').textContent = n4 ? `${wins[7]} из ${n4}` : '—';
+    $('moral4').style.visibility = n4 >= 30 ? 'visible' : 'hidden';
+  }
+  function run4(k){
+    if (anim4) return;
+    let left = k;
+    const go = () => { wins[race()]++; n4++; left--; draw4(); if (left <= 0){ clearInterval(anim4); anim4 = null; } };
+    if (k === 1){ go(); return; }
+    anim4 = setInterval(go, k >= 100 ? 25 : 90);
+  }
+  document.querySelectorAll('[data-race]').forEach(b => b.onclick = () => run4(+b.dataset.race));
+  $('reset4').onclick = reset4;
+
+  /* ─────────── клавиши ─────────── */
+  addEventListener('keydown', e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^Digit[1-4]$/.test(e.code)){ show(+e.code.slice(5)); return; }
+    if (e.code === 'Space'){ e.preventDefault(); if (tab === 1) roll(); if (tab === 3) add3(100); if (tab === 4) run4(10); return; }
+    if (e.code === 'KeyR'){ if (tab === 1) resetRace(); if (tab === 3) reset3(); if (tab === 4) reset4(); return; }
+    if ((e.code === 'KeyJ' || e.code === 'KeyO') && tab === 2){ openTable(); return; }
+    if (e.code === 'KeyF' || e.code === 'KeyA'){
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.();
+    }
+  });
+
+  /* ─────────── масштаб сцены ─────────── */
+  const stage = $('stage');
+  const lenta = () => matchMedia('(max-width:1000px)').matches;
+  function fit(){
+    if (lenta()){ stage.style.transform = ''; return; }
+    const k = Math.min(innerWidth / stage.offsetWidth, innerHeight / stage.offsetHeight);
+    stage.style.transform = `scale(${k})`;
+  }
+  addEventListener('resize', fit);
+
+  resetRace(); reset3(); reset4(); fit(); setTimeout(fit, 300);
+})();
+</script>
+</body>
+</html>

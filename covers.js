@@ -7,5 +7,6 @@ var COVERS = {
   "algebra-2": "covers/algebra-2.webp",
   "algebra-3": "covers/algebra-3.webp",
   "algebra-4": "covers/algebra-4.webp",
-  "veroyatnost-1": "covers/veroyatnost-1.webp"
+  "veroyatnost-1": "covers/veroyatnost-1.webp",
+  "veroyatnost-2": "covers/veroyatnost-2.webp"
 };
