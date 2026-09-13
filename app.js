@@ -119,6 +119,39 @@ function grpHTML(icon, title, note, inner){
     (note ? `<span class="dz-pod">${esc(note)}</span>` : '') + `</h4>${inner}</div>`;
 }
 
+/* ── галочки «сделал» ──
+   Живут только в телефоне ученика (localStorage), на сервер не уходят.
+   Ключ — предмет, урок и сам текст задания: поправили формулировку —
+   старая галочка честно пропадает, а не висит на чужом задании. */
+const GALKI = 'dz-gotovo';
+let galki = {};
+try { galki = JSON.parse(localStorage.getItem(GALKI) || '{}') || {}; } catch (_) {}
+const klyuchGalki = (u, s) => `${u.kurs.id}|${u.n}|${s}`;
+const gotovo = g => !!galki[g];
+
+function perekluchitGalku(g){
+  if (galki[g]) delete galki[g]; else galki[g] = 1;
+  try { localStorage.setItem(GALKI, JSON.stringify(galki)); } catch (_) {}
+  /* одна и та же домашка стоит и в ленте, и в расписании дня — отмечаем везде */
+  const on = !!galki[g];
+  document.querySelectorAll('.dz-li[data-g]').forEach(el => {
+    if (el.dataset.g !== g) return;
+    el.classList.toggle('gotovo', on);
+    el.setAttribute('aria-checked', on);
+  });
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('.dz-li[data-g]');
+  if (el) perekluchitGalku(el.dataset.g);
+});
+document.addEventListener('keydown', e => {
+  const el = e.target.closest && e.target.closest('.dz-li[data-g]');
+  if (!el || (e.key !== ' ' && e.key !== 'Enter')) return;
+  e.preventDefault();
+  perekluchitGalku(el.dataset.g);
+});
+
 /* opt.bezSroka  — без строки «К вторнику…» (срок уже сказан рядом);
    opt.bezKnopki — без «Скопировать» (во всплывашке у курсора на неё не нажать) */
 function dzHTML(u, opt){
@@ -138,19 +171,26 @@ function dzHTML(u, opt){
     else if (left > 1 && left <= 3) badge = `<span class="soon">через ${left} дня</span>`;
   }
 
+  /* строка задания с кружком: во всплывашке (bezKnopki) нажать нельзя — только видно отметку */
+  const li = s => {
+    const g = klyuchGalki(u, s), on = gotovo(g);
+    return opt.bezKnopki
+      ? `<div class="dz-li${on ? ' gotovo' : ''}">${esc(s)}</div>`
+      : `<div class="dz-li${on ? ' gotovo' : ''}" data-g="${esc(g)}" role="checkbox"
+           aria-checked="${on}" tabindex="0">${esc(s)}</div>`;
+  };
+
   let body = '';
   if (dz.print && dz.print.length){
     body += grpHTML('📄', 'На распечатке', dz.printLabel,
-      dz.print.map(s => `<div class="dz-li">${esc(s)}</div>`).join('') +
+      dz.print.map(li).join('') +
       (dz.printNote ? `<div class="dz-note">${esc(dz.printNote)}</div>` : ''));
   }
   if (dz.uchit && dz.uchit.length){
-    body += grpHTML('📖', 'Выучить', '',
-      dz.uchit.map(s => `<div class="dz-li">${esc(s)}</div>`).join(''));
+    body += grpHTML('📖', 'Выучить', '', dz.uchit.map(li).join(''));
   }
   if (dz.tetrad && dz.tetrad.length){
-    body += grpHTML('✍️', 'В тетради', '',
-      dz.tetrad.map(s => `<div class="dz-li">${esc(s)}</div>`).join(''));
+    body += grpHTML('✍️', 'В тетради', '', dz.tetrad.map(li).join(''));
   }
   if (dz.book && dz.book.length){
     body += grpHTML('📘', 'Из учебника', '', dz.book.map(nomerHTML).join(''));
@@ -161,7 +201,7 @@ function dzHTML(u, opt){
   }
   if (!body) return '';
 
-  return `<div class="dz-blok">
+  return `<div class="dz-blok k-${esc(u.kurs.id)}">
     ${opt.bezSroka ? '' : `<div class="dz-due">📌 ${esc(head)}${badge}</div>`}
     ${body}
     ${opt.bezKnopki ? '' : `<button class="dz-copy" data-copy="${esc(dzText(u))}">📋 Скопировать домашку</button>`}

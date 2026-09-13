@@ -432,7 +432,7 @@ function init(ctx){
   podskazka(korob);
 
   korob.addEventListener('click', e => {
-    if (e.target.closest('.dz-copy')) return;            /* копирование — не переход к уроку */
+    if (e.target.closest('.dz-blok')) return;            /* галочка и копирование — не переход к уроку */
     const nav = e.target.closest('.strelka, .k-segodnya');
     if (nav){
       const m = +nav.dataset.m;
