@@ -117,7 +117,10 @@ function grpHTML(icon, title, note, inner){
     (note ? ` · ${esc(note)}` : '') + `</h4>${inner}</div>`;
 }
 
-function dzHTML(u){
+/* opt.bezSroka  — без строки «К вторнику…» (срок уже сказан рядом);
+   opt.bezKnopki — без «Скопировать» (во всплывашке у курсора на неё не нажать) */
+function dzHTML(u, opt){
+  opt = opt || {};
   const dz = u.dz;
   if (!dz) return u.dzBook
     ? `<div class="dz-plain"><b>Домашка:</b> ${esc(u.dzBook)}</div>` : '';
@@ -157,9 +160,9 @@ function dzHTML(u){
   if (!body) return '';
 
   return `<div class="dz">
-    <div class="dz-due">📌 ${esc(head)}${badge}</div>
+    ${opt.bezSroka ? '' : `<div class="dz-due">📌 ${esc(head)}${badge}</div>`}
     ${body}
-    <button class="dz-copy" data-copy="${esc(dzText(u))}">📋 Скопировать домашку</button>
+    ${opt.bezKnopki ? '' : `<button class="dz-copy" data-copy="${esc(dzText(u))}">📋 Скопировать домашку</button>`}
   </div>`;
 }
 
@@ -333,7 +336,7 @@ $('#foot').innerHTML =
 
 /* календарь живёт отдельным файлом и подключается сам, если он есть */
 if (window.Calendar) window.Calendar.init({
-  DATA, UROKI, dateOf, dayName, dateText, esc, vinit,
+  DATA, UROKI, dateOf, dayName, dateText, esc, vinit, dzHTML,
   /* календарь просит ленту показать нужный урок */
   perejti(kursId, n){
     if (vybor !== 'all' && vybor !== kursId){

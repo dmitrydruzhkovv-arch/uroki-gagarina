@@ -29,6 +29,14 @@
   --c-algebra:#d97706;
   --c-geometriya:#4f46e5;
   --c-veroyatnost:#0d9488;
+  /* тот же предмет, но светлее — для букв на тёмной панели */
+  --l-algebra:#fb923c;
+  --l-geometriya:#a5b4fc;
+  --l-veroyatnost:#2dd4bf;
+
+  /* тетрадь в клетку — фон домашки: лист вклеивают в тетрадь */
+  --kletka:rgba(59,130,246,.10);
+  --polya:#f87171;
 
   --tap:cubic-bezier(.16,1,.3,1);
 }
@@ -128,8 +136,29 @@ h1{ font-size:27px; font-weight:800; letter-spacing:-.7px; line-height:1.05; mar
 }
 .den:active{ transform:scale(.92); }
 .den .dn{ font-size:14.5px; font-weight:700; line-height:1; }
-.den .tochki{ display:flex; gap:3px; height:5px; align-items:center; }
-.den .tochki i{ width:4px; height:4px; border-radius:50%; }
+
+/* буква предмета: базово — плашка (в расписании, во всплывашке) */
+.bk{
+  display:inline-grid; place-items:center; flex:0 0 auto;
+  width:22px; height:22px; margin-right:8px; border-radius:7px;
+  background:var(--l); color:var(--ink);
+  font-size:12.5px; font-weight:800; font-style:normal; line-height:1;
+  vertical-align:1px;
+}
+/* в клетке календаря — просто крупная цветная буква */
+.den .bukvy{ display:flex; gap:2px; height:17px; align-items:center; justify-content:center; }
+.den .bk{
+  width:auto; height:auto; margin:0; background:none; border-radius:0;
+  color:var(--l); font-size:16px; letter-spacing:-.3px;
+}
+.den.vybran .bk{ color:var(--c); }
+
+.legenda{
+  display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:12px;
+  font-size:12.5px; font-weight:600; color:var(--noch-txt);
+}
+.legenda span{ display:inline-flex; align-items:center; }
+.legenda .bk{ width:20px; height:20px; font-size:11.5px; margin-right:6px; }
 .den.chuzhoy{ background:transparent; color:#5c554e; }
 .den.nerabochiy{ background:transparent; color:var(--noch-dim); opacity:.55; }
 .den.segodnya{ border-color:var(--gold); color:var(--gold-soft); }
@@ -183,6 +212,12 @@ h1{ font-size:27px; font-weight:800; letter-spacing:-.7px; line-height:1.05; mar
 .plitka.p-math .p-tema{ font-size:13px; color:var(--noch-txt); margin-top:3px; line-height:1.35; }
 .plitka.p-math .p-tema em{ font-style:normal; color:var(--noch-dim); }
 .plitka.p-math[data-go]{ cursor:pointer; }
+.plitka.p-math .p-imya{ display:flex; align-items:center; }
+.plitka.p-math .dz{ margin-top:12px; cursor:auto; }
+/* урок прошёл, но домашку с него ещё читают — не гасим её вместе с плиткой */
+.plitka.p-math.proshlo{ opacity:1; }
+.plitka.p-math.proshlo .p-verh, .plitka.p-math.proshlo .p-imya,
+.plitka.p-math.proshlo .p-tema{ opacity:.6; }
 .p-sejchas{
   font-size:9.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
   background:#34d399; color:#08301f; border-radius:5px; padding:3px 7px;
@@ -193,14 +228,16 @@ h1{ font-size:27px; font-weight:800; letter-spacing:-.7px; line-height:1.05; mar
   margin-top:14px; border:1px solid var(--noch-3); border-radius:12px;
   padding:12px 14px; background:var(--noch-2);
 }
-.sdat b{
+.sdat > b{
   display:block; font-size:10.5px; font-weight:800; letter-spacing:.14em;
   text-transform:uppercase; color:var(--gold-soft); margin-bottom:7px;
 }
 .sdat .s{
-  font-size:13.5px; color:#fff; cursor:pointer; padding:9px 0;
+  font-size:14px; font-weight:700; color:#fff; cursor:pointer; padding:9px 0;
   min-height:40px; display:flex; align-items:center;
 }
+.sdat .s-urok + .s-urok{ margin-top:12px; }
+.sdat .dz{ margin-top:4px; }
 .dalshe{
   margin-top:14px; font-size:13px; color:var(--noch-dim);
   padding-top:12px; border-top:1px solid var(--noch-3); line-height:1.5;
@@ -334,48 +371,110 @@ nav.upravlenie{
   border-left:2px solid var(--line); padding:2px 0 2px 12px;
 }
 
-/* ── домашка ── */
+/* ── домашка: страница тетради в клетку ──
+   Лист с домашкой вклеивают в тетрадь, и на сайте домашка выглядит
+   так же — клетка и красные поля. Акцент — цвет предмета (--c),
+   поэтому алгебру и вероятность видно ещё до чтения. */
 .dz{
-  margin-top:16px; background:var(--gold-pale);
-  border:1px solid var(--gold-soft); border-radius:14px; padding:14px 15px 13px;
+  position:relative; margin-top:16px; color:var(--ink);
+  background-color:#fffefa;
+  background-image:
+    linear-gradient(var(--kletka) 1px, transparent 1px),
+    linear-gradient(90deg, var(--kletka) 1px, transparent 1px);
+  background-size:16px 16px; background-position:-1px -1px;
+  border:1px solid var(--line); border-radius:14px;
+  padding:14px 15px 14px 34px;
+  box-shadow:0 1px 0 rgba(28,25,23,.03), 0 10px 22px -18px rgba(28,25,23,.35);
+}
+/* поля тетради */
+.dz::before{
+  content:''; position:absolute; top:0; bottom:0; left:21px;
+  width:1.5px; background:var(--polya); opacity:.55;
 }
 .dz-due{
   display:flex; align-items:center; gap:8px; flex-wrap:wrap;
   font-size:12.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
-  color:#92400e; margin-bottom:12px;
+  color:var(--ink); margin-bottom:12px;
 }
 .dz-due .soon{
   font-size:10.5px; font-weight:800; letter-spacing:.06em;
-  background:var(--gold); color:#fff; border-radius:5px; padding:3px 7px;
+  background:var(--c, var(--gold)); color:#fff; border-radius:5px; padding:3px 7px;
 }
 .dz-grp{ margin-bottom:13px; }
 .dz-grp:last-of-type{ margin-bottom:0; }
 .dz-grp h4{
-  font-size:11.5px; font-weight:800; color:#a16207;
-  letter-spacing:.08em; text-transform:uppercase; margin-bottom:7px;
+  display:inline-block;
+  font-size:11px; font-weight:800; color:var(--sub);
+  letter-spacing:.08em; text-transform:uppercase; margin-bottom:6px;
+  background:#fffefa; padding:1px 6px 1px 0; border-radius:4px;
 }
 .dz-li{ display:flex; gap:9px; font-size:14.5px; padding:3px 0; line-height:1.45; }
-.dz-li::before{ content:'—'; color:var(--gold-soft); font-weight:800; flex:0 0 auto; }
+.dz-li::before{ content:'—'; color:var(--c, var(--gold)); font-weight:800; flex:0 0 auto; }
 
 .dz-no{ padding:6px 0; }
-.dz-no + .dz-no{ border-top:1px solid rgba(217,119,6,.16); }
+.dz-no + .dz-no{ border-top:1px dashed rgba(28,25,23,.14); }
 .dz-no .head{ display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; }
-.dz-no .n{ font-size:17px; font-weight:700; letter-spacing:-.3px; }
-.dz-no .b{ font-size:14px; font-weight:700; color:var(--gold); }
+.dz-no .n{ font-size:17px; font-weight:800; letter-spacing:-.3px; }
+.dz-no .b{ font-size:14px; font-weight:700; color:var(--c, var(--gold)); }
 .dz-no .w{ display:block; font-size:13.5px; color:var(--sub); margin-top:3px; line-height:1.45; }
-.dz-note{ font-size:13.5px; color:var(--sub); margin-top:7px; }
+.dz-note{
+  display:inline-block; font-size:13px; font-weight:600; color:var(--sub); margin-top:8px;
+  background:#fffefa; padding:2px 8px; border-radius:6px; border:1px solid var(--line);
+}
 .dz-extra{ display:flex; flex-wrap:wrap; gap:4px 18px; align-items:baseline; }
 .dz-extra .dz-no{ border-top:0; padding:0; }
 
 .dz-copy{
   display:inline-flex; align-items:center; gap:7px; margin-top:13px;
-  font-size:13px; font-weight:700; color:#92400e;
-  background:#fff; border:1px solid var(--gold-soft); border-radius:10px;
+  font-size:13px; font-weight:700; color:var(--ink);
+  background:#fff; border:1px solid var(--line); border-radius:10px;
   padding:9px 14px; min-height:42px;
-  transition:transform .18s var(--tap);
+  transition:transform .18s var(--tap), border-color .18s var(--tap);
 }
+.dz-copy:hover{ border-color:var(--c, var(--gold)); }
 .dz-copy:active{ transform:scale(.96); }
-.dz-copy.done{ background:var(--gold); border-color:var(--gold); color:#fff; }
+.dz-copy.done{ background:var(--c, var(--gold)); border-color:var(--c, var(--gold)); color:#fff; }
+
+/* ═══════════════ всплывашка у курсора (только мышь) ═══════════════ */
+.podskazka{
+  position:fixed; left:0; top:0; z-index:100; pointer-events:none;
+  width:360px; max-width:calc(100vw - 24px);
+  will-change:transform;
+}
+.pk-in{
+  background:var(--paper); color:var(--ink);
+  border-radius:18px; padding:14px 14px 12px;
+  box-shadow:0 0 0 1px rgba(28,25,23,.08), 0 28px 60px -22px rgba(0,0,0,.6), 0 8px 18px -10px rgba(0,0,0,.35);
+  opacity:0; transform:translateY(8px) scale(.96); transform-origin:0 0;
+  transition:opacity .16s ease, transform .28s var(--tap);
+}
+.podskazka.on .pk-in{ opacity:1; transform:none; }
+.pk-in.smena{ animation:smena .22s var(--tap); }
+@keyframes smena{ from{ opacity:.35; transform:translateY(3px); } to{ opacity:1; transform:none; } }
+.pk-h{
+  font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); margin:0 2px 9px;
+}
+.pk-urok{ background:#fff; border:1px solid var(--line); border-left:4px solid var(--c); border-radius:12px; padding:10px 12px; }
+.pk-urok + .pk-urok{ margin-top:7px; }
+.pk-verh{ display:flex; align-items:center; gap:0; }
+.pk-kurs{ font-size:14px; font-weight:800; line-height:1.25; }
+.pk-t{ margin-left:auto; padding-left:10px; font-size:11px; font-weight:700; color:var(--muted); white-space:nowrap; }
+.pk-tema{ font-size:13.5px; color:var(--sub); margin-top:5px; line-height:1.4; }
+.pk-tema em{ font-style:normal; color:var(--muted); }
+.pk-urok .dz{ margin-top:10px; padding:11px 12px 11px 30px; box-shadow:none; }
+.pk-urok .dz::before{ left:18px; }
+.pk-urok .dz-li{ font-size:13.5px; }
+.pk-urok .dz-no .n{ font-size:15.5px; }
+.pk-urok .dz-no .w{ font-size:12.5px; }
+.pk-sdat{
+  font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); margin:13px 2px 7px;
+}
+@media (prefers-reduced-motion:reduce){
+  .pk-in{ transition:opacity .12s ease; transform:none; }
+  .pk-in.smena{ animation:none; }
+}
 
 .dz-plain{
   margin-top:16px; font-size:14.5px; background:var(--gold-pale);
@@ -473,4 +572,46 @@ footer a{ color:var(--sub); }
   .den .dn{ font-size:16px; }
   .m-imya{ font-size:16px; }
   .chip{ min-height:64px; font-size:14px; }
+  .den .bukvy{ height:22px; }
+  .den .bk{ font-size:21px; }
+}
+
+/* ═══════════════ широкий экран: календарь слева, день списком справа ═══════════════ */
+@media (min-width:1000px){
+  .panel .wrap{ max-width:1180px; padding:0 28px; }
+  .pult{
+    display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);
+    gap:36px; align-items:start; margin-top:20px; padding-bottom:22px;
+  }
+  .mesyac, .raspis{ margin-top:0; }
+  .raspis{ padding-bottom:0; }
+  .status{ font-size:15px; }
+  .chasy{ font-size:30px; padding:10px 18px; }
+
+  .m-imya{ font-size:18px; }
+  .m-dw{ font-size:11px; }
+  .den{ aspect-ratio:1.2/1; border-radius:12px; }
+  .den .dn{ font-size:17px; }
+  .den .bukvy{ height:26px; }
+  .den .bk{ font-size:24px; }
+  .den:not(.chuzhoy):not(.vybran):hover{ background:var(--noch-3); }
+  .legenda{ font-size:13.5px; margin-top:14px; }
+
+  .raspis-h{ font-size:12px; margin-bottom:12px; color:#fff; }
+
+  /* день — список сверху вниз: время слева, предмет справа */
+  .plitki{ grid-template-columns:1fr; gap:4px; }
+  .plitka:not(.p-math){
+    display:grid; grid-template-columns:62px 1fr; align-items:baseline; column-gap:10px;
+    padding:9px 14px; border-radius:10px;
+  }
+  .plitka:not(.p-math) .p-vremya{ font-size:12px; }
+  .plitka:not(.p-math) .p-imya{ margin-top:0; font-size:15px; }
+  .plitka .p-zam{ grid-column:2; }
+  .plitka.p-math{ padding:14px 16px; margin:4px 0; }
+  .plitka.p-math .p-vremya{ font-size:12.5px; }
+  .plitka.p-math .p-imya{ font-size:18px; }
+  .plitka.p-math .p-tema{ font-size:14.5px; }
+  .sdat .s{ font-size:15px; }
+  .dalshe{ font-size:14px; }
 }

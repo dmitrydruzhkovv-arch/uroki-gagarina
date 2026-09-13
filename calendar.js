@@ -44,6 +44,22 @@ const SEGODNYA = () => polnoch(new Date());
 const raspDnya = d => (RASP && RASP.dni[dow(d)]) || [];
 const matDnya  = d => raspDnya(d).filter(x => x.vid === 'math');
 
+/* буква предмета в клетке календаря: В, А, Г — первая буква названия.
+   Точки под числом приходилось расшифровывать по цвету, букву читают сразу */
+const kursPo = id => C.DATA.kursy.find(k => k.id === id) || {};
+const bukva  = id => (kursPo(id).name || '?').charAt(0).toUpperCase();
+const bukvaHTML = id => `<b class="bk" style="--l:var(--l-${C.esc(id)}); --c:var(--c-${C.esc(id)})">${C.esc(bukva(id))}</b>`;
+
+/* предметы в порядке недели: пн — вероятность, вт — алгебра, ср — геометрия */
+function kursyPoNedele(){
+  const ids = [];
+  if (RASP) for (let i = 1; i <= 7; i++)
+    for (const x of (RASP.dni[i] || [])) if (x.vid === 'math' && !ids.includes(x.kurs)) ids.push(x.kurs);
+  C.DATA.kursy.forEach(k => { if (!ids.includes(k.id)) ids.push(k.id); });
+  return ids;
+}
+const izIso = s => { const [y, m, dd] = s.split('-').map(Number); return new Date(y, m - 1, dd); };
+
 /* ── что за день: учебный, каникулы, праздник ── */
 function pro(d){
   const s = iso(d);
@@ -163,11 +179,15 @@ function setkaMesyaca(){
     if (+d === +vybran) klass.push('vybran');
     if (svoy && (p.kanikuly || p.prazdnik)) klass.push('nerabochiy');
 
-    const tochki = mat.map(z => `<i style="background:var(--c-${z.kurs})"></i>`).join('');
+    /* сдвоенная пара — одна буква: предмет тот же, день тот же */
+    const bukvy = [...new Set(mat.map(z => z.kurs))].map(bukvaHTML).join('');
     kletki += `<button class="${klass.join(' ')}" data-d="${iso(d)}">
       <span class="dn mono">${d.getDate()}</span>
-      <span class="tochki">${tochki}</span></button>`;
+      <span class="bukvy">${bukvy}</span></button>`;
   }
+
+  const legenda = kursyPoNedele()
+    .map(id => `<span>${bukvaHTML(id)}${C.esc(kursPo(id).name || '')}</span>`).join('');
 
   return `<div class="mesyac">
     <div class="m-shapka">
@@ -178,6 +198,7 @@ function setkaMesyaca(){
     <div class="m-dni">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс']
       .map(x => `<span class="m-dw">${x}</span>`).join('')}</div>
     <div class="m-setka" style="--kletok:${vsego}">${kletki}</div>
+    <div class="legenda">${legenda}</div>
   </div>`;
 }
 
@@ -222,13 +243,16 @@ function raspisanieHTML(){
                    : t && t.plan ? esc(t.plan.tema) + ' <em>по плану</em>'
                    : '<em>тема появится после урока</em>';
         const go = t && t.fakt ? ` data-go="${esc(t.fakt.kurs.id)}|${esc(t.fakt.n)}"` : '';
-        return `<div class="${klass.join(' ')}" style="--c:var(--c-${esc(x.kurs)})"${go}>
+        /* прошедший урок показывает и то, что на нём задали: болевший
+           ученик тыкает в день и сразу видит домашку, без поиска в ленте */
+        const dz = t && t.fakt && t.fakt.dz ? C.dzHTML(t.fakt) : '';
+        return `<div class="${klass.join(' ')}" style="--c:var(--c-${esc(x.kurs)}); --l:var(--l-${esc(x.kurs)})"${go}>
           <div class="p-verh">
             <span class="p-vremya mono">${esc(x.ot)}—${esc(x.do)}</span>
             ${idet ? '<span class="p-sejchas">идёт</span>' : ''}
           </div>
-          <div class="p-imya">${esc(k.name || 'Математика')}</div>
-          <div class="p-tema">${tema}</div></div>`;
+          <div class="p-imya">${bukvaHTML(x.kurs)}${esc(k.name || 'Математика')}</div>
+          <div class="p-tema">${tema}</div>${dz}</div>`;
       }
       return `<div class="${klass.join(' ')}">
         <span class="p-vremya mono">${esc(x.ot)}</span>
@@ -241,7 +265,9 @@ function raspisanieHTML(){
   const budushchee = +d > +SEGODNYA();
   const blokSdat = sdat.length
     ? `<div class="sdat"><b>${budushchee ? 'Сдать в этот день' : 'Сдавали в этот день'}</b>` +
-      sdat.map(u => `<div class="s" data-go="${esc(u.kurs.id)}|${esc(u.n)}">${esc(u.title)}</div>`).join('') +
+      sdat.map(u => `<div class="s-urok" style="--c:var(--c-${esc(u.kurs.id)}); --l:var(--l-${esc(u.kurs.id)})">
+        <div class="s" data-go="${esc(u.kurs.id)}|${esc(u.n)}">${bukvaHTML(u.kurs.id)}${esc(u.title)}</div>
+        ${C.dzHTML(u, { bezSroka:true })}</div>`).join('') +
       `</div>` : '';
 
   let hvost = '';
@@ -259,8 +285,111 @@ function raspisanieHTML(){
 
 const chasy = () => {
   const n = new Date();
-  return [n.getHours(), n.getMinutes()].map(x => String(x).padStart(2, '0')).join(':');
+  return [n.getHours(), n.getMinutes(), n.getSeconds()].map(x => String(x).padStart(2, '0')).join(':');
 };
+
+/* ── всплывашка у курсора: что было в этот день и что задали ──
+   Только там, где есть мышь. На телефоне то же самое открывается
+   нажатием на день — в расписании справа (или ниже). */
+function podskazkaHTML(d){
+  const p = pro(d), esc = C.esc;
+  if (p.kanikuly || p.prazdnik) return '';
+  const temy = temyDnya(d), sdat = sdatVDen(d);
+  if (!temy.length && !sdat.length) return '';
+
+  let h = `<div class="pk-h">${esc(C.dayName(d))}, ${esc(C.dateText(d))}</div>`;
+  for (const t of temy){
+    const k = kursPo(t.kursId);
+    const tema = t.fakt ? esc(t.fakt.title)
+               : t.plan ? esc(t.plan.tema) + ' <em>по плану</em>'
+               : '<em>тема появится после урока</em>';
+    h += `<div class="pk-urok" style="--c:var(--c-${esc(t.kursId)}); --l:var(--l-${esc(t.kursId)})">
+      <div class="pk-verh">${bukvaHTML(t.kursId)}<span class="pk-kurs">${esc(k.name || '')}</span>
+        <span class="pk-t mono">${esc(t.zvonok.ot)}—${esc(t.zvonok.do)}</span></div>
+      <div class="pk-tema">${tema}</div>
+      ${t.fakt && t.fakt.dz ? C.dzHTML(t.fakt, { bezKnopki:true }) : ''}</div>`;
+  }
+  if (sdat.length){
+    /* что сдать — важно, пока срок впереди; прошлый срок — одной строкой,
+       иначе всплывашка вырастает выше экрана */
+    const vperedi = +d >= +SEGODNYA();
+    h += `<div class="pk-sdat">${vperedi ? 'Сдать в этот день' : 'Сдавали в этот день'}</div>`;
+    h += sdat.map(u => `<div class="pk-urok" style="--c:var(--c-${esc(u.kurs.id)}); --l:var(--l-${esc(u.kurs.id)})">
+      <div class="pk-verh">${bukvaHTML(u.kurs.id)}<span class="pk-kurs">${esc(u.title)}</span></div>
+      ${vperedi ? C.dzHTML(u, { bezSroka:true, bezKnopki:true }) : ''}</div>`).join('');
+  }
+  return h;
+}
+
+function podskazka(korob){
+  const MYSH = window.matchMedia && matchMedia('(hover:hover) and (pointer:fine)').matches;
+  if (!MYSH) return;
+
+  const pk = document.createElement('div');
+  pk.className = 'podskazka';
+  pk.setAttribute('aria-hidden', 'true');
+  pk.innerHTML = '<div class="pk-in"></div>';
+  document.body.appendChild(pk);
+  const vnutri = pk.firstChild;
+
+  let den = null, vidna = false, mx = 0, my = 0, px = 0, py = 0, w = 0, h = 0, raf = 0, zaderzhka = 0;
+  const OTSTUP = 18, KRAY = 12;
+
+  /* справа-снизу от курсора; не влезает — прыгает на другую сторону */
+  const cel = () => {
+    let x = mx + OTSTUP;
+    if (x + w > innerWidth - KRAY) x = mx - OTSTUP - w;
+    x = Math.max(KRAY, x);
+    let y = my + OTSTUP;
+    if (y + h > innerHeight - KRAY) y = innerHeight - KRAY - h;
+    y = Math.max(KRAY, y);
+    return [x, y];
+  };
+  const postavit = () => { pk.style.transform = `translate3d(${px}px,${py}px,0)`; };
+  /* мягко догоняет курсор, а не прилипает к нему — так не дёргается */
+  const tik = () => {
+    const [tx, ty] = cel();
+    px += (tx - px) * .24; py += (ty - py) * .24;
+    postavit();
+    raf = (Math.abs(tx - px) > .4 || Math.abs(ty - py) > .4) ? requestAnimationFrame(tik) : 0;
+  };
+  const merit = () => { w = pk.offsetWidth; h = pk.offsetHeight; };
+
+  const pokazat = html => {
+    vnutri.innerHTML = html;
+    merit();
+    if (!vidna){
+      [px, py] = cel(); postavit();
+      pk.classList.add('on'); vidna = true;
+    } else {
+      /* переехали на соседний день — лёгкая смена, без повторного выпрыгивания */
+      vnutri.classList.remove('smena'); void vnutri.offsetWidth; vnutri.classList.add('smena');
+    }
+    if (!raf) raf = requestAnimationFrame(tik);
+  };
+  const skryt = () => {
+    clearTimeout(zaderzhka); den = null;
+    if (vidna){ pk.classList.remove('on'); vidna = false; }
+  };
+
+  korob.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    const kl = e.target.closest('.den');
+    const kl_d = kl ? kl.dataset.d : null;
+    if (kl_d !== den){
+      den = kl_d;
+      clearTimeout(zaderzhka);
+      const html = den ? podskazkaHTML(izIso(den)) : '';
+      if (!html){ if (vidna){ pk.classList.remove('on'); vidna = false; } }
+      /* короткая пауза на первом показе: мышь, пролетающая через календарь, его не зажигает */
+      else if (vidna) pokazat(html);
+      else zaderzhka = setTimeout(() => { if (den === kl_d) pokazat(html); }, 110);
+    }
+    if (vidna && !raf) raf = requestAnimationFrame(tik);
+  });
+  korob.addEventListener('mouseleave', skryt);
+  addEventListener('scroll', skryt, { passive:true });
+}
 
 function risovat(){
   const now = new Date();
@@ -277,9 +406,13 @@ function risovat(){
       <div class="chasy mono" id="chasy">${chasy()}</div>
     </div>
     <div class="status ${s.vid}">${C.esc(s.txt)}</div>
-    ${setkaMesyaca()}
-    ${etot ? '' : '<button class="k-segodnya" data-m="0">↩ вернуться к сегодня</button>'}
-    ${raspisanieHTML()}`;
+    <div class="pult">
+      <div class="pult-l">
+        ${setkaMesyaca()}
+        ${etot ? '' : '<button class="k-segodnya" data-m="0">↩ вернуться к сегодня</button>'}
+      </div>
+      <div class="pult-r">${raspisanieHTML()}</div>
+    </div>`;
 }
 
 function init(ctx){
@@ -288,14 +421,18 @@ function init(ctx){
   if (!korob) return;
   risovat();
 
-  /* часы отдельно: перерисовывать панель раз в минуту незачем */
-  setInterval(() => {
+  /* часы отдельно: панель перерисовывается раз в минуту, а секунды идут каждую секунду */
+  const tikChasov = () => {
     const el = document.getElementById('chasy');
     if (el) el.textContent = chasy();
-  }, 15000);
+    setTimeout(tikChasov, 1000 - new Date().getMilliseconds() + 5);   /* ровно на смене секунды */
+  };
+  tikChasov();
   setInterval(risovat, 60000);
+  podskazka(korob);
 
   korob.addEventListener('click', e => {
+    if (e.target.closest('.dz-copy')) return;            /* копирование — не переход к уроку */
     const nav = e.target.closest('.strelka, .k-segodnya');
     if (nav){
       const m = +nav.dataset.m;
