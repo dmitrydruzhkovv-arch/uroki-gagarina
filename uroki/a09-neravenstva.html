@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Алгебра 9 · уроки 7—8 · Неравенства первой степени</title>
+<link rel="stylesheet" href="../_движок/katex/katex.min.css">
+<style>
+  @import url('../_движок/fonts/gf.css');
+  @page { size: A4 portrait; margin: 11mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#ffffff; --surface:#ffffff;
+    --border:#e2d9c8; --border-soft:#ede8df;
+    --text-main:#1c1917; --text-sub:#57534e; --text-muted:#a8a29e;
+    --gold:#d97706; --gold-soft:#fbbf24; --gold-dim:#fef3c7; --gold-pale:#fffbeb;
+    --z3:#9333ea; --z4:#0369a1; --z7:#16a34a; --ind:#4f46e5; --err:#dc2626;
+    --fig:#1c1917; --fig-dim:#a8a29e;
+  }
+  body { background:var(--bg); font-family:'Onest',system-ui,sans-serif; color:var(--text-main); font-size:12px; -webkit-font-smoothing:antialiased; }
+
+  .sheet { position:relative; width:100%; height:272mm; overflow:hidden; background:var(--surface); display:flex; flex-direction:column;
+           page-break-after:always; page-break-inside:avoid; break-inside:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .sheet:last-of-type { page-break-after:auto; }
+  .body { flex:1 1 auto; display:flex; flex-direction:column; gap:6px; min-height:0; }
+  .ft { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:5px; padding-top:5px; border-top:1px solid var(--border-soft);
+        font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-muted); letter-spacing:.2px; }
+  .ft span:first-child { white-space:nowrap; }
+  .ft span:last-child { white-space:nowrap; }
+
+  /* шапка */
+  .fest-banner { background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 40%,#fde68a 100%); border:2px solid var(--gold-soft); border-radius:12px;
+                 padding:10px 18px; position:relative; overflow:hidden; flex:0 0 auto; box-shadow:0 0 34px rgba(251,191,36,.28), 0 4px 20px rgba(217,119,6,.10); }
+  .fest-banner > * , .slimhd > *, .card-finale > * { position:relative; z-index:2; }
+  .fest-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
+  .fest-label { font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:600; color:var(--gold); text-transform:uppercase; letter-spacing:1.3px; }
+  .fest-badges { display:flex; gap:5px; }
+  .bdg { width:20px; height:20px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10px; }
+  .bdg.di { background:var(--text-main); color:#fff; }
+  .bdg.lm { background:var(--gold); color:#fff; }
+  .fest-title { font-size:21px; font-weight:800; letter-spacing:-.5px; line-height:1.12; }
+  .fest-title span { color:var(--gold); }
+  .fest-message { margin-top:5px; font-size:10.5px; color:var(--text-sub); line-height:1.42; border-top:1px solid rgba(217,119,6,.2); padding-top:5px; }
+  .fest-message b { color:var(--text-main); font-weight:700; }
+
+  .hero { border:2px solid var(--gold-soft); border-radius:12px; background:linear-gradient(135deg,#fffbeb,var(--gold-dim));
+          padding:8px 15px 9px; text-align:center; flex:0 0 auto; box-shadow:0 0 30px rgba(251,191,36,.22); }
+  .hero-kicker { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); margin-bottom:3px; }
+  .hero-eq { font-size:20px; font-weight:800; line-height:1.15; }
+  .hero-sub { font-size:11.5px; margin-top:5px; font-family:'Cambria','Georgia',serif; line-height:1.4; }
+  .costumes { display:flex; gap:7px; justify-content:center; margin-top:6px; }
+  .cstm { flex:1; text-align:center; border-radius:9px; padding:4px 5px; border:1.5px solid var(--gold-soft); background:#fff; }
+  .cstm-big { font-size:13px; font-weight:800; }
+  .cstm-lbl { font-size:8px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); margin-top:2px; font-weight:600; }
+  .cstm-lbl .katex { text-transform:none; }
+
+  .shp { border:1px solid var(--border); border-radius:11px; overflow:hidden; background:var(--surface); flex:0 0 auto; box-shadow:0 2px 12px rgba(0,0,0,.04); }
+  .shp.grow { flex:1 1 auto; display:flex; flex-direction:column; min-height:0; }
+  .shp-head { display:flex; align-items:center; gap:9px; padding:6px 14px; background:linear-gradient(135deg,var(--gold-pale),var(--gold-dim)); border-bottom:1px solid var(--border); }
+  .shp-head .fbadge { font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700; color:#fff; background:var(--gold); padding:3px 9px; border-radius:5px; text-transform:uppercase; letter-spacing:1px; }
+  .shp-head .fbadge.ind { background:var(--ind); }
+  .shp-head .ftitle { font-size:13.5px; font-weight:800; letter-spacing:-.3px; }
+  .shp-head .fnote { margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-sub); white-space:nowrap; }
+  .shp-body { display:grid; gap:1px; background:var(--border-soft); flex:1 1 auto; min-height:0; }
+  .shp-body.c2 { grid-template-columns:1.15fr 1fr; }
+  .shp-body.c3p { grid-template-columns:.9fr 1.12fr 1fr; }
+  .scol { background:var(--surface); padding:7px 11px; display:flex; flex-direction:column; gap:6px; }
+  .scol-t { font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--gold); display:flex; align-items:center; gap:5px; }
+  .scol-t::before { content:'▸'; }
+  .scol.b1 .scol-t { color:var(--z4); }
+  .scol.b2 .scol-t { color:var(--err); }
+  .scol.b3 .scol-t { color:var(--z7); }
+  .srow { font-family:'Cambria','Georgia',serif; font-size:11px; line-height:1.42; }
+  .srow b { font-weight:700; }
+  .eq { text-align:center; font-size:15px; }
+  .out { border-radius:7px; background:var(--gold-dim); border:1px solid var(--gold-soft); padding:5px 8px; text-align:center; font-size:14px; margin-top:auto; }
+  .out.ind { background:#eef2ff; border-color:#c7d2fe; font-size:10.5px; font-weight:600; line-height:1.35; }
+  .rule { display:flex; gap:8px; font-family:'Cambria','Georgia',serif; font-size:11.5px; line-height:1.42; }
+  .rule .rn { flex:0 0 18px; height:18px; border-radius:5px; background:var(--z4); color:#fff; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .rule b { font-weight:700; }
+  .steps { display:flex; flex-direction:column; gap:4px; }
+  .st { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:10px; }
+  .st .eq { text-align:left; font-size:15px; min-width:92px; }
+  .why { font-size:10px; color:var(--text-sub); line-height:1.3; }
+  .why b { color:var(--err); }
+  ul.dots { list-style:none; display:flex; flex-direction:column; gap:3px; }
+  ul.dots li { font-size:10px; line-height:1.32; padding-left:13px; position:relative; color:var(--text-sub); }
+  ul.dots li::before { content:''; position:absolute; left:2px; top:6px; width:5px; height:5px; border-radius:50%; background:var(--gold); }
+  ul.dots li b { color:var(--text-main); }
+  .err-item { font-size:10px; line-height:1.38; color:var(--text-sub); padding:3px 0 4px 14px; position:relative; border-bottom:1px dashed var(--border-soft); }
+  .err-item::before { content:'✕'; position:absolute; left:0; top:3px; color:var(--err); font-weight:700; font-size:10px; }
+  .err-item b { color:var(--text-main); font-size:11.5px; }
+  .itab { width:100%; border-collapse:collapse; }
+  .itab th { font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted); text-align:left; padding:0 4px 3px; }
+  .itab td { border-top:1px solid var(--border-soft); padding:4px; font-size:13px; }
+  .minis2 { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .mini { display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .mini .cap { font-size:10px; font-weight:800; text-align:center; line-height:1.2; }
+  .mini .cap i { display:block; font-style:normal; font-size:9px; font-weight:600; color:var(--text-muted); margin-top:1px; }
+
+  /* чертежи */
+  .fig { display:flex; flex-direction:column; align-items:center; width:100%; }
+  .fig svg { display:block; width:100%; height:auto; max-width:100%; }
+  .ln { fill:none; stroke:var(--fig); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .ln-b { stroke:var(--z4); stroke-width:2.4; }
+  .ln-r { stroke:var(--err); stroke-width:2.4; }
+  .ln-i { stroke:var(--ind); stroke-width:2.2; }
+  .ax { stroke:var(--fig); stroke-width:1.5; fill:none; }
+  .ax-h { fill:var(--fig); stroke:none; }
+  .grd { stroke:var(--border-soft); stroke-width:.9; fill:none; }
+  .zn-p { stroke:var(--z4); stroke-width:5; stroke-linecap:butt; opacity:.32; fill:none; }
+  .zn-m { stroke:var(--err); stroke-width:5; stroke-linecap:butt; opacity:.32; fill:none; }
+  .dt { fill:var(--fig); }
+  .vx { font-family:'Onest',sans-serif; font-weight:800; fill:var(--text-main); }
+  .an { font-family:'Onest',sans-serif; font-weight:800; fill:var(--gold); text-anchor:middle; dominant-baseline:middle; }
+  .an-d { font-family:'Onest',sans-serif; font-weight:700; fill:var(--text-sub); text-anchor:middle; dominant-baseline:middle; }
+
+  /* узкая шапка ступени */
+  .slimhd { display:flex; align-items:center; gap:14px; flex:0 0 auto; position:relative; overflow:hidden;
+            border:2px solid var(--gold-soft); border-radius:11px; padding:7px 15px;
+            background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 45%,#fde68a 100%); box-shadow:0 0 26px rgba(251,191,36,.24); }
+  .slimhd-in { flex:1 1 auto; min-width:0; }
+  .slimhd-t { display:block; font-size:16.5px; font-weight:800; letter-spacing:-.4px; }
+  .slimhd-t span { color:var(--gold); }
+  .slimhd-s { display:block; font-size:10px; color:var(--text-sub); margin-top:2px; line-height:1.38; }
+
+  /* задание */
+  .task { display:flex; flex-direction:column; min-height:0; }
+  .t-head { display:flex; align-items:center; gap:8px; margin-bottom:4px; line-height:1; }
+  .t-badge { font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:700; color:#fff; background:var(--zc); padding:3px 9px; border-radius:5px; letter-spacing:.3px; white-space:nowrap; }
+  .t-emoji { font-size:14px; line-height:1; }
+  .t-name { font-size:13.5px; font-weight:700; color:var(--zc); letter-spacing:-.25px; }
+  .t-meta { margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text-muted); white-space:nowrap; }
+  .t-frame { border:1px solid var(--border); border-radius:10px; background:#fff; padding:6px 8px; flex:1 1 auto; display:flex; flex-direction:column; min-height:0; }
+  .t-frame.grid { border-color:#cfe3f2; position:relative; overflow:hidden; }
+  .cond-card { background:#fff; border:1px solid var(--border-soft); border-left:3px solid var(--zc); border-radius:6px; padding:5px 10px;
+               font-family:'Cambria','Georgia',serif; font-size:11.5px; line-height:1.45; box-shadow:0 1px 5px rgba(0,0,0,.07); }
+  .cond-card .q { font-weight:700; font-family:'Onest',sans-serif; border-bottom:2px solid var(--gold-soft); }
+  .duo { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+
+  /* клетки с примерами: условие сверху, поле для счёта — под ним */
+  .qgrid { display:grid; grid-auto-rows:1fr; gap:6px; flex:1 1 auto; min-height:0; }
+  .qgrid.c3 { grid-template-columns:repeat(3,1fr); }
+  .qgrid.c4 { grid-template-columns:repeat(4,1fr); }
+  .qc { border:1.3px dashed color-mix(in srgb, var(--zc) 55%, #fff); border-radius:8px; display:flex; flex-direction:column; min-height:0; }
+  .qc.must { border:2px solid var(--zc); }
+  .qt { align-self:flex-start; background:rgba(255,255,255,.95); padding:4px 9px 4px 5px; font-size:13px; line-height:1.3;
+        border-radius:7px 0 8px 0; border-right:1px solid var(--border-soft); border-bottom:1px solid var(--border-soft); }
+  .qn { display:inline-flex; align-items:center; justify-content:center; min-width:17px; height:17px; padding:0 3px; border-radius:4px;
+        background:var(--zc); color:#fff; font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700; margin-right:7px; vertical-align:1px; }
+  .qc:not(.must):not(.star) .qn { background:#fff; color:var(--zc); border:1.3px solid var(--zc); }
+  .qc.star { border:2px solid var(--zc); }
+  .qc.star .qt { font-family:'Cambria','Georgia',serif; font-size:11px; line-height:1.4; align-self:stretch; border-radius:7px 7px 0 0; border-right:none; }
+  .qt .fm { font-size:14px; margin-top:3px; white-space:nowrap; }
+  .qc.star .qt.big { font-size:14px; align-self:flex-start; border-radius:7px 0 8px 0; border-right:1px solid var(--border-soft); }
+
+  /* ось под рисунок промежутка */
+  .qc.ax .axl { margin:auto 12px 12px 8px; height:1.6px; background:var(--fig); position:relative; }
+  .qc.ax .axl::after { content:''; position:absolute; right:-2px; top:-4.2px; border-left:9px solid var(--fig); border-top:5px solid transparent; border-bottom:5px solid transparent; }
+  .qc.ax .axl i { position:absolute; right:-3px; top:6px; font-style:italic; font-family:'Cambria','Georgia',serif; font-size:12px; }
+
+  /* верно/неверно, да/нет — окошки СЛЕВА */
+  .vn { width:100%; border-collapse:collapse; margin-top:3px; }
+  .vn td { border-top:1px solid var(--border-soft); padding:2.5px 3px; font-size:11.5px; line-height:1.35; vertical-align:middle; }
+  .vn tr:first-child td { border-top:none; }
+  .vn td.lt { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--text-muted); width:20px; font-size:10px; }
+  .vn td.lt.mk { color:var(--text-main); }
+  .vn td.lt.nn { width:auto; white-space:nowrap; color:var(--zc); padding-right:6px; }
+  .vn td.bx { width:1%; white-space:nowrap; padding-right:7px; }
+  .vn td.bx.r { padding-right:0; padding-left:6px; text-align:right; }
+  .vn.two td { width:auto; }
+  .vn.two td:nth-child(3) { padding-right:12px; border-right:1px dashed var(--border-soft); }
+  .yn { display:inline-flex; gap:3px; }
+  .yn i { font-style:normal; font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-muted); display:inline-flex; align-items:center; justify-content:center;
+          min-width:26px; height:18px; border:1.4px solid var(--border); border-radius:5px; background:#fff; }
+  .blank { display:inline-block; vertical-align:middle; min-width:46px; height:21px; border:1.8px solid var(--gold-soft); border-radius:6px; background:var(--gold-pale); }
+  .blank.sm { min-width:34px; }
+  .blank.wide { min-width:96px; }
+  .fill4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:5px 10px; margin-top:5px; }
+  .fl { display:flex; flex-direction:column; align-items:flex-start; gap:2px; }
+  .fl .op { font-size:11px; color:var(--zc); }
+  .fl .arr { display:none; }
+  .fl .blank.wide { width:100%; height:24px; }
+  .fields { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; margin-top:6px; font-size:11px; }
+  .fields i { font-style:normal; }
+
+  /* найди ошибку */
+  .qc.osh .qt { align-self:stretch; border-radius:7px 7px 0 0; border-right:none; display:flex; align-items:flex-start; }
+  .oshl { display:flex; flex-direction:column; gap:3px; font-size:13px; }
+
+  /* рисунок № 27 */
+  .qc.pic { align-items:stretch; }
+  .qc.pic .fig { padding:2px 8px; }
+  .qc.pic .fig svg { background:#fff; border-radius:6px; }   /* клетка листа не должна просвечивать сквозь сетку графика */
+  .qc.pic .fig svg { max-width:150px; margin:0 auto; }
+  .pn { display:grid; grid-template-columns:auto 1fr; gap:4px 5px; align-items:center; padding:4px 7px 7px; font-size:10.5px; background:rgba(255,255,255,.9); margin-top:auto; border-radius:0 0 7px 7px; }
+  .pn .blank.wide { min-width:0; width:100%; height:19px; }
+
+  .card-finale { flex:0 0 auto; text-align:center; padding:6px 20px; position:relative; overflow:hidden;
+                 border:2px solid var(--gold-soft); border-radius:12px; background:linear-gradient(135deg,#fffbeb,var(--gold-dim)); }
+  .card-finale-diamonds { font-size:9px; letter-spacing:5px; color:var(--gold); opacity:.75; }
+  .card-finale-title { font-size:13.5px; font-weight:800; letter-spacing:-.3px; margin-top:2px; }
+  .card-finale-title span { color:var(--gold); }
+  .card-finale-sub { font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text-sub); margin-top:2px; line-height:1.4; }
+
+  @media print { body { background:#fff; } * { animation:none !important; } }
+
+  /* ТЕЛЕФОН — лист распускается в ленту */
+  @media screen and (max-width:820px) {
+    body { font-size:13px; padding:0 10px 16px; }
+    .sheet { height:auto; overflow:visible; padding-top:12px; }
+    .sheet + .sheet { border-top:8px solid var(--border-soft); margin-top:14px; }
+    .body { gap:10px; }
+    .task { flex:0 0 auto !important; }
+    .fest-title { font-size:19px; } .fest-message { font-size:12px; }
+    .fest-top { flex-direction:column; align-items:flex-start; gap:5px; }
+    .hero-eq { font-size:17px; } .hero-sub { font-size:13px; }
+    .costumes { flex-direction:column; gap:5px; } .cstm-lbl { font-size:9.5px; }
+    .shp-head { flex-wrap:wrap; } .shp-head .fnote { margin-left:0; }
+    .shp-body.c2, .shp-body.c3p { grid-template-columns:1fr; }
+    .rule, .srow { font-size:13px; } .why, ul.dots li, .err-item { font-size:12px; }
+    .minis2 .fig svg { max-width:170px; margin:0 auto; }
+    .slimhd-t { font-size:16px; } .slimhd-s { font-size:12px; }
+    .t-head { flex-wrap:wrap; row-gap:4px; } .t-meta { margin-left:0; width:100%; }
+    .duo { grid-template-columns:1fr; }
+    .cond-card { font-size:13px; } .vn td { font-size:13px; }
+    .qgrid.c3, .qgrid.c4 { grid-template-columns:1fr 1fr; grid-auto-rows:minmax(92px, auto); }
+    .qgrid.r27 { grid-template-columns:1fr 1fr; grid-auto-rows:auto; }
+    .fill4 { grid-template-columns:1fr 1fr; }
+    .vn.two, .vn.two tbody, .vn.two tr { display:block; }
+    .vn.two td { display:inline-block; border:none !important; padding:4px 3px; }
+    .vn.two td:nth-child(3n) { display:block; width:100%; border-bottom:1px solid var(--border-soft) !important; padding-bottom:7px; }
+    .ft { font-size:9px; flex-direction:column; align-items:flex-start; gap:3px; }
+    .ft span:first-child { max-width:100%; white-space:normal; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="body">
+    <div class="fest-banner diapat">
+      <div class="fest-top">
+        <div class="fest-label">Алгебра · 9 класс · уроки 7—8 · 15 сентября · § 1, п. 1.1—1.2</div>
+        <div class="fest-badges"><span class="bdg lm">Λ</span><span class="bdg di">D.</span></div>
+      </div>
+      <div class="fest-title">Неравенства первой степени: <span>перенести, разделить и не потерять знак</span></div>
+      <div class="fest-message">
+        Тема знакома с 8 класса — решаем много и прямо на листе. <b>Сплошная рамка</b> — первый столбик учебника, решают все.
+        <b>Пунктир</b> — остальные буквы, кто успел. <b>⭐</b> — посложнее, из «Заданий для повторения».
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-kicker">Определение · учебник, п. 1.1</div>
+      <div class="hero-eq">\(kx+b&gt;0\quad\text{или}\quad kx+b&lt;0,\qquad k\neq 0\)</div>
+      <div class="hero-sub">Неравенство вида \(kx+b&gt;0\) или \(kx+b&lt;0\), где \(k\) и \(b\) — данные числа, причём \(k\neq0\), называют <b>неравенством первой степени с одним неизвестным</b> \(x\).</div>
+      <div class="costumes">
+        <div class="cstm"><div class="cstm-big">\(k\)</div><div class="cstm-lbl">коэффициент при неизвестном</div></div>
+        <div class="cstm"><div class="cstm-big">\(b\)</div><div class="cstm-lbl">свободный член</div></div>
+        <div class="cstm"><div class="cstm-big">решить</div><div class="cstm-lbl">найти все решения или доказать, что их нет</div></div>
+      </div>
+    </div>
+
+    <div class="shp">
+      <div class="shp-head"><span class="fbadge">способ</span><span class="ftitle">Как решать — дословно по учебнику</span><span class="fnote">п. 1.1, стр. 6</span></div>
+      <div class="shp-body c2">
+        <div class="scol b1">
+          <div class="scol-t">Правило</div>
+          <div class="rule"><span class="rn">1</span><span>перенести свободный член этого неравенства в правую часть (изменив знак числа \(b\) на противоположный);</span></div>
+          <div class="rule"><span class="rn">2</span><span>разделить обе части полученного неравенства на коэффициент при неизвестном (при этом <b>если \(k&gt;0\), то знак неравенства не изменяется; если \(k&lt;0\), то знак неравенства изменяется на противоположный</b>);</span></div>
+          <div class="rule"><span class="rn">3</span><span>полученное неравенство и определяет множество всех решений исходного неравенства.</span></div>
+        </div>
+        <div class="scol b3">
+          <div class="scol-t">Пример 2 из учебника</div>
+          <div class="steps">
+            <div class="st"><span class="eq">\(-4x+13&lt;0\)</span><span class="why"></span></div>
+            <div class="st"><span class="eq">\(-4x&lt;-13\)</span><span class="why">перенесли \(13\), знак числа сменился</span></div>
+            <div class="st"><span class="eq">\(x&gt;\dfrac{13}{4}\)</span><span class="why">делим на \(-4\), а \(-4&lt;0\): <b>знак меняется</b></span></div>
+          </div>
+          <div class="out">Ответ: \(\left(\dfrac{13}{4};\,+\infty\right)\)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="shp">
+      <div class="shp-head"><span class="fbadge ind">ответ</span><span class="ftitle">Ответ — промежуток. Его можно записать, нарисовать и увидеть на графике</span></div>
+      <div class="shp-body c3p">
+        <div class="scol">
+          <div class="scol-t">Запись ответа</div>
+          <table class="itab">
+            <tr><th>неравенство</th><th>промежуток</th></tr>
+            <tr><td>\(x&gt;a\)</td><td>\((a;\,+\infty)\)</td></tr>
+            <tr><td>\(x&lt;a\)</td><td>\((-\infty;\,a)\)</td></tr>
+            <tr><td>\(a&lt;x&lt;b\)</td><td>\((a;\,b)\)</td></tr>
+            <tr><td>\(x\) — любое</td><td>\((-\infty;\,+\infty)\)</td></tr>
+          </table>
+          <ul class="dots">
+            <li>знак строгий — точка \(a\) <b>не решение</b>: на прямой кружок пустой, скобка круглая</li>
+            <li>у \(\infty\) скобка <b>всегда круглая</b></li>
+          </ul>
+        </div>
+        <div class="scol b1">
+          <div class="scol-t">Графиком · п. 1.2</div>
+          <div class="srow">Решить неравенство \(kx+b&gt;0\) — это значит найти все значения \(x\), для каждого из которых соответствующая точка прямой \(y=kx+b\) расположена <b>выше оси \(Ox\)</b>.</div>
+          <div class="minis2">
+            <div class="mini"><div class="fig"><svg viewBox="0 0 135.2 114.2" xmlns="http://www.w3.org/2000/svg">
+  <path class="grd" d="M25.6 101.2 L25.6 13"/>
+<path class="grd" d="M46.6 101.2 L46.6 13"/>
+<path class="grd" d="M67.6 101.2 L67.6 13"/>
+<path class="grd" d="M88.6 101.2 L88.6 13"/>
+<path class="grd" d="M109.6 101.2 L109.6 13"/>
+<path class="grd" d="M13 84.4 L122.2 84.4"/>
+<path class="grd" d="M13 63.4 L122.2 63.4"/>
+<path class="grd" d="M13 42.4 L122.2 42.4"/>
+<path class="grd" d="M13 21.4 L122.2 21.4"/>
+  <path class="ln ax" d="M13 63.4 L133.2 63.4"/><path class="ln ax-h" d="M133.2 63.4 L125.2 67.4 L125.2 59.4 Z"/>
+<path class="ln ax" d="M67.6 101.2 L67.6 2"/><path class="ln ax-h" d="M67.6 2 L71.6 10 L63.6 10 Z"/>
+<text class="an-d" x="131.2" y="76.4" font-size="12">x</text>
+<text class="an-d" x="57.6" y="8" font-size="12">y</text>
+  <path class="zn-m" d="M13 63.4 L46.6 63.4"/>
+  <path class="zn-p" d="M46.6 63.4 L122.2 63.4"/>
+  <path class="ln ln-b" d="M13 97 L97 13"/>
+  <text class="an" x="107.5" y="53.4" font-size="15" style="fill:#0369a1">+</text>
+  <text class="an" x="27.7" y="53.4" font-size="15" style="fill:#dc2626">−</text>
+  <circle class="dt" cx="46.6" cy="63.4" r="4"/>
+  <text class="vx" x="57.6" y="80.4" font-size="13" text-anchor="middle">x₀</text>
+</svg></div><div class="cap">\(k&gt;0\)<i>выше оси правее \(x_0\)</i></div></div>
+            <div class="mini"><div class="fig"><svg viewBox="0 0 135.2 114.2" xmlns="http://www.w3.org/2000/svg">
+  <path class="grd" d="M25.6 101.2 L25.6 13"/>
+<path class="grd" d="M46.6 101.2 L46.6 13"/>
+<path class="grd" d="M67.6 101.2 L67.6 13"/>
+<path class="grd" d="M88.6 101.2 L88.6 13"/>
+<path class="grd" d="M109.6 101.2 L109.6 13"/>
+<path class="grd" d="M13 84.4 L122.2 84.4"/>
+<path class="grd" d="M13 63.4 L122.2 63.4"/>
+<path class="grd" d="M13 42.4 L122.2 42.4"/>
+<path class="grd" d="M13 21.4 L122.2 21.4"/>
+  <path class="ln ax" d="M13 63.4 L133.2 63.4"/><path class="ln ax-h" d="M133.2 63.4 L125.2 67.4 L125.2 59.4 Z"/>
+<path class="ln ax" d="M67.6 101.2 L67.6 2"/><path class="ln ax-h" d="M67.6 2 L71.6 10 L63.6 10 Z"/>
+<text class="an-d" x="131.2" y="76.4" font-size="12">x</text>
+<text class="an-d" x="57.6" y="8" font-size="12">y</text>
+  <path class="zn-p" d="M13 63.4 L88.6 63.4"/>
+  <path class="zn-m" d="M88.6 63.4 L122.2 63.4"/>
+  <path class="ln ln-r" d="M38.2 13 L122.2 97"/>
+  <text class="an" x="27.7" y="53.4" font-size="15" style="fill:#0369a1">+</text>
+  <text class="an" x="107.5" y="53.4" font-size="15" style="fill:#dc2626">−</text>
+  <circle class="dt" cx="88.6" cy="63.4" r="4"/>
+  <text class="vx" x="77.6" y="80.4" font-size="13" text-anchor="middle">x₀</text>
+</svg></div><div class="cap">\(k&lt;0\)<i>выше оси левее \(x_0\)</i></div></div>
+          </div>
+          <div class="eq">\(x_0=-\dfrac{b}{k}\)</div>
+        </div>
+        <div class="scol b2">
+          <div class="scol-t">Частые ошибки</div>
+          <div class="err-item"><b>\(-3x&lt;6\;\Rightarrow\;x&lt;-2\)</b><br>делили на отрицательное и не повернули знак. Верно: \(x&gt;-2\)</div>
+          <div class="err-item"><b>\(-x&lt;2\;\Rightarrow\;x&lt;-2\)</b><br>\(-x\) — это \((-1)\cdot x\). Делим на \(-1\), знак меняется. Верно: \(x&gt;-2\)</div>
+          <div class="err-item"><b>\(x&gt;5\;\Rightarrow\;[5;\,+\infty)\)</b><br>число \(5\) не решение: \(5&gt;5\) неверно. Верно: \((5;\,+\infty)\)</div>
+          <div class="out ind">Проверка за 30 секунд: подставь в исходное неравенство любое число из своего ответа</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="--zc:#9333ea; flex:1 1 0">
+      <div class="t-head"><span class="t-badge">⭐ 1063 · 1066</span><span class="t-emoji">🗣</span><span class="t-name">Разминка — устно</span><span class="t-meta">из «Заданий для повторения», стр. 281</span></div>
+      <div class="t-frame grid">
+        <div class="duo">
+          <div class="cond-card"><span class="q">№ 1063.</span> Сохранится ли знак неравенства, если обе части неравенства \(9&gt;6\):
+            <table class="vn"><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt">а)</td><td>увеличить на положительное число</td></tr><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt">б)</td><td>уменьшить на положительное число</td></tr><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt">в)</td><td>умножить на положительное число</td></tr><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt">г)</td><td>разделить на отрицательное число</td></tr></table>
+          </div>
+          <div class="cond-card"><span class="q">№ 1066.</span> Верно ли неравенство:
+            <table class="vn"><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt">а)</td><td>\(8\geqslant 8\)</td></tr><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt">б)</td><td>\(7\geqslant 6\)</td></tr><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt">в)</td><td>\(-1\leqslant 2\)</td></tr><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt">г)</td><td>\(-9\geqslant -8\)</td></tr></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+<div class="sheet">
+  <div class="body">
+    
+    <div class="slimhd diapat"><div class="slimhd-in"><span class="slimhd-t">Ступень 1 · <span>знак неравенства и числовая прямая</span></span><span class="slimhd-s">Сначала устно: что происходит со знаком, когда обе части умножают или делят. Потом рисуем ответы на прямой — ответ неравенства это целый промежуток, а не одно число.</span></div></div>
+
+    <div class="task" style="--zc:#9333ea; flex:0 0 auto">
+      <div class="t-head"><span class="t-badge">⭐ 1064</span><span class="t-emoji">✍️</span><span class="t-name">Запиши, что получится</span><span class="t-meta">из «Заданий для повторения», стр. 281</span></div>
+      <div class="t-frame grid">
+        <div class="cond-card"><span class="q">№ 1064.</span> Запишите неравенство, которое получится: а) умножением \(4&gt;-2\) на число; б) делением \(-3&lt;7\) на число.
+          <div class="fill4"><div class="fl"><span>\(4&gt;-2\)</span><span class="op">\(\cdot 3\)</span><span class="arr">→</span><span class="blank wide"></span></div><div class="fl"><span>\(4&gt;-2\)</span><span class="op">\(\cdot(-3)\)</span><span class="arr">→</span><span class="blank wide"></span></div><div class="fl"><span>\(4&gt;-2\)</span><span class="op">\(\cdot\dfrac{1}{2}\)</span><span class="arr">→</span><span class="blank wide"></span></div><div class="fl"><span>\(4&gt;-2\)</span><span class="op">\(\cdot\left(-\dfrac{1}{2}\right)\)</span><span class="arr">→</span><span class="blank wide"></span></div><div class="fl"><span>\(-3&lt;7\)</span><span class="op">\(:\,2\)</span><span class="arr">→</span><span class="blank wide"></span></div><div class="fl"><span>\(-3&lt;7\)</span><span class="op">\(:\,(-2)\)</span><span class="arr">→</span><span class="blank wide"></span></div><div class="fl"><span>\(-3&lt;7\)</span><span class="op">\(:\,\dfrac{1}{3}\)</span><span class="arr">→</span><span class="blank wide"></span></div><div class="fl"><span>\(-3&lt;7\)</span><span class="op">\(:\left(-\dfrac{1}{3}\right)\)</span><span class="arr">→</span><span class="blank wide"></span></div></div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="task" style="--zc:#dc2626; flex:3 1 0">
+      <div class="t-head"><span class="t-badge">№ 1</span><span class="t-emoji">📏</span><span class="t-name">Изобразите на координатной оси интервал</span><span class="t-meta">учебник, стр. 7</span></div>
+      <div class="t-frame grid">
+        
+        <div class="qgrid c3"><div class="qc ax must"><div class="qt"><span class="qn">а</span>\((-2;\,7)\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">б</span>\((-17;\,34)\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">в</span>\((1234;\,1398)\)</div><div class="axl"><i>x</i></div></div><div class="qc ax must"><div class="qt"><span class="qn">г</span>\((-\infty;\,0)\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">д</span>\((0;\,+\infty)\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">е</span>\((-\infty;\,-3)\)</div><div class="axl"><i>x</i></div></div><div class="qc ax must"><div class="qt"><span class="qn">ж</span>\((2;\,+\infty)\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">з</span>\((-\infty;\,+\infty)\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">и</span>\(\left(\dfrac{1}{3};\,0{,}5\right)\)</div><div class="axl"><i>x</i></div></div></div>
+      </div>
+    </div>
+
+    
+    <div class="task" style="--zc:#0369a1; flex:3 1 0">
+      <div class="t-head"><span class="t-badge">№ 3</span><span class="t-emoji">📏</span><span class="t-name">Изобразите множество чисел, удовлетворяющих неравенству</span><span class="t-meta">учебник, стр. 7</span></div>
+      <div class="t-frame grid">
+        
+        <div class="qgrid c4"><div class="qc ax must"><div class="qt"><span class="qn">а</span>\(x&gt;0\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">б</span>\(x&lt;3\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">в</span>\(x&gt;3579\)</div><div class="axl"><i>x</i></div></div><div class="qc ax must"><div class="qt"><span class="qn">г</span>\(x&lt;-2\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">д</span>\(x&gt;-1748\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">е</span>\(x&lt;0{,}06\)</div><div class="axl"><i>x</i></div></div><div class="qc ax must"><div class="qt"><span class="qn">ж</span>\(x&gt;\sqrt{5}\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">з</span>\(x&lt;\pi\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">и</span>\(0&lt;x&lt;\sqrt{2}\)</div><div class="axl"><i>x</i></div></div><div class="qc ax must"><div class="qt"><span class="qn">к</span>\(-2&lt;x&lt;-0{,}5\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">л</span>\(|x|&lt;1\)</div><div class="axl"><i>x</i></div></div><div class="qc ax"><div class="qt"><span class="qn">м</span>\(|x|&gt;1\)</div><div class="axl"><i>x</i></div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>Ломоносов: «Математику уже затем учить надо, что она ум в порядок приводит»</span><span>9 класс · алгебра · неравенства первой степени — лист 2 из 7</span></div>
+</div>
+
+<div class="sheet">
+  <div class="body">
+    
+    <div class="slimhd diapat"><div class="slimhd-in"><span class="slimhd-t">Ступень 2 · <span>что такое решение и первый шаг — перенос</span></span><span class="slimhd-s">Решение — число, при подстановке которого получается верное числовое неравенство. Число переносят в другую часть с противоположным знаком.</span></div></div>
+
+    <div class="task" style="--zc:#4f46e5; flex:0 0 auto">
+      <div class="t-head"><span class="t-badge">№ 5 · № 9</span><span class="t-emoji">🗣</span><span class="t-name">Устно, ответ — в окошко</span><span class="t-meta">учебник, стр. 7—8</span></div>
+      <div class="t-frame grid">
+        <div class="duo">
+          <div class="cond-card"><span class="q">№ 5.</span> Какое число больше? Здесь \(a\) и \(b\) — любые данные числа.
+            <table class="vn"><tr><td class="lt mk">а)</td><td>\(a\) или \(a+3\)</td><td class="bx r"><span class="blank"></span></td></tr><tr><td class="lt">б)</td><td>\(b+1\) или \(b+2\)</td><td class="bx r"><span class="blank"></span></td></tr><tr><td class="lt mk">в)</td><td>\(a-5\) или \(a+2\)</td><td class="bx r"><span class="blank"></span></td></tr><tr><td class="lt">г)</td><td>\(b-7\) или \(b-6\)</td><td class="bx r"><span class="blank"></span></td></tr></table>
+          </div>
+          <div class="cond-card"><span class="q">№ 9.</span> Можно ли указать… Если можно — впиши число.
+            <table class="vn"><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt mk">а)</td><td>наименьшее решение неравенства \(x&gt;0\)</td><td class="bx r"><span class="blank sm"></span></td></tr><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt mk">б)</td><td>наибольшее решение неравенства \(x&lt;-2\)</td><td class="bx r"><span class="blank sm"></span></td></tr><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt mk">в)</td><td>наименьшее целое решение неравенства \(x&gt;-5\)</td><td class="bx r"><span class="blank sm"></span></td></tr><tr><td class="bx"><span class="yn"><i>Да</i><i>Нет</i></span></td><td class="lt mk">г)</td><td>наибольшее целое решение неравенства \(x&lt;1\)</td><td class="bx r"><span class="blank sm"></span></td></tr></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="--zc:#9333ea; flex:0 0 auto">
+      <div class="t-head"><span class="t-badge">№ 7 + ⭐</span><span class="t-emoji">✍️</span><span class="t-name">Придумай сам</span><span class="t-meta">учебник, стр. 7</span></div>
+      <div class="t-frame grid">
+        <div class="duo">
+          <div class="cond-card"><span class="q">№ 7.</span> Запишите какое-нибудь неравенство первой степени с одним неизвестным. Назовите коэффициент при неизвестном и свободный член.
+            <div class="fields"><span>неравенство <i class="blank wide"></i></span><span>\(k=\) <i class="blank"></i></span><span>\(b=\) <i class="blank"></i></span></div>
+          </div>
+          <div class="cond-card"><span class="q">⭐ Обратная задача.</span> Придумай неравенство первой степени, у которого \(k&lt;0\), а все решения — промежуток \((3;\,+\infty)\).
+            <div class="fields"><span>неравенство <i class="blank wide"></i></span><span>проверь: подставь \(x=4\) и \(x=2\)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="task" style="--zc:#dc2626; flex:2 1 0">
+      <div class="t-head"><span class="t-badge">№ 11</span><span class="t-emoji">➡️</span><span class="t-name">Решите неравенство: перенесите число</span><span class="t-meta">учебник, стр. 8</span></div>
+      <div class="t-frame grid">
+        
+        <div class="qgrid c3"><div class="qc must"><div class="qt"><span class="qn">а</span>\(x-1&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">б</span>\(x+5&lt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">в</span>\(x-0{,}5&lt;0\)</div></div><div class="qc must"><div class="qt"><span class="qn">г</span>\(3+x&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">д</span>\(7+x&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">е</span>\(x-1\dfrac{1}{3}&lt;0\)</div></div></div>
+      </div>
+    </div>
+
+    
+    <div class="task" style="--zc:#0369a1; flex:2 1 0">
+      <div class="t-head"><span class="t-badge">№ 13</span><span class="t-emoji">➡️</span><span class="t-name">Решите неравенство: десятичные дроби</span><span class="t-meta">учебник, стр. 8</span></div>
+      <div class="t-frame grid">
+        
+        <div class="qgrid c3"><div class="qc must"><div class="qt"><span class="qn">а</span>\(x-2&gt;0{,}2\)</div></div><div class="qc"><div class="qt"><span class="qn">б</span>\(x-3{,}5&lt;4\)</div></div><div class="qc"><div class="qt"><span class="qn">в</span>\(2{,}1+x&lt;7\)</div></div><div class="qc must"><div class="qt"><span class="qn">г</span>\(x-2&gt;-0{,}6\)</div></div><div class="qc"><div class="qt"><span class="qn">д</span>\(x+10{,}7&gt;7{,}9\)</div></div><div class="qc"><div class="qt"><span class="qn">е</span>\(5{,}013+x&lt;0{,}13\)</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>Гаусс: «Математика — царица наук, арифметика — царица математики»</span><span>9 класс · алгебра · неравенства первой степени — лист 3 из 7</span></div>
+</div>
+
+<div class="sheet">
+  <div class="body">
+    
+    <div class="slimhd diapat"><div class="slimhd-in"><span class="slimhd-t">Ступень 3 · <span>делим на коэффициент и смотрим на знак k</span></span><span class="slimhd-s">\(k&gt;0\) — знак остаётся. \(k&lt;0\) — знак переворачивается. Минус у числа справа ни на что не влияет: из \(2x&gt;-6\) получается \(x&gt;-3\).</span></div></div>
+
+    
+    <div class="task" style="--zc:#4f46e5; flex:1 1 0">
+      <div class="t-head"><span class="t-badge">№ 15</span><span class="t-emoji">➡️</span><span class="t-name">Решите неравенство: смешанные числа</span><span class="t-meta">учебник, стр. 8</span></div>
+      <div class="t-frame grid">
+        
+        <div class="qgrid c3"><div class="qc must"><div class="qt"><span class="qn">а</span>\(x-3{,}6&gt;2\dfrac{1}{3}\)</div></div><div class="qc"><div class="qt"><span class="qn">б</span>\(7{,}4+x&gt;7\dfrac{2}{5}\)</div></div><div class="qc"><div class="qt"><span class="qn">в</span>\(x-12\dfrac{1}{4}&lt;15{,}3\)</div></div></div>
+      </div>
+    </div>
+
+    
+    <div class="task" style="--zc:#dc2626; flex:2 1 0">
+      <div class="t-head"><span class="t-badge">№ 17</span><span class="t-emoji">➗</span><span class="t-name">Решите неравенство: разделите на коэффициент</span><span class="t-meta">учебник, стр. 8</span></div>
+      <div class="t-frame grid">
+        
+        <div class="qgrid c3"><div class="qc must"><div class="qt"><span class="qn">а</span>\(3x&lt;2\)</div></div><div class="qc"><div class="qt"><span class="qn">б</span>\(-2x&lt;11\)</div></div><div class="qc"><div class="qt"><span class="qn">в</span>\(-4x&gt;-2\)</div></div><div class="qc must"><div class="qt"><span class="qn">г</span>\(-5x&gt;1\)</div></div><div class="qc"><div class="qt"><span class="qn">д</span>\(-17x&gt;-2\)</div></div><div class="qc"><div class="qt"><span class="qn">е</span>\(13x&lt;3\)</div></div></div>
+      </div>
+    </div>
+
+    
+    <div class="task" style="--zc:#0369a1; flex:2 1 0">
+      <div class="t-head"><span class="t-badge">№ 19</span><span class="t-emoji">➗</span><span class="t-name">Решите неравенство: коэффициент — дробь</span><span class="t-meta">учебник, стр. 8</span></div>
+      <div class="t-frame grid">
+        
+        <div class="qgrid c3"><div class="qc must"><div class="qt"><span class="qn">а</span>\(\dfrac{1}{2}x&lt;3\)</div></div><div class="qc"><div class="qt"><span class="qn">б</span>\(\dfrac{3}{4}x&lt;1\)</div></div><div class="qc"><div class="qt"><span class="qn">в</span>\(-\dfrac{1}{3}x&gt;-1\)</div></div><div class="qc must"><div class="qt"><span class="qn">г</span>\(\dfrac{1}{5}x&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">д</span>\(2x&gt;\dfrac{2}{3}\)</div></div><div class="qc"><div class="qt"><span class="qn">е</span>\(-4x&lt;\dfrac{8}{11}\)</div></div></div>
+      </div>
+    </div>
+
+    
+    <div class="task" style="--zc:#4f46e5; flex:1 1 0">
+      <div class="t-head"><span class="t-badge">№ 21</span><span class="t-emoji">➗</span><span class="t-name">Решите неравенство: десятичный коэффициент</span><span class="t-meta">учебник, стр. 8</span></div>
+      <div class="t-frame grid">
+        
+        <div class="qgrid c3"><div class="qc must"><div class="qt"><span class="qn">а</span>\(0{,}2x&gt;3\)</div></div><div class="qc"><div class="qt"><span class="qn">б</span>\(3x&gt;1{,}8\)</div></div><div class="qc"><div class="qt"><span class="qn">в</span>\(-0{,}001x&lt;1\)</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>Пуанкаре: «Математика — это искусство называть разные вещи одним именем»</span><span>9 класс · алгебра · неравенства первой степени — лист 4 из 7</span></div>
+</div>
+
+<div class="sheet">
+  <div class="body">
+    
+    <div class="slimhd diapat"><div class="slimhd-in"><span class="slimhd-t">Ступень 4 · <span>два шага подряд: перенос, потом деление</span></span><span class="slimhd-s">Каждое неравенство — ровно по правилу из учебника. Сначала свободный член вправо, потом деление на \(k\). Ответ — промежутком.</span></div></div>
+
+    
+    <div class="task" style="--zc:#dc2626; flex:2 1 0">
+      <div class="t-head"><span class="t-badge">№ 23</span><span class="t-emoji">🪜</span><span class="t-name">Решите неравенство</span><span class="t-meta">учебник, стр. 9</span></div>
+      <div class="t-frame grid">
+        
+        <div class="qgrid c3"><div class="qc must"><div class="qt"><span class="qn">а</span>\(2x-4&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">б</span>\(3x-1&lt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">в</span>\(-2x-4&gt;0\)</div></div><div class="qc must"><div class="qt"><span class="qn">г</span>\(7x+4&lt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">д</span>\(4x+3&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">е</span>\(-4x+3&lt;0\)</div></div></div>
+      </div>
+    </div>
+
+    
+    <div class="task" style="--zc:#0369a1; flex:2 1 0">
+      <div class="t-head"><span class="t-badge">№ 25</span><span class="t-emoji">🪜</span><span class="t-name">Решите неравенство: десятичные дроби</span><span class="t-meta">учебник, стр. 9</span></div>
+      <div class="t-frame grid">
+        
+        <div class="qgrid c3"><div class="qc must"><div class="qt"><span class="qn">а</span>\(0{,}3x-20&lt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">б</span>\(4x+0{,}1&gt;0\)</div></div><div class="qc must"><div class="qt"><span class="qn">в</span>\(1{,}35-27x&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">г</span>\(0{,}15-150x&lt;0\)</div></div><div class="qc must"><div class="qt"><span class="qn">д</span>\(-0{,}3x-13&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">е</span>\(-0{,}17x-51&lt;0\)</div></div></div>
+      </div>
+    </div>
+
+    <div class="task" style="--zc:#dc2626; flex:2 1 0">
+      <div class="t-head"><span class="t-badge">🔎</span><span class="t-emoji"></span><span class="t-name">Найди ошибку</span><span class="t-meta">в каждом решении одна неверная строка</span></div>
+      <div class="t-frame grid">
+        <div class="cond-card">Обведи строку, где решение сломалось, и напиши рядом верный ответ. Одно из четырёх решений — без ошибки: найди его тоже.</div>
+        <div class="qgrid c4"><div class="qc must osh"><div class="qt"><span class="qn">а</span><div class="oshl"><div>\(-3x&gt;12\)</div><div>\(x&gt;-4\)</div></div></div></div><div class="qc must osh"><div class="qt"><span class="qn">б</span><div class="oshl"><div>\(5-2x&lt;0\)</div><div>\(-2x&lt;5\)</div><div>\(x&gt;-2{,}5\)</div></div></div></div><div class="qc must osh"><div class="qt"><span class="qn">в</span><div class="oshl"><div>\(2x&gt;-6\)</div><div>\(x&lt;-3\)</div></div></div></div><div class="qc must osh"><div class="qt"><span class="qn">г</span><div class="oshl"><div>\(-x&lt;7\)</div><div>\(x&gt;-7\)</div></div></div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>Ковалевская: «Нельзя быть математиком, не будучи поэтом в душе»</span><span>9 класс · алгебра · неравенства первой степени — лист 5 из 7</span></div>
+</div>
+
+<div class="sheet">
+  <div class="body">
+    
+    <div class="slimhd diapat"><div class="slimhd-in"><span class="slimhd-t">Ступень 5 · <span>решаем графиком · п. 1.2</span></span><span class="slimhd-s">Прямую строят по двум точкам: где она пересекает ось \(Ox\) и где пересекает ось \(Oy\). Где прямая выше оси — там \(kx+b&gt;0\), где ниже — там \(kx+b&lt;0\).</span></div></div>
+
+    <div class="task" style="--zc:#4f46e5; flex:0 0 auto">
+      <div class="t-head"><span class="t-badge">№ 27</span><span class="t-emoji">👀</span><span class="t-name">Прочитай ответ с рисунка</span><span class="t-meta">учебник, стр. 11, рис. 5</span></div>
+      <div class="t-frame grid">
+        <div class="cond-card">Запишите интервал, на котором линейная функция, график которой изображён на рисунке, принимает положительные значения; отрицательные значения.</div>
+        <div class="qgrid c4 r27"><div class="qc must pic"><div class="qt"><span class="qn">а</span></div><div class="fig"><svg viewBox="0 0 117.2 140" xmlns="http://www.w3.org/2000/svg">
+  <path class="grd" d="M20.6 127 L20.6 13"/>
+<path class="grd" d="M39.6 127 L39.6 13"/>
+<path class="grd" d="M58.6 127 L58.6 13"/>
+<path class="grd" d="M77.6 127 L77.6 13"/>
+<path class="grd" d="M96.6 127 L96.6 13"/>
+<path class="grd" d="M13 113.7 L104.2 113.7"/>
+<path class="grd" d="M13 94.7 L104.2 94.7"/>
+<path class="grd" d="M13 75.7 L104.2 75.7"/>
+<path class="grd" d="M13 56.7 L104.2 56.7"/>
+<path class="grd" d="M13 37.7 L104.2 37.7"/>
+<path class="grd" d="M13 18.7 L104.2 18.7"/>
+  <path class="ln ax" d="M13 94.7 L115.2 94.7"/><path class="ln ax-h" d="M115.2 94.7 L107.2 98.7 L107.2 90.7 Z"/>
+<path class="ln ax" d="M58.6 127 L58.6 2"/><path class="ln ax-h" d="M58.6 2 L62.6 10 L54.6 10 Z"/>
+<text class="an-d" x="113.2" y="107.7" font-size="12">x</text>
+<text class="an-d" x="48.6" y="8" font-size="12">y</text>
+  <path class="ln ln-i" d="M28.8 127 L66.8 13"/>
+  <path class="ax" d="M39.6 91.2 L39.6 98.2"/><text class="an-d" x="30.6" y="83.7" font-size="11">−1</text>
+  <path class="ax" d="M77.6 91.2 L77.6 98.2"/><text class="an-d" x="77.6" y="107.7" font-size="11">1</text>
+  <path class="ax" d="M55.1 75.7 L62.1 75.7"/><text class="an-d" x="68.6" y="75.7" font-size="11">1</text>
+  <path class="ax" d="M55.1 37.7 L62.1 37.7"/><text class="an-d" x="47.6" y="37.7" font-size="11">3</text>
+</svg></div><div class="pn"><span>\(y&gt;0\):</span><i class="blank wide"></i><span>\(y&lt;0\):</span><i class="blank wide"></i></div></div><div class="qc pic"><div class="qt"><span class="qn">б</span></div><div class="fig"><svg viewBox="0 0 143.8 103.89999999999999" xmlns="http://www.w3.org/2000/svg">
+  <path class="grd" d="M24.4 90.9 L24.4 13"/>
+<path class="grd" d="M43.4 90.9 L43.4 13"/>
+<path class="grd" d="M62.4 90.9 L62.4 13"/>
+<path class="grd" d="M81.4 90.9 L81.4 13"/>
+<path class="grd" d="M100.4 90.9 L100.4 13"/>
+<path class="grd" d="M119.4 90.9 L119.4 13"/>
+<path class="grd" d="M13 77.6 L130.8 77.6"/>
+<path class="grd" d="M13 58.6 L130.8 58.6"/>
+<path class="grd" d="M13 39.6 L130.8 39.6"/>
+<path class="grd" d="M13 20.6 L130.8 20.6"/>
+  <path class="ln ax" d="M13 58.6 L141.8 58.6"/><path class="ln ax-h" d="M141.8 58.6 L133.8 62.6 L133.8 54.6 Z"/>
+<path class="ln ax" d="M62.4 90.9 L62.4 2"/><path class="ln ax-h" d="M62.4 2 L66.4 10 L58.4 10 Z"/>
+<text class="an-d" x="139.8" y="71.6" font-size="12">x</text>
+<text class="an-d" x="52.4" y="8" font-size="12">y</text>
+  <path class="ln ln-i" d="M13 14.9 L130.8 73.8"/>
+  <path class="ax" d="M81.4 55.1 L81.4 62.1"/><text class="an-d" x="81.4" y="71.6" font-size="11">1</text>
+  <path class="ax" d="M100.4 55.1 L100.4 62.1"/><text class="an-d" x="107.4" y="71.6" font-size="11">2</text>
+  <path class="ax" d="M58.9 39.6 L65.9 39.6"/><text class="an-d" x="72.4" y="33.6" font-size="11">1</text>
+</svg></div><div class="pn"><span>\(y&gt;0\):</span><i class="blank wide"></i><span>\(y&lt;0\):</span><i class="blank wide"></i></div></div><div class="qc must pic"><div class="qt"><span class="qn">в</span></div><div class="fig"><svg viewBox="0 0 121 122.89999999999999" xmlns="http://www.w3.org/2000/svg">
+  <path class="grd" d="M20.6 109.9 L20.6 13"/>
+<path class="grd" d="M39.6 109.9 L39.6 13"/>
+<path class="grd" d="M58.6 109.9 L58.6 13"/>
+<path class="grd" d="M77.6 109.9 L77.6 13"/>
+<path class="grd" d="M96.6 109.9 L96.6 13"/>
+<path class="grd" d="M13 94.7 L108 94.7"/>
+<path class="grd" d="M13 75.7 L108 75.7"/>
+<path class="grd" d="M13 56.7 L108 56.7"/>
+<path class="grd" d="M13 37.7 L108 37.7"/>
+<path class="grd" d="M13 18.7 L108 18.7"/>
+  <path class="ln ax" d="M13 56.7 L119 56.7"/><path class="ln ax-h" d="M119 56.7 L111 60.7 L111 52.7 Z"/>
+<path class="ln ax" d="M58.6 109.9 L58.6 2"/><path class="ln ax-h" d="M58.6 2 L62.6 10 L54.6 10 Z"/>
+<text class="an-d" x="117" y="69.7" font-size="12">x</text>
+<text class="an-d" x="48.6" y="8" font-size="12">y</text>
+  <path class="ln ln-i" d="M51 109.9 L99.5 13"/>
+  <path class="ax" d="M77.6 53.2 L77.6 60.2"/><text class="an-d" x="85.6" y="69.7" font-size="11">1</text>
+  <path class="ax" d="M55.1 37.7 L62.1 37.7"/><text class="an-d" x="47.6" y="37.7" font-size="11">1</text>
+  <path class="ax" d="M55.1 94.7 L62.1 94.7"/><text class="an-d" x="47.6" y="94.7" font-size="11">−2</text>
+</svg></div><div class="pn"><span>\(y&gt;0\):</span><i class="blank wide"></i><span>\(y&lt;0\):</span><i class="blank wide"></i></div></div><div class="qc pic"><div class="qt"><span class="qn">г</span></div><div class="fig"><svg viewBox="0 0 157.1 103.89999999999999" xmlns="http://www.w3.org/2000/svg">
+  <path class="grd" d="M24.4 90.9 L24.4 13"/>
+<path class="grd" d="M43.4 90.9 L43.4 13"/>
+<path class="grd" d="M62.4 90.9 L62.4 13"/>
+<path class="grd" d="M81.4 90.9 L81.4 13"/>
+<path class="grd" d="M100.4 90.9 L100.4 13"/>
+<path class="grd" d="M119.4 90.9 L119.4 13"/>
+<path class="grd" d="M138.4 90.9 L138.4 13"/>
+<path class="grd" d="M13 85.2 L144.1 85.2"/>
+<path class="grd" d="M13 66.2 L144.1 66.2"/>
+<path class="grd" d="M13 47.2 L144.1 47.2"/>
+<path class="grd" d="M13 28.2 L144.1 28.2"/>
+  <path class="ln ax" d="M13 47.2 L155.1 47.2"/><path class="ln ax-h" d="M155.1 47.2 L147.1 51.2 L147.1 43.2 Z"/>
+<path class="ln ax" d="M100.4 90.9 L100.4 2"/><path class="ln ax-h" d="M100.4 2 L104.4 10 L96.4 10 Z"/>
+<text class="an-d" x="153.1" y="60.2" font-size="12">x</text>
+<text class="an-d" x="90.4" y="8" font-size="12">y</text>
+  <path class="ln ln-i" d="M13 37.1 L144.1 80.8"/>
+  <path class="ax" d="M43.4 43.7 L43.4 50.7"/><text class="an-d" x="43.4" y="60.2" font-size="11">−3</text>
+  <path class="ax" d="M119.4 43.7 L119.4 50.7"/><text class="an-d" x="119.4" y="60.2" font-size="11">1</text>
+  <path class="ax" d="M96.9 66.2 L103.9 66.2"/><text class="an-d" x="89.4" y="74.2" font-size="11">−1</text>
+</svg></div><div class="pn"><span>\(y&gt;0\):</span><i class="blank wide"></i><span>\(y&lt;0\):</span><i class="blank wide"></i></div></div></div>
+      </div>
+    </div>
+
+    
+    <div class="task" style="--zc:#dc2626; flex:3 1 0">
+      <div class="t-head"><span class="t-badge">№ 29</span><span class="t-emoji">📈</span><span class="t-name">Решите неравенство, используя график линейной функции</span><span class="t-meta">учебник, стр. 12</span></div>
+      <div class="t-frame grid">
+        <div class="cond-card">На клетке: отметь две точки, проведи прямую, выдели на оси \(x\) нужную часть и запиши ответ промежутком.</div>
+        <div class="qgrid c3"><div class="qc must"><div class="qt"><span class="qn">а</span>\(x+2&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">б</span>\(-x+2&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">в</span>\(2x-1&lt;0\)</div></div><div class="qc must"><div class="qt"><span class="qn">г</span>\(-2x-1&lt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">д</span>\(0{,}2x+1&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">е</span>\(-\dfrac{1}{3}x+5&lt;0\)</div></div><div class="qc must"><div class="qt"><span class="qn">ж</span>\(400x+100&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">з</span>\(200x-500&gt;0\)</div></div><div class="qc"><div class="qt"><span class="qn">и</span>\(0{,}01x-0{,}05&lt;0\)</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>Галилей: «Книга природы написана на языке математики»</span><span>9 класс · алгебра · неравенства первой степени — лист 6 из 7</span></div>
+</div>
+
+<div class="sheet">
+  <div class="body">
+    
+    <div class="slimhd diapat"><div class="slimhd-in"><span class="slimhd-t">⭐ Ступень 6 · <span>подумать</span></span><span class="slimhd-s">Задачи из «Заданий для повторения» в конце учебника. Здесь не хватит правила — нужно понять, почему знак ведёт себя именно так.</span></div></div>
+
+    <div class="task" style="--zc:#9333ea; flex:0 0 auto">
+      <div class="t-head"><span class="t-badge">⭐ 1067—1070</span><span class="t-emoji">⚖️</span><span class="t-name">Верно или неверно</span><span class="t-meta">если неверно — приведи пример-опровержение</span></div>
+      <div class="t-frame grid">
+        <div class="cond-card"><table class="vn two"><tr><td class="bx"><span class="yn"><i>В</i><i>Н</i></span></td><td class="lt nn">1067 а</td><td>Неравенства \(a&gt;b\) и \(a&lt;b\) могут быть справедливы одновременно</td><td class="bx"><span class="yn"><i>В</i><i>Н</i></span></td><td class="lt nn">1067 б</td><td>Неравенства \(a\leqslant b\) и \(b\leqslant a\) могут быть справедливы одновременно</td></tr><tr><td class="bx"><span class="yn"><i>В</i><i>Н</i></span></td><td class="lt nn">1068 а</td><td>Если \(a&gt;b\), то всегда верно неравенство \(ac&gt;bc\)</td><td class="bx"><span class="yn"><i>В</i><i>Н</i></span></td><td class="lt nn">1068 б</td><td>Если \(a&gt;b\), то верно неравенство \(-a&lt;-b\)</td></tr><tr><td class="bx"><span class="yn"><i>В</i><i>Н</i></span></td><td class="lt nn">1068 в</td><td>Если \(c&lt;d\), то \(c\,(a^2+1)&lt;d\,(a^2+1)\) при любом \(a\)</td><td class="bx"><span class="yn"><i>В</i><i>Н</i></span></td><td class="lt nn">1069 в</td><td>Если \(a&gt;b\), то всегда \(a^2&gt;b^2\)</td></tr><tr><td class="bx"><span class="yn"><i>В</i><i>Н</i></span></td><td class="lt nn">1070 а</td><td>\(a^2+b^2&gt;a^2\) при любых действительных \(a\) и \(b\)</td><td class="bx"><span class="yn"><i>В</i><i>Н</i></span></td><td class="lt nn">1070 б</td><td>\(a^2+b^2\geqslant b^2\) при любых действительных \(a\) и \(b\)</td></tr></table></div>
+      </div>
+    </div>
+
+    <div class="task" style="--zc:#0369a1; flex:1 1 0">
+      <div class="t-head"><span class="t-badge">⭐ № 1089</span><span class="t-emoji">📐</span><span class="t-name">При каких значениях \(x\) значения функции \(y=5x-3\)</span><span class="t-meta">стр. 284</span></div>
+      <div class="t-frame grid">
+        <div class="cond-card">«Не меньше» — это \(\geqslant\): такое число <b>входит</b> в ответ, и скобка у него квадратная, например \([2;\,+\infty)\).</div>
+        <div class="qgrid c4"><div class="qc star"><div class="qt"><span class="qn">а</span>больше \(1\)</div></div><div class="qc star"><div class="qt"><span class="qn">б</span>меньше \(5\)</div></div><div class="qc star"><div class="qt"><span class="qn">в</span>не меньше \(-2\)</div></div><div class="qc star"><div class="qt"><span class="qn">г</span>не больше \(-5\)</div></div></div>
+      </div>
+    </div>
+
+    <div class="task" style="--zc:#dc2626; flex:1.3 1 0">
+      <div class="t-head"><span class="t-badge">⭐⭐ № 1071 · № 1092</span><span class="t-emoji">🧩</span><span class="t-name">С буквой вместо числа</span><span class="t-meta">стр. 282, 284</span></div>
+      <div class="t-frame grid">
+        <div class="cond-card"><span class="q">№ 1092.</span> Решите неравенство, считая, что \(a\) — данное число. <b>Совет:</b> делить на \(a\) можно, только зная знак \(a\). Поэтому разбирают три случая: \(a&gt;0\), \(a&lt;0\), \(a=0\).</div>
+        <div class="qgrid c4">
+          <div class="qc star"><div class="qt"><span class="qn">1071</span>Может ли неравенство \(a^2x&gt;a\) (\(a\) — любое данное число) не иметь решений?</div></div>
+          <div class="qc star"><div class="qt big"><span class="qn">а</span>\(ax&gt;0\)</div></div><div class="qc star"><div class="qt big"><span class="qn">б</span>\(ax&gt;1\)</div></div><div class="qc star"><div class="qt big"><span class="qn">д</span>\(ax&gt;x\)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="--zc:#4f46e5; flex:0.8 1 0">
+      <div class="t-head"><span class="t-badge">↺</span><span class="t-emoji"></span><span class="t-name">Прошлые темы — 5 минут</span><span class="t-meta">трёхчлен и парабола: пригодятся в § 2</span></div>
+      <div class="t-frame grid">
+        <div class="qgrid c3"><div class="qc star"><div class="qt"><span class="qn">1</span>Разложите на множители<div class="fm">\(x^2-7x+12\)</div></div></div><div class="qc star"><div class="qt"><span class="qn">2</span>Докажите, что при любом \(x\)<div class="fm">\(x^2-6x+10&gt;0\)</div></div></div><div class="qc star"><div class="qt"><span class="qn">3</span>Нарисуйте эскиз и найдите, при каких \(x\) значения \(y&lt;0\)<div class="fm">\(y=x^2-4\)</div></div></div></div>
+      </div>
+    </div>
+
+    <div class="card-finale diapat">
+      <div class="card-finale-diamonds">◆ ◆ ◆</div>
+      <div class="card-finale-title">Правило одно: <span>перенести, разделить, проверить знак</span></div>
+      <div class="card-finale-sub">Остальное — сколько раз ты применил его руками. Каждая решённая клетка — это задание 13 на ОГЭ, которое уже не страшно. Так держать! 💪</div>
+    </div>
+  </div>
+  <div class="ft"><span>Лобачевский: «Математика — язык, на котором говорят все точные науки»</span><span>9 класс · алгебра · неравенства первой степени — лист 7 из 7</span></div>
+</div>
+
+<script defer src="../_движок/katex/katex.min.js"></script>
+<script defer src="../_движок/katex/auto-render.min.js"></script>
+<script>
+window.addEventListener('load', function () {
+  if (window.renderMathInElement) renderMathInElement(document.body, {
+    delimiters: [{ left: '\\(', right: '\\)', display: false }, { left: '\\[', right: '\\]', display: true }],
+    throwOnError: false, strict: false,
+  });
+  requestAnimationFrame(function () { requestAnimationFrame(function () { paintGrid(); paintDiamonds(); }); });
+});
+/* клетка: CSS-границы ячеек — Skia пишет их в PDF векторными путями */
+function paintGrid() {
+  document.querySelectorAll('.t-frame.grid').forEach(function (el) {
+    var w = el.offsetWidth, h = el.offsetHeight; if (!w || !h) return;
+    var cell = 19, cols = Math.ceil(w / cell), rows = Math.ceil(h / cell);
+    var layer = document.createElement('div');
+    layer.setAttribute('aria-hidden', 'true');
+    layer.style.cssText = 'position:absolute;inset:0;display:grid;grid-template-columns:repeat(' + cols + ',' + cell + 'px);grid-template-rows:repeat(' + rows + ',' + cell + 'px);z-index:0;pointer-events:none;overflow:hidden';
+    var c = 'rgba(96,165,210,0.24)', html = '';
+    for (var i = 0; i < cols * rows; i++) html += '<div style="border-right:1px solid ' + c + ';border-bottom:1px solid ' + c + '"></div>';
+    layer.innerHTML = html;
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;z-index:1;flex:1 1 auto;display:flex;flex-direction:column;min-height:0;gap:6px';
+    while (el.firstChild) wrap.appendChild(el.firstChild);
+    el.appendChild(layer); el.appendChild(wrap);
+  });
+}
+function paintDiamonds() {
+  var NS = 'http://www.w3.org/2000/svg', stroke = 'rgba(217,119,6,0.09)';
+  document.querySelectorAll('.diapat').forEach(function (el) {
+    var w = el.offsetWidth, h = el.offsetHeight; if (!w || !h) return;
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('width', w); svg.setAttribute('height', h);
+    svg.setAttribute('style', 'position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden');
+    var step = 28, sw = 0.85, sq3 = Math.sqrt(3);
+    function seg(x1, y1, x2, y2) {
+      var l = document.createElementNS(NS, 'line');
+      l.setAttribute('x1', x1.toFixed(1)); l.setAttribute('y1', y1.toFixed(1)); l.setAttribute('x2', x2.toFixed(1)); l.setAttribute('y2', y2.toFixed(1));
+      l.setAttribute('stroke', stroke); l.setAttribute('stroke-width', sw); svg.appendChild(l);
+    }
+    for (var b = -step; b <= h + w / sq3 + step; b += step) {
+      var p = [];
+      if (b >= 0 && b <= h) p.push([0, b]);
+      var xt = b * sq3; if (xt >= 0 && xt <= w) p.push([xt, 0]);
+      var yr = b - w / sq3; if (yr >= 0 && yr <= h) p.push([w, yr]);
+      var xb = (b - h) * sq3; if (xb >= 0 && xb <= w) p.push([xb, h]);
+      if (p.length >= 2) seg(p[0][0], p[0][1], p[p.length - 1][0], p[p.length - 1][1]);
+    }
+    for (var b2 = -w / sq3 - step; b2 <= h + step; b2 += step) {
+      var q = [];
+      if (b2 >= 0 && b2 <= h) q.push([0, b2]);
+      var xt2 = -b2 * sq3; if (xt2 >= 0 && xt2 <= w) q.push([xt2, 0]);
+      var xb2 = (h - b2) * sq3; if (xb2 >= 0 && xb2 <= w) q.push([xb2, h]);
+      var yr2 = w / sq3 + b2; if (yr2 >= 0 && yr2 <= h) q.push([w, yr2]);
+      if (q.length >= 2) seg(q[0][0], q[0][1], q[q.length - 1][0], q[q.length - 1][1]);
+    }
+    el.insertBefore(svg, el.firstChild);
+  });
+}
+</script>
+</body>
+</html>
