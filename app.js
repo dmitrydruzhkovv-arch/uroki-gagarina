@@ -87,6 +87,18 @@ function risovatChipy(vyb){
        data-k="${esc(k.id)}" style="--c:var(--c-${esc(k.id)})">
        <i>${k.icon}</i><span>${esc(k.name)}</span>
        <b>${(k.uroki || []).length || 0}</b></button>`).join('');
+  risovatSpravku(vyb);
+}
+
+/* ── справочник предмета: словарь и учебники под кнопкой, когда предмет выбран ── */
+function risovatSpravku(vyb){
+  const box = $('#spravka'); if (!box) return;
+  const k = DATA.kursy.find(x => x.id === vyb);
+  const list = (k && k.spravka) || [];
+  box.innerHTML = list.map(s => `
+    <a class="sprav" href="${esc(s.out)}" target="_blank" rel="noopener" style="--c:var(--c-${esc(k.id)})">
+      <i>${s.ic || '📖'}</i><span><b>${esc(s.title)}</b>${s.note ? `<em>${esc(s.note)}</em>` : ''}</span></a>`).join('');
+  box.hidden = !list.length;
 }
 
 /* ── заголовок недели ── */

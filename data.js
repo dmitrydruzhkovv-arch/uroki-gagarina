@@ -246,6 +246,18 @@ var DATA = {
       name: 'Вероятность',
       icon: '🎲',
       day: 'понедельник',
+      /* справочник курса — показывается под кнопкой предмета, когда она нажата */
+      spravka: [
+        { ic: '📖', title: 'Словарь по вероятности', note: 'термины с самых азов: обозначения и примеры',
+          src: 'Уроки 9 класс/v04_словарь_вероятность.html', out: 'uroki/v04-slovar.html' },
+        // Учебники ждут слова D «заливай»: сайт публичный, это чужой авторский текст (Просвещение).
+        // { ic: '📗', title: 'Учебник, часть 1', note: 'Высоцкий, Ященко. Главы I—IX, 7—8 класс',
+        //   src: 'Учебники/Veroyatnost_i_statistika_7-9_klassy_Vysotskii_774_I_R__Yaschenko_I_V_chast_1.pdf',
+        //   out: 'knigi/vysotskij-yashchenko-chast-1.pdf' },
+        // { ic: '📗', title: 'Учебник, часть 2', note: 'Высоцкий, Ященко. Главы X—XVII, 9 класс',
+        //   src: 'Учебники/Veroyatnost_i_statistika_7-9_klassy_Vysotskii_774_I_R__Yaschenko_I_V_chast_2.pdf',
+        //   out: 'knigi/vysotskij-yashchenko-chast-2.pdf' },
+      ],
       uroki: [
         {
           n: 1,

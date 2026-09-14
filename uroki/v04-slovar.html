@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Словарь · вероятность с самых азов · 9 класс</title>
+<link rel="stylesheet" href="../_движок/fonts/gf.css">
+<link rel="stylesheet" href="../_движок/katex/katex.min.css">
+<script defer src="../_движок/katex/katex.min.js"></script>
+<script defer src="../_движок/katex/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]})"></script>
+<style>
+  @page { size: A4 portrait; margin: 11mm; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root{
+    --border:#e2d9c8; --soft:#ede8df; --ink:#1c1917; --sub:#57534e; --muted:#a8a29e;
+    --gold:#d97706; --gold-soft:#fbbf24; --gold-dim:#fef3c7; --gold-pale:#fffbeb;
+    --red:#dc2626; --blue:#2563eb; --indigo:#4f46e5; --green:#16a34a; --violet:#7c3aed;
+  }
+  body{ background:#fff; font-family:'Onest',system-ui,sans-serif; color:var(--ink); font-size:12.5px; line-height:1.45;
+        -webkit-font-smoothing:antialiased; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .wrap{ max-width:760px; margin:0 auto; padding:14px 16px 30px; }
+  @media print{ .wrap{ padding:0; max-width:none; } }
+
+  /* шапка */
+  .banner{ background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 40%,#fde68a 100%); border:2px solid var(--gold-soft); border-radius:12px; padding:10px 18px; }
+  .b-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+  .b-label{ font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:600; color:var(--gold); text-transform:uppercase; letter-spacing:1.4px; }
+  .bdgs{ display:flex; gap:5px; }
+  .bdg{ width:20px; height:20px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10px; color:#fff; }
+  .bdg.lm{ background:var(--gold); } .bdg.di{ background:var(--ink); }
+  .b-title{ font-size:23px; font-weight:800; letter-spacing:-.5px; line-height:1.1; }
+  .b-title span{ color:var(--gold); }
+  .b-msg{ margin-top:6px; font-size:12px; color:var(--sub); }
+  .b-msg b{ color:var(--ink); }
+  .legend{ display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:6px; font-size:11.5px; }
+  .copy{ display:inline-block; background:var(--red); color:#fff; font-weight:800; font-size:10px; border-radius:5px; padding:1px 6px; }
+  .lv{ display:inline-block; font-weight:800; font-size:10px; border-radius:5px; padding:1px 6px; }
+  .lv.e{ background:#dcfce7; color:#15803d; } .lv.h{ background:#ede9fe; color:var(--violet); }
+
+  /* раздел */
+  .sec{ display:flex; align-items:center; gap:10px; margin:18px 0 8px; break-after:avoid; page-break-after:avoid; }
+  .sec .n{ background:var(--ink); color:#fff; font-weight:800; font-size:13px; border-radius:7px; padding:2px 9px; }
+  .sec .t{ font-size:18px; font-weight:800; letter-spacing:-.4px; }
+  .sec .w{ margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--gold); }
+  .sec-lead{ color:var(--sub); font-size:12px; margin:-4px 0 8px; break-after:avoid; }
+
+  /* термин */
+  .term{ border:1px solid var(--border); border-radius:11px; padding:8px 13px 7px; margin:0 0 8px; break-inside:avoid; page-break-inside:avoid; background:#fff; }
+  .t-h{ display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; margin-bottom:4px; }
+  .t-num{ font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:700; color:#fff; background:var(--c,var(--blue)); border-radius:5px; padding:2px 7px; }
+  .t-name{ font-size:15px; font-weight:800; color:var(--c,var(--blue)); letter-spacing:-.3px; }
+  .t-sym{ font-size:14px; }
+  .t-par{ margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--muted); }
+  .def{ font-family:'Cambria','Georgia',serif; font-size:13px; line-height:1.45; background:var(--gold-pale); border-left:3px solid var(--gold); border-radius:0 7px 7px 0; padding:5px 10px; margin:3px 0; }
+  .def .copy{ margin-right:6px; vertical-align:1px; font-family:'Onest',sans-serif; }
+  .def b{ font-family:'Onest',sans-serif; }
+  .own{ font-size:12px; color:var(--sub); margin:3px 0; }
+  .own i{ color:var(--muted); font-style:normal; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-right:4px; }
+  .r{ display:grid; grid-template-columns:78px 1fr; gap:8px; padding:3px 0; border-top:1px dashed var(--soft); font-size:12.5px; }
+  .r .k{ font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; padding-top:2px; }
+  .r.zap .k{ color:var(--indigo); }
+  .r.e .k{ color:#15803d; }
+  .r.h .k{ color:var(--violet); }
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .two .term{ margin:0; }
+  .mb{ margin-bottom:8px; }
+
+  /* таблица записи */
+  table.read{ width:100%; border-collapse:collapse; font-size:12.5px; break-inside:avoid; }
+  table.read th, table.read td{ border:1px solid var(--border); padding:4px 8px; text-align:left; vertical-align:middle; }
+  table.read th{ background:var(--gold-pale); font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--sub); }
+  table.read td:first-child{ width:120px; font-size:14px; text-align:center; }
+  table.read tr.later td{ color:var(--sub); }
+
+  .finale{ margin-top:12px; text-align:center; padding:7px 16px; background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 40%,#fde68a 100%); border:2px solid var(--gold-soft); border-radius:12px; font-weight:700; break-inside:avoid; }
+  .ft{ margin-top:8px; display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--muted); }
+
+  @media (max-width:600px){ .two{ grid-template-columns:1fr; } .r{ grid-template-columns:1fr; gap:0; } .t-par{ margin-left:0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="banner">
+    <div class="b-top">
+      <div class="b-label">Вероятность и статистика | словарь | 9 класс</div>
+      <div class="bdgs"><span class="bdg lm">Λ</span><span class="bdg di">D.</span></div>
+    </div>
+    <div class="b-title">Словарь: <span>вероятность с самых азов</span></div>
+    <div class="b-msg">Термины идут по порядку: каждый следующий опирается на предыдущие. Определения — <b>слово в слово по учебнику</b> Высоцкого и Ященко, номер параграфа справа.</div>
+    <div class="legend">
+      <span><span class="copy">✍</span> переписать в тетрадь дословно</span>
+      <span><span class="lv e">Легче</span> первый пример</span>
+      <span><span class="lv h">Сложнее</span> второй пример</span>
+    </div>
+  </div>
+
+  <!-- ═══════ 1. МНОЖЕСТВА ═══════ -->
+  <div class="sec"><span class="n">1</span><span class="t">Множества — язык, на котором записывают события</span><span class="w">ч. 2, справочные материалы</span></div>
+
+  <div class="term" style="--c:var(--blue)">
+    <div class="t-h"><span class="t-num">1</span><span class="t-name">Множество и элемент</span><span class="t-sym">\(\{\ \}\), \(\in\)</span></div>
+    <div class="own"><i>Своими словами</i>Множество — это набор каких-то предметов или чисел. То, из чего оно состоит, называют элементами. Элементы перечисляют в фигурных скобках через точку с запятой.</div>
+    <div class="r zap"><span class="k">Запись</span><span>\(A=\{2;\,4;\,6\}\) — множество из чисел 2, 4 и 6. Запись \(4\in A\) читается «4 принадлежит \(A\)».</span></div>
+    <div class="r e"><span class="k">Легче</span><span>Множество дней выходных: {суббота; воскресенье}.</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Множество чисел от 1 до 10, которые делятся на 3: \(B=\{3;\,6;\,9\}\). Здесь \(6\in B\), а \(5\notin B\).</span></div>
+  </div>
+
+  <div class="two mb">
+    <div class="term" style="--c:var(--blue)">
+      <div class="t-h"><span class="t-num">2</span><span class="t-name">Пустое множество</span><span class="t-sym">\(\varnothing\)</span></div>
+      <div class="def"><span class="copy">✍</span><b>Пустое множество</b> — это множество, которое не содержит элементов. Обозначают пустое множество символом \(\varnothing\).</div>
+      <div class="r e"><span class="k">Легче</span><span>Множество чисел на кубике, которые больше 6: \(\varnothing\).</span></div>
+    </div>
+    <div class="term" style="--c:var(--blue)">
+      <div class="t-h"><span class="t-name">Подмножество</span><span class="t-sym">\(B\subset A\)</span></div>
+      <div class="def">Множество \(B\) называется <b>подмножеством</b> множества \(A\), если любой элемент множества \(B\) принадлежит множеству \(A\). Обозначают: \(B\subset A\).</div>
+      <div class="r e"><span class="k">Легче</span><span>\(\{2;\,4\}\subset\{2;\,4;\,6\}\).</span></div>
+    </div>
+  </div>
+
+  <div class="term" style="--c:var(--blue)">
+    <div class="t-h"><span class="t-num">3</span><span class="t-name">Пересечение и объединение множеств</span><span class="t-sym">\(A\cap B\), \(A\cup B\)</span></div>
+    <div class="def"><span class="copy">✍</span><b>Пересечение</b> множеств \(A\) и \(B\) — это множество \(A\cap B\), которое содержит элементы, принадлежащие и множеству \(A\), и множеству \(B\).</div>
+    <div class="def"><span class="copy">✍</span><b>Объединение</b> множеств \(A\) и \(B\) — это множество \(A\cup B\), содержащее все элементы, которые принадлежат хотя бы одному из множеств \(A\) и \(B\).</div>
+    <div class="r zap"><span class="k">Запомнить</span><span>\(\cap\) — «и», общая часть. \(\cup\) — «или», всё вместе.</span></div>
+    <div class="r e"><span class="k">Легче</span><span>\(A=\{2;\,4;\,6\}\), \(B=\{4;\,5;\,6\}\). Тогда \(A\cap B=\{4;\,6\}\), \(A\cup B=\{2;\,4;\,5;\,6\}\).</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>\(A\) — чётные числа от 1 до 10, \(B\) — числа от 1 до 10, которые делятся на 3. Тогда \(A\cap B=\{6\}\), \(A\cup B=\{2;\,3;\,4;\,6;\,8;\,9;\,10\}\).</span></div>
+  </div>
+
+  <!-- ═══════ 2. ОПЫТ И СОБЫТИЯ ═══════ -->
+  <div class="sec"><span class="n">2</span><span class="t">Опыт, события, вероятность</span><span class="w">ч. 1, § 28, § 36—40</span></div>
+
+  <div class="term" style="--c:var(--red)">
+    <div class="t-h"><span class="t-num">4</span><span class="t-name">Случайный опыт</span><span class="t-par">ч. 1, § 36</span></div>
+    <div class="def"><span class="copy">✍</span>Условия и действия, при которых может наступить случайное событие, принято называть <b>случайным опытом</b> или <b>случайным экспериментом</b>.</div>
+    <div class="r e"><span class="k">Легче</span><span>Бросаем монету. Бросаем игральный кубик.</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Стрелок стреляет по мишени, пока не попадёт. Опыт может длиться один выстрел, а может — десять.</span></div>
+  </div>
+
+  <div class="term" style="--c:var(--red)">
+    <div class="t-h"><span class="t-num">5</span><span class="t-name">Элементарное событие (элементарный исход)</span><span class="t-par">ч. 1, § 36</span></div>
+    <div class="def"><span class="copy">✍</span>События случайного опыта, которые нельзя разделить на более простые, называются <b>элементарными событиями</b> или <b>элементарными исходами</b>.</div>
+    <div class="def"><span class="copy">✍</span>В результате случайного опыта обязательно наступает только одно элементарное событие.</div>
+    <div class="r zap"><span class="k">Запись</span><span>\(N\) — число всех элементарных событий опыта.</span></div>
+    <div class="r e"><span class="k">Легче</span><span>Бросок монеты: исходы О (орёл) и Р (решка), \(N=2\). Бросок кубика: исходы 1, 2, 3, 4, 5, 6, \(N=6\).</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Кубик бросают два раза. Исход — пара чисел: \((1;\,5)\) значит «сначала 1, потом 5». Пары \((1;\,5)\) и \((5;\,1)\) — разные исходы. Всего \(N=6\cdot6=36\).</span></div>
+  </div>
+
+  <div class="term" style="--c:var(--red)">
+    <div class="t-h"><span class="t-num">6</span><span class="t-name">Случайное событие</span><span class="t-sym">\(A, B, C\)</span><span class="t-par">ч. 1, § 38</span></div>
+    <div class="def"><span class="copy">✍</span><b>Случайным событием</b> в случайном опыте называется произвольное множество, состоящее из элементарных событий этого опыта.</div>
+    <div class="r zap"><span class="k">Запись</span><span>Событие обозначают большой латинской буквой. Записывают словами в кавычках или перечисляют исходы в фигурных скобках.</span></div>
+    <div class="r e"><span class="k">Легче</span><span>Бросок кубика. \(A\) = «выпало чётное число очков», то есть \(A=\{2;\,4;\,6\}\).</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Кубик бросают дважды. \(A\) = «сумма очков равна 11», то есть \(A=\{(6;\,5),\,(5;\,6)\}\).</span></div>
+  </div>
+
+  <div class="term" style="--c:var(--red)">
+    <div class="t-h"><span class="t-num">7</span><span class="t-name">Благоприятствующие элементарные события</span><span class="t-sym">\(N(A)\)</span><span class="t-par">ч. 1, § 38</span></div>
+    <div class="def"><span class="copy">✍</span>Элементарные события, при которых наступает событие \(A\), называются <b>благоприятствующими событию \(A\)</b>.</div>
+    <div class="r zap"><span class="k">Запись</span><span>\(N(A)\) — число элементарных событий, благоприятствующих \(A\). Читается «эн от а».</span></div>
+    <div class="r e"><span class="k">Легче</span><span>\(A\) = «выпало чётное число очков»: благоприятствуют 2, 4, 6, поэтому \(N(A)=3\).</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Два броска кубика, \(A\) = «сумма очков равна 8»: \((2;\,6),\ (3;\,5),\ (4;\,4),\ (5;\,3),\ (6;\,2)\), поэтому \(N(A)=5\).</span></div>
+  </div>
+
+  <div class="term" style="--c:var(--red)">
+    <div class="t-h"><span class="t-num">8</span><span class="t-name">Невозможное и достоверное событие</span><span class="t-sym">\(\varnothing\)</span><span class="t-par">ч. 1, § 28; ч. 2, § 51</span></div>
+    <div class="def"><span class="copy">✍</span><b>Невозможное</b> случайное событие — это случайное событие, которое в случайном эксперименте не наступает. Вероятность невозможного события равна 0.</div>
+    <div class="def"><span class="copy">✍</span><b>Достоверное</b> случайное событие — это случайное событие, которое в случайном эксперименте обязательно наступает. Вероятность достоверного события равна 1.</div>
+    <div class="r zap"><span class="k">Запись</span><span>Невозможное событие не содержит ни одного исхода — это пустое множество \(\varnothing\). Достоверное событие содержит все исходы опыта.</span></div>
+    <div class="r e"><span class="k">Легче</span><span>Бросок кубика: «выпало 7 очков» — невозможное, «выпало меньше 7 очков» — достоверное.</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Два броска кубика: «сумма очков равна 1» — невозможное, «сумма очков меньше 13» — достоверное, «сумма очков равна 12» — ни то ни другое, это случайное событие.</span></div>
+  </div>
+
+  <div class="term" style="--c:var(--violet)">
+    <div class="t-h"><span class="t-num">9</span><span class="t-name">Вероятность события</span><span class="t-sym">\(P(A)\)</span><span class="t-par">ч. 1, § 28, § 37</span></div>
+    <div class="def"><span class="copy">✍</span><b>Вероятность случайного события</b> — это числовая мера правдоподобия этого события.</div>
+    <div class="def"><span class="copy">✍</span>1. Вероятности элементарных событий неотрицательны. 2. Сумма вероятностей всех элементарных событий равняется единице.</div>
+    <div class="r zap"><span class="k">Запись</span><span>\(P(A)\) — «пэ от а», вероятность события \(A\). Всегда \(0\le P(A)\le1\).</span></div>
+    <div class="r e"><span class="k">Легче</span><span>У монеты два исхода: \(P(\text{О})+P(\text{Р})=1\), и если монета симметричная, каждая вероятность равна \(\tfrac{1}{2}\).</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Если получилась вероятность \(\tfrac{7}{6}\) или \(-0{,}2\) — в решении ошибка: так не бывает.</span></div>
+  </div>
+
+  <div class="term" style="--c:var(--violet)">
+    <div class="t-h"><span class="t-num">10</span><span class="t-name">Равновозможные элементарные события</span><span class="t-par">ч. 1, § 37</span></div>
+    <div class="def"><span class="copy">✍</span>Если в случайном опыте шансы всех элементарных событий одинаковы, то он называется случайным опытом с <b>равновозможными элементарными событиями</b>.</div>
+    <div class="def"><span class="copy">✍</span>Правило. Если в случайном опыте ровно \(N\) равновозможных элементарных событий, то вероятность каждого из них равна \(\dfrac{1}{N}\).</div>
+    <div class="r e"><span class="k">Легче</span><span>Симметричный кубик: 6 равновозможных исходов, вероятность каждого \(\tfrac{1}{6}\).</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Крышка от бутылки падает вверх или вниз — это не равновозможные исходы: у крышки верх и низ разные.</span></div>
+  </div>
+
+  <div class="term" style="--c:var(--violet)">
+    <div class="t-h"><span class="t-num">11</span><span class="t-name">Вероятность в опыте с равновозможными событиями</span><span class="t-sym">\(P(A)=\dfrac{N(A)}{N}\)</span><span class="t-par">ч. 1, § 40</span></div>
+    <div class="def"><span class="copy">✍</span>Правило. Если в случайном опыте конечное число элементарных событий и все они равновозможны, то вероятность события \(A\) равна отношению числа элементарных событий, благоприятствующих событию \(A\), к общему числу элементарных событий: \(P(A)=\dfrac{N(A)}{N}\).</div>
+    <div class="r e"><span class="k">Легче</span><span>Бросок кубика, \(A\) = «выпало чётное число очков»: \(P(A)=\dfrac{3}{6}=\dfrac{1}{2}\).</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Два броска кубика, \(A\) = «сумма очков равна 8»: \(N=36\), \(N(A)=5\), поэтому \(P(A)=\dfrac{5}{36}\).</span></div>
+  </div>
+
+  <div class="term" style="--c:var(--violet)">
+    <div class="t-h"><span class="t-num">12</span><span class="t-name">Частота случайного события</span><span class="t-par">ч. 1, § 28</span></div>
+    <div class="def"><span class="copy">✍</span>Отношение числа опытов, в которых случайное событие произошло, к общему числу проведённых одинаковых опытов называется <b>частотой случайного события</b> в этой серии опытов.</div>
+    <div class="def">Если опыт повторять достаточно много раз, то почти наверняка окажется, что частота события близка к его вероятности.</div>
+    <div class="r e"><span class="k">Легче</span><span>Монету бросили 40 раз, орёл выпал 23 раза. Частота орла \(\dfrac{23}{40}=0{,}575\). Вероятность при этом \(\tfrac{1}{2}\).</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Крышку бросили 250 раз, вверх она упала 90 раз. Частота \(\dfrac{90}{250}=0{,}36\). По правилу из термина 11 вероятность здесь не найти, остаётся оценить её частотой.</span></div>
+  </div>
+
+  <!-- ═══════ 3. ДЕЙСТВИЯ С СОБЫТИЯМИ ═══════ -->
+  <div class="sec"><span class="n">3</span><span class="t">Действия с событиями</span><span class="w">ч. 2, § 51—57</span></div>
+  <div class="sec-lead">Во всех примерах этого раздела один опыт: бросают кубик. \(A\) = «выпало чётное число очков» \(=\{2;\,4;\,6\}\), \(B\) = «выпало больше 4 очков» \(=\{5;\,6\}\).</div>
+
+  <div class="term" style="--c:var(--green)">
+    <div class="t-h"><span class="t-num">13</span><span class="t-name">Противоположное событие</span><span class="t-sym">\(\overline{A}\)</span><span class="t-par">ч. 2, § 51</span></div>
+    <div class="def"><span class="copy">✍</span>Событие, <b>противоположное</b> событию \(A\), — это множество всех элементарных событий, которые не принадлежат событию \(A\).</div>
+    <div class="def"><span class="copy">✍</span>Сумма вероятностей взаимно противоположных событий равна единице: \(P(A)+P(\overline{A})=1\).</div>
+    <div class="r zap"><span class="k">Запись</span><span>\(\overline{A}\) — «не \(A\)», буква с чертой сверху.</span></div>
+    <div class="r e"><span class="k">Легче</span><span>\(\overline{A}\) = «выпало нечётное число очков» \(=\{1;\,3;\,5\}\). \(P(\overline{A})=1-\tfrac{1}{2}=\tfrac{1}{2}\).</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Кубик бросают дважды. Вероятность «хотя бы раз выпала шестёрка» проще найти через противоположное «ни разу не выпала шестёрка» — это 25 исходов: \(1-\dfrac{25}{36}=\dfrac{11}{36}\).</span></div>
+  </div>
+
+  <div class="two mb">
+    <div class="term" style="--c:var(--green)">
+      <div class="t-h"><span class="t-num">14</span><span class="t-name">Объединение событий</span><span class="t-sym">\(A\cup B\)</span><span class="t-par">§ 52</span></div>
+      <div class="def"><span class="copy">✍</span><b>Объединение</b> двух случайных событий \(A\cup B\) — это множество элементарных событий, которые благоприятствуют хотя бы одному из событий \(A\) и \(B\).</div>
+      <div class="r zap"><span class="k">Читаем</span><span>«\(A\) или \(B\)»</span></div>
+      <div class="r e"><span class="k">Пример</span><span>\(A\cup B=\{2;\,4;\,5;\,6\}\), \(P=\tfrac{4}{6}=\tfrac{2}{3}\).</span></div>
+    </div>
+    <div class="term" style="--c:var(--green)">
+      <div class="t-h"><span class="t-num">15</span><span class="t-name">Пересечение событий</span><span class="t-sym">\(A\cap B\)</span><span class="t-par">§ 52</span></div>
+      <div class="def"><span class="copy">✍</span><b>Пересечение</b> двух случайных событий \(A\cap B\) — это множество элементарных событий, которые благоприятствуют и событию \(A\), и событию \(B\).</div>
+      <div class="r zap"><span class="k">Читаем</span><span>«\(A\) и \(B\)»</span></div>
+      <div class="r e"><span class="k">Пример</span><span>\(A\cap B=\{6\}\), \(P=\tfrac{1}{6}\).</span></div>
+    </div>
+  </div>
+
+  <div class="term" style="--c:var(--green)">
+    <div class="t-h"><span class="t-num">16</span><span class="t-name">Несовместные события и правила сложения</span><span class="t-par">ч. 2, § 52—53</span></div>
+    <div class="def"><span class="copy">✍</span>События \(A\) и \(B\) называются <b>несовместными</b>, если их пересечение не содержит элементарных событий: \(A\cap B=\varnothing\).</div>
+    <div class="def"><span class="copy">✍</span>Вероятность объединения несовместных событий \(A\) и \(B\) равна сумме их вероятностей: \(P(A\cup B)=P(A)+P(B)\).</div>
+    <div class="def">Вероятность объединения событий \(A\) и \(B\) равна сумме их вероятностей без вероятности их пересечения: \(P(A\cup B)=P(A)+P(B)-P(A\cap B)\).</div>
+    <div class="r e"><span class="k">Легче</span><span>«Выпало 1 очко» и «выпало 2 очка» — несовместные: вместе не случатся. Вероятность «выпало 1 или 2 очка»: \(\tfrac{1}{6}+\tfrac{1}{6}=\tfrac{1}{3}\).</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Наши \(A\) и \(B\) совместные: у них общий исход 6. Поэтому \(P(A\cup B)=\tfrac{3}{6}+\tfrac{2}{6}-\tfrac{1}{6}=\tfrac{4}{6}=\tfrac{2}{3}\) — как в термине 14.</span></div>
+  </div>
+
+  <div class="term" style="--c:var(--green)">
+    <div class="t-h"><span class="t-num">17</span><span class="t-name">Условная вероятность</span><span class="t-sym">\(P(A\mid B)\)</span><span class="t-par">ч. 2, § 55</span></div>
+    <div class="def"><span class="copy">✍</span>Вероятность события \(A\) при условии, что событие \(B\) произошло, называется <b>условной вероятностью</b> события \(A\) при условии \(B\). Обозначается эта вероятность \(P(A\mid B)\).</div>
+    <div class="def">Если вероятность события \(B\) больше нуля, то \(P(A\mid B)=\dfrac{P(A\cap B)}{P(B)}\).</div>
+    <div class="r zap"><span class="k">Запись</span><span>Черта внутри скобок читается «при условии». \(P(A\mid B)\) — «вероятность \(A\) при условии \(B\)».</span></div>
+    <div class="r e"><span class="k">Легче</span><span>Кубик бросили, и известно, что выпало больше 4 очков. Какова вероятность, что выпало чётное? Остались исходы 5 и 6, чётный один: \(P(A\mid B)=\tfrac{1}{2}\).</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>То же по формуле: \(P(A\mid B)=\dfrac{1/6}{2/6}=\dfrac{1}{2}\). Без условия было \(P(A)=\tfrac{1}{2}\) — узнав \(B\), мы вероятность \(A\) не изменили.</span></div>
+  </div>
+
+  <div class="term" style="--c:var(--green)">
+    <div class="t-h"><span class="t-num">18</span><span class="t-name">Независимые события</span><span class="t-par">ч. 2, § 57</span></div>
+    <div class="def"><span class="copy">✍</span>Два события \(A\) и \(B\) называются <b>независимыми</b>, если вероятность их пересечения равна произведению их вероятностей: \(P(A\cap B)=P(A)\cdot P(B)\).</div>
+    <div class="r e"><span class="k">Легче</span><span>Бросают две монеты. \(A\) = «первая — орёл», \(B\) = «вторая — орёл». \(P(A\cap B)=\tfrac{1}{4}\) и \(P(A)\cdot P(B)=\tfrac{1}{2}\cdot\tfrac{1}{2}=\tfrac{1}{4}\) — независимые.</span></div>
+    <div class="r h"><span class="k">Сложнее</span><span>Наши \(A\) и \(B\) для одного броска кубика: \(P(A\cap B)=\tfrac{1}{6}\), \(P(A)\cdot P(B)=\tfrac{1}{2}\cdot\tfrac{1}{3}=\tfrac{1}{6}\) — тоже независимые, хотя это один и тот же бросок.</span></div>
+  </div>
+
+  <!-- ═══════ 4. КАК ЧИТАТЬ ЗАПИСЬ ═══════ -->
+  <div class="sec"><span class="n">4</span><span class="t">Как читать запись</span></div>
+  <table class="read">
+    <tr><th>Запись</th><th>Как читаем и что значит</th></tr>
+    <tr><td>\(A=\{2;\,4;\,6\}\)</td><td>событие \(A\) состоит из исходов 2, 4 и 6</td></tr>
+    <tr><td>\(A\) = «выпал орёл»</td><td>событие \(A\), записанное словами</td></tr>
+    <tr><td>\(4\in A\)</td><td>«4 принадлежит \(A\)»: исход 4 благоприятствует событию \(A\)</td></tr>
+    <tr><td>\(N\)</td><td>число всех элементарных событий опыта</td></tr>
+    <tr><td>\(N(A)\)</td><td>«эн от а»: число исходов, благоприятствующих \(A\)</td></tr>
+    <tr><td>\(P(A)\)</td><td>«пэ от а»: вероятность события \(A\)</td></tr>
+    <tr><td>\(\varnothing\)</td><td>пустое множество; невозможное событие</td></tr>
+    <tr><td>\(\overline{A}\)</td><td>«не \(A\)»: противоположное событие</td></tr>
+    <tr><td>\(A\cap B\)</td><td>«\(A\) и \(B\)»: пересечение, случились оба</td></tr>
+    <tr><td>\(A\cup B\)</td><td>«\(A\) или \(B\)»: объединение, случилось хотя бы одно</td></tr>
+    <tr><td>\(P(A\mid B)\)</td><td>«вероятность \(A\) при условии \(B\)»: условная вероятность</td></tr>
+    <tr class="later"><td>\(P(X=5)\)</td><td>вероятность того, что случайная величина \(X\) примет значение 5 — это будет весной, ч. 2, глава XVII</td></tr>
+  </table>
+
+  <div class="finale">Выучил эти 18 терминов — значит, умеешь читать любую задачу по вероятности из ОГЭ. 💪</div>
+  <div class="ft"><span>Школа Гагарина | 9 класс | вероятность и статистика</span><span>словарь, v04</span></div>
+
+</div>
+</body>
+</html>
