@@ -88,11 +88,6 @@ h1{ font-size:40px; font-weight:800; letter-spacing:-1.2px; line-height:1; margi
 .den.today::after{ content:'сегодня'; position:absolute; top:8px; right:8px; font-size:9px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:2px 5px; border-radius:5px; background:#fff; color:#16131a; }
 .den.sel{ box-shadow:0 0 0 3px var(--night-2), 0 0 0 5px #fff; }
 .den.due::before{ content:'📌'; position:absolute; right:8px; bottom:7px; font-size:13px; line-height:1; }
-.legend{ display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:14px; font-size:13px; color:var(--night-dim); }
-.legend span{ display:flex; align-items:center; gap:7px; }
-.legend i{ width:14px; height:14px; border-radius:4px; background:var(--g); }
-.legend i.pin{ background:none; width:auto; height:auto; font-style:normal; }
-.legend i.pin::before{ content:'📌'; font-size:12px; }
 @media (max-width:700px){
   .cal{ padding:12px; border-radius:16px; }
   .grid, .dw{ gap:4px; }

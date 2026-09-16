@@ -169,10 +169,6 @@ function risovatKalendar(){
       aria-label="${d.getDate()} ${MES[d.getMonth()]}${kurs ? ', ' + KURS[kurs].name : ''}">
       <span class="num">${d.getDate()}</span>${kurs ? `<span class="lbl">${esc(KURS[kurs].name)}</span>` : ''}</button>`;
   }
-  const legenda = ['veroyatnost','algebra','geometriya']
-    .map(id => `<span><i class="k-${id}"></i>${esc(KURS[id].name)}</span>`).join('') +
-    `<span><i class="pin"></i>срок сдачи</span>`;
-
   $('#cal').innerHTML = `
     <div class="cal-h">
       <div class="cal-m">${MES_I[mesyac.getMonth()]} <span>${mesyac.getFullYear()}</span></div>
@@ -183,8 +179,7 @@ function risovatKalendar(){
       </div>
     </div>
     <div class="dw">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x => `<span>${x}</span>`).join('')}</div>
-    <div class="grid">${kletki}</div>
-    <div class="legend">${legenda}</div>`;
+    <div class="grid">${kletki}</div>`;
 }
 
 /* ═════════════════ ДЕНЬ СПРАВА ═════════════════ */
@@ -368,23 +363,17 @@ function oblozhka(u){
 }
 
 /* кнопки материалов на карточке:
-   страница — яркая кнопка ↗; PDF — не кнопка, а название со стрелкой ⤓;
-   живой чертёж — подчёркнутая ссылка ↗ */
+   материал — яркая кнопка ↗, открывает PDF (тот же, что и обложка), рядом ⤓ скачать;
+   живой чертёж и веб-домашка — подчёркнутая ссылка ↗ (только они бывают HTML) */
 function knopki(u){
-  const mat = u.mat || [];
-  const pdfy = mat.filter(m => m.kind === 'pdf');
-  const osnova = mat.filter(m => m.kind !== 'pdf');
-  const perv = osnova.findIndex(m => m.kind === 'teoriya' && !/\.pdf$/i.test(m.out));
   let glavnye = '', ssylki = '';
-  osnova.forEach((m, i) => {
+  (u.mat || []).forEach(m => {
     const url = esc(LIVE + m.out), isPdf = /\.pdf$/i.test(m.out);
-    if (m.kind === 'live'){
-      ssylki += `<a class="a-live" href="${url}" target="_blank" rel="noopener" title="${esc(m.hint || '')}">🎯 ${esc(m.label)} ↗</a>`;
-    } else if (isPdf){
-      glavnye += `<a class="a-file" href="${url}" target="_blank" rel="noopener" title="${esc(m.hint || '')}">${esc(m.label)} <span class="ar">⤓</span></a>`;
+    if (m.kind === 'live' || m.kind === 'web'){
+      ssylki += `<a class="a-live" href="${url}" target="_blank" rel="noopener" title="${esc(m.hint || '')}">${m.kind === 'web' ? '🕹' : '🎯'} ${esc(m.label)} ↗</a>`;
     } else {
       glavnye += `<span class="a-pair"><a class="a-main" href="${url}" target="_blank" rel="noopener" title="${esc(m.hint || '')}">${m.kind === 'dz' ? '✏️' : '📘'} ${esc(m.label)} ↗</a>` +
-        (i === perv && pdfy[0] ? `<a class="a-dl" href="${esc(LIVE + pdfy[0].out)}" download title="Скачать PDF" aria-label="Скачать PDF">⤓</a>` : '') + `</span>`;
+        (isPdf ? `<a class="a-dl" href="${url}" download title="Скачать PDF" aria-label="Скачать PDF">⤓</a>` : '') + `</span>`;
     }
   });
   if (!glavnye && !ssylki) return `<div class="a-none">Урок вели по учебнику</div>`;
@@ -472,13 +461,9 @@ function risovatVitrinu(){
 
 /* ═════════════════ УРОК ПОВЕРХ СТРАНИЦЫ ═════════════════ */
 function materialy(u){
-  const mat = u.mat || [];
-  const pdfy = mat.filter(m => m.kind === 'pdf');
-  const osnova = mat.filter(m => m.kind !== 'pdf');
-  const html = osnova.map((m, i) => {
+  const html = (u.mat || []).map(m => {
     const url = LIVE + m.out;
     const isPdf = /\.pdf$/i.test(m.out);
-    const para = (m.kind === 'teoriya' && i === osnova.findIndex(x => x.kind === 'teoriya')) ? pdfy[0] : null;
     const ic = m.kind === 'live' ? '🎯' : m.kind === 'teoriya' ? '📘' : m.kind === 'web' ? '🕹' : '📄';
     return `<div class="mat">
       <span class="m-ic">${ic}</span>
@@ -489,7 +474,6 @@ function materialy(u){
         ${m.hint ? `<small>${esc(m.hint)}</small>` : ''}
       </span>
       ${isPdf ? `<a class="dl" href="${esc(url)}" download title="Скачать PDF" aria-label="Скачать PDF">⤓</a>` : ''}
-      ${para ? `<a class="dl" href="${esc(LIVE + para.out)}" download title="Скачать PDF-версию" aria-label="Скачать PDF-версию">⤓</a>` : ''}
     </div>`;
   }).join('');
   return html || `<div class="nomat">Урок вели по учебнику — своих материалов нет</div>`;
