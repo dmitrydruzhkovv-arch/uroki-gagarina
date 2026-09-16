@@ -392,7 +392,9 @@ function knopki(u){
 }
 
 function obloshkaHTML(u, cls){
-  const pic = oblozhka(u), first = (u.mat || [])[0];
+  const mat = u.mat || [];
+  // Обложка урока всегда открывает PDF — HTML только если PDF совсем нет (D, 16.09).
+  const pic = oblozhka(u), first = mat.find(m => m.kind === 'pdf' || /\.pdf$/i.test(m.out)) || mat[0];
   const img = pic ? `<img src="${esc(pic)}" alt="" decoding="async">` : `<span class="ph">${u.kurs.icon}</span>`;
   const chipy = `<span class="c-date">${DNI_K[u.dt.getDay()]} · ${u.dt.getDate()} ${MES_K[u.dt.getMonth()]}</span>` +
     (+u.dt === +TODAY ? '<span class="c-new">сегодня</span>' : '');
