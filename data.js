@@ -343,7 +343,7 @@ var DATA = {
 
   /* ── ссылка на официальное планирование (сайт для школы) ── */
   ktp: {
-    label: 'Планирование на год',
+    label: 'Программа года',
     url: 'https://dmitrydruzhkovv-arch.github.io/matematika-gagarina/',
   },
 };

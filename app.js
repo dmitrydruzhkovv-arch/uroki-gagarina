@@ -643,6 +643,10 @@ $('#foot').innerHTML = `
     Учебники принадлежат издательствам и выложены только для учеников класса.</div>
   <div class="foot-links"><a href="pravila.html">Правила и конфиденциальность</a>${DATA.ktp ? `<a href="${esc(DATA.ktp.url)}" target="_blank" rel="noopener">${esc(DATA.ktp.label)} ↗</a>` : ''}</div>`;
 
+/* кнопка «Программа года» в шапке — адрес из DATA.ktp (сайт планирования) */
+if (DATA.ktp && DATA.ktp.url) $('#year').href = DATA.ktp.url;
+else $('#year').remove();
+
 /* ═════════════════ СТАРТ ═════════════════ */
 pometitTemu();
 tik();
