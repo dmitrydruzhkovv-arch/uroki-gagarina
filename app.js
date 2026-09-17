@@ -106,9 +106,14 @@ function dzTelo(u){
     </div>`).join('');
 }
 
+/* счётчик — только общая часть: «кому мало» по желанию, «кого не было» — не для всех.
+   polnyj — вместе с «кого не было»: за него отдельный салют */
 function schet(u){
-  const vse = zadaniya(u).filter(g => g.t !== 'Кому мало').flatMap(g => g.items);
-  return { vsego: vse.length, sdelano: vse.filter(it => galki[kg(u, it.s)]).length };
+  const gr = zadaniya(u).filter(g => g.t !== 'Кому мало');
+  const obshchie = gr.filter(g => g.t !== 'Кого не было на уроке').flatMap(g => g.items);
+  const vse = gr.flatMap(g => g.items);
+  const gotovo = list => list.filter(it => galki[kg(u, it.s)]).length;
+  return { vsego: obshchie.length, sdelano: gotovo(obshchie), polnyjVsego: vse.length, polnyj: gotovo(vse) };
 }
 
 function dzText(u){
@@ -528,7 +533,9 @@ function zakryt(){
 }
 
 /* ═════════════════ СОБЫТИЯ ═════════════════ */
-function perekluchit(g){
+function perekluchit(g, el){
+  const [gk, gn] = g.split('|'), urok = najti(gk, gn);
+  const bylo = urok ? schet(urok) : null;
   if (galki[g]) delete galki[g]; else galki[g] = 1;
   try { localStorage.setItem(GALKI, JSON.stringify(galki)); } catch (_) {}
   const on = !!galki[g];
@@ -543,12 +550,22 @@ function perekluchit(g){
     card.querySelector('.bar-t').textContent = `${s.sdelano} из ${s.vsego}`;
   });
   risovatDen();
+
+  /* последняя галочка — праздник (salyut.js). Только в момент закрытия, не при загрузке */
+  const stalo = urok ? schet(urok) : null;
+  const zakryl = (s, b, vs, sd) => s[vs] && s[sd] === s[vs] && b[sd] < b[vs];
+  if (on && stalo && window.SALYUT && (zakryl(stalo, bylo, 'vsego', 'sdelano') ||
+      (stalo.polnyjVsego > stalo.vsego && zakryl(stalo, bylo, 'polnyjVsego', 'polnyj')))){
+    const r = el && el.getBoundingClientRect();
+    window.SALYUT(gk, r ? r.left + 20 : null, r ? r.top + r.height / 2 : null,
+      stalo.polnyj === stalo.polnyjVsego ? stalo.polnyj : stalo.sdelano);
+  }
 }
 
 document.addEventListener('click', e => {
   const t = e.target;
   const task = t.closest('.task[data-g]');
-  if (task){ perekluchit(task.dataset.g); return; }
+  if (task){ perekluchit(task.dataset.g, task); return; }
 
   const cp = t.closest('[data-copy]');
   if (cp){
@@ -602,7 +619,7 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && document.body.classList.contains('sheet-open')) zakryt();
   const task = e.target.closest && e.target.closest('.task[data-g]');
-  if (task && (e.key === ' ' || e.key === 'Enter')){ e.preventDefault(); perekluchit(task.dataset.g); }
+  if (task && (e.key === ' ' || e.key === 'Enter')){ e.preventDefault(); perekluchit(task.dataset.g, task); }
 });
 
 /* ═════════════════ ТЕМА ═════════════════
