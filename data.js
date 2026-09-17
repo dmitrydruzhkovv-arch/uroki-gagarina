@@ -368,6 +368,15 @@ var DATA = {
   ],
 
   /* ── ссылка на официальное планирование (сайт для школы) ── */
+  /* ── живой фон календаря (fon.js) ──
+     giphyKey пустой → свои неоновые плитки с математикой, из интернета ничего не грузится.
+     Вставил бесплатный ключ с developers.giphy.com → гифки по тегам, только rating=g.
+     ⚠ Вместе с ключом — абзац про GIPHY в pravila.html (сервис получает адрес устройства). */
+  fon: {
+    giphyKey: '',
+    tegi: ['math', 'neon', 'space', 'geometry', 'synthwave', 'abstract loop'],
+  },
+
   ktp: {
     label: 'Программа года',
     url: 'https://dmitrydruzhkovv-arch.github.io/matematika-gagarina/',

@@ -12,11 +12,9 @@
   try { if (localStorage.getItem('tema') === 'night') document.documentElement.dataset.theme = 'night'; } catch (_) {}
 </script>
 <link rel="stylesheet" href="_движок/fonts/gf.css">
-<link rel="stylesheet" href="style.css?v=093e3513">
+<link rel="stylesheet" href="style.css?v=19943989">
 </head>
 <body>
-
-<!-- ПРОТОТИП. Боевой сайт — . Данные берутся оттуда же, не копируются. -->
 
 <header class="hero">
   <div class="shell">
@@ -30,7 +28,10 @@
       </div>
     </div>
     <div class="board">
-      <section class="cal" id="cal" aria-label="Календарь"></section>
+      <div class="cal-box">
+        <div class="gif-wall" id="gifWall" aria-hidden="true"></div>
+        <section class="cal" id="cal" aria-label="Календарь"></section>
+      </div>
       <aside class="day" id="day" aria-label="Расписание дня"></aside>
     </div>
   </div>
@@ -70,8 +71,9 @@
 <script src="plan.js?v=cad5f7e4"></script>
 <script src="raspisanie.js?v=c191abc8"></script>
 <script src="covers.js?v=3ee9338b"></script>
-<script src="data.js?v=b41950cb"></script>
+<script src="data.js?v=d3ea82c4"></script>
 <script src="salyut.js?v=fc6b3de4"></script>
+<script src="fon.js?v=ab20d3db"></script>
 <script src="app.js?v=1098d578"></script>
 </body>
 </html>

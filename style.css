@@ -60,7 +60,52 @@ h1{ font-size:40px; font-weight:800; letter-spacing:-1.2px; line-height:1; margi
 @media (max-width:900px){ .board{ grid-template-columns:1fr; gap:20px; } h1{ font-size:32px; } .subj{ gap:8px; padding:10px; } .s-ic{ width:36px; height:36px; font-size:19px; border-radius:11px; } .s-tx b{ font-size:15px; } .s-tx em{ display:none; } .s-n{ min-width:30px; height:30px; font-size:14px; } }
 
 /* календарь */
-.cal{ background:var(--night-2); border:1px solid var(--night-3); border-radius:20px; padding:18px; display:flex; flex-direction:column; }
+.cal-box{ position:relative; border-radius:20px; overflow:hidden; background:var(--night-2); border:1px solid var(--night-3); isolation:isolate; }
+.cal{ position:relative; z-index:1; height:100%; padding:18px; display:flex; flex-direction:column; }
+
+/* ── живая стена за календарём (fon.js) ── */
+.gif-wall{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+.gif-wall::after{ content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 70% at 45% 45%, rgba(22,19,26,.42), rgba(22,19,26,.82)); }
+.gw-plane{
+  position:absolute; left:-32%; top:-50%; width:165%; height:200%;
+  display:grid; grid-template-columns:repeat(var(--cols),1fr); gap:14px; align-content:start;
+  transform:perspective(1000px) rotateX(40deg) rotateZ(-14deg);
+  filter:blur(1.4px) saturate(1.2);
+  animation:gw-plyvi 26s ease-in-out infinite alternate;
+}
+@keyframes gw-plyvi{
+  from{ transform:perspective(1000px) rotateX(40deg) rotateZ(-14deg) translate3d(0,0,0); }
+  to  { transform:perspective(1000px) rotateX(40deg) rotateZ(-14deg) translate3d(-4%,-9%,0); }
+}
+.gw-tile{ position:relative; aspect-ratio:4/3; border-radius:12px; overflow:hidden; background:#1c1624; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06); opacity:.8; }
+.gw-in{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:opacity .9s ease, transform .9s var(--ease); }
+.gw-in.vhod{ opacity:0; transform:scale(1.08); }
+.gw-svg{ background:radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--h1) 28%, transparent), transparent 70%), #140f1b; }
+.gw-svg svg{ width:100%; height:100%; display:block; }
+.gw-svg .m-run{ animation:m-run 2.4s linear infinite; }
+.gw-svg .m-rot, .gw-svg .m-rot-r{ transform-box:fill-box; transform-origin:center; animation:m-rot 7s linear infinite; }
+.gw-svg .m-rot-r{ animation-direction:reverse; animation-duration:5s; }
+.gw-svg .m-ring{ transform-box:fill-box; transform-origin:center; animation:m-ring 2.6s ease-out infinite; }
+.gw-svg .m-d2{ animation-delay:-1.3s; }
+.gw-svg .m-bar{ transform-box:fill-box; transform-origin:bottom; animation:m-bar 1.8s ease-in-out infinite alternate; }
+.gw-svg .m-glow{ animation:m-glow 2.2s ease-in-out infinite alternate; }
+.gw-svg .m-dot{ transform-box:fill-box; transform-origin:center; animation:m-dot 1.5s ease-in-out infinite alternate; }
+@keyframes m-run{ to{ transform:translateX(40px); } }
+@keyframes m-rot{ to{ transform:rotate(360deg); } }
+@keyframes m-ring{ from{ transform:scale(.6); opacity:1; } to{ transform:scale(5); opacity:0; } }
+@keyframes m-bar{ from{ transform:scaleY(.25); } to{ transform:scaleY(1); } }
+@keyframes m-glow{ from{ opacity:.45; } to{ opacity:1; } }
+@keyframes m-dot{ from{ transform:scale(.4); opacity:.35; } to{ transform:scale(1.15); opacity:1; } }
+.gif-wall.paused .gw-plane{ visibility:hidden; animation-play-state:paused; }
+.gw-by{ position:absolute; z-index:2; right:10px; bottom:8px; font-size:9px; font-weight:700; letter-spacing:.06em; color:rgba(255,255,255,.55); }
+/* пустые дни — полупрозрачные, чтобы движение было видно сквозь сетку */
+.cal-box .den:not(.math):not(.chuzhoy):not(.off){ background:rgba(46,41,53,.66); }
+@media (max-width:700px){
+  .gw-plane{ filter:saturate(1.2); gap:10px; }
+}
+@media (prefers-reduced-motion:reduce){
+  .gw-plane, .gw-svg *{ animation:none !important; }
+}
 .cal-h{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
 .cal-m{ font-size:22px; font-weight:800; color:#fff; letter-spacing:-.4px; }
 .cal-m span{ color:var(--night-dim); font-weight:500; }
@@ -89,7 +134,8 @@ h1{ font-size:40px; font-weight:800; letter-spacing:-1.2px; line-height:1; margi
 .den.sel{ box-shadow:0 0 0 3px var(--night-2), 0 0 0 5px #fff; }
 .den.due::before{ content:'📌'; position:absolute; right:8px; bottom:7px; font-size:13px; line-height:1; }
 @media (max-width:700px){
-  .cal{ padding:12px; border-radius:16px; }
+  .cal{ padding:12px; }
+  .cal-box{ border-radius:16px; }
   .grid, .dw{ gap:4px; }
   .cal .grid{ grid-auto-rows:50px; }
   .den{ min-height:50px; padding:6px; border-radius:9px; align-items:center; justify-content:center; }
@@ -480,7 +526,9 @@ body.sheet-open .dock{ opacity:0; pointer-events:none; transform:translateY(-8px
     var(--night);
 }
 [data-theme="night"] h1{ text-shadow:0 0 28px rgba(236,72,153,.55); }
-[data-theme="night"] .cal, [data-theme="night"] .day{ border-color:rgba(217,70,239,.22); box-shadow:0 0 0 1px rgba(217,70,239,.06), 0 20px 60px -30px rgba(217,70,239,.35); }
+[data-theme="night"] .cal-box, [data-theme="night"] .day{ border-color:rgba(217,70,239,.22); box-shadow:0 0 0 1px rgba(217,70,239,.06), 0 20px 60px -30px rgba(217,70,239,.35); }
+[data-theme="night"] .gif-wall::after{ background:radial-gradient(ellipse 80% 70% at 45% 45%, rgba(10,4,16,.35), rgba(10,4,16,.82)); }
+[data-theme="night"] .cal-box .den:not(.math):not(.chuzhoy):not(.off){ background:rgba(35,20,48,.62); }
 [data-theme="night"] .den.math{ box-shadow:0 0 18px -6px var(--glow); }
 [data-theme="night"] .den.sel{ box-shadow:0 0 0 3px var(--night-2), 0 0 0 5px #ff5cc8, 0 0 22px #ff5cc8; }
 
