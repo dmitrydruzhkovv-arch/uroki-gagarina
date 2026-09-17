@@ -45,11 +45,17 @@ const ZNAKI = ['✓', 'π', '√', '∑', '∞', '±', 'α', '≥', '=', '½', '
 const tiho = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ── фраза: крупная плашка, каждый раз чуть под другим углом ── */
-function fraza(kid, n, x, y){
+let sloy = 0;
+function fraza(kid, n, tekst, i){
   const el = document.createElement('div');
   el.className = 'salyut-fraza k-' + kid;
-  el.innerHTML = `<span class="sf-e">${PICK(EMOJI)}</span><span class="sf-t">${PICK(FRAZY)(n)}</span>`;
-  el.style.setProperty('--rot', R(-6, 6).toFixed(1) + 'deg');
+  el.innerHTML = `<span class="sf-e">${PICK(EMOJI)}</span><span class="sf-t">${tekst(n)}</span>`;
+  /* первая — в центре, следующие накидываются сверху со сдвигом и своим наклоном */
+  el.style.setProperty('--rot', R(i ? -14 : -5, i ? 14 : 5).toFixed(1) + 'deg');
+  const uzko = innerWidth < 700;                                   // телефон: плашки не вылезают за край
+  el.style.left = (50 + (i ? R(uzko ? -5 : -22, uzko ? 5 : 22) : 0)) + '%';
+  el.style.top  = (38 + (i ? R(-22, 26) : 0)) + '%';
+  el.style.zIndex = 9999 + (++sloy);
   document.body.appendChild(el);
   requestAnimationFrame(() => el.classList.add('on'));
   setTimeout(() => el.classList.remove('on'), 2600);
@@ -163,14 +169,25 @@ function volna(cv, x, y){
   });
 }
 
+/* Объём «как десять нажатий подряд» в одно закрытие (D, 17.09.2026):
+   8—12 залпов случайных эффектов вразнобой за ~2 секунды. Первый — из точки
+   нажатия, остальные — из случайных мест экрана. На первые семь залпов —
+   по фразе: накидываются друг на друга, не повторяясь. */
 window.SALYUT = (kid, x, y, vsego) => {
   const cv = CVETA[kid] || CVETA.algebra;
   const px = x ?? innerWidth / 2, py = y ?? innerHeight / 2;
-  fraza(kid, vsego, px, py);
-  try { navigator.vibrate && navigator.vibrate(PICK([[30, 40, 30], [60], [20, 30, 20, 30, 60]])); } catch (_) {}
-  if (tiho) return;
-  PICK([konfetti, feyerverk, dozhd, volna])(cv, px, py);
-  /* иногда — двойной праздник */
-  if (Math.random() < 0.25) setTimeout(() => PICK([konfetti, feyerverk])(cv, R(0.2, 0.8) * innerWidth, innerHeight * 0.7), 450);
+  try { navigator.vibrate && navigator.vibrate(PICK([[40, 50, 40, 50, 90], [80, 40, 80], [30, 30, 30, 30, 30, 30, 120]])); } catch (_) {}
+  const frazy = FRAZY.slice().sort(() => Math.random() - 0.5);     // без повторов в одном празднике
+  if (tiho){ fraza(kid, vsego, frazy[0], 0); return; }
+  const zalpov = RI(8, 12);
+  const effekty = [konfetti, feyerverk, dozhd, volna];
+  let t = 0;
+  for (let i = 0; i < zalpov; i++){
+    const ex = i === 0 ? px : R(0.1, 0.9) * innerWidth;
+    const ey = i === 0 ? py : R(0.2, 0.85) * innerHeight;
+    const fn = i === 0 ? konfetti : PICK(effekty);
+    setTimeout(() => { fn(cv, ex, ey); if (i < 7) fraza(kid, vsego, frazy[i], i); }, t);
+    t += R(90, 260);
+  }
 };
 })();
