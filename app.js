@@ -80,6 +80,8 @@ function zadaniya(u){
   grp('✍️', 'В тетради', '', (dz.tetrad || []).map(s => ({ s })));
   grp('📘', 'Из учебника', '', (dz.book || []).map(x => ({
     s:`№ ${x.no}${x.bukvy ? ' (' + x.bukvy + ')' : ''}`, no:x.no, bukvy:x.bukvy, what:x.what })));
+  grp('🩹', 'Кого не было на уроке', 'сделать ещё и эти', (dz.bolel || []).map(x => ({
+    s:`№ ${x.no}${x.bukvy ? ' (' + x.bukvy + ')' : ''}`, no:x.no, bukvy:x.bukvy, what:x.what })));
   grp('⭐', 'Кому мало', 'по желанию', (dz.extra || []).map(x => ({
     s:`№ ${x.no}${x.bukvy ? ' (' + x.bukvy + ')' : ''}`, no:x.no, bukvy:x.bukvy, extra:true })));
   return out;
