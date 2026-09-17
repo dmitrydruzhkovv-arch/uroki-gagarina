@@ -1,5 +1,6 @@
 /* ════════════════════════════════════════════════════════════════
-   fon.js — живая стена за календарём (заказ D, 17.09.2026).
+   fon.js — живая стена на фоне всей шапки (заказ D, 17.09.2026).
+   Лежит ПОД панелями календаря и дня, видна вокруг них и снизу.
 
    Наклонённая в перспективу сетка плиток, чуть размыта и притушена.
    Каждые пару секунд случайная плитка плавно меняется на новую.
@@ -25,8 +26,8 @@ if (!stena) return;
 const CFG = (typeof DATA !== 'undefined' && DATA.fon) || {};
 const TIHO = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const UZKO = matchMedia('(max-width:700px)').matches;
-const KOLONKI = UZKO ? 4 : 6;
-const RYADY = UZKO ? 5 : 6;
+const KOLONKI = UZKO ? 4 : 8;
+const RYADY = UZKO ? 6 : 6;
 
 /* ── свои плитки: неон + математика, SVG с CSS-анимацией ── */
 const NEON = [['#A855F7', '#D946EF'], ['#4F46E5', '#22D3EE'], ['#D946EF', '#FB7185'], ['#7C3AED', '#A5B4FC'], ['#22D3EE', '#A855F7']];
@@ -120,7 +121,7 @@ async function start(){
   }
   if (TIHO) return;
 
-  /* календарь не на экране — ничего не крутим */
+  /* шапка ушла с экрана — ничего не крутим */
   let vidno = true;
   if ('IntersectionObserver' in window){
     new IntersectionObserver(([e]) => {

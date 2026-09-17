@@ -12,11 +12,13 @@
   try { if (localStorage.getItem('tema') === 'night') document.documentElement.dataset.theme = 'night'; } catch (_) {}
 </script>
 <link rel="stylesheet" href="_движок/fonts/gf.css">
-<link rel="stylesheet" href="style.css?v=19943989">
+<link rel="stylesheet" href="style.css?v=69e1410b">
 </head>
 <body>
 
 <header class="hero">
+  <!-- живая стена: фон всей шапки, панели лежат поверх -->
+  <div class="gif-wall" id="gifWall" aria-hidden="true"></div>
   <div class="shell">
     <div class="top">
       <div>
@@ -28,10 +30,7 @@
       </div>
     </div>
     <div class="board">
-      <div class="cal-box">
-        <div class="gif-wall" id="gifWall" aria-hidden="true"></div>
-        <section class="cal" id="cal" aria-label="Календарь"></section>
-      </div>
+      <section class="cal" id="cal" aria-label="Календарь"></section>
       <aside class="day" id="day" aria-label="Расписание дня"></aside>
     </div>
   </div>
@@ -73,7 +72,7 @@
 <script src="covers.js?v=3ee9338b"></script>
 <script src="data.js?v=d3ea82c4"></script>
 <script src="salyut.js?v=fc6b3de4"></script>
-<script src="fon.js?v=ab20d3db"></script>
+<script src="fon.js?v=40b1c599"></script>
 <script src="app.js?v=1098d578"></script>
 </body>
 </html>
