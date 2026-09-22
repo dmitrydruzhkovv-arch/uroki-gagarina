@@ -26,6 +26,7 @@
 .k-geometriya { --g:linear-gradient(135deg,#6d6ff5 0%,#4f46e5 55%,#4338ca 100%); --s:#4f46e5; --on:#fff; --t:#eceeff; --d:#3730a3; --glow:rgba(79,70,229,.45); }
 .k-algebra    { --g:linear-gradient(135deg,#fb9a3c 0%,#f07a12 55%,#e0620a 100%); --s:#ea580c; --on:#fff; --t:#fff1e2; --d:#9a3412; --glow:rgba(234,88,12,.42); }
 .k-veroyatnost{ --g:linear-gradient(135deg,#f8fafc 0%,#d5dce6 45%,#a3afbf 100%); --s:#64748b; --on:#1e293b; --t:#eef2f6; --d:#334155; --glow:rgba(100,116,139,.40); }
+.k-oge        { --g:linear-gradient(135deg,#34d399 0%,#10b981 55%,#047857 100%); --s:#059669; --on:#fff; --t:#e7f8f0; --d:#065f46; --glow:rgba(5,150,105,.42); }
 
 html{ -webkit-text-size-adjust:100%; }
 body{
@@ -287,7 +288,7 @@ button.topic:hover b{ transform:translateX(4px); }
 .store-h{ display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:16px; }
 
 /* кнопки предметов — сочные, как раньше */
-.subjects{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.subjects{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
 .s-tx b, .s-tx em{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .subj{
   display:flex; align-items:center; gap:14px; padding:14px 16px 14px 14px; border-radius:20px;
@@ -530,6 +531,7 @@ body.sheet-open .dock{ opacity:0; pointer-events:none; transform:translateY(-8px
 [data-theme="night"] .k-geometriya { --g:linear-gradient(135deg,#b794ff 0%,#8b5cf6 45%,#5b21b6 100%); --s:#c4b5fd; --on:#fff; --t:rgba(139,92,246,.16); --d:#e0d4ff; --glow:rgba(139,92,246,.75); }
 [data-theme="night"] .k-algebra    { --g:linear-gradient(135deg,#ff5c8a 0%,#e0115f 45%,#7a0a36 100%); --s:#ff7aa8; --on:#fff; --t:rgba(225,17,95,.16); --d:#ffc7da; --glow:rgba(255,40,120,.7); }
 [data-theme="night"] .k-veroyatnost{ --g:linear-gradient(135deg,#fff5ff 0%,#efd3ff 40%,#b58bc9 100%); --s:#e9c6ff; --on:#2a0a3a; --t:rgba(233,198,255,.12); --d:#f3dcff; --glow:rgba(230,170,255,.55); }
+[data-theme="night"] .k-oge        { --g:linear-gradient(135deg,#6ee7b7 0%,#10b981 45%,#064e3b 100%); --s:#6ee7b7; --on:#fff; --t:rgba(16,185,129,.14); --d:#bbf7d0; --glow:rgba(16,185,129,.65); }
 
 [data-theme="night"] .hero{
   background:
@@ -590,3 +592,37 @@ body.sheet-open .dock{ opacity:0; pointer-events:none; transform:translateY(-8px
 }
 .salyut-fraza.on{ opacity:1; transform:translate(-50%, -50%) scale(1) rotate(var(--rot)); }
 .salyut-fraza .sf-e{ font-size:1.6em; }
+
+/* ══ раздел ОГЭ (D, 21.09.2026): карта экзамена, кнопки-номера ══ */
+.oge{ margin-top:24px; }
+.oge-lead{ color:var(--muted); font-size:15px; margin-bottom:6px; }
+.oge-part{ margin-top:22px; }
+.oge-h{ display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+.oge-h h3{ font-size:22px; font-weight:800; letter-spacing:-.3px; }
+.oge-h em{ font-style:normal; color:var(--muted); font-size:14px; }
+.oge-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+.oge-grid.one{ grid-template-columns:minmax(0,340px); }
+.oge-no{ position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:4px; text-align:left;
+  padding:12px 14px 13px; border-radius:16px; background:#fff; color:var(--ink); border:1.5px dashed #cfcadb;
+  transition:transform .15s var(--ease), box-shadow .15s; cursor:pointer; font:inherit; }
+.oge-no b{ font-size:24px; font-weight:800; line-height:1; color:var(--muted); }
+.oge-no span{ font-size:13px; line-height:1.25; color:var(--muted); }
+.oge-no.has{ border:none; background:var(--g); color:var(--on); box-shadow:0 12px 24px -16px var(--glow); }
+.oge-no.has b, .oge-no.has span{ color:var(--on); }
+.oge-no i{ position:absolute; top:9px; right:10px; font-style:normal; font-size:12px; font-weight:700; min-width:22px; height:22px;
+  border-radius:7px; display:grid; place-items:center; background:rgba(255,255,255,.28); }
+.oge-no:hover{ transform:translateY(-2px); }
+.oge-no.on{ box-shadow:0 0 0 3px var(--store), 0 0 0 6px var(--s); }
+.oge-mat{ margin-top:12px; padding:14px 16px 16px; border-radius:18px; background:var(--t); }
+.oge-mat-h{ font-weight:800; font-size:16px; color:var(--d); }
+.oge-mat .books{ margin-top:10px; }
+.oge-empty{ margin-top:6px; color:var(--d); font-size:14px; opacity:.8; }
+@media (max-width:700px){
+  .oge-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .oge-grid.one{ grid-template-columns:1fr; }
+  .oge-no{ padding:10px 11px 11px; }
+  .oge-no b{ font-size:20px; }
+  .oge-h h3{ font-size:19px; }
+}
+[data-theme="night"] .oge-no{ background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.18); }
+[data-theme="night"] .oge-no.has{ background:var(--g); }

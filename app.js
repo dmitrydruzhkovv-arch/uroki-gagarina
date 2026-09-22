@@ -353,7 +353,8 @@ function malenkaya(u){
 
 /* ═════════════════ ВИТРИНА УРОКОВ ═════════════════ */
 let vybor = 'all';
-try { const s = localStorage.getItem('proto-kurs'); if (s && (s === 'all' || KURS[s])) vybor = s; } catch (_) {}
+try { const s = localStorage.getItem('proto-kurs'); if (s && (s === 'all' || KURS[s] || (s === 'oge' && DATA.oge))) vybor = s; } catch (_) {}
+let ogeNo = null;   // открытый номер в разделе ОГЭ
 
 function risovatPredmety(){
   $('#subjects').innerHTML = DATA.kursy.map(k => `
@@ -361,7 +362,41 @@ function risovatPredmety(){
       <span class="s-ic">${k.icon}</span>
       <span class="s-tx"><b>${esc(k.name)}</b><em>${esc(KOROTKO[k.id] || '')}</em></span>
       <span class="s-n mono">${(k.uroki || []).length}</span>
-    </button>`).join('');
+    </button>`).join('') + (DATA.oge ? `
+    <button class="subj k-oge${vybor === 'oge' ? ' on' : ''}${vybor !== 'all' && vybor !== 'oge' ? ' dim' : ''}" data-k="oge" aria-pressed="${vybor === 'oge'}">
+      <span class="s-ic">🎯</span>
+      <span class="s-tx"><b>ОГЭ</b><em>задания 1—25</em></span>
+      <span class="s-n mono">${OGE_NOMERA.filter(n => (n.mat || []).length).length}</span>
+    </button>` : '');
+}
+
+/* ═════════════════ ОГЭ ═════════════════
+   Карта экзамена из DATA.oge: блоки → кнопки-номера → PDF к номеру. */
+const OGE_NOMERA = DATA.oge ? DATA.oge.chasti.flatMap(c => c.nomera) : [];
+function ogeVitrina(){
+  const O = DATA.oge;
+  return `<div class="oge k-oge">
+    <p class="oge-lead">${esc(O.lead || '')}</p>
+    ${O.chasti.map(c => {
+      const otkryt = c.nomera.find(n => n.no === ogeNo);
+      return `<section class="oge-part">
+        <div class="oge-h"><h3>${esc(c.name)}</h3><em>${esc(c.note || '')}</em></div>
+        <div class="oge-grid${c.nomera.length === 1 ? ' one' : ''}">${c.nomera.map(n => {
+          const m = (n.mat || []).length;
+          return `<button class="oge-no${m ? ' has' : ''}${n.no === ogeNo ? ' on' : ''}" data-oge="${esc(n.no)}" aria-expanded="${n.no === ogeNo}">
+            <b class="mono">${esc(n.no)}</b><span>${esc(n.podpis)}</span>${m ? `<i class="mono">${m}</i>` : ''}</button>`;
+        }).join('')}</div>
+        ${otkryt ? `<div class="oge-mat">
+          <div class="oge-mat-h">Задание ${esc(otkryt.no)} · ${esc(otkryt.podpis)}</div>
+          ${(otkryt.mat || []).length ? `<div class="books k-oge">${otkryt.mat.map(x => `
+            <a class="book" href="${esc(x.out)}" target="_blank" rel="noopener">
+              <span class="b-ic">📄</span><span class="b-tx"><b>${esc(x.label)}</b><em>${esc(x.hint || '')}</em></span>
+              <span class="b-dl">↗<small>PDF</small></span></a>`).join('')}</div>`
+          : '<div class="oge-empty">Материалы появятся, когда дойдём до этого задания на уроке.</div>'}
+        </div>` : ''}
+      </section>`;
+    }).join('')}
+  </div>`;
 }
 
 function oblozhka(u){
@@ -450,6 +485,7 @@ function risovatVitrinu(){
     }).join('');
     return;
   }
+  if (vybor === 'oge'){ box.innerHTML = ogeVitrina(); return; }
   const k = KURS[vybor];
   const list = UROKI.filter(u => u.kurs.id === vybor);
   /* полка: учебники (PDF — скачать) и справочники (страница — открыть) из spravka курса */
@@ -607,6 +643,9 @@ document.addEventListener('click', e => {
   if (tm){ postavitTemu(tm.dataset.tema); return; }
 
   if (t.closest('[data-whole]')){ denVes = !denVes; risovatDen(); return; }
+
+  const og = t.closest('[data-oge]');
+  if (og){ ogeNo = ogeNo === og.dataset.oge ? null : og.dataset.oge; risovatVitrinu(); return; }
 
   const sb = t.closest('[data-k]');
   if (sb){
