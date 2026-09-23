@@ -374,6 +374,13 @@ a.c-pic:hover img, a.f-pic:hover img{ transform:scale(1.04); }
   box-shadow:0 8px 18px -10px var(--glow); transition:transform .15s var(--ease), filter .15s;
 }
 .a-main:hover{ transform:translateY(-1px); filter:brightness(1.06); }
+/* теория — светлая кнопка с рамкой, практика — яркая заливка (D, 23.09.2026) */
+.a-main.teor{ background:var(--card); color:var(--d); box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--s) 55%, transparent); }
+.a-main.teor:hover{ box-shadow:inset 0 0 0 2px var(--s); filter:none; }
+.a-more{ width:100%; }
+.a-more summary{ display:inline-block; cursor:pointer; list-style:none; font-size:13px; font-weight:700; color:var(--s); padding:4px 0; }
+.a-more summary::-webkit-details-marker{ display:none; }
+.a-more[open] summary{ margin-bottom:8px; }
 /* скачать — не кнопка, а стрелка рядом */
 .a-dl{ display:grid; place-items:center; width:34px; margin-left:4px; font-size:18px; font-weight:700; color:var(--s); text-decoration:none; border-radius:10px; }
 .a-dl:hover{ background:var(--t); }
@@ -566,6 +573,7 @@ body.sheet-open .dock{ opacity:0; pointer-events:none; transform:translateY(-8px
 [data-theme="night"] .dz-big, [data-theme="night"] .feat{ box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), 0 0 60px -24px var(--glow); }
 [data-theme="night"] .subj{ box-shadow:0 0 30px -10px var(--glow), inset 0 1px 0 rgba(255,255,255,.25); }
 [data-theme="night"] .a-main{ box-shadow:0 0 22px -6px var(--glow); }
+[data-theme="night"] .a-main.teor{ background:transparent; color:var(--d); box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--s) 70%, transparent); }
 [data-theme="night"] .c-pic img, [data-theme="night"] .f-pic img, [data-theme="night"] .sh-pic img{ filter:brightness(.82) contrast(1.05); }
 [data-theme="night"] .big-foot{ border-color:var(--line); }
 [data-theme="night"] .bar, [data-theme="night"] .copy, [data-theme="night"] .x,

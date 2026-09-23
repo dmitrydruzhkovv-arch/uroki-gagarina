@@ -431,22 +431,26 @@ function oblozhka(u){
   return pic ? COVER_BASE + pic : '';
 }
 
-/* кнопки материалов на карточке:
-   материал — яркая кнопка ↗, открывает PDF (тот же, что и обложка), рядом ⤓ скачать;
-   живой чертёж и веб-домашка — подчёркнутая ссылка ↗ (только они бывают HTML) */
+/* кнопки материалов на карточке (D, 23.09.2026):
+   на виду — одна теория и одна практика, и они разные на вид: теория — светлая кнопка
+   с рамкой, практика — яркая заливка. Остальное (вторая дорожка, доп. листы) — под «ещё N ↓».
+   Живой чертёж и веб-домашка — подчёркнутая ссылка ↗ (только они бывают HTML). */
+function knopka(m){
+  const url = esc(LIVE + m.out), isPdf = /\.pdf$/i.test(m.out), prak = m.kind !== 'teoriya';
+  return `<span class="a-pair"><a class="a-main ${prak ? 'prak' : 'teor'}" href="${url}" target="_blank" rel="noopener" title="${esc(m.hint || '')}">${prak ? '✏️' : '📘'} ${esc(m.label)} ↗</a>` +
+    (isPdf ? `<a class="a-dl" href="${url}" download title="Скачать PDF" aria-label="Скачать PDF">⤓</a>` : '') + `</span>`;
+}
 function knopki(u){
-  let glavnye = '', ssylki = '';
-  (u.mat || []).forEach(m => {
-    const url = esc(LIVE + m.out), isPdf = /\.pdf$/i.test(m.out);
-    if (m.kind === 'live' || m.kind === 'web'){
-      ssylki += `<a class="a-live" href="${url}" target="_blank" rel="noopener" title="${esc(m.hint || '')}">${m.kind === 'web' ? '🕹' : '🎯'} ${esc(m.label)} ↗</a>`;
-    } else {
-      glavnye += `<span class="a-pair"><a class="a-main" href="${url}" target="_blank" rel="noopener" title="${esc(m.hint || '')}">${m.kind === 'dz' ? '✏️' : '📘'} ${esc(m.label)} ↗</a>` +
-        (isPdf ? `<a class="a-dl" href="${url}" download title="Скачать PDF" aria-label="Скачать PDF">⤓</a>` : '') + `</span>`;
-    }
-  });
-  if (!glavnye && !ssylki) return `<div class="a-none">Урок вели по учебнику</div>`;
-  return `<div class="acts">${glavnye}</div>${ssylki ? `<div class="links">${ssylki}</div>` : ''}`;
+  const mat = u.mat || [];
+  const ssylki = mat.filter(m => m.kind === 'live' || m.kind === 'web').map(m =>
+    `<a class="a-live" href="${esc(LIVE + m.out)}" target="_blank" rel="noopener" title="${esc(m.hint || '')}">${m.kind === 'web' ? '🕹' : '🎯'} ${esc(m.label)} ↗</a>`).join('');
+  const listy = mat.filter(m => m.kind !== 'live' && m.kind !== 'web');
+  const teor = listy.find(m => m.kind === 'teoriya'), prak = listy.find(m => m.kind !== 'teoriya');
+  const vidno = [teor, prak].filter(Boolean), esche = listy.filter(m => !vidno.includes(m));
+  if (!listy.length && !ssylki) return `<div class="a-none">Урок вели по учебнику</div>`;
+  return `<div class="acts">${vidno.map(knopka).join('')}</div>` +
+    (esche.length ? `<details class="a-more"><summary>ещё ${esche.length} ↓</summary><div class="acts">${esche.map(knopka).join('')}</div></details>` : '') +
+    (ssylki ? `<div class="links">${ssylki}</div>` : '');
 }
 
 function obloshkaHTML(u, cls){
