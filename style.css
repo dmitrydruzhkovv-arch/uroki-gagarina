@@ -618,6 +618,15 @@ body.sheet-open .dock{ opacity:0; pointer-events:none; transform:translateY(-8px
 .oge-mat-h{ font-weight:800; font-size:16px; color:var(--d); }
 .oge-mat .books{ margin-top:10px; }
 .oge-empty{ margin-top:6px; color:var(--d); font-size:14px; opacity:.8; }
+/* теория и практика — две полки (D, 23.09.2026): практика яркой индиго-плашкой */
+.oge-sec{ margin-top:14px; }
+.oge-sec-h{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; font-weight:800; font-size:15px; color:var(--d); }
+.oge-sec-h span{ font-weight:500; font-size:13px; opacity:.75; }
+.oge-sec .books{ margin-top:8px; }
+.oge-sec.prak .book{ background:linear-gradient(135deg,#818cf8 0%,#6366f1 45%,#4338ca 100%); color:#fff; box-shadow:0 14px 28px -14px rgba(67,56,202,.7); }
+.oge-sec.prak .book .b-tx b{ font-size:16px; }
+.oge-sec.prak .book .b-tx em, .oge-sec.prak .book .b-dl, .oge-sec.prak .book .b-dl small{ color:rgba(255,255,255,.88); }
+.oge-sec.prak a.book:hover{ box-shadow:0 16px 30px -12px rgba(67,56,202,.85); }
 @media (max-width:700px){
   .oge-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
   .oge-grid.one{ grid-template-columns:1fr; }
@@ -627,3 +636,4 @@ body.sheet-open .dock{ opacity:0; pointer-events:none; transform:translateY(-8px
 }
 [data-theme="night"] .oge-no{ background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.18); }
 [data-theme="night"] .oge-no.has{ background:var(--g); }
+[data-theme="night"] .oge-sec.prak .book{ background:linear-gradient(135deg,#a5b4fc 0%,#6366f1 45%,#312e81 100%); box-shadow:0 0 30px -8px rgba(99,102,241,.8); }

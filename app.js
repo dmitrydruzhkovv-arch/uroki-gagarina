@@ -75,8 +75,8 @@ const kg = (u, s) => `${u.kurs.id}|${u.n}|${s}`;
 function zadaniya(u){
   const dz = u.dz || {}, out = [];
   const grp = (ic, t, pod, items) => items && items.length && out.push({ ic, t, pod, items });
-  // веб-домашка по ссылке (di-dz-*?k=g9): решают в телефоне, отчёт учителю уходит сам (Кодер, 23.09.2026)
-  grp('🕹', 'В телефоне', 'отчёт учителю придёт сам', (dz.web || []).map(x => ({ s:x.label, url:x.url, what:x.what })));
+  // веб-домашка по ссылке (di-dz-*?k=g9): решают на телефоне или ноутбуке, отчёт учителю уходит сам (Кодер, 23.09.2026; подпись — D, 23.09)
+  grp('🕹', 'На телефоне или ноутбуке', 'отчёт учителю придёт сам', (dz.web || []).map(x => ({ s:x.label, url:x.url, what:x.what })));
   grp('📄', 'На распечатке', dz.printLabel, (dz.print || []).map(s => ({ s })));
   grp('📖', 'Выучить', '', (dz.uchit || []).map(s => ({ s })));
   grp('✍️', 'В тетради', '', (dz.tetrad || []).map(s => ({ s })));
@@ -377,6 +377,21 @@ function risovatPredmety(){
 /* ═════════════════ ОГЭ ═════════════════
    Карта экзамена из DATA.oge: блоки → кнопки-номера → PDF к номеру. */
 const OGE_NOMERA = DATA.oge ? DATA.oge.chasti.flatMap(c => c.nomera) : [];
+/* материалы номера — двумя полками (решение D, 23.09.2026): теория белыми карточками,
+   практика яркой плашкой, чтобы ученик сразу видел, где читать, а где решать.
+   В data.js у материала поле vid: 'praktika'; без него — теория. */
+function ogeRazdely(mat){
+  const polka = (cls, ic, zag, pod, spisok) => spisok.length ? `
+    <div class="oge-sec ${cls}">
+      <div class="oge-sec-h">${ic} ${zag}<span>${pod}</span></div>
+      <div class="books k-oge">${spisok.map(x => `
+        <a class="book" href="${esc(x.out)}" target="_blank" rel="noopener">
+          <span class="b-ic">${ic}</span><span class="b-tx"><b>${esc(x.label)}</b><em>${esc(x.hint || '')}</em></span>
+          <span class="b-dl">↗<small>PDF</small></span></a>`).join('')}</div>
+    </div>` : '';
+  return polka('teor', '📘', 'Теория', 'прочитать и держать под рукой', mat.filter(x => x.vid !== 'praktika'))
+       + polka('prak', '✏️', 'Практика', 'решать в тетради', mat.filter(x => x.vid === 'praktika'));
+}
 function ogeVitrina(){
   const O = DATA.oge;
   return `<div class="oge k-oge">
@@ -392,10 +407,7 @@ function ogeVitrina(){
         }).join('')}</div>
         ${otkryt ? `<div class="oge-mat">
           <div class="oge-mat-h">Задание ${esc(otkryt.no)} · ${esc(otkryt.podpis)}</div>
-          ${(otkryt.mat || []).length ? `<div class="books k-oge">${otkryt.mat.map(x => `
-            <a class="book" href="${esc(x.out)}" target="_blank" rel="noopener">
-              <span class="b-ic">📄</span><span class="b-tx"><b>${esc(x.label)}</b><em>${esc(x.hint || '')}</em></span>
-              <span class="b-dl">↗<small>PDF</small></span></a>`).join('')}</div>`
+          ${(otkryt.mat || []).length ? ogeRazdely(otkryt.mat)
           : '<div class="oge-empty">Материалы появятся, когда дойдём до этого задания на уроке.</div>'}
         </div>` : ''}
       </section>`;
