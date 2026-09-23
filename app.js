@@ -89,13 +89,24 @@ function zadaniya(u){
   return out;
 }
 
+/* ссылки внутри текста задания (D, 23.09.2026): dz.ssylki = { 'фраза из текста': 'путь к PDF' }.
+   Текст пункта не меняется — бот и галочки видят ту же строку, сайт делает фразу ссылкой. */
+function sSsylkami(tekst, ssylki){
+  let html = esc(tekst);
+  for (const [fraza, url] of Object.entries(ssylki || {})){
+    const f = esc(fraza);
+    html = html.split(f).join(`<a class="dz-link" href="${esc(url)}" target="_blank" rel="noopener">${f} ↗</a>`);
+  }
+  return html;
+}
+
 function zadanieHTML(u, it){
   const g = kg(u, it.s), on = !!galki[g];
   const tekst = it.url
     ? `<a class="dz-web" href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.s)} ↗</a>${it.what ? `<span class="what">${esc(it.what)}</span>` : ''}`
     : it.no
     ? `<span class="no">№ ${esc(it.no)}</span>${it.bukvy ? `<span class="bk">${esc(it.bukvy)}</span>` : ''}${it.what ? `<span class="what">${esc(it.what)}</span>` : ''}`
-    : esc(it.s);
+    : sSsylkami(it.s, u.dz && u.dz.ssylki);
   return `<div class="task${on ? ' done' : ''}${it.extra ? ' extra' : ''}" data-g="${esc(g)}" role="checkbox" aria-checked="${on}" tabindex="0">
     <span class="box" aria-hidden="true"></span><span class="tx">${tekst}</span></div>`;
 }
@@ -617,7 +628,7 @@ function perekluchit(g, el){
 document.addEventListener('click', e => {
   const t = e.target;
   const task = t.closest('.task[data-g]');
-  if (task && t.closest('a.dz-web')) return;          // ссылка на веб-домашку — открыть, галочку не трогать
+  if (task && t.closest('a.dz-web, a.dz-link')) return;   // ссылка в задании — открыть, галочку не трогать
   if (task){ perekluchit(task.dataset.g, task); return; }
 
   const cp = t.closest('[data-copy]');
