@@ -257,6 +257,7 @@ button.topic:hover b{ transform:translateX(4px); }
 .task .no{ font-weight:800; }
 .task .bk{ margin-left:6px; font-weight:600; color:var(--sub); }
 .task .what{ display:block; font-size:13px; color:var(--muted); margin-top:2px; }
+.task .dz-web{ font-weight:800; color:var(--s); text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:1.5px; }
 .task.extra{ opacity:.75; }
 
 /* «Потом» — маленькие, листаются вбок */

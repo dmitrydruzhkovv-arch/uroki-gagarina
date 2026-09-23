@@ -75,6 +75,8 @@ const kg = (u, s) => `${u.kurs.id}|${u.n}|${s}`;
 function zadaniya(u){
   const dz = u.dz || {}, out = [];
   const grp = (ic, t, pod, items) => items && items.length && out.push({ ic, t, pod, items });
+  // веб-домашка по ссылке (di-dz-*?k=g9): решают в телефоне, отчёт учителю уходит сам (Кодер, 23.09.2026)
+  grp('🕹', 'В телефоне', 'отчёт учителю придёт сам', (dz.web || []).map(x => ({ s:x.label, url:x.url, what:x.what })));
   grp('📄', 'На распечатке', dz.printLabel, (dz.print || []).map(s => ({ s })));
   grp('📖', 'Выучить', '', (dz.uchit || []).map(s => ({ s })));
   grp('✍️', 'В тетради', '', (dz.tetrad || []).map(s => ({ s })));
@@ -89,7 +91,9 @@ function zadaniya(u){
 
 function zadanieHTML(u, it){
   const g = kg(u, it.s), on = !!galki[g];
-  const tekst = it.no
+  const tekst = it.url
+    ? `<a class="dz-web" href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.s)} ↗</a>${it.what ? `<span class="what">${esc(it.what)}</span>` : ''}`
+    : it.no
     ? `<span class="no">№ ${esc(it.no)}</span>${it.bukvy ? `<span class="bk">${esc(it.bukvy)}</span>` : ''}${it.what ? `<span class="what">${esc(it.what)}</span>` : ''}`
     : esc(it.s);
   return `<div class="task${on ? ' done' : ''}${it.extra ? ' extra' : ''}" data-g="${esc(g)}" role="checkbox" aria-checked="${on}" tabindex="0">
@@ -601,6 +605,7 @@ function perekluchit(g, el){
 document.addEventListener('click', e => {
   const t = e.target;
   const task = t.closest('.task[data-g]');
+  if (task && t.closest('a.dz-web')) return;          // ссылка на веб-домашку — открыть, галочку не трогать
   if (task){ perekluchit(task.dataset.g, task); return; }
 
   const cp = t.closest('[data-copy]');
