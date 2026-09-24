@@ -131,14 +131,16 @@ function schet(u){
   return { vsego: obshchie.length, sdelano: gotovo(obshchie), polnyjVsego: vse.length, polnyj: gotovo(vse) };
 }
 
+/* текст домашки для электронного журнала (D, 24.09.2026): только задания, по одному на строку,
+   без названия урока, даты, значков и блоков «Кого не было» / «Кому мало». Копируется чистым текстом. */
 function dzText(u){
-  const due = dateOf(u.dz && u.dz.due);
-  const out = [`${u.kurs.name} — ${u.title}`];
-  if (due) out.push(kDatu(due).replace(/^к/, 'К'));
-  zadaniya(u).forEach(g => {
-    out.push('', g.t + (g.pod ? ` (${g.pod})` : '') + ':');
-    g.items.forEach(it => out.push('  — ' + it.s + (it.what ? ' — ' + it.what : '')));
-  });
+  const dz = u.dz || {}, out = [];
+  (dz.web || []).forEach(x => out.push(`На телефоне: ${x.label}${x.what ? ' — ' + x.what : ''} — ${x.url}`));
+  (dz.print || []).forEach(t => out.push(dz.printLabel ? `${t} (${dz.printLabel})` : t));
+  (dz.uchit || []).forEach(t => out.push('Выучить: ' + t));
+  (dz.tetrad || []).forEach(t => out.push(t));
+  if ((dz.book || []).length)
+    out.push('Учебник: ' + dz.book.map(x => `№ ${x.no}${x.bukvy ? ' (' + x.bukvy + ')' : ''}`).join('; '));
   return out.join('\n');
 }
 
@@ -349,7 +351,7 @@ function bolshaya(u){
     <div class="big-foot">
       <div class="prog"><div class="bar"><i style="width:${proc}%"></i></div><span class="bar-t mono">${s.sdelano} из ${s.vsego}</span></div>
       <button class="lnk" data-open="${u.kurs.id}|${u.n}">Материалы урока →</button>
-      <button class="copy" data-copy="${esc(dzText(u))}" title="Скопировать домашку текстом">📋</button>
+      <button class="copy" data-copy="${esc(dzText(u))}" title="Скопировать домашку для журнала — чистым текстом">📋</button>
     </div>
   </div>`;
 }
@@ -578,7 +580,7 @@ function otkryt(kid, n, push = true){
       ${u.dz ? `<div class="sh-dz">
         <div class="sh-dz-h"><span>📌 Домашка ${esc(kDatu(due))}</span><span class="due-b ${c.v}">${esc(c.t)}</span></div>
         ${dzTelo(u)}
-        <button class="copy wide" data-copy="${esc(dzText(u))}">📋 Скопировать текстом</button>
+        <button class="copy wide" data-copy="${esc(dzText(u))}">📋 Скопировать для журнала</button>
       </div>` : ''}
       ${u.para ? `<div class="sh-para">📚 ${esc(u.para)}</div>` : ''}
     </div>
@@ -639,7 +641,10 @@ document.addEventListener('click', e => {
   if (cp){
     const txt = cp.dataset.copy, was = cp.textContent;
     const ok = () => { cp.textContent = '✓'; cp.classList.add('ok'); setTimeout(() => { cp.textContent = was; cp.classList.remove('ok'); }, 1500); };
-    (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(ok, ok);
+    // запасной путь, если браузер не даёт clipboard: скрытое поле + «копировать»
+    const zapas = () => { const ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); ok(); };
+    (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(ok, zapas);
     return;
   }
 
