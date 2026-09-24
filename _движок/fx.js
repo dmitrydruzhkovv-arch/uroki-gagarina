@@ -75,6 +75,9 @@
       svg.appendChild(E('rect',{x:Math.min(X(0),X(r.x)),y:Math.min(Y(0),Y(r.y)),width:Math.abs(X(r.x)-X(0)),height:Math.abs(Y(r.y)-Y(0)),fill:cc,'fill-opacity':(r.op!=null?r.op:0.12),stroke:cc,'stroke-width':1.3,'stroke-dasharray':'4 3'}));
     });
     (cfg.pts||[]).forEach(function(p){
+      /* ring — кольцо-выделение без заливки, cross — зачёркнутая точка (23.09.2026, памятка a27) */
+      if(p.ring){ svg.appendChild(E('circle',{cx:X(p.x),cy:Y(p.y),r:p.r||9,fill:'none',stroke:p.col||'#dc2626','stroke-width':1.6,'stroke-dasharray':'3 2'})); return; }
+      if(p.cross){ var q=p.r||6; svg.appendChild(E('line',{x1:X(p.x)-q,y1:Y(p.y)-q,x2:X(p.x)+q,y2:Y(p.y)+q,stroke:p.col||'#dc2626','stroke-width':2,'stroke-linecap':'round'})); svg.appendChild(E('line',{x1:X(p.x)-q,y1:Y(p.y)+q,x2:X(p.x)+q,y2:Y(p.y)-q,stroke:p.col||'#dc2626','stroke-width':2,'stroke-linecap':'round'})); return; }
       svg.appendChild(E('circle',p.o?{cx:X(p.x),cy:Y(p.y),r:p.r||4,fill:'#fff',stroke:p.col||'#d97706','stroke-width':1.8}:{cx:X(p.x),cy:Y(p.y),r:p.r||4,fill:p.col||'#d97706'}));
       if(p.lab){var t=E('text',{x:X(p.x)+(p.dx!=null?p.dx:6),y:Y(p.y)+(p.dy!=null?p.dy:-6),'font-family':'JetBrains Mono,monospace','font-size':p.fs||10,'font-weight':700,fill:p.col||'#d97706'});t.textContent=p.lab;svg.appendChild(t);}
     });
