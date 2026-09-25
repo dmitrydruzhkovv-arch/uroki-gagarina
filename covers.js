@@ -15,7 +15,6 @@ var COVERS = {
   "algebra-8": "covers/algebra-8.webp",
   "algebra-9": "covers/algebra-9.webp",
   "algebra-10": "covers/algebra-10.webp",
-  "algebra-11": "covers/algebra-11.webp",
   "veroyatnost-1": "covers/veroyatnost-1.webp",
   "veroyatnost-2": "covers/veroyatnost-2.webp",
   "veroyatnost-3": "covers/veroyatnost-3.webp"
