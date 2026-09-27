@@ -280,3 +280,107 @@ body.noanim .rv{ opacity:1 !important; }
   .bar,#help{ display:none; }
   .golink{ font-size:15px; padding:9px 16px; }
 }
+
+/* ═══════════ КОМБИНАТОРИКА: окошки, запись в столбик, дорожки ═══════════
+   Заведено 27.09.2026 (вероятность, урок 4). Окошко = шаг выбора:
+   над — что выбираем (.lb), внутри — сколько вариантов (.bx), под — почему (.ex). */
+.win{ display:flex; align-items:flex-start; flex-wrap:wrap; gap:6px 10px; }
+.win .st{ display:flex; flex-direction:column; align-items:center; min-width:104px; }
+.win .lb{ font-size:20px; font-weight:700; color:var(--sub); white-space:nowrap; margin-bottom:4px; }
+.win .bx{ min-width:78px; padding:6px 14px; text-align:center; border:3px solid var(--indigo); background:#eef2ff; border-radius:10px;
+          font-family:'JetBrains Mono',monospace; font-weight:800; font-size:42px; line-height:1.1; }
+.win .bx.cap{ border-color:var(--gold); background:var(--gold-dim); }
+.win .bx.nil{ border-style:dashed; background:#fff; color:var(--muted); }
+.win .ex{ font-size:17px; color:var(--sub); text-align:center; max-width:180px; line-height:1.25; margin-top:5px; }
+.win .op,.win .res{ font-family:'JetBrains Mono',monospace; font-weight:800; font-size:42px; padding-top:32px; }
+.win .res{ padding-left:6px; }
+.win.nolb .op,.win.nolb .res{ padding-top:6px; }
+.body.mid{ align-items:center; }   /* карточки своей высоты, по центру — не тянуть пустые рамки */
+pre.lines{ font-family:'JetBrains Mono',monospace; font-size:30px; line-height:1.5; white-space:pre; margin:0; }
+pre.lines.sm2{ font-size:26px; }
+.trk{ border:3px solid var(--line); border-radius:16px; background:#fff; padding:16px 20px; display:flex; flex-direction:column; gap:10px; }
+.trk .trk-h{ font-size:22px; font-weight:800; }
+.trk.t1{ border-color:var(--green); } .trk.t1 .trk-h{ color:var(--green); }
+.trk.t2{ border-color:var(--indigo); } .trk.t2 .trk-h{ color:var(--indigo); }
+.trk.t3{ border-color:var(--gold); } .trk.t3 .trk-h{ color:var(--gold); }
+.trk.t0{ border-color:var(--ink); }
+.trk ul.dots li::before{ background:currentColor; }
+.ansgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.ansgrid div{ background:#fff; border:2px solid var(--line); border-radius:12px; padding:10px 14px; font-size:21px; }
+.ansgrid b{ font-family:'JetBrains Mono',monospace; color:var(--indigo); margin-right:8px; }
+@media screen and (max-width:1000px){
+  .win{ gap:4px 6px; }
+  .win .st{ min-width:52px; }
+  .win .lb{ font-size:12px; }
+  .win .bx{ min-width:44px; padding:3px 8px; font-size:20px; border-width:2px; }
+  .win .ex{ font-size:11px; max-width:96px; }
+  .win .op,.win .res{ font-size:20px; padding-top:18px; }
+  .win.nolb .op,.win.nolb .res{ padding-top:3px; }
+  pre.lines,pre.lines.sm2{ font-size:13px; overflow-x:auto; }
+  .trk{ padding:12px 14px; } .trk .trk-h{ font-size:16px; }
+  .ansgrid{ grid-template-columns:1fr 1fr; } .ansgrid div{ font-size:15px; }
+}
+
+/* ═══════════ РЕЖИМ «ОДИН АКЦЕНТ» — .slide.one ═══════════
+   Заведён 27.09.2026 по разбору D: «пелена, акцентов нет».
+   Слайд = одна вещь, видная с задней парты: вопрос, окошки или ответ.
+   Слов — строка-две, остальное говорит D (речь — в сценарии).
+   Старые презентации не затронуты: всё под .slide.one. */
+.slide.one{ padding:40px 72px 60px; }
+.slide.one .kick{ align-self:flex-start; font-size:20px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); flex:0 0 auto; }
+.slide.one .kick.gold{ color:var(--gold); } .slide.one .kick.red{ color:var(--red); }
+.slide.one .kick.indigo{ color:var(--indigo); } .slide.one .kick.green{ color:var(--green); }
+.one-body{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:36px; text-align:center; }
+.slide.one .q{ font-size:62px; font-weight:800; line-height:1.12; letter-spacing:-1.2px; max-width:1360px; }
+.slide.one .q .g{ color:var(--gold); }
+.slide.one .q.s2{ font-size:50px; }
+.slide.one .ttl{ font-size:108px; font-weight:800; letter-spacing:-3px; line-height:1.02; }
+.slide.one .sub{ font-size:32px; color:var(--sub); line-height:1.35; max-width:1240px; }
+.slide.one .sub b{ color:var(--ink); }
+.hero{ font-family:'JetBrains Mono',monospace; font-size:180px; font-weight:800; line-height:1; letter-spacing:-5px; color:var(--gold); }
+.hero.md{ font-size:120px; letter-spacing:-3px; } .hero.ink{ color:var(--ink); } .hero.red{ color:var(--red); }
+.hero-cap{ font-size:30px; color:var(--sub); margin-top:-14px; }
+.m-hero{ font-size:80px; }
+.win.xl{ justify-content:center; gap:10px 18px; }
+.win.xl .st{ min-width:130px; }
+.win.xl .lb{ font-size:26px; margin-bottom:8px; }
+.win.xl .bx{ font-size:66px; min-width:118px; padding:8px 22px; border-width:4px; border-radius:16px; }
+.win.xl .ex{ font-size:23px; max-width:230px; margin-top:8px; }
+.win.xl .op,.win.xl .res{ font-size:66px; padding-top:46px; }
+.win.xl.nolb .op,.win.xl.nolb .res{ padding-top:10px; }
+.win.xl .res.r{ color:var(--red); }
+.big-def{ border:4px solid var(--ink); border-radius:22px; background:#fff; padding:30px 42px; max-width:1340px; text-align:left; }
+.big-def .def-t{ font-size:18px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
+.big-def p{ font-size:36px; line-height:1.45; }
+.lanes{ display:grid; grid-template-columns:repeat(3,1fr); gap:28px; width:100%; }
+.lane{ border-radius:24px; padding:30px 32px; color:#fff; text-align:left; }
+.lane b{ display:block; font-size:26px; letter-spacing:.06em; margin-bottom:14px; opacity:.92; }
+.lane span{ display:block; font-size:52px; font-weight:800; line-height:1.25; }
+.lane.t1{ background:var(--green); } .lane.t2{ background:var(--indigo); } .lane.t3{ background:var(--gold); }
+pre.lines.xl{ font-size:40px; text-align:left; }
+.ansgrid.xl{ width:100%; gap:18px; }
+.ansgrid.xl div{ font-size:34px; padding:16px 22px; font-weight:700; }
+.slide.one .fig{ background:transparent; border:none; padding:0; width:100%; }
+.slide.one .fig svg{ width:100%; max-width:980px; }
+.brand{ position:absolute; left:72px; bottom:22px; display:flex; gap:8px; }
+@media screen and (max-width:1000px){
+  .slide.one{ padding:22px 16px 30px; }
+  .slide.one .kick{ font-size:12px; }
+  .one-body{ gap:16px; padding:12px 0; }
+  .slide.one .q{ font-size:26px; letter-spacing:-.4px; } .slide.one .q.s2{ font-size:22px; }
+  .slide.one .ttl{ font-size:34px; letter-spacing:-.8px; }
+  .slide.one .sub{ font-size:16px; }
+  .hero{ font-size:64px; letter-spacing:-1px; } .hero.md{ font-size:48px; }
+  .hero-cap{ font-size:15px; margin-top:-6px; }
+  .m-hero{ font-size:30px; }
+  .win.xl .st{ min-width:52px; } .win.xl .lb{ font-size:12px; margin-bottom:3px; }
+  .win.xl .bx{ font-size:24px; min-width:44px; padding:3px 8px; border-width:2px; border-radius:8px; }
+  .win.xl .ex{ font-size:11px; max-width:96px; margin-top:3px; }
+  .win.xl .op,.win.xl .res{ font-size:24px; padding-top:19px; }
+  .win.xl.nolb .op,.win.xl.nolb .res{ padding-top:3px; }
+  .big-def{ padding:14px 16px; border-width:2.5px; } .big-def p{ font-size:16px; } .big-def .def-t{ font-size:11px; }
+  .lanes{ grid-template-columns:1fr; gap:12px; } .lane{ padding:14px 16px; } .lane b{ font-size:13px; } .lane span{ font-size:22px; }
+  pre.lines.xl{ font-size:15px; }
+  .ansgrid.xl div{ font-size:16px; padding:8px 12px; }
+  .brand{ position:static; }
+}
