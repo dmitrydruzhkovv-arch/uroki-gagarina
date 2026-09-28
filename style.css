@@ -748,3 +748,49 @@ body.vq-otkryto{ overflow:hidden; }
 [data-theme="night"] .vq-x{ background:rgba(255,255,255,.08); }
 [data-theme="night"] .vq-chip[aria-pressed="true"]{ background:rgba(244,169,31,.18); color:#ffe6a8; }
 [data-theme="night"] .vq-err{ color:#fca5a5; }
+
+/* ═══════════════ ЧАТ С УЧИТЕЛЕМ в окне «?» (vopros.js, ТЗ 11 A2, D 28.09.2026) ═══════════════
+   Только у тех, кто открыл сайт кнопкой «🌐 Сайт» в Телеграм-боте. Мои сообщения — справа
+   золотые (цвет блока «?»), ответы учителя — слева на карточке. */
+.vq.vq-chat{ display:flex; flex-direction:column; height:min(680px, calc(100vh - 40px)); overflow:hidden; padding-bottom:14px; }
+@media (max-width:700px){
+  .vq.vq-chat{ height:88vh; height:88dvh; padding-bottom:calc(10px + env(safe-area-inset-bottom)); }
+}
+.vq-lenta{
+  flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+  margin:12px -18px 0; padding:4px 14px 10px; display:flex; flex-direction:column; gap:6px;
+}
+.vq-pusto{ margin:auto 0; padding:10px 4px; text-align:center; color:var(--sub); font-size:15.5px; line-height:1.45; }
+.vq-pusto .vq-chips{ margin-top:16px; text-align:left; }
+.vq-den{ align-self:center; margin:8px 0 2px; font-size:12px; font-weight:800; letter-spacing:.06em; color:var(--muted); }
+.vq-msg{
+  max-width:82%; padding:8px 12px 5px; border-radius:17px; font-size:15.5px; line-height:1.38;
+  overflow-wrap:anywhere;
+}
+.vq-msg .t{ white-space:pre-wrap; }
+.vq-msg.moe{ align-self:flex-end; background:#fff4d6; color:#3b1a07; box-shadow:inset 0 0 0 1.5px #f4a91f; border-bottom-right-radius:5px; }
+.vq-msg.ego{ align-self:flex-start; background:var(--card); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line); border-bottom-left-radius:5px; }
+.vq-msg.zhdet{ opacity:.6; }
+.vq-msg img{ display:block; max-width:100%; max-height:260px; margin:-3px -7px 5px; border-radius:12px; cursor:zoom-in; background:rgba(0,0,0,.06); }
+.vq-msg .vr{ margin-top:2px; font-size:11.5px; opacity:.6; text-align:right; }
+.vq-chat .vq-err{ margin:4px 0 6px; }
+.vq-pole{ display:flex; align-items:flex-end; gap:8px; padding-top:10px; border-top:1px solid var(--line); }
+.vq-skrepka, .vq-go{ flex:0 0 46px; width:46px; height:46px; border-radius:14px; display:grid; place-items:center; -webkit-tap-highlight-color:transparent; }
+.vq-skrepka{ background:rgba(0,0,0,.06); color:var(--ink); }
+.vq-go{ background:#f4a91f; color:#3b1a07; box-shadow:inset 0 -3px 0 #c46a0c; }
+.vq-go:active{ transform:translateY(2px); box-shadow:inset 0 -1px 0 #c46a0c; }
+.vq-vvod{
+  flex:1 1 auto; min-width:0; height:46px; max-height:120px; resize:none; font:inherit; font-size:16px; line-height:1.3;
+  padding:11px 12px; border-radius:14px; border:2px solid var(--line); background:var(--card); color:var(--ink); outline:none;
+}
+.vq-vvod:focus{ border-color:#f4a91f; }
+/* учитель ответил, а ребёнок ещё не открыл чат */
+.vopros.est-otvet::after{
+  content:''; position:absolute; top:-3px; right:-3px; width:13px; height:13px; border-radius:50%;
+  background:#ef4444; box-shadow:0 0 0 2.5px #fff; animation:vq-tochka 1.6s ease-in-out infinite;
+}
+@keyframes vq-tochka{ 50%{ transform:scale(1.2); } }
+.vq-bigfoto{ position:fixed; inset:0; z-index:70; display:grid; place-items:center; padding:16px; background:rgba(0,0,0,.88); cursor:zoom-out; }
+.vq-bigfoto img{ max-width:100%; max-height:100%; border-radius:8px; }
+[data-theme="night"] .vq-msg.moe{ background:rgba(244,169,31,.18); color:#ffe6a8; }
+[data-theme="night"] .vq-skrepka{ background:rgba(255,255,255,.08); }

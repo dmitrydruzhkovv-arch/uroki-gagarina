@@ -14,6 +14,12 @@
    hw-core-name-g9). Сайт и домашки живут на одном адресе, поэтому имя
    видят и те и другие. Имени нет — окно спросит его один раз.
 
+   Чат (ТЗ 11 A2, D 28.09): кто открыл сайт кнопкой «🌐 Сайт» в Телеграм-боте,
+   того сайт узнаёт по подписи Телеграма (#tgWebAppData → сервер /chat/auth →
+   ключ чата в памяти браузера). Тогда «?» открывает переписку с учителем:
+   история, текст, фото. Ответ учителя приходит сюда, а в бот — «Д ответил».
+   Без ключа — прежний быстрый сигнал выше.
+
    Сервер: сначала прямой адрес, не ответил за 5 с (у ребёнка VPN) —
    запасной через шлюз в Хельсинки. Та же схема и тот же ключ памяти,
    что в hw-core.js. Сам движок домашек сюда не подключаем: он вешает
@@ -28,6 +34,11 @@ const PROBE_MS = 5000;
 const KLASS = 'g9';
 const NAME_KEY = 'hw-core-name-' + KLASS;
 const HINT_KEY = 'vopros-podskazka';        // сколько раз показали «что это за ?»; 9 — нажимал сам
+const CHAT_KEY = 'vopros-chat-klyuch';      // ключ чата от сервера (вход через бота)
+const CHAT_SEEN = 'vopros-chat-videl';      // последний прочитанный ответ учителя
+/* Подсказка «переписка — через бота» тем, кто пришёл не из бота. Включить, когда
+   кнопку «🌐 Сайт» получат все ученики (после ответа Нормы). */
+const ZOVEM_V_BOTA = false;
 
 const PRICHINY = [
   ['ne-ponimayu',   '🤔', 'Не понимаю задание'],
@@ -38,6 +49,17 @@ const PRICHINY = [
 
 const dock = document.getElementById('dock');
 if (!dock) return;
+
+/* Сайт открыт кнопкой бота: Телеграм положил в адрес подписанные данные.
+   Забираем и сразу чистим адрес — чтобы ими не поделились ссылкой. */
+const tgData = (() => {
+  try {
+    const d = new URLSearchParams(location.hash.slice(1)).get('tgWebAppData') || '';
+    if (d) history.replaceState(null, '', location.pathname + location.search);
+    return d;
+  } catch (_) { return ''; }
+})();
+const zovutVChat = /[?&]chat=1(&|$)/.test(location.search);   // кнопка «Открыть чат» из уведомления
 
 const esc = t => String(t == null ? '' : t)
   .replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -191,6 +213,7 @@ function nachat(){
       <button type="button" class="vq-send" data-vq="otpravit" disabled>🙋 Позвать учителя</button>
       <p class="vq-err" hidden></p>
       <p class="vq-note">Спросить — это нормально. Учитель увидит твоё имя и напишет тебе.</p>
+      ${ZOVEM_V_BOTA ? '<p class="vq-note">Переписываться с учителем и присылать фото — через кнопку «🌐 Сайт» в Телеграм-боте.</p>' : ''}
     </div>`;
   obnovit();
 }
@@ -222,11 +245,16 @@ function onKlik(e){
     obnovit();
   }
   else if (a.dataset.vq === 'otpravit') otpravit();
+  else if (a.dataset.vq === 'poslat') poslat();
+  else if (a.dataset.vq === 'foto') okno.querySelector('.vq-file').click();
+  else if (a.dataset.vq === 'bystro') poslat(a.dataset.tekst);
+  else if (a.dataset.vq === 'uvelichit') uvelichit(a.getAttribute('src'));
 }
 
 function otkryt(){
   if (!okno) postroit();
-  nachat();
+  if (chatKey()) chatNachat();
+  else { okno.classList.remove('vq-chat'); nachat(); }
   fon.hidden = false; okno.hidden = false;
   document.body.classList.add('vq-otkryto');
   otkryto = true;
@@ -238,6 +266,7 @@ function zakryt(){
   otkryto = false;
   fon.classList.remove('on'); okno.classList.remove('on');
   document.body.classList.remove('vq-otkryto');
+  clearInterval(chatTaimer); chatTaimer = null;
   setTimeout(() => { if (!otkryto){ fon.hidden = true; okno.hidden = true; } }, 280);
   knopka.focus({ preventScroll: true });
 }
@@ -325,4 +354,251 @@ function gotovo(uzhe){
     </div>`;
   okno.focus({ preventScroll: true });
 }
+
+/* ═════════════ ЧАТ С УЧИТЕЛЕМ (ТЗ 11 A2) ═════════════ */
+const SKREPKA = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg>';
+const STRELKA = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4l17.4-7.5a1 1 0 0 0 0-1.8L3.4 3.6a1 1 0 0 0-1.4 1.1L4 11l9 1-9 1-2 6.3a1 1 0 0 0 1.4 1.1z"/></svg>';
+
+let chatTaimer = null, chatBase = '', lenta = [], lastId = 0, tyanu = false;
+
+/* ключ вида bot.id.srok.podpis; просроченный не используем */
+function chatKey(){
+  const k = mem.get(CHAT_KEY);
+  const srok = +(k.split('.')[2] || 0);
+  return srok * 1000 > Date.now() ? k : '';
+}
+function zabytKlyuch(){ try { localStorage.removeItem(CHAT_KEY); } catch (_) {} }
+
+async function voiti(){
+  if (!tgData) return;
+  try {
+    const base = await serverBase();
+    const r = await timedFetch(base + '/chat/auth', {
+      method: 'POST', cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ init: tgData }),
+    }, 15000);
+    const d = await r.json();
+    if (d.ok && d.key) mem.set(CHAT_KEY, d.key);
+    else if (r.status === 403) zabytKlyuch();         // не ученик (или чужой аккаунт) — чата нет
+  } catch (_) { baseP = null; }
+}
+
+function urokSejchas(){
+  const m = /^#([a-z]{2,20}-\d{1,3})$/.exec(location.hash);
+  return m ? m[1] : '';
+}
+const zagolovki = t => ({ 'X-Chat-Key': chatKey(), ...(t ? { 'Content-Type': t } : {}) });
+const fotoUrl = name => `${chatBase}/chat/photo/${encodeURIComponent(name)}?k=${encodeURIComponent(chatKey())}`;
+
+function chatNachat(){
+  okno.classList.add('vq-chat');
+  okno.innerHTML = `
+    <div class="vq-head">${blok('vq-mini')}<h2 id="vq-h">Чат с учителем</h2>
+      <button type="button" class="vq-x" data-vq="zakryt" aria-label="Закрыть">✕</button></div>
+    <div class="vq-lenta" role="log" aria-live="polite"><div class="vq-pusto">Загружаю…</div></div>
+    <p class="vq-err" hidden></p>
+    <div class="vq-pole">
+      <button type="button" class="vq-skrepka" data-vq="foto" aria-label="Прикрепить фото">${SKREPKA}</button>
+      <input type="file" class="vq-file" accept="image/*" hidden>
+      <textarea class="vq-vvod" rows="1" maxlength="2000" placeholder="Напиши сообщение…" aria-label="Сообщение учителю"></textarea>
+      <button type="button" class="vq-go" data-vq="poslat" aria-label="Отправить">${STRELKA}</button>
+    </div>`;
+  lenta = []; lastId = 0;
+  const vvod = okno.querySelector('.vq-vvod');
+  vvod.addEventListener('input', () => rost(vvod));
+  /* Enter отправляет только на компьютере; на телефоне это перенос строки */
+  vvod.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && matchMedia('(pointer:fine)').matches){ e.preventDefault(); poslat(); }
+  });
+  okno.querySelector('.vq-file').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (f) poslatFoto(f);
+  });
+  tyanut(true);
+  clearInterval(chatTaimer);
+  chatTaimer = setInterval(() => { if (!document.hidden) tyanut(false); }, 4000);
+}
+
+function rost(el){ el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight + 4, 120) + 'px'; }
+
+function oshibka(text){
+  const e = okno && okno.querySelector('.vq-err');
+  if (!e) return;
+  e.textContent = text || ''; e.hidden = !text;
+}
+
+const DNI = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+function denPodpis(d){
+  const s = new Date(); s.setHours(0, 0, 0, 0);
+  const x = new Date(d); x.setHours(0, 0, 0, 0);
+  const n = Math.round((s - x) / 864e5);
+  if (n === 0) return 'Сегодня';
+  if (n === 1) return 'Вчера';
+  return `${DNI[x.getDay()]}, ${String(x.getDate()).padStart(2, '0')}.${String(x.getMonth() + 1).padStart(2, '0')}`;
+}
+const vremya = d => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+function risovat(vniz){
+  const box = okno && okno.querySelector('.vq-lenta');
+  if (!box) return;
+  const bylVnizu = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+  if (!lenta.length){
+    box.innerHTML = `<div class="vq-pusto">
+      <p>Застрял? Напиши, что не получается, или сфоткай решение <b>📎</b>. Учитель ответит здесь, а бот пришлёт уведомление.</p>
+      <div class="vq-chips vq-prichiny">
+        ${PRICHINY.filter(p => p[0] !== 'drugoe').map(([, e, t]) =>
+          `<button type="button" class="vq-chip" data-vq="bystro" data-tekst="${esc(e + ' ' + t)}"><span class="e">${e}</span>${esc(t)}</button>`).join('')}
+      </div></div>`;
+    return;
+  }
+  let den = '', html = '';
+  lenta.forEach(m => {
+    const d = new Date(m.ts);
+    const dp = denPodpis(d);
+    if (dp !== den){ den = dp; html += `<div class="vq-den">${dp}</div>`; }
+    const src = m.preview || (m.photo ? fotoUrl(m.photo) : '');
+    html += `<div class="vq-msg ${m.who === 's' ? 'moe' : 'ego'}${m.zhdet ? ' zhdet' : ''}">
+      ${src ? `<img src="${esc(src)}" alt="Фото" data-vq="uvelichit">` : ''}
+      ${m.text ? `<div class="t">${esc(m.text)}</div>` : ''}
+      <div class="vr">${m.zhdet ? 'отправляю…' : vremya(d)}</div></div>`;
+  });
+  box.innerHTML = html;
+  if (vniz || bylVnizu){
+    box.scrollTop = box.scrollHeight;
+    /* картинки догружаются позже и сдвигают низ — докручиваем */
+    box.querySelectorAll('img').forEach(i => i.addEventListener('load', () => { box.scrollTop = box.scrollHeight; }, { once: true }));
+  }
+}
+
+function videl(){
+  const d = lenta.filter(m => m.who === 'd' && m.id).pop();
+  if (d && d.id > (+mem.get(CHAT_SEEN) || 0)) mem.set(CHAT_SEEN, String(d.id));
+  knopka.classList.remove('est-otvet');
+}
+
+async function tyanut(pervyi){
+  if (tyanu || !chatKey()) return;
+  tyanu = true;
+  try {
+    chatBase = await serverBase();
+    const r = await timedFetch(`${chatBase}/chat/history?after=${lastId}`, { cache: 'no-store', headers: zagolovki() }, 15000);
+    if (r.status === 401){ zabytKlyuch(); oshibka('Открой сайт заново кнопкой «🌐 Сайт» в Телеграм-боте.'); return; }
+    const d = await r.json();
+    if (d.msgs && d.msgs.length){
+      lastId = d.msgs[d.msgs.length - 1].id;
+      lenta = lenta.filter(m => !m.zhdet).concat(d.msgs, lenta.filter(m => m.zhdet));
+    }
+    if (pervyi || (d.msgs && d.msgs.length)) risovat(pervyi);
+    if (otkryto) videl();
+    if (pervyi) oshibka('');
+  } catch (_) {
+    baseP = null;
+    if (pervyi) oshibka('Не получилось загрузить переписку. Проверь интернет.');
+  } finally { tyanu = false; }
+}
+
+function poslat(gotovyi){
+  const vvod = okno.querySelector('.vq-vvod');
+  const text = String(gotovyi || vvod.value).trim();
+  if (!text) return;
+  if (!gotovyi){ vvod.value = ''; rost(vvod); }
+  otpravitVChat(JSON.stringify({ text, urok: urokSejchas() }), 'application/json', { text }, () => {
+    if (!gotovyi && !vvod.value){ vvod.value = text; rost(vvod); }     // вернуть текст, чтобы не набирать заново
+  });
+}
+
+/* фото с телефона бывает 5–10 МБ: уменьшаем до 1600 px и JPEG. Заодно отпадают
+   геометка и прочие данные снимка, и iPhone-формат HEIC превращается в обычный */
+function szhat(file){
+  return new Promise(done => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(b => { URL.revokeObjectURL(url); done(b); }, 'image/jpeg', 0.85);
+      } catch (_) { URL.revokeObjectURL(url); done(null); }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      done(/^image\/(jpeg|png|webp)$/.test(file.type) && file.size < 8e6 ? file : null);
+    };
+    img.src = url;
+  });
+}
+
+async function poslatFoto(file){
+  oshibka('');
+  const blob = await szhat(file);
+  if (!blob){ oshibka('Это не фото или оно слишком большое. Попробуй другое.'); return; }
+  const vvod = okno.querySelector('.vq-vvod');
+  const text = vvod.value.trim();
+  vvod.value = ''; rost(vvod);
+  const fd = new FormData();
+  fd.append('photo', blob, 'foto.jpg');
+  if (text) fd.append('text', text);
+  if (urokSejchas()) fd.append('urok', urokSejchas());
+  otpravitVChat(fd, '', { text, preview: URL.createObjectURL(blob) }, () => {
+    if (text && !vvod.value){ vvod.value = text; rost(vvod); }
+  });
+}
+
+async function otpravitVChat(body, tip, vid, vernut){
+  oshibka('');
+  const m = Object.assign({ who: 's', ts: new Date().toISOString(), zhdet: true }, vid);
+  lenta.push(m); risovat(true);
+  const ubrat = () => { lenta = lenta.filter(x => x !== m); risovat(); if (m.preview) URL.revokeObjectURL(m.preview); };
+  try {
+    chatBase = await serverBase();
+    const r = await timedFetch(chatBase + '/chat/send',
+      { method: 'POST', cache: 'no-store', headers: zagolovki(tip), body }, 45000);
+    if (r.status === 429){ ubrat(); vernut(); oshibka('Много сообщений подряд. Подожди пару минут.'); return; }
+    if (r.status === 401){ ubrat(); vernut(); zabytKlyuch(); oshibka('Открой сайт заново кнопкой «🌐 Сайт» в Телеграм-боте.'); return; }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    lenta = lenta.filter(x => x !== m);            // настоящее сообщение придёт с сервера
+    await tyanut(false);
+    risovat(true);
+    if (m.preview) setTimeout(() => URL.revokeObjectURL(m.preview), 60000);
+  } catch (_) {
+    baseP = null;
+    ubrat(); vernut();
+    oshibka(vid.preview ? 'Фото не отправилось. Проверь интернет и прикрепи ещё раз.'
+                        : 'Не отправилось. Проверь интернет и нажми ещё раз.');
+  }
+}
+
+function uvelichit(src){
+  const d = document.createElement('div');
+  d.className = 'vq-bigfoto';
+  d.innerHTML = `<img src="${esc(src)}" alt="Фото">`;
+  d.addEventListener('click', () => d.remove());
+  document.body.appendChild(d);
+}
+
+/* красная точка на «?», если учитель ответил, а ребёнок ещё не видел */
+async function estOtvet(){
+  if (!chatKey() || otkryto || document.hidden) return;
+  try {
+    const base = await serverBase();
+    const r = await timedFetch(`${base}/chat/history?after=${+mem.get(CHAT_SEEN) || 0}`,
+      { cache: 'no-store', headers: zagolovki() }, 15000);
+    if (r.status === 401){ zabytKlyuch(); return; }
+    const d = await r.json();
+    knopka.classList.toggle('est-otvet', !!(d.msgs || []).some(m => m.who === 'd'));
+  } catch (_) {}
+}
+
+(async () => {
+  await voiti();
+  if (!chatKey()) return;
+  if (zovutVChat) otkryt();
+  else estOtvet();
+  setInterval(estOtvet, 60000);
 })();
+})();
+
