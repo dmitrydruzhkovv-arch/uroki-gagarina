@@ -14,11 +14,15 @@
    hw-core-name-g9). Сайт и домашки живут на одном адресе, поэтому имя
    видят и те и другие. Имени нет — окно спросит его один раз.
 
-   Чат (ТЗ 11 A2, D 28.09): кто открыл сайт кнопкой «🌐 Сайт» в Телеграм-боте,
-   того сайт узнаёт по подписи Телеграма (#tgWebAppData → сервер /chat/auth →
-   ключ чата в памяти браузера). Тогда «?» открывает переписку с учителем:
-   история, текст, фото. Ответ учителя приходит сюда, а в бот — «Д ответил».
-   Без ключа — прежний быстрый сигнал выше.
+   Чат (ТЗ 11 A2, D 28.09): «?» открывает переписку с учителем — история,
+   текст, фото; ответ учителя приходит сюда, а в бот — «Д ответил». Сайт
+   живёт в обычном браузере (мини-приложение Телеграма D отверг). Кто это —
+   сайт узнаёт один раз и помнит по ключу чата:
+     • ссылка из бота несёт одноразовый код (#vhod=…) → сервер даёт ключ;
+       код после «#»: эта часть адреса не уходит на GitHub (США);
+     • открыл сам → «Войти через Телеграм» → в боте выбрать число, которое
+       показывает сайт (защита от чужой ссылки «жми») → ключ.
+   Пока чат не запущен для всех (CHAT_VSEM), без ключа — прежняя анкета.
 
    Сервер: сначала прямой адрес, не ответил за 5 с (у ребёнка VPN) —
    запасной через шлюз в Хельсинки. Та же схема и тот же ключ памяти,
@@ -34,11 +38,15 @@ const PROBE_MS = 5000;
 const KLASS = 'g9';
 const NAME_KEY = 'hw-core-name-' + KLASS;
 const HINT_KEY = 'vopros-podskazka';        // сколько раз показали «что это за ?»; 9 — нажимал сам
-const CHAT_KEY = 'vopros-chat-klyuch';      // ключ чата от сервера (вход через бота)
+const CHAT_KEY = 'vopros-chat-klyuch';      // ключ чата от сервера
 const CHAT_SEEN = 'vopros-chat-videl';      // последний прочитанный ответ учителя
-/* Подсказка «переписка — через бота» тем, кто пришёл не из бота. Включить, когда
-   кнопку «🌐 Сайт» получат все ученики (после ответа Нормы). */
-const ZOVEM_V_BOTA = false;
+const VHOD_KEY = 'vopros-vhod';             // «Войти через Телеграм»: токен, пока ждём «Да» в боте
+const TEST_KEY = 'vopros-test';             // тестер (?test=chat или ссылка тестового бота)
+const BOTY = { main: 'D_mathh_bot', test: 'Lemma_test1_bot' };
+/* Чат для всех: без ключа «?» зовёт войти через Телеграм, а не в анкету.
+   Включить после ответа Нормы (ШТАБ_ДЕТАЛИ #norma-chat-sayt) вместе с SITE_CHAT=1
+   у боевого бота. До того чат видят только вошедшие по ссылке бота и тестер. */
+const CHAT_VSEM = false;
 
 const PRICHINY = [
   ['ne-ponimayu',   '🤔', 'Не понимаю задание'],
@@ -50,16 +58,21 @@ const PRICHINY = [
 const dock = document.getElementById('dock');
 if (!dock) return;
 
-/* Сайт открыт кнопкой бота: Телеграм положил в адрес подписанные данные.
-   Забираем и сразу чистим адрес — чтобы ими не поделились ссылкой. */
-const tgData = (() => {
-  try {
-    const d = new URLSearchParams(location.hash.slice(1)).get('tgWebAppData') || '';
-    if (d) history.replaceState(null, '', location.pathname + location.search);
-    return d;
-  } catch (_) { return ''; }
-})();
-const zovutVChat = /[?&]chat=1(&|$)/.test(location.search);   // кнопка «Открыть чат» из уведомления
+/* Ссылка из бота: #vhod=<одноразовый код>&chat=1 (сразу открыть чат).
+   Тестер: ?test=chat. Забираем и сразу чистим адрес: код не останется
+   в истории и в закладке. Уроки сайта (#algebra-10) не трогаем. */
+const vosk = new URLSearchParams(location.hash.slice(1));
+const vopr = new URLSearchParams(location.search);
+const vhodKod = vosk.get('vhod') || '';
+const zovutVChat = vosk.get('chat') === '1' || vopr.get('chat') === '1';
+try {
+  if (vopr.get('test') === 'chat' || vhodKod.split('.')[1] === 'test') localStorage.setItem(TEST_KEY, '1');
+} catch (_) {}
+if (vosk.has('vhod') || vopr.has('chat') || vopr.has('test')){
+  ['chat', 'test'].forEach(k => vopr.delete(k));
+  const q = vopr.toString();
+  try { history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + (vosk.has('vhod') ? '' : location.hash)); } catch (_) {}
+}
 
 const esc = t => String(t == null ? '' : t)
   .replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -213,7 +226,6 @@ function nachat(){
       <button type="button" class="vq-send" data-vq="otpravit" disabled>🙋 Позвать учителя</button>
       <p class="vq-err" hidden></p>
       <p class="vq-note">Спросить — это нормально. Учитель увидит твоё имя и напишет тебе.</p>
-      ${ZOVEM_V_BOTA ? '<p class="vq-note">Переписываться с учителем и присылать фото — через кнопку «🌐 Сайт» в Телеграм-боте.</p>' : ''}
     </div>`;
   obnovit();
 }
@@ -249,11 +261,18 @@ function onKlik(e){
   else if (a.dataset.vq === 'foto') okno.querySelector('.vq-file').click();
   else if (a.dataset.vq === 'bystro') poslat(a.dataset.tekst);
   else if (a.dataset.vq === 'uvelichit') uvelichit(a.getAttribute('src'));
+  else if (a.dataset.vq === 'signal'){ okno.classList.remove('vq-chat'); nachat(); }
+  else if (a.dataset.vq === 'snova'){ e.preventDefault(); vhodEkran(); }
+  else if (a.dataset.vq === 'tg'){
+    if (!a.dataset.token){ e.preventDefault(); return; }   // вход ещё готовится
+    zhdat(a.dataset.token);                               // ссылка сама откроет Телеграм
+  }
 }
 
 function otkryt(){
   if (!okno) postroit();
   if (chatKey()) chatNachat();
+  else if (CHAT_VSEM || tester()) vhodEkran();
   else { okno.classList.remove('vq-chat'); nachat(); }
   fon.hidden = false; okno.hidden = false;
   document.body.classList.add('vq-otkryto');
@@ -368,20 +387,133 @@ function chatKey(){
   return srok * 1000 > Date.now() ? k : '';
 }
 function zabytKlyuch(){ try { localStorage.removeItem(CHAT_KEY); } catch (_) {} }
+const tester = () => mem.get(TEST_KEY) === '1';
+function vzyatKlyuch(d){                               // ответ сервера с ключом → в память
+  mem.set(CHAT_KEY, d.key);
+  if (d.bot === 'test') mem.set(TEST_KEY, '1');
+}
 
-async function voiti(){
-  if (!tgData) return;
+/* вход 1: одноразовый код из ссылки бота */
+async function vhodPoKodu(){
+  if (!vhodKod) return;
   try {
     const base = await serverBase();
-    const r = await timedFetch(base + '/chat/auth', {
+    const r = await timedFetch(base + '/chat/login/code', {
       method: 'POST', cache: 'no-store',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ init: tgData }),
+      body: JSON.stringify({ code: vhodKod }),
     }, 15000);
     const d = await r.json();
-    if (d.ok && d.key) mem.set(CHAT_KEY, d.key);
-    else if (r.status === 403) zabytKlyuch();         // не ученик (или чужой аккаунт) — чата нет
+    if (d.ok && d.key) vzyatKlyuch(d);
+    /* код уже использован — не беда: ключ с прошлого входа лежит в памяти браузера,
+       а если нет — «?» предложит войти через Телеграм */
   } catch (_) { baseP = null; }
+}
+
+/* вход 2: «Войти через Телеграм». Сайт берёт токен, ребёнок жмёт ссылку
+   t.me/<бот>?start=site-<токен>, в боте «Да, это я», сайт забирает ключ.
+   Токен лежит в памяти браузера: если страница перезагрузится, пока ребёнок
+   в Телеграме, вход всё равно закончится. */
+let vhodTaimer = null;
+const VHOD_MS = 10 * 60e3;
+
+function vhodEkran(){
+  okno.classList.remove('vq-chat');
+  okno.innerHTML = `
+    <div class="vq-head">${blok('vq-mini')}<h2 id="vq-h">Чат с учителем</h2>
+      <button type="button" class="vq-x" data-vq="zakryt" aria-label="Закрыть">✕</button></div>
+    <div class="vq-telo vq-vhod">
+      <p class="vq-vhod-t">Здесь можно переписываться с учителем и присылать фото решений. Войди через Телеграм — один раз на этом устройстве.</p>
+      <div class="vq-chislo" hidden><span>В Телеграме нажми число</span><b></b></div>
+      <a class="vq-send vq-tg" data-vq="tg" aria-disabled="true">Готовлю вход…</a>
+      <p class="vq-zhdu" hidden>Нажми в Телеграме это число и возвращайся сюда — чат откроется сам.</p>
+      <p class="vq-err" hidden></p>
+      <button type="button" class="vq-link" data-vq="signal">Нет Телеграма? Быстрый сигнал учителю</button>
+    </div>`;
+  gotovitVhod();
+}
+
+function nachatyiVhod(){                              // вход, начатый раньше и ещё живой
+  let v = null;
+  try { v = JSON.parse(localStorage.getItem(VHOD_KEY) || 'null'); } catch (_) {}
+  return v && v.t && v.kod && Date.now() - v.ts < VHOD_MS ? v : null;
+}
+
+function pokazatVhod(a, token, kod){
+  a.href = `https://t.me/${tester() ? BOTY.test : BOTY.main}?start=site-${token}`;
+  a.dataset.token = token; a.dataset.kod = kod;
+  a.removeAttribute('aria-disabled');
+  a.textContent = '✈️ Войти через Телеграм';
+  const ch = okno.querySelector('.vq-chislo');
+  ch.querySelector('b').textContent = kod;
+  ch.hidden = false;
+}
+
+async function gotovitVhod(){
+  const a = okno.querySelector('.vq-tg');
+  if (!a) return;
+  const v = nachatyiVhod();
+  if (v){                                               // вернулся, а вход ещё ждёт — то же число
+    pokazatVhod(a, v.t, v.kod);
+    okno.querySelector('.vq-zhdu').hidden = false;
+    return;
+  }
+  try {
+    const base = await serverBase();
+    const r = await timedFetch(base + '/chat/login/start', { method: 'POST', cache: 'no-store' }, 15000);
+    const d = await r.json();
+    if (!d.ok || !d.token) throw new Error(d.error || 'нет токена');
+    pokazatVhod(a, d.token, d.kod);
+  } catch (_) {
+    baseP = null;
+    a.dataset.vq = 'snova'; a.removeAttribute('aria-disabled'); a.textContent = 'Попробовать ещё раз';
+    oshibka('Не получилось связаться с сервером. Проверь интернет.');
+  }
+}
+
+function zhdat(token){
+  const a = okno && okno.querySelector('.vq-tg');
+  try { localStorage.setItem(VHOD_KEY, JSON.stringify({ t: token, kod: a ? a.dataset.kod : '', ts: Date.now() })); } catch (_) {}
+  const z = okno && okno.querySelector('.vq-zhdu');
+  if (z) z.hidden = false;
+  zhdatFonom();
+}
+function zhdatFonom(){
+  clearInterval(vhodTaimer);
+  vhodTaimer = setInterval(() => { if (!document.hidden) proveritVhod(); }, 2500);
+}
+function zabytVhod(){
+  clearInterval(vhodTaimer); vhodTaimer = null;
+  try { localStorage.removeItem(VHOD_KEY); } catch (_) {}
+}
+
+async function proveritVhod(){
+  let v = null;
+  try { v = JSON.parse(localStorage.getItem(VHOD_KEY) || 'null'); } catch (_) {}
+  if (!v || !v.t || Date.now() - v.ts > VHOD_MS){ zabytVhod(); return 'old'; }
+  try {
+    const base = await serverBase();
+    const r = await timedFetch(`${base}/chat/login/check?token=${encodeURIComponent(v.t)}`, { cache: 'no-store' }, 10000);
+    const d = await r.json();
+    if (d.status === 'ok' && d.key){
+      zabytVhod(); vzyatKlyuch(d);
+      if (otkryto) chatNachat(); else otkryt();      // ради чата и входил — сразу показываем
+      return 'ok';
+    }
+    if (d.status === 'old'){                           // устарел или в боте выбрали не то число
+      zabytVhod();
+      if (otkryto && okno.querySelector('.vq-vhod')){ vhodEkran(); oshibka('Вход не получился — нажми «Войти» ещё раз.'); }
+      return 'old';
+    }
+    return 'wait';
+  } catch (_) { baseP = null; return 'wait'; }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && vhodTaimer) proveritVhod(); });
+
+/* страница открылась, а вход начат раньше (вернулся из Телеграма, страница перезагрузилась) */
+async function dozhdatsya(){
+  if (!mem.get(VHOD_KEY)) return;
+  if (await proveritVhod() === 'wait') zhdatFonom();
 }
 
 function urokSejchas(){
@@ -484,8 +616,9 @@ async function tyanut(pervyi){
   try {
     chatBase = await serverBase();
     const r = await timedFetch(`${chatBase}/chat/history?after=${lastId}`, { cache: 'no-store', headers: zagolovki() }, 15000);
-    if (r.status === 401){ zabytKlyuch(); oshibka('Открой сайт заново кнопкой «🌐 Сайт» в Телеграм-боте.'); return; }
+    if (r.status === 401){ zabytKlyuch(); vhodEkran(); return; }
     const d = await r.json();
+    if (d.key) mem.set(CHAT_KEY, d.key);             // сервер продлил ключ
     if (d.msgs && d.msgs.length){
       lastId = d.msgs[d.msgs.length - 1].id;
       lenta = lenta.filter(m => !m.zhdet).concat(d.msgs, lenta.filter(m => m.zhdet));
@@ -558,7 +691,7 @@ async function otpravitVChat(body, tip, vid, vernut){
     const r = await timedFetch(chatBase + '/chat/send',
       { method: 'POST', cache: 'no-store', headers: zagolovki(tip), body }, 45000);
     if (r.status === 429){ ubrat(); vernut(); oshibka('Много сообщений подряд. Подожди пару минут.'); return; }
-    if (r.status === 401){ ubrat(); vernut(); zabytKlyuch(); oshibka('Открой сайт заново кнопкой «🌐 Сайт» в Телеграм-боте.'); return; }
+    if (r.status === 401){ ubrat(); zabytKlyuch(); vhodEkran(); return; }
     if (!r.ok) throw new Error('HTTP ' + r.status);
     lenta = lenta.filter(x => x !== m);            // настоящее сообщение придёт с сервера
     await tyanut(false);
@@ -589,16 +722,18 @@ async function estOtvet(){
       { cache: 'no-store', headers: zagolovki() }, 15000);
     if (r.status === 401){ zabytKlyuch(); return; }
     const d = await r.json();
+    if (d.key) mem.set(CHAT_KEY, d.key);
     knopka.classList.toggle('est-otvet', !!(d.msgs || []).some(m => m.who === 'd'));
   } catch (_) {}
 }
 
 (async () => {
-  await voiti();
-  if (!chatKey()) return;
+  await vhodPoKodu();
+  await dozhdatsya();                    // вход, начатый до перезагрузки, откроет чат сам
+  setInterval(estOtvet, 60000);
+  if (!chatKey() || otkryto) return;
   if (zovutVChat) otkryt();
   else estOtvet();
-  setInterval(estOtvet, 60000);
 })();
 })();
 

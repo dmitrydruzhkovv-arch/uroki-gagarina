@@ -90,9 +90,10 @@ function zadaniya(u){
 }
 
 /* ссылки внутри текста задания (D, 23.09.2026): dz.ssylki = { 'фраза из текста': 'путь к PDF' }.
-   Текст пункта не меняется — бот и галочки видят ту же строку, сайт делает фразу ссылкой. */
+   Текст пункта не меняется — бот и галочки видят ту же строку, сайт делает фразу ссылкой.
+   \n в тексте (D, 28.09.2026) — перенос строки внутри пункта, для последовательности действий. */
 function sSsylkami(tekst, ssylki){
-  let html = esc(tekst);
+  let html = esc(tekst).replace(/\n/g, '<br>');
   for (const [fraza, url] of Object.entries(ssylki || {})){
     const f = esc(fraza);
     html = html.split(f).join(`<a class="dz-link" href="${esc(url)}" target="_blank" rel="noopener">${f} ↗</a>`);
