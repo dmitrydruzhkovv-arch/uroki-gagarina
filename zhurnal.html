@@ -121,6 +121,10 @@ table.zt{ border-collapse:separate; border-spacing:0; font-size:14px; }
 .dt b{ display:block; font-weight:700; }
 .dt small{ display:block; font-size:10.5px; color:var(--muted); font-weight:600; }
 .dt:hover{ color:var(--s); }
+.dt a{ display:block; color:inherit; text-decoration:none; }
+.dt.go b i{ font-style:normal; font-size:11px; margin-left:3px; color:var(--s); }
+.dt.go:hover b{ text-decoration:underline; text-underline-offset:3px; }
+a.btn{ text-decoration:none; display:inline-flex; align-items:center; }
 .dt.today{ border-top-color:var(--s); background:color-mix(in srgb, var(--s) 12%, var(--z-head)); }
 .dt.today b::after{ content:' · сегодня'; font-weight:700; font-size:10.5px; color:var(--s); }
 [data-theme="night"] .dt.today{ box-shadow:inset 0 3px 12px -6px var(--glow); }
@@ -218,6 +222,8 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
   <button class="tema tema-night" data-tema="night" title="Ночная тема" aria-label="Ночная тема">D</button>
 </div>
 <div class="pop" id="pop" hidden></div>
+<!-- уроки сайта: по ним журнал ведёт с даты прямо в урок (./#algebra-3) -->
+<script src="data.js"></script>
 <div id="dlg"></div>
 
 <script>
@@ -225,9 +231,9 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
   'use strict';
 
   var SUBJ = [
-    { id: 'alg', name: 'Алгебра', short: 'Алгебра', k: 'k-algebra', icon: '🧮' },
-    { id: 'geo', name: 'Геометрия', short: 'Геометрия', k: 'k-geometriya', icon: '📐' },
-    { id: 'ver', name: 'Вероятность и статистика', short: 'Вероятность', k: 'k-veroyatnost', icon: '🎲' }
+    { id: 'alg', name: 'Алгебра', short: 'Алгебра', k: 'k-algebra', icon: '🧮', kurs: 'algebra' },
+    { id: 'geo', name: 'Геометрия', short: 'Геометрия', k: 'k-geometriya', icon: '📐', kurs: 'geometriya' },
+    { id: 'ver', name: 'Вероятность и статистика', short: 'Вероятность', k: 'k-veroyatnost', icon: '🎲', kurs: 'veroyatnost' }
   ];
   var QUICK = ['5', '4', '3', '2', '1', 'н', '–'];
   var LS = { kabKey: 'kab:key', key: 'zh:key', pass: 'zh:pass', tab: 'zh:tab', api: 'kab:api', cache: 'zh:cache', out: 'zh:out', next: 'zh:next' };
@@ -304,6 +310,21 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
       return (a.ord || 0) - (b.ord || 0) || String(a.fam).localeCompare(String(b.fam), 'ru');
     });
   }
+  // урок сайта для урока журнала: тот же предмет и дата. Два урока в один день (сдвоенный) —
+  // первый к первому, второй ко второму; на сайте один — оба ведут в него
+  function siteLink(l) {
+    try {
+      var sj = SUBJ.filter(function (s) { return s.id === l.subj; })[0];
+      var kurs = (window.DATA && DATA.kursy || []).filter(function (k) { return k.id === sj.kurs; })[0];
+      if (!kurs) return '';
+      var same = kurs.uroki.filter(function (u) { return u.date === l.date; }).sort(function (a, b) { return a.n - b.n; });
+      if (!same.length) return '';
+      var nth = lessons(l.subj).filter(function (x) { return x.date === l.date; }).indexOf(l);
+      var u = same[Math.min(Math.max(nth, 0), same.length - 1)];
+      return './#' + kurs.id + '-' + u.n;
+    } catch (e) { return ''; }
+  }
+
   function markCls(v) {
     var s = String(v || '').trim().toLowerCase();
     if (!s) return '';
@@ -459,8 +480,10 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
 
     var h = '<div class="wrap" id="wrap"><table class="zt"><thead><tr><th class="nm" rowspan="2">Ученик</th>';
     L.forEach(function (l) {
-      h += '<th class="dt' + (l.date === today ? ' today' : '') + '" colspan="2" data-les="' + l.id + '" title="Тема и домашка">' +
-        '<b class="mono">' + esc(l.date || '—') + '</b>' + (perDay[l.date] > 1 ? '<small>урок ' + nthOfDay[l.id] + '</small>' : '<small>&nbsp;</small>') + '</th>';
+      var go = siteLink(l), small = perDay[l.date] > 1 ? 'урок ' + nthOfDay[l.id] : '&nbsp;';
+      h += '<th class="dt' + (l.date === today ? ' today' : '') + (go ? ' go' : '') + '" colspan="2" data-les="' + l.id + '">' +
+        (go ? '<a href="' + go + '" title="Открыть урок на сайте"><b class="mono">' + esc(l.date || '—') + '<i>↗</i></b><small>' + small + '</small></a>'
+            : '<b class="mono">' + esc(l.date || '—') + '</b><small>' + small + '</small>') + '</th>';
     });
     if (edit) h += '<th class="addc" rowspan="2"><button class="btn" data-act="addles">＋</button></th>';
     h += '</tr><tr>';
@@ -487,7 +510,7 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
     h += '</tr></tfoot></table></div>';
     h += '<div class="legend"><span><i class="m5">5</i><i class="m4">4</i><i class="m3">3</i><i class="m2">2</i> оценки</span>' +
       '<span><i class="mn">н</i> не было на уроке</span><span><i class="m2">1</i> не принёс</span>' +
-      '<span>Нажми на дату или тему — откроется урок целиком.</span></div>';
+      '<span>Дата с ↗ — открыть урок на сайте. Тема или домашка — карточка урока.</span></div>';
     main.innerHTML = h;
 
     var wrap = $('wrap');
@@ -514,17 +537,22 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
   }
 
   /* ── урок целиком (и правка — для D) ── */
-  function openLesson(id) {
+  // карточка урока — у всех; D из неё же идёт в правку (✎)
+  function openLesson(id, editNow) {
     var l = S.les[id], edit = mode === 'teacher';
     if (!l && !edit) return;
     var isNew = !l;
     if (isNew) l = { subj: tab, date: todayStr(), topic: '', hw: '' };
     var subj = SUBJ.filter(function (s) { return s.id === l.subj; })[0];
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">';
-    if (!edit) {
+    if (!isNew && !editNow) {
+      var go = siteLink(l);
       h += '<h3>' + esc(l.topic || 'Урок') + '</h3><div class="meta">' + esc(subj.name) + ' · ' + esc(l.date) + '</div>' +
         '<div class="lbl">Домашка</div><div class="txt">' + esc(l.hw || 'Не задано') + '</div>' +
-        '<div class="row"><button class="btn pri" data-act="close">Закрыть</button></div></div>';
+        '<div class="row">' + (edit ? '<button class="btn" data-act="editlesson" data-id="' + id + '">✎ Изменить</button>' : '') +
+        '<span class="sp"></span>' +
+        (go ? '<a class="btn pri" href="' + go + '">Открыть урок на сайте ↗</a>' : '<span class="meta" style="margin:0">Урока на сайте пока нет</span>') +
+        '<button class="btn" data-act="close">Закрыть</button></div></div>';
     } else {
       h += '<h3>' + (isNew ? 'Новый урок' : 'Урок') + '</h3><div class="meta">' + esc(subj.name) + '</div>' +
         '<div class="lbl">Дата (ДД.ММ)</div><input id="fDate" class="mono" inputmode="decimal" maxlength="5" value="' + esc(l.date) + '">' +
@@ -535,7 +563,7 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
         '<button class="btn pri" data-act="savelesson" data-id="' + (isNew ? '' : id) + '">Сохранить</button></div></div>';
     }
     $('dlg').innerHTML = h;
-    if (edit) setTimeout(function () { $(isNew ? 'fTopic' : 'fDate').focus(); }, 30);
+    setTimeout(function () { var f = $(isNew ? 'fTopic' : 'fDate'); if (f) f.focus(); }, 30);
   }
   function saveLesson(id) {
     var date = $('fDate').value.trim().replace(/[,/]/g, '.');
@@ -636,6 +664,7 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
   /* ── нажатия ── */
   document.addEventListener('click', function (ev) {
     var t = ev.target;
+    if (t.closest('a[href]')) { if (cur) closeCell(); return; }   // ссылка (урок на сайте) — пусть браузер откроет
     var tm = t.closest('[data-tema]');
     if (tm) { setTheme(tm.dataset.tema); return; }
     var tb = t.closest('[data-tab]');
@@ -655,6 +684,7 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
       else if (act === 'retry') view('');
       else if (act === 'addles') openLesson(null);
       else if (act === 'savelesson') saveLesson(a.dataset.id);
+      else if (act === 'editlesson') openLesson(a.dataset.id, true);
       else if (act === 'dellesson') delLesson(a.dataset.id);
       else if (act === 'students') openStudents();
       else if (act === 'addstu') {
