@@ -11,6 +11,29 @@
   let i = 0;            // текущий слайд
   let k = 0;            // сколько шагов раскрыто на нём
 
+  /* ── 0. Тема: светлая или «ночь» (D 28.09.2026) ──
+     По умолчанию — как задано в <html data-theme="night">, иначе светлая.
+     Кнопка ☾/☀ в углу и клавиша Т переключают; выбор помнит этот браузер. */
+  const root = document.documentElement;
+  const THEME = 'deck-theme';
+  try { const t = localStorage.getItem(THEME); if (t) root.dataset.theme = t; } catch (e) {}
+  const knopka = document.createElement('button');
+  knopka.id = 'theme';
+  knopka.type = 'button';
+  const podpis = () => {
+    const noch = root.dataset.theme === 'night';
+    knopka.textContent = noch ? '☀' : '☾';
+    knopka.title = noch ? 'Светлая тема (Т)' : 'Тёмная тема (Т)';
+  };
+  const tema = () => {
+    root.dataset.theme = root.dataset.theme === 'night' ? 'light' : 'night';
+    try { localStorage.setItem(THEME, root.dataset.theme); } catch (e) {}
+    podpis();
+  };
+  knopka.addEventListener('click', tema);
+  podpis();
+  document.body.appendChild(knopka);
+
   /* ── 1. Математика: всё, что в $…$ и $$…$$, рисует KaTeX ── */
   if (window.renderMathInElement) {
     renderMathInElement(document.body, {
@@ -96,6 +119,7 @@
     else if (c === 'End') go(N - 1, 'all');
     else if (c === 'о' || c === 'О' || c === 'j' || c === 'J') document.body.classList.toggle('keys');
     else if (c === 'в' || c === 'В' || c === 'd' || c === 'D') { document.body.classList.toggle('noanim'); k = steps(slides[i]).length; draw(); }
+    else if (c === 'т' || c === 'Т' || c === 'n' || c === 'N') tema();
     else if (c === 'ф' || c === 'Ф' || c === 'a' || c === 'A') {
       document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
     }

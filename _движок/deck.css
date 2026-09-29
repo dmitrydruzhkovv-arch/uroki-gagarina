@@ -384,3 +384,101 @@ pre.lines.xl{ font-size:40px; text-align:left; }
   .ansgrid.xl div{ font-size:16px; padding:8px 12px; }
   .brand{ position:static; }
 }
+
+/* ═══════════ ЧЕРТЁЖ-ГРАФИК НА СЛАЙДЕ: вопрос слева, график справа ═══════════
+   Заведено 28.09.2026 (алгебра, прямая y = kx). Координатная плоскость
+   высокая, а слайд широкий: колонкой они не помещаются, поэтому рядом.
+   Цвета графиков — переменными (fx.js понимает "col":"--c-graph"):
+   --c-graph график функции, --c-line прямая y = kx или y = m, --c-aux пунктиры, --c-bad запрет. */
+:root{ --c-graph:#4f46e5; --c-line:#ea580c; --c-aux:#a8a29e; --c-bad:#dc2626; --c-ok:#16a34a; --c-dim:#c7c2ba; }
+.one-body.split{ flex-direction:row; align-items:center; justify-content:space-between; gap:56px; text-align:left; }
+.one-body.split > .side{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:30px; }
+.one-body.split .q{ font-size:56px; }
+.one-body.split .hero{ font-size:150px; } .one-body.split .hero.md{ font-size:104px; }
+.plot{ flex:0 0 auto; display:flex; align-items:center; justify-content:center; }
+.plot svg{ height:700px; width:auto; display:block; overflow:visible; }
+.plot.md svg{ height:600px; } .plot.sm svg{ height:470px; }
+.mcol{ display:flex; flex-direction:column; align-items:flex-start; gap:18px; }
+.mcol .m-lg{ font-size:46px; } .mcol .sub{ margin:0; }
+.tag-no{ font-size:26px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--red); }
+@media screen and (max-width:1000px){
+  .one-body.split{ flex-direction:column; align-items:stretch; gap:14px; }
+  .one-body.split .q{ font-size:24px; }
+  .one-body.split .hero{ font-size:56px; } .one-body.split .hero.md{ font-size:42px; }
+  .plot svg,.plot.md svg,.plot.sm svg{ height:auto; width:100%; max-width:440px; margin:0 auto; }
+  .mcol .m-lg{ font-size:22px; }
+  .tag-no{ font-size:13px; }
+}
+
+/* ═══════════ ТЕМА «НОЧЬ» — тёмный фон, светлые линии, свечение ═══════════
+   D 28.09.2026: «тёмный фон, светлые элементы, яркие графики, свечение;
+   в комнате бывает солнце — пусть будут две темы».
+   Включение: <html data-theme="night"> в самой презентации — это её тема по умолчанию.
+   Кнопка ☾/☀ в правом верхнем углу или клавиша Т переключают тему; выбор помнит браузер.
+   Только экран: PDF и печать всегда светлые. */
+#theme{ position:fixed; right:14px; top:12px; z-index:60; width:40px; height:40px; border-radius:50%;
+        border:1.5px solid rgba(128,128,128,.35); background:rgba(255,255,255,.55); color:#57534e;
+        font-size:19px; line-height:1; cursor:pointer; opacity:.45; transition:opacity .15s; }
+#theme:hover{ opacity:1; }
+@media print{ #theme{ display:none; } }
+@media screen{
+  html[data-theme="night"]{
+    --paper:#0a0f24; --card:#131a3a;
+    --ink:#f1f3ff; --sub:#aab4d8; --muted:#7580aa;
+    --line:#2a3462; --line-soft:#151c3d;
+    --gold:#ff9a3c; --gold-soft:#ffb870; --gold-dim:#3a2410; --gold-pale:#24170c;
+    --red:#ff5470; --red-pale:#2a0f18; --red-dim:#3d1422;
+    --blue:#4cc9ff; --blue-dim:#0f2a44;
+    --indigo:#9a9cff; --teal:#2ee6c9; --green:#3ee08a;
+    --fig:#e8ecff; --fig-dim:#5b6690;
+    --c-graph:#7fa6ff; --c-line:#ff9a3c; --c-aux:#56618d; --c-bad:#ff5470; --c-ok:#3ee08a; --c-dim:#3a4575;
+  }
+  html[data-theme="night"] body{ background:#04060e; }
+  html[data-theme="night"] .slide{ background:radial-gradient(1100px 680px at 50% 42%, #121b44 0%, var(--paper) 72%); }
+  html[data-theme="night"] .hero,
+  html[data-theme="night"] .slide.one .q .g{ text-shadow:0 0 18px rgba(255,154,60,.55), 0 0 42px rgba(255,154,60,.25); }
+  html[data-theme="night"] .hero.red{ text-shadow:0 0 18px rgba(255,84,112,.55), 0 0 42px rgba(255,84,112,.25); }
+  html[data-theme="night"] .hero.ink{ text-shadow:0 0 16px rgba(160,180,255,.35); }
+  html[data-theme="night"] .slide.one .ttl{ text-shadow:0 0 30px rgba(140,160,255,.35); }
+  html[data-theme="night"] .slide.one .kick.gold{ text-shadow:0 0 12px rgba(255,154,60,.45); }
+  html[data-theme="night"] .slide.one .kick.red{ text-shadow:0 0 12px rgba(255,84,112,.45); }
+  html[data-theme="night"] .slide.one .kick.indigo{ text-shadow:0 0 12px rgba(154,156,255,.45); }
+  html[data-theme="night"] .slide.one .kick.green{ text-shadow:0 0 12px rgba(62,224,138,.45); }
+  html[data-theme="night"] .big-def,
+  html[data-theme="night"] .win .bx,
+  html[data-theme="night"] .ansgrid div,
+  html[data-theme="night"] .trk{ background:var(--card); }
+  html[data-theme="night"] .big-def{ border-color:#3b4680; box-shadow:0 0 40px rgba(122,150,255,.12); }
+  html[data-theme="night"] .bdg{ border-color:var(--ink); }
+  html[data-theme="night"] .bdg.lm{ background:var(--ink); color:var(--paper); }
+  html[data-theme="night"] .bar{ box-shadow:0 0 14px var(--gold); }
+  html[data-theme="night"] .katex{ color:inherit; }
+  /* графики fx.js: сетка гаснет, оси светлые, линии светятся своим цветом */
+  html[data-theme="night"] .fx-grid{ stroke:#18214a; }
+  html[data-theme="night"] .fx-ax{ stroke:#c9d1f0; }
+  html[data-theme="night"] .fx-axh{ fill:#c9d1f0; }
+  html[data-theme="night"] .fx-axl{ fill:#dfe5ff; }
+  html[data-theme="night"] .fx-o,
+  html[data-theme="night"] .fx-tk{ fill:#9aa6cf; }
+  html[data-theme="night"] .fx-lab{ paint-order:stroke; stroke:var(--paper); stroke-width:5px; }
+  html[data-theme="night"] .fx-plab{ paint-order:stroke; stroke:var(--paper); stroke-width:5px; }
+  html[data-theme="night"] .fx-hole{ fill:var(--paper); filter:drop-shadow(0 0 4px var(--glow)); }
+  html[data-theme="night"] .fx-pt{ filter:drop-shadow(0 0 5px var(--glow)); }
+  html[data-theme="night"] .fx-c{ filter:drop-shadow(0 0 4px var(--glow)) drop-shadow(0 0 11px var(--glow)); }
+  html[data-theme="night"] #theme{ background:rgba(20,28,60,.7); color:#ffd9a8; border-color:rgba(160,170,255,.3); }
+  @media (max-width:1000px){ html[data-theme="night"], html[data-theme="night"] body{ background:var(--paper); } }
+}
+/* слой поверх чертежа: второй и следующие svg в .plot.stack лежат ровно на первом */
+.plot.stack{ position:relative; }
+.plot.stack > svg + svg{ position:absolute; inset:0; margin:auto; }
+/* крупнее на слайдах «вопрос + график» и формула-гигант (28.09.2026) */
+.m-mega{ font-size:124px; }
+.one-body.split .sub{ font-size:34px; }
+.one-body.split .m-lg{ font-size:50px; }
+.one-body.split .m-xl{ font-size:58px; }
+.one-body.split .hero.sm{ font-size:78px; letter-spacing:-2px; }
+@media screen and (max-width:1000px){
+  .m-mega{ font-size:40px; }
+  .one-body.split .sub{ font-size:16px; } .one-body.split .m-lg{ font-size:22px; } .one-body.split .m-xl{ font-size:24px; }
+  .one-body.split .hero.sm{ font-size:32px; }
+}
