@@ -5,108 +5,139 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Журнал — Математика 9 класс</title>
 <meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#16131a">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <script>
   try { if (localStorage.getItem('tema') === 'night') document.documentElement.dataset.theme = 'night'; } catch (_) {}
 </script>
 <link rel="stylesheet" href="_движок/fonts/gf.css">
+<link rel="stylesheet" href="style.css">
 <!--
   Журнал оценок (D, 29.09.2026). Эта страница — пустая оболочка: фамилий, имён и оценок
   в ней нет (152-ФЗ). Данные приходят с нашего сервера в России (vk_bot/zhurnal.py):
   ученику — по коду класса, только смотреть; D — по ключу Кабинета, можно менять.
 -->
 <style>
-*{ box-sizing:border-box; margin:0; padding:0; }
+/* Журнал живёт в стилях сайта (style.css): те же цвета тем Λ / D, те же цвета предметов
+   (.k-algebra, .k-geometriya, .k-veroyatnost → --g заливка, --s акцент, --glow свечение),
+   те же часы с переключателем. Здесь — только своё: вкладки, таблица, окна. */
 [hidden]{ display:none !important; }
 :root{
-  --bg:#f4f1eb; --card:#fff; --ink:#1a1720; --sub:#57534e; --muted:#8a847c; --line:#e6e0d6; --line2:#d6cfc3;
-  --head:#efeaf7; --hover:#f7f3ec; --focus:#16131a; --shadow:0 10px 40px -12px rgba(26,23,32,.28);
+  --z-line2:#d9d3e6; --z-head:#f2eff9; --z-hover:#f6f3fb; --z-focus:#16131a;
+  --z-shadow:0 18px 50px -18px rgba(40,24,70,.35);
   --m5b:#d9f5e1; --m5t:#14683a; --m4b:#e9f5d0; --m4t:#3f6212; --m3b:#fdf0c8; --m3t:#8a4b08;
-  --m2b:#ffd9d6; --m2t:#b42318; --mnb:#ebe8e4; --mnt:#5b5550;
-  --acc:#ea580c;
+  --m2b:#ffd9d6; --m2t:#b42318; --mnb:#ece9f2; --mnt:#5f5870;
 }
 :root[data-theme="night"]{
-  --bg:#16131a; --card:#211d27; --ink:#f1edf6; --sub:#b3acbf; --muted:#8a8396; --line:#2e2935; --line2:#3a3443;
-  --head:#2a2531; --hover:#2a2531; --focus:#f1edf6; --shadow:0 10px 40px -12px rgba(0,0,0,.6);
-  --m5b:#153d27; --m5t:#7ee2a3; --m4b:#26361a; --m4t:#bde58a; --m3b:#3d3114; --m3t:#f3cf73;
-  --m2b:#4a1d1d; --m2t:#ff9d94; --mnb:#302c35; --mnt:#b3acbf;
+  --z-line2:#3a2447; --z-head:#231430; --z-hover:#231430; --z-focus:#ff5cc8;
+  --z-shadow:0 0 0 1px rgba(255,92,200,.18), 0 24px 60px -20px rgba(217,70,239,.45);
+  --m5b:rgba(16,185,129,.18); --m5t:#6ee7b7; --m4b:rgba(132,204,22,.15); --m4t:#bef264;
+  --m3b:rgba(251,191,36,.15); --m3t:#fcd34d; --m2b:rgba(244,63,94,.22); --m2t:#ff9fb7;
+  --mnb:rgba(255,255,255,.06); --mnt:#a58bb6;
 }
-.s-alg{ --acc:#ea580c; } .s-geo{ --acc:#4f46e5; } .s-ver{ --acc:#64748b; }
-[data-theme="night"] .s-geo{ --acc:#818cf8; } [data-theme="night"] .s-ver{ --acc:#a3afbf; }
+body{ background:var(--store); min-height:100vh; }
+input, textarea{ font:inherit; color:inherit; }
 
-html{ -webkit-text-size-adjust:100%; }
-body{ background:var(--bg); color:var(--ink); font-family:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
-  line-height:1.4; -webkit-font-smoothing:antialiased; min-height:100vh; }
-button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; touch-action:manipulation; }
-input,textarea{ font:inherit; color:inherit; }
-a{ color:inherit; }
-.mono{ font-family:'JetBrains Mono',ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums; }
-.shell{ max-width:1400px; margin:0 auto; padding:0 24px; }
-@media (max-width:700px){ .shell{ padding:0 12px; } }
+/* шапка — как на главной */
+.zh-hero{
+  background:
+    radial-gradient(900px 400px at 85% -10%, rgba(168,85,247,.20), transparent 60%),
+    radial-gradient(700px 360px at 0% 110%, rgba(79,70,229,.14), transparent 60%),
+    var(--h-bg);
+  color:var(--h-txt); padding:22px 0 22px; border-bottom:1px solid var(--h-line);
+}
+[data-theme="night"] .zh-hero{
+  background:
+    radial-gradient(800px 380px at 90% -20%, rgba(217,70,239,.35), transparent 60%),
+    radial-gradient(700px 400px at -5% 120%, rgba(190,18,60,.28), transparent 60%),
+    var(--h-bg);
+  border-bottom-color:rgba(255,92,200,.28);
+}
+.zh-back{ display:inline-block; font-size:14px; font-weight:700; color:var(--h-soft); text-decoration:none; }
+.zh-back:hover{ color:var(--h-txt); }
+.zh-title{ display:flex; align-items:baseline; gap:6px 16px; flex-wrap:wrap; margin-top:10px; }
+.zh-title .kicker{ margin-top:0; }
+@media (max-width:700px){ .zh-hero{ padding-top:60px; } }
 
-/* шапка */
-.top{ padding:18px 0 10px; display:flex; align-items:center; gap:10px 16px; flex-wrap:wrap; }
-.back{ font-size:14px; font-weight:600; color:var(--sub); text-decoration:none; padding:6px 10px 6px 0; }
-.back:hover{ color:var(--ink); }
-.top h1{ font-size:30px; font-weight:800; letter-spacing:-.8px; line-height:1; }
-.kicker{ font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
-.st{ margin-left:auto; font-size:13px; color:var(--muted); display:flex; align-items:center; gap:6px; }
-.st i{ width:8px; height:8px; border-radius:50%; background:var(--muted); }
-.st.ok i{ background:#16a34a; } .st.wait i{ background:#f59e0b; } .st.bad i{ background:#dc2626; }
-
-/* вкладки предметов */
-.tabs{ display:flex; gap:8px; flex-wrap:wrap; padding:6px 0 14px; }
-.tab{ padding:9px 16px; border-radius:999px; font-weight:700; font-size:15px; color:var(--sub);
-  background:var(--card); box-shadow:inset 0 0 0 1px var(--line); transition:background .15s, color .15s; }
-.tab:hover{ color:var(--ink); }
-.tab[aria-selected="true"]{ background:var(--acc); color:#fff; box-shadow:none; }
-.s-ver.tab[aria-selected="true"]{ color:#fff; }
+/* вкладки предметов — заливка предмета, как кнопки на главной */
+.tabs{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px; }
+/* все три всегда яркие, в цвете предмета; выбранная — приподнята, с кольцом и свечением */
+.tab{ display:inline-flex; align-items:center; gap:8px; padding:9px 16px 9px 10px; border-radius:14px; font-weight:800; font-size:15px;
+  color:var(--on); background:var(--g); box-shadow:0 8px 18px -14px var(--glow), inset 0 1px 0 rgba(255,255,255,.3);
+  transition:transform .18s var(--ease), box-shadow .2s; }
+.tab i{ font-style:normal; width:30px; height:30px; border-radius:9px; display:grid; place-items:center; font-size:17px; background:rgba(255,255,255,.28); }
+.k-veroyatnost.tab i{ background:rgba(255,255,255,.7); }
+.tab:hover{ transform:translateY(-1px); }
+.tab:active{ transform:scale(.96); }
+.tab[aria-selected="true"]{ transform:translateY(-3px) scale(1.04);
+  box-shadow:0 0 0 3px var(--h-bg), 0 0 0 5px var(--s), 0 16px 30px -12px var(--glow); }
+.tab[aria-selected="true"] i{ animation:tab-pop .45s var(--ease); }
+@keyframes tab-pop{ 0%{ transform:scale(.7) rotate(-12deg); } 60%{ transform:scale(1.18) rotate(6deg); } 100%{ transform:none; } }
+[data-theme="night"] .tab{ box-shadow:0 0 18px -8px var(--glow), inset 0 1px 0 rgba(255,255,255,.25); }
+[data-theme="night"] .tab[aria-selected="true"]{ box-shadow:0 0 0 3px var(--h-bg), 0 0 0 5px var(--s), 0 0 34px -2px var(--glow); }
 .tab .sh{ display:none; }
-@media (max-width:520px){ .tab .lg{ display:none; } .tab .sh{ display:inline; } .tab{ padding:8px 13px; } }
+@media (max-width:560px){
+  .tabs{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .tab{ flex-direction:column; justify-content:center; gap:5px; padding:9px 4px; font-size:13.5px; text-align:center; }
+  .tab .lg{ display:none; } .tab .sh{ display:inline; }
+  .tab i{ width:32px; height:32px; font-size:18px; }
+  .st{ grid-column:1 / -1; margin-left:0; }
+}
+.st{ margin-left:auto; font-size:13px; color:var(--h-dim); display:flex; align-items:center; gap:6px; }
+.st em{ font-style:normal; }
+.st i{ width:8px; height:8px; border-radius:50%; background:var(--h-ghost); }
+.st.ok i{ background:#16a34a; } .st.wait i{ background:#f59e0b; } .st.bad i{ background:#dc2626; }
+[data-theme="night"] .st.ok i{ background:#6ee7b7; box-shadow:0 0 8px #6ee7b7; }
+
+.zh-main{ padding-top:18px; }
 
 /* панель учителя */
-.tools{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; font-size:14px; }
-.btn{ padding:8px 14px; border-radius:10px; font-weight:600; background:var(--card); box-shadow:inset 0 0 0 1px var(--line2); }
-.btn:hover{ background:var(--hover); }
-.btn.pri{ background:var(--acc); color:#fff; box-shadow:none; }
+.tools{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; font-size:14px; color:var(--sub); }
+.btn{ padding:8px 14px; border-radius:11px; font-weight:700; text-align:center; background:var(--card); color:var(--ink); box-shadow:inset 0 0 0 1px var(--z-line2); }
+.btn:hover{ background:var(--z-hover); }
+.btn.pri{ background:var(--g); color:var(--on); box-shadow:0 10px 22px -14px var(--glow); }
 .btn.danger{ color:#dc2626; }
+[data-theme="night"] .btn.danger{ color:#ff7aa8; }
 .warn{ color:#b45309; font-weight:600; }
-[data-theme="night"] .warn{ color:#f3cf73; }
-.codebox{ color:var(--sub); }
+[data-theme="night"] .warn{ color:#fcd34d; }
 .codebox b{ color:var(--ink); }
 
 /* таблица */
-.wrap{ overflow:auto; max-height:calc(100vh - 150px); max-height:calc(100dvh - 150px); background:var(--card);
-  border-radius:14px; box-shadow:inset 0 0 0 1px var(--line); -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
+.wrap{ overflow:auto; max-height:calc(100vh - 120px); max-height:calc(100dvh - 120px); background:var(--card);
+  border-radius:18px; box-shadow:inset 0 0 0 1px var(--line), 0 14px 40px -28px rgba(40,24,70,.35);
+  -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
+[data-theme="night"] .wrap{ box-shadow:inset 0 0 0 1px rgba(217,70,239,.22), 0 20px 60px -30px rgba(217,70,239,.45); }
 table.zt{ border-collapse:separate; border-spacing:0; font-size:14px; }
 .zt th, .zt td{ border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
-.zt thead th{ position:sticky; top:0; z-index:2; background:var(--head); }
-.zt thead tr:first-child th{ height:44px; }
-.zt thead tr:nth-child(2) th{ top:44px; height:22px; }
+.zt thead th{ position:sticky; top:0; z-index:2; background:var(--z-head); }
+.zt thead tr:first-child th{ height:46px; }
+.zt thead tr:nth-child(2) th{ top:46px; height:22px; }
 .zt .nm{ position:sticky; left:0; z-index:3; background:var(--card); text-align:left; padding:6px 10px;
-  min-width:128px; max-width:150px; font-weight:600; box-shadow:1px 0 0 var(--line2); }
-.zt thead .nm{ z-index:4; background:var(--head); font-size:12px; color:var(--muted); font-weight:600; }
-.zt tbody .nm b{ display:block; font-weight:700; line-height:1.15; }
+  min-width:128px; max-width:150px; font-weight:600; box-shadow:1px 0 0 var(--z-line2); }
+.zt thead .nm{ z-index:4; background:var(--z-head); font-size:12px; color:var(--muted); }
+.zt tbody .nm b{ display:block; font-weight:800; line-height:1.15; }
 .zt tbody .nm span{ display:block; font-size:12.5px; color:var(--sub); font-weight:500; }
-.dt{ padding:3px 6px; font-size:13px; white-space:nowrap; cursor:pointer; border-top:3px solid transparent; }
+.dt{ padding:3px 6px; font-size:13px; white-space:nowrap; cursor:pointer; border-top:3px solid transparent; text-align:center; }
 .dt b{ display:block; font-weight:700; }
 .dt small{ display:block; font-size:10.5px; color:var(--muted); font-weight:600; }
-.dt:hover{ color:var(--acc); }
-.dt.today{ border-top-color:var(--acc); }
-.dt.today b::after{ content:' · сегодня'; font-weight:600; font-size:10.5px; color:var(--acc); }
+.dt:hover{ color:var(--s); }
+.dt.today{ border-top-color:var(--s); background:color-mix(in srgb, var(--s) 12%, var(--z-head)); }
+.dt.today b::after{ content:' · сегодня'; font-weight:700; font-size:10.5px; color:var(--s); }
+[data-theme="night"] .dt.today{ box-shadow:inset 0 3px 12px -6px var(--glow); }
 .sub{ font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
 .sub.dz, td.d{ box-shadow:inset 1px 0 0 var(--line); }
-td.c{ width:46px; min-width:46px; height:44px; text-align:center; font-weight:700; font-size:14px; padding:2px; white-space:nowrap; }
+td.c{ width:46px; min-width:46px; height:44px; text-align:center; font-weight:800; font-size:15px; padding:2px; white-space:nowrap; }
 td.c.long{ font-size:11px; white-space:normal; line-height:1.1; font-weight:600; }
-td.d{ border-right:1px solid var(--line2); }
+td.d{ border-right:1px solid var(--z-line2); }
 .m5{ background:var(--m5b); color:var(--m5t); } .m4{ background:var(--m4b); color:var(--m4t); }
 .m3{ background:var(--m3b); color:var(--m3t); } .m2{ background:var(--m2b); color:var(--m2t); }
 .mn{ background:var(--mnb); color:var(--mnt); font-weight:600; }
-.edit td.c{ cursor:pointer; } .edit td.c:hover{ outline:2px solid var(--acc); outline-offset:-2px; }
-td.c.cur{ outline:3px solid var(--focus) !important; outline-offset:-3px; }
-.zt tfoot th.nm{ font-size:12px; color:var(--muted); vertical-align:top; background:var(--card); }
-.zt tfoot td{ vertical-align:top; padding:6px 6px; font-size:12px; color:var(--sub); cursor:pointer; max-width:92px; }
-.zt tfoot td:hover{ background:var(--hover); }
+.edit td.c{ cursor:pointer; } .edit td.c:hover{ outline:2px solid var(--s); outline-offset:-2px; }
+td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
+[data-theme="night"] td.c.cur{ box-shadow:0 0 16px -2px #ff5cc8; }
+.zt tfoot th.nm{ font-size:12px; color:var(--muted); vertical-align:top; }
+.zt tfoot td{ vertical-align:top; padding:6px; font-size:12px; color:var(--sub); cursor:pointer; max-width:92px; }
+.zt tfoot td:hover{ background:var(--z-hover); }
 .clamp{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden; white-space:pre-line; word-break:break-word; }
 .tp td{ color:var(--ink); font-weight:600; }
 .addc{ padding:0 10px; vertical-align:middle; }
@@ -114,66 +145,77 @@ td.c.cur{ outline:3px solid var(--focus) !important; outline-offset:-3px; }
 
 .legend{ display:flex; flex-wrap:wrap; gap:6px 14px; font-size:13px; color:var(--sub); padding:12px 2px 0; align-items:center; }
 .legend span{ display:inline-flex; align-items:center; gap:6px; }
-.legend i{ display:inline-grid; place-items:center; min-width:24px; height:22px; padding:0 4px; border-radius:6px; font-style:normal; font-weight:700; font-size:12px; }
+.legend i{ display:inline-grid; place-items:center; min-width:24px; height:22px; padding:0 4px; border-radius:6px; font-style:normal; font-weight:800; font-size:12px; }
 
 /* вход по коду */
-.gate{ max-width:420px; margin:40px auto; background:var(--card); border-radius:18px; padding:26px 22px; box-shadow:inset 0 0 0 1px var(--line); text-align:center; }
-.gate h2{ font-size:22px; margin-bottom:6px; }
+.gate{ max-width:420px; margin:28px auto; background:var(--card); border-radius:20px; padding:26px 22px; text-align:center;
+  box-shadow:inset 0 0 0 1px var(--line), 0 18px 50px -30px rgba(40,24,70,.4); }
+[data-theme="night"] .gate{ box-shadow:inset 0 0 0 1px rgba(217,70,239,.25), 0 0 60px -24px rgba(217,70,239,.6); }
+.gate h2{ font-size:22px; font-weight:800; margin-bottom:6px; }
 .gate p{ color:var(--sub); font-size:15px; }
 .gate form{ display:flex; gap:8px; margin-top:18px; }
-.gate input{ flex:1; min-width:0; padding:12px 14px; border-radius:12px; border:1px solid var(--line2); background:var(--bg); font-size:20px; text-align:center; letter-spacing:.12em; }
+.gate input{ flex:1; min-width:0; padding:12px 14px; border-radius:12px; border:1px solid var(--z-line2); background:var(--store); font-size:20px; text-align:center; letter-spacing:.12em; }
 .gate .err{ color:#dc2626; margin-top:12px; font-size:14px; min-height:1em; }
-.small{ font-size:13px; color:var(--muted); }
+[data-theme="night"] .gate .err{ color:#ff7aa8; }
 .link{ text-decoration:underline; text-underline-offset:3px; color:var(--sub); font-size:13px; }
 
 /* нижний лист: оценка */
-.pop{ position:fixed; left:50%; bottom:12px; transform:translateX(-50%); width:min(440px, calc(100vw - 16px)); z-index:20;
-  background:var(--card); border-radius:18px; box-shadow:var(--shadow), inset 0 0 0 1px var(--line); padding:14px; }
+.pop{ position:fixed; left:50%; bottom:12px; transform:translateX(-50%); width:min(440px, calc(100vw - 16px)); z-index:40;
+  background:var(--card); color:var(--ink); border-radius:20px; box-shadow:var(--z-shadow), inset 0 0 0 1px var(--line); padding:14px; }
 .pop-h{ display:flex; justify-content:space-between; gap:10px; font-size:14px; margin-bottom:10px; }
 .pop-h span{ color:var(--sub); text-align:right; }
 .pop-q{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
-.pop-q button{ height:46px; border-radius:12px; font-weight:800; font-size:18px; box-shadow:inset 0 0 0 1px var(--line2); }
+.pop-q button{ height:46px; border-radius:12px; font-weight:800; font-size:18px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); }
 .pop-t{ display:flex; gap:6px; margin-top:8px; }
-.pop-t input{ flex:1; min-width:0; padding:10px 12px; border-radius:10px; border:1px solid var(--line2); background:var(--bg); }
-.pop-f{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:14px; color:var(--sub); }
+.pop-t input{ flex:1; min-width:0; padding:10px 12px; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); }
+.pop-f{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:10px; font-size:14px; color:var(--sub); }
 .pop-f label{ display:flex; align-items:center; gap:6px; cursor:pointer; }
 
-/* окно: урок, ученики */
-.dlg-bg{ position:fixed; inset:0; background:rgba(10,8,14,.45); z-index:30; }
+/* окна: урок, ученики */
+.dlg-bg{ position:fixed; inset:0; background:rgba(16,10,24,.45); z-index:45; }
+[data-theme="night"] .dlg-bg{ background:rgba(5,2,8,.7); }
 .dlg{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:min(560px, calc(100vw - 16px)); max-height:calc(100dvh - 24px); overflow:auto;
-  background:var(--card); border-radius:18px; box-shadow:var(--shadow); padding:20px; z-index:31; }
-.dlg h3{ font-size:20px; margin-bottom:4px; }
+  background:var(--card); color:var(--ink); border-radius:20px; box-shadow:var(--z-shadow); padding:20px; z-index:46; }
+.dlg h3{ font-size:20px; font-weight:800; margin-bottom:4px; }
 .dlg .meta{ color:var(--muted); font-size:13px; margin-bottom:14px; }
 .dlg .txt{ white-space:pre-line; font-size:15px; margin:6px 0 14px; }
 .dlg .lbl{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-top:10px; }
-.dlg input, .dlg textarea{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line2); background:var(--bg); margin-top:4px; }
+.dlg input, .dlg textarea{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); margin-top:4px; }
 .dlg textarea{ min-height:110px; resize:vertical; }
 .dlg .row{ display:flex; gap:8px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap; }
 .dlg .row .sp{ flex:1; }
 .srow{ display:grid; grid-template-columns:1fr 1fr 36px; gap:6px; margin-top:6px; }
 .srow input{ margin-top:0; }
-.srow button{ border-radius:10px; box-shadow:inset 0 0 0 1px var(--line2); color:#dc2626; }
+.srow button{ border-radius:10px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); color:#dc2626; }
 
-.foot{ padding:26px 0 40px; font-size:12.5px; color:var(--muted); }
-.foot a{ color:var(--sub); }
+.zh-foot{ padding:22px 0 40px; font-size:13px; color:var(--muted); }
+#footLinks:not(:empty)::before{ content:' · '; }
 </style>
 </head>
 <body>
-<div class="shell">
-  <header class="top">
-    <a class="back" href="./">← Уроки</a>
-    <h1>Журнал</h1>
-    <span class="kicker">9 класс · 2026/27</span>
-    <span class="st" id="st" hidden><i></i><em id="stTxt"></em></span>
-  </header>
-  <nav class="tabs" id="tabs" role="tablist"></nav>
+<header class="zh-hero">
+  <div class="shell">
+    <a class="zh-back" href="./">← Уроки</a>
+    <div class="zh-title">
+      <h1>Журнал</h1>
+      <span class="kicker">Школа Гагарина · 9 класс · 2026/27</span>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+  </div>
+</header>
+<div class="shell zh-main">
   <div class="tools" id="tools" hidden></div>
   <main id="main"></main>
-  <footer class="foot">
-    © 2026 Дмитрий Дружков · Материалы авторские, копировать и использовать — только с письменного разрешения автора ·
-    <a href="pravila.html">Правила и конфиденциальность</a>
-    <div id="footLinks" style="margin-top:8px"></div>
+  <footer class="zh-foot">
+    <a class="link" href="pravila.html">Правила и конфиденциальность</a><span id="footLinks"></span>
   </footer>
+</div>
+
+<!-- часы и тема — как на главной -->
+<div class="dock" id="dock">
+  <span class="clock mono" id="clock"></span>
+  <button class="tema tema-day" data-tema="day" title="Дневная тема" aria-label="Дневная тема">Λ</button>
+  <button class="tema tema-night" data-tema="night" title="Ночная тема" aria-label="Ночная тема">D</button>
 </div>
 <div class="pop" id="pop" hidden></div>
 <div id="dlg"></div>
@@ -183,9 +225,9 @@ td.c.cur{ outline:3px solid var(--focus) !important; outline-offset:-3px; }
   'use strict';
 
   var SUBJ = [
-    { id: 'alg', name: 'Алгебра', short: 'Алгебра' },
-    { id: 'geo', name: 'Геометрия', short: 'Геометрия' },
-    { id: 'ver', name: 'Вероятность и статистика', short: 'Вероятность' }
+    { id: 'alg', name: 'Алгебра', short: 'Алгебра', k: 'k-algebra', icon: '🧮' },
+    { id: 'geo', name: 'Геометрия', short: 'Геометрия', k: 'k-geometriya', icon: '📐' },
+    { id: 'ver', name: 'Вероятность и статистика', short: 'Вероятность', k: 'k-veroyatnost', icon: '🎲' }
   ];
   var QUICK = ['5', '4', '3', '2', '1', 'н', '–'];
   var LS = { kabKey: 'kab:key', key: 'zh:key', pass: 'zh:pass', tab: 'zh:tab', api: 'kab:api', cache: 'zh:cache', out: 'zh:out', next: 'zh:next' };
@@ -381,11 +423,13 @@ td.c.cur{ outline:3px solid var(--focus) !important; outline-offset:-3px; }
 
   /* ── отрисовка ── */
   function renderTabs() {
+    var st = $('st');
     $('tabs').innerHTML = SUBJ.map(function (s) {
-      return '<button class="tab s-' + s.id + '" role="tab" data-tab="' + s.id + '" aria-selected="' + (s.id === tab) + '">' +
-        '<span class="lg">' + esc(s.name) + '</span><span class="sh">' + esc(s.short) + '</span></button>';
+      return '<button class="tab ' + s.k + '" role="tab" data-tab="' + s.id + '" aria-selected="' + (s.id === tab) + '">' +
+        '<i>' + s.icon + '</i><span class="lg">' + esc(s.name) + '</span><span class="sh">' + esc(s.short) + '</span></button>';
     }).join('');
-    document.body.className = 's-' + tab + (mode === 'teacher' ? ' edit' : '');
+    $('tabs').appendChild(st);   // статус сохранения — в строке предметов, справа
+    document.body.className = SUBJ.filter(function (s) { return s.id === tab; })[0].k + (mode === 'teacher' ? ' edit' : '');
   }
 
   function renderTools() {
@@ -592,6 +636,8 @@ td.c.cur{ outline:3px solid var(--focus) !important; outline-offset:-3px; }
   /* ── нажатия ── */
   document.addEventListener('click', function (ev) {
     var t = ev.target;
+    var tm = t.closest('[data-tema]');
+    if (tm) { setTheme(tm.dataset.tema); return; }
     var tb = t.closest('[data-tab]');
     if (tb) {
       if (cur) closeCell();
@@ -678,7 +724,32 @@ td.c.cur{ outline:3px solid var(--focus) !important; outline-offset:-3px; }
     else if (loaded && lsGet(LS.pass, '')) view('');
   });
 
+  /* ── тема: Λ — дневная, D — ночная; выбор общий с главной (localStorage «tema») ── */
+  function markTheme() {
+    var night = document.documentElement.dataset.theme === 'night';
+    document.querySelectorAll('[data-tema]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String((b.dataset.tema === 'night') === night));
+    });
+    var mc = document.querySelector('meta[name=theme-color]');
+    if (mc) mc.content = night ? '#0a0510' : '#16131a';
+  }
+  function setTheme(v) {
+    if (v === 'night') document.documentElement.dataset.theme = 'night';
+    else delete document.documentElement.dataset.theme;
+    try { localStorage.setItem('tema', v); } catch (e) { /* без памяти — только на этот раз */ }
+    markTheme();
+  }
+  function tick() {
+    var n = new Date();
+    $('clock').textContent = [n.getHours(), n.getMinutes(), n.getSeconds()].map(function (x) { return ('0' + x).slice(-2); }).join(':');
+    setTimeout(tick, 1000 - n.getMilliseconds() + 5);
+  }
+  markTheme(); tick();
+
   /* ── старт ── */
+  var stEl = document.createElement('span');
+  stEl.className = 'st'; stEl.id = 'st'; stEl.hidden = true; stEl.innerHTML = '<i></i><em id="stTxt"></em>';
+  document.body.appendChild(stEl);
   renderTabs();
   if (mode === 'teacher') {
     var cache = lsGet(LS.cache, null);
