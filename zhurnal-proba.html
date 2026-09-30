@@ -192,6 +192,7 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
 .dlg .row .sp{ flex:1; }
 .srow{ display:grid; grid-template-columns:1fr 1fr 36px; gap:6px; margin-top:6px; }
 .srow input{ margin-top:0; }
+.srow-tg{ grid-column:1 / -1; padding:9px 10px; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); color:inherit; font:inherit; font-size:14px; }
 .srow button{ border-radius:10px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); color:#dc2626; }
 
 .zh-foot{ padding:22px 0 40px; font-size:13px; color:var(--muted); }
@@ -236,7 +237,32 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
 .dlg .chk{ display:flex; gap:8px; align-items:flex-start; margin-top:12px; font-size:14px; color:var(--sub); cursor:pointer; }
 .dlg .chk input{ width:auto; margin-top:3px; }
 .note{ font-size:13px; color:var(--muted); margin-top:4px; }
-@media (prefers-reduced-motion:reduce){ td.c.m5{ animation:none; } }
+/* сдача ДЗ (шаг 4): сдано — фиолетовое кольцо, на доработку — пунктир, 📷 — есть фото */
+td.c.sub-sent{ box-shadow:inset 0 0 0 3px #7c3aed; animation:z-sent 1.8s ease-in-out infinite; }
+@keyframes z-sent{ 50%{ box-shadow:inset 0 0 0 3px #a78bfa, 0 0 14px -2px #7c3aed; } }
+td.c.sub-redo{ outline:2px dashed #c026d3; outline-offset:-4px; }
+td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:normal; line-height:1; }
+.zt tbody tr.me th.nm{ background:color-mix(in srgb, #7c3aed 12%, var(--card)); box-shadow:inset 4px 0 0 #7c3aed, 1px 0 0 var(--z-line2); }
+.zt tbody tr.me td.c.d.mine{ cursor:pointer; }
+.zt tbody tr.me td.c.d.mine:hover{ outline:2px solid #7c3aed; outline-offset:-2px; }
+.stbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; font-size:14px; color:var(--sub); }
+.btn.queue{ background:#7c3aed; color:#fff; box-shadow:0 10px 22px -14px #7c3aed; }
+.thumbs{ display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+.thumbs button{ width:84px; height:84px; border-radius:10px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--z-line2); background:var(--z-head); padding:0; }
+.thumbs img{ width:100%; height:100%; object-fit:cover; display:block; }
+.pop-sub{ background:var(--z-head); border-radius:12px; padding:8px 10px; margin-bottom:10px; font-size:13px; color:var(--sub); }
+.pop-sub .thumbs button{ width:64px; height:64px; }
+.pop-sub .pop-x button.ok{ background:#16a34a; color:#fff; box-shadow:none; }
+.pop-sub .pop-x button.redo{ color:#c026d3; }
+.dlg .big{ display:flex; align-items:center; gap:12px; margin:6px 0; }
+.dlg .big i{ font-style:normal; display:grid; place-items:center; min-width:48px; height:48px; padding:0 8px; border-radius:12px; font-size:22px; font-weight:800; }
+.dlg .kod{ font-size:26px; letter-spacing:.3em; text-align:center; font-family:'JetBrains Mono',ui-monospace,monospace; }
+.dlg .err{ color:#dc2626; font-size:14px; margin-top:8px; min-height:1em; }
+.view{ position:fixed; inset:0; z-index:60; background:rgba(10,6,16,.92); display:flex; flex-direction:column; }
+.view img{ flex:1; min-height:0; object-fit:contain; width:100%; padding:10px; }
+.view .vbar{ display:flex; gap:8px; justify-content:center; padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px)); }
+.view .vbar button{ padding:10px 16px; border-radius:12px; background:#fff; color:#1a1720; font-weight:700; }
+@media (prefers-reduced-motion:reduce){ td.c.m5, td.c.sub-sent{ animation:none; } }
 #footLinks:not(:empty)::before{ content:' · '; }
 </style>
 </head>
@@ -281,7 +307,7 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
   ];
   var QUICK = ['5', '4', '3', '2', '1', 'н', '–'];
   var LS = { kabKey: 'kab:key', key: 'zh:key', pass: 'zh:pass', tab: 'zh:tab', api: 'kab:api', cache: 'zh:cache', out: 'zh:out', next: 'zh:next' };
-  var KINDS = ['stu', 'les', 'mark', 'cfg', 'file'];
+  var KINDS = ['stu', 'les', 'mark', 'cfg', 'file', 'sub'];
   var DEBT_DAYS = 14;   // двойку пересдать за две недели (D, 30.09)
 
   function lsGet(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
@@ -325,8 +351,13 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
   if (/^#(alg|geo|ver)$/.test(location.hash)) tab = location.hash.slice(1);
   if (!SUBJ.some(function (s) { return s.id === tab; })) tab = 'alg';
   var loaded = false, cur = null, pendingRender = false, scrollPos = {};
+  var meId = null, sdachaOn = false;   // ученик, вошедший через бота (сдача ДЗ, шаг 4)
+  LS.ck = 'zh:ck'; LS.vhod = 'zh:vhod';
+  function ck() { return lsGet(LS.ck, ''); }
+  function chatBase() { return API.replace(/\/cabinet$/, ''); }
+  var BOT = /[?&]test=chat\b/.test(location.search) ? 'Lemma_test1_bot' : 'D_mathh_bot';
 
-  function blank() { return { stu: {}, les: {}, mark: {}, cfg: {}, file: {} }; }
+  function blank() { return { stu: {}, les: {}, mark: {}, cfg: {}, file: {}, sub: {} }; }
   function fromObjects(list) {
     var n = blank();
     (list || []).forEach(function (o) {
@@ -426,6 +457,12 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
     var sm = splitMark(m), inner = esc(sm.g);
     if (/[0-9a-zа-яё]/i.test(sm.c)) inner += '<i class="cmt" aria-label="есть комментарий"></i>';
     if (dbt) { cls += ' debt' + (dbt.left < 0 ? ' zlate' : ''); inner += '<sup>' + (dbt.left < 0 ? '!' : dbt.left + 'д') + '</sup>'; }
+    var sb = parts[2] === 'd' ? S.sub[parts[0] + '.' + parts[1]] : null;
+    if (sb) {
+      cls += sb.st === 'sent' ? ' sub-sent' : sb.st === 'redo' ? ' sub-redo' : '';
+      inner += '<i class="cam" aria-label="сдано фото">📷</i>';
+    }
+    if (parts[2] === 'd' && parts[1] === meId) cls += ' mine';
     if (m && m.by === 'auto') inner += '<i class="src" aria-hidden="true">A</i>';
     else if (m && m.av) inner += '<i class="src" aria-hidden="true">✎</i>';
     return { cls: cls, inner: inner };
@@ -438,11 +475,14 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
     var t = '<b>' + esc(p.fam + ' ' + p.name) + '</b>' + esc(l.date) + ' · ' + (parts[2] === 'd' ? (shared ? 'ДЗ, общая на ' + sharedCount(l) + ' урока' : 'ДЗ') : 'урок') +
       (l.topic ? '\n' + esc(l.topic.slice(0, 90)) : '');
     var sm = splitMark(m);
-    if (!m || (!m.v && !sm.c)) return t + '\nОценки нет';
+    var sb1 = parts[2] === 'd' ? S.sub[parts[0] + '.' + parts[1]] : null;
+    if (!m || (!m.v && !sm.c)) return t + (sb1 ? '\n📷 ' + ({ sent: 'Сдано, ждёт проверки', redo: 'На доработке', checked: 'Сдано и проверено' }[sb1.st] || '') : '\nОценки нет');
     t += '\nОценка: ' + esc(sm.g || '—') + (sm.c ? '\nКомментарий: ' + esc(sm.c) : '');
     if (m.by === 'auto') t += '\nПоставила автоматика' + (m.an ? ': ' + esc(m.an) : '');
     else if (m.av) t += '\nD исправил. Автоматика ставила ' + esc(m.av) + (m.an ? ' (' + esc(m.an) + ')' : '');
     var dbt = debtOf(l, m.v);
+    var sb0 = parts[2] === 'd' ? S.sub[parts[0] + '.' + parts[1]] : null;
+    if (sb0) t += '\n📷 ' + ({ sent: 'Сдано, ждёт проверки', redo: 'На доработке', checked: 'Сдано и проверено' }[sb0.st] || '');
     if (dbt) t += '\n' + (dbt.left < 0 ? 'Долг: срок пересдачи вышел ' + dbt.until : 'Долг: пересдать до ' + dbt.until + (dbt.left === 0 ? ' — сегодня последний день' : ', осталось ' + dbt.left + ' дн.'));
     return t;
   }
@@ -505,7 +545,7 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
   }
   function save() { lsSet(LS.out, outbox); lsSet(LS.cache, S); }
 
-  var busy = false, again = false, retryT = null;
+  var busy = false, again = false, retryT = null, stNote = '';   // stNote — «проверено, ушло в Телеграм»: не затирать «сохранено»
   function sync() {
     if (mode !== 'teacher') return;
     if (busy) { again = true; return; }
@@ -526,7 +566,7 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
         });
         var changed = JSON.stringify(next) !== JSON.stringify(S);
         S = next; loaded = true; save();
-        setSt('ok', 'сохранено');
+        setSt('ok', stNote || 'сохранено'); stNote = '';
         if (changed || !sync.once) render();
         sync.once = true;
       })
@@ -600,10 +640,19 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
 
   function renderTools() {
     var t = $('tools');
-    if (mode !== 'teacher') { t.hidden = true; return; }
+    if (mode !== 'teacher') {
+      if (!loaded) { t.hidden = true; return; }
+      t.hidden = false;
+      var me = meId && S.stu[meId];
+      t.innerHTML = '<div class="stbar">' + (me ? '📷 Ты — <b>' + esc(me.fam + ' ' + me.name) + '</b>. Нажми на свою клетку «ДЗ», чтобы сдать фото домашки.'
+        : ck() ? 'Ты вошёл через Телеграм, но учитель ещё не отметил тебя в журнале — скажи ему.'
+        : '<button class="btn pri" data-act="login">📷 Сдавать домашку — войти через Телеграм</button>') + '</div>';
+      return;
+    }
     t.hidden = false;
-    var code = S.cfg.code && S.cfg.code.v;
-    t.innerHTML = '<button class="btn pri" data-act="addles">＋ Урок</button>' +
+    var code = S.cfg.code && S.cfg.code.v, waiting = waitingSubs().length;
+    t.innerHTML = (waiting ? '<button class="btn queue" data-act="queue">📥 Ждут проверки: ' + waiting + '</button>' : '') +
+      '<button class="btn pri" data-act="addles">＋ Урок</button>' +
       '<button class="btn" data-act="students">Ученики</button>' +
       (code ? '<span class="codebox">Код для класса: <b class="mono">' + esc(code) + '</b></span> <button class="link" data-act="code">изменить</button>'
             : '<span class="warn">Код класса не задан — ученики журнал не увидят.</span> <button class="btn" data-act="code">Задать код</button>');
@@ -641,7 +690,7 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
     h += '</tr></thead><tbody>';
     P.forEach(function (p) {
       var dn = edit ? debtCount(p.id) : 0;   // счётчик долгов — только учителю; дети видят красные клетки (D, 30.09)
-      h += '<tr><th class="nm"><b>' + esc(p.fam) + '</b><span>' + esc(p.name) +
+      h += '<tr' + (p.id === meId ? ' class="me"' : '') + '><th class="nm"><b>' + esc(p.fam) + '</b><span>' + esc(p.name) + (p.id === meId ? ' · это ты' : '') +
         (dn ? ' · <em>' + dn + ' ' + (dn === 1 ? 'долг' : dn < 5 ? 'долга' : 'долгов') + '</em>' : '') + '</span></th>';
       LY.forEach(function (x) {
         x.cols.forEach(function (c) {
@@ -813,6 +862,158 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
     next();
   }
 
+  /* ── сдача ДЗ (шаг 4): ученик входит через бота, сдаёт фото в свою клетку ── */
+  // ученик с ключом: журнал класса + свои сдачи. → true | 'nolink' | false (ключ не годен)
+  function meLoad() {
+    return post('/zhurnal/me', {}, { 'X-Chat-Key': ck() }).then(function (r) {
+      if (r.status === 401) { lsDel(LS.ck); return false; }
+      if (r.status !== 200 || !r.data.ok) throw { http: r.status };
+      lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
+      if (!r.data.stu) { meId = null; return 'nolink'; }
+      meId = r.data.stu; sdachaOn = !!r.data.sdacha;
+      S = fromObjects(r.data.objects); loaded = true; render();
+      return true;
+    }, function (e) { nextApi(); throw e; });
+  }
+  function openLogin(err) {
+    $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
+      '<h3>Войти, чтобы сдавать домашку</h3><div class="meta">Один раз на этом телефоне. Бот пришлёт 4 цифры — введи их здесь.</div>' +
+      '<a class="btn pri" id="tgA" aria-disabled="true" style="display:block;text-align:center;padding:12px">Готовлю вход…</a>' +
+      '<div class="lbl">Код из Телеграма</div><input id="kodIn" class="kod" inputmode="numeric" autocomplete="one-time-code" maxlength="4" placeholder="····">' +
+      '<div class="err" id="kodErr">' + esc(err || '') + '</div>' +
+      '<div class="row"><span class="sp"></span><button class="btn" data-act="close">Закрыть</button></div></div>';
+    var v = lsGet(LS.vhod, null);
+    var link = function (t) { var a = $('tgA'); if (!a) return; a.href = 'https://t.me/' + BOT + '?start=site-' + t; a.removeAttribute('aria-disabled'); a.textContent = '✈️ Получить код в Телеграме';
+      if (window.matchMedia && matchMedia('(pointer:fine)').matches) { a.target = '_blank'; a.rel = 'noopener'; } };
+    if (v && Date.now() < v.do) link(v.t);
+    else fetch(chatBase() + '/chat/login/start', { method: 'POST', cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.ok || !d.token) throw 0;
+      lsSet(LS.vhod, { t: d.token, do: Date.now() + (d.ttl - 60) * 1000 }); link(d.token);
+    }).catch(function () { nextApi(); var e = $('kodErr'); if (e) e.textContent = 'Не получилось связаться с сервером. Проверь интернет и открой окно заново.'; });
+    var inp = $('kodIn');
+    inp.addEventListener('input', function () { inp.value = inp.value.replace(/\D/g, '').slice(0, 4); if (inp.value.length === 4) finishLogin(inp.value); });
+  }
+  function finishLogin(kod) {
+    var v = lsGet(LS.vhod, null), e = $('kodErr');
+    if (!v || Date.now() >= v.do) { lsDel(LS.vhod); openLogin('Вход устарел — получи новый код.'); return; }
+    fetch(chatBase() + '/chat/login/finish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: v.t, kod: kod }) })
+      .then(function (r) { return r.json(); }).then(function (d) {
+        if (d.ok && d.key) {
+          lsDel(LS.vhod); lsSet(LS.ck, d.key); closeDlg();
+          meLoad().then(function (res) { if (res !== true) render(); }, function () { render(); });
+          return;
+        }
+        $('kodIn').value = '';
+        if (d.error === 'wrong') e.textContent = 'Код не подошёл. Осталось попыток: ' + d.left + '.';
+        else if (d.error === 'no code') e.textContent = 'Сначала нажми «Получить код в Телеграме».';
+        else { lsDel(LS.vhod); openLogin(d.error === 'bad' ? 'Попытки кончились — получи новый код.' : 'Вход устарел — получи новый код.'); }
+      }).catch(function () { e.textContent = 'Не получилось связаться с сервером. Проверь интернет.'; });
+  }
+
+  var photoCache = {};
+  function photoUrl(name) {
+    if (!photoCache[name]) {
+      var h = { 'Content-Type': 'application/json' };
+      if (mode === 'teacher') h.Authorization = 'Bearer ' + teacherKey; else h['X-Chat-Key'] = ck();
+      photoCache[name] = fetch(API + '/zhurnal/photo', { method: 'POST', headers: h, body: JSON.stringify({ f: name }) })
+        .then(function (r) { if (!r.ok) throw r.status; return r.blob(); })
+        .then(function (b) { return URL.createObjectURL(b); })
+        .catch(function (e) { delete photoCache[name]; throw e; });
+    }
+    return photoCache[name];
+  }
+  function thumbsHtml(ph) {
+    return '<div class="thumbs">' + (ph || []).map(function (n, i) { return '<button data-act="view" data-i="' + i + '" data-ph="' + esc(ph.join(',')) + '" aria-label="Фото ' + (i + 1) + '"><img data-f="' + esc(n) + '" alt=""></button>'; }).join('') + '</div>';
+  }
+  function fillThumbs(root) {
+    (root || document).querySelectorAll('img[data-f]:not([src])').forEach(function (img) {
+      photoUrl(img.dataset.f).then(function (u) { img.src = u; }, function () { img.alt = '—'; });
+    });
+  }
+  function openViewer(list, i) {
+    var v = document.createElement('div');
+    v.className = 'view'; v.innerHTML = '<img alt="Фото домашки"><div class="vbar"><button data-v="-1">←</button><span style="color:#fff;align-self:center" id="vN"></span><button data-v="1">→</button><button data-v="x">Закрыть</button></div>';
+    document.body.appendChild(v);
+    var show = function () { photoUrl(list[i]).then(function (u) { v.querySelector('img').src = u; }); v.querySelector('#vN').textContent = (i + 1) + ' из ' + list.length; };
+    v.addEventListener('click', function (ev) {
+      ev.stopPropagation();   // клик по просмотру не закрывает лист оценки под ним
+      var b = ev.target.closest('[data-v]');
+      if (!b) return;
+      if (b.dataset.v === 'x') { v.remove(); return; }
+      i = (i + +b.dataset.v + list.length) % list.length; show();
+    });
+    show();
+  }
+  var SUB_ST = { sent: 'Сдано — ждёт проверки учителя.', redo: 'Учитель вернул на доработку: посмотри комментарий и сдай заново.', checked: 'Проверено ✅' };
+  function openSubmit(markId) {
+    var q = markId.split('.'), l = S.les[q[0]], sub = S.sub[q[0] + '.' + q[1]], m = S.mark[markId], sm = splitMark(m);
+    if (!l) return;
+    var subj = SUBJ.filter(function (x) { return x.id === l.subj; })[0], n = sharedCount(l);
+    var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
+      '<h3>Домашка · ' + esc(l.date) + '</h3><div class="meta">' + esc(subj.name) + (n > 1 ? ' · общая на ' + n + ' урока' : '') + (l.topic ? ' · ' + esc(l.topic) : '') + '</div>' +
+      '<div class="lbl">Что задано</div><div class="txt">' + esc(l.hw || 'Смотри на сайте урока') + '</div>';
+    if (m && (m.v || sm.c)) h += '<div class="lbl">Учитель</div><div class="big">' + (sm.g ? '<i class="' + markCls(m.v) + '">' + esc(sm.g) + '</i>' : '') + '<span>' + esc(sm.c || '') + '</span></div>';
+    h += '<div class="lbl">Сдача</div><div class="note">' + (sub ? SUB_ST[sub.st] : 'Ещё не сдано. Сфотографируй решение целиком и нажми «Сдать фото».') + '</div>';
+    if (sub) h += thumbsHtml(sub.ph);
+    if (!sdachaOn) h += '<div class="note">Приём домашек через журнал пока выключен.</div>';
+    else if (!sub || sub.st !== 'checked')
+      h += '<label class="btn pri upl" style="margin-top:6px">📷 ' + (sub && sub.st === 'redo' ? 'Сдать заново' : sub ? 'Дослать фото' : 'Сдать фото') +
+        '<input type="file" id="subIn" data-les="' + l.id + '" data-mark="' + markId + '" accept="image/*" multiple></label><div class="note" id="subSt">Можно несколько страниц сразу, до 12 фото.</div>';
+    h += '<div class="row"><span class="sp"></span><button class="btn" data-act="close">Закрыть</button></div></div>';
+    $('dlg').innerHTML = h; fillThumbs($('dlg'));
+  }
+  // фото с телефона — до 1600 px по длинной стороне: быстрее грузится, сервер принимает до 10 МБ
+  function shrink(file) {
+    return new Promise(function (ok) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+        c.toBlob(function (b) { ok(b || file); }, 'image/jpeg', 0.85);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); ok(file); };
+      img.src = url;
+    });
+  }
+  function submitPhotos(input) {
+    var files = Array.prototype.slice.call(input.files, 0, 12), st = $('subSt'), lid = input.dataset.les, markId = input.dataset.mark;
+    if (st) st.textContent = 'Готовлю ' + files.length + ' фото…';
+    input.disabled = true;
+    Promise.all(files.map(shrink)).then(function (blobs) {
+      var fd = new FormData();
+      fd.append('les', lid);
+      blobs.forEach(function (b, i) { fd.append('photo', b, 'foto' + (i + 1) + '.jpg'); });
+      if (st) st.textContent = 'Отправляю…';
+      return fetch(API + '/zhurnal/submit', { method: 'POST', headers: { 'X-Chat-Key': ck() }, body: fd })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, j: j }; }); });
+    }).then(function (r) {
+      if (r.status === 200 && r.j.ok) {
+        var o = r.j.obj, d = o.d; d.id = o.id; d.ts = o.ts; S.sub[o.id] = d;
+        render(); openSubmit(markId);
+        var s2 = $('subSt'); if (s2) s2.textContent = '✅ Сдано! Учитель получил уведомление.';
+        return;
+      }
+      var why = { 503: 'Приём домашек пока выключен.', 409: r.j.error === 'checked' ? 'Эта домашка уже проверена.' : 'Слишком много фото — до 12 в одной сдаче.',
+        415: 'Это не фото. Нужна картинка (JPG, PNG).', 403: 'Учитель ещё не отметил тебя в журнале.', 401: 'Вход устарел — войди через Телеграм заново.', 413: 'Фото слишком большие.' };
+      if (r.status === 401) lsDel(LS.ck);
+      if (st) st.textContent = why[r.status] || 'Не получилось отправить. Попробуй ещё раз.';
+      input.disabled = false;
+    }, function () { nextApi(); if (st) st.textContent = 'Нет связи. Проверь интернет и попробуй ещё раз.'; input.disabled = false; });
+  }
+  // D: «проверено» / «на доработку» — сервер пишет статус и шлёт ученику в Телеграм
+  function review(subId, st, v, c) {
+    var sb = S.sub[subId];
+    if (sb) sb.st = st;   // сразу, чтобы клетка перестала мигать
+    return post('/zhurnal/review', { id: subId, st: st, v: v || '', c: c || '' }, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
+      if (r.status !== 200 || !r.data.ok) throw { http: r.status };
+      var o = r.data.obj, d = o.d; d.id = o.id; d.ts = o.ts; S.sub[o.id] = d; save();
+      stNote = r.data.sent ? (st === 'checked' ? 'проверено — ученику ушло в Телеграм' : 'на доработку — ученику ушло в Телеграм') : 'сохранено, но ученик не связан с Телеграмом';
+      setSt('ok', stNote);
+      pendingRender = true; if (!cur) render();
+    }).catch(function () { setSt('bad', 'не получилось отметить проверку — попробуй ещё раз'); });
+  }
+
   /* ── подсказка: навёл на клетку — вспомнил, что было; на телефоне — нажал ── */
   var tipEl = document.createElement('div');
   tipEl.className = 'ztip'; tipEl.hidden = true; document.body.appendChild(tipEl);
@@ -839,19 +1040,41 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
     var P = students();
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true"><h3>Ученики</h3>' +
       '<div class="meta">Общие для всех трёх предметов. Правка сохраняется сама.</div>';
+    var opts = function (cur) {
+      var list = tgPeople || [];
+      if (cur && !list.some(function (x) { return x.tg === cur; })) list = list.concat([{ tg: cur, name: 'связан (' + cur.split(':')[1] + ')' }]);
+      return '<option value="">Телеграм: не связан</option>' + list.map(function (x) {
+        return '<option value="' + esc(x.tg) + '"' + (x.tg === cur ? ' selected' : '') + '>' + esc(x.name) + (x.grp ? ' · ' + esc(x.grp) : '') + '</option>';
+      }).join('');
+    };
     P.forEach(function (p) {
       h += '<div class="srow" data-sid="' + p.id + '"><input data-f="fam" placeholder="Фамилия" maxlength="40" value="' + esc(p.fam) + '">' +
         '<input data-f="name" placeholder="Имя" maxlength="40" value="' + esc(p.name) + '">' +
-        '<button data-act="delstu" data-id="' + p.id + '" title="Убрать из журнала">✕</button></div>';
+        '<button data-act="delstu" data-id="' + p.id + '" title="Убрать из журнала">✕</button>' +
+        '<select data-f="tg" class="srow-tg">' + opts(p.tg) + '</select></div>';
     });
+    h += '<div class="note">Телеграм — кто этот ученик в боте. Связанный ученик входит в журнал через бота и сдаёт фото домашки в свою клетку.' +
+      (tgPeople ? '' : ' Загружаю список из бота…') + '</div>';
     h += '<div class="row"><button class="btn" data-act="addstu">＋ Ученик</button><span class="sp"></span><button class="btn pri" data-act="close">Готово</button></div></div>';
     $('dlg').innerHTML = h;
+    if (!tgPeople) post('/zhurnal/tgpeople', {}, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
+      if (r.status !== 200 || !r.data.ok) return;
+      tgPeople = r.data.people;
+      $('dlg').querySelectorAll('.srow-tg').forEach(function (sel) { sel.innerHTML = opts(sel.value); });
+    }, function () { /* нет связи — список подтянется при следующем открытии */ });
+  }
+  var tgPeople = null;
+  function waitingSubs() {
+    return vals(S.sub).filter(function (x) { var q = x.id.split('.'); return x.st === 'sent' && S.les[q[0]] && S.stu[q[1]]; });
   }
   function saveStudentRow(row) {
     var id = row.dataset.sid, p = S.stu[id];
     var fam = row.querySelector('[data-f="fam"]').value.trim(), name = row.querySelector('[data-f="name"]').value.trim();
-    if (!p || (p.fam === fam && p.name === name)) return;
-    put('stu', id, { fam: fam, name: name, ord: p.ord || 0 });
+    var tg = row.querySelector('[data-f="tg"]').value;
+    if (!p || (p.fam === fam && p.name === name && (p.tg || '') === tg)) return;
+    var d = { fam: fam, name: name, ord: p.ord || 0 };
+    if (tg) d.tg = tg;
+    put('stu', id, d);
     render();
   }
 
@@ -867,6 +1090,9 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
     var src = '';
     if (m && m.by === 'auto') src = '<div class="pop-src">Поставила автоматика' + (m.an ? ': ' + esc(m.an) : '') + '. Исправишь — останется твоя оценка, автоматика её больше не тронет.</div>';
     else if (m && m.av) src = '<div class="pop-src">Ты исправил оценку автоматики. Она ставила <b>' + esc(m.av) + '</b>' + (m.an ? ' (' + esc(m.an) + ')' : '') + '.</div>';
+    var sb = parts[2] === 'd' ? S.sub[parts[0] + '.' + parts[1]] : null;
+    if (sb) src += '<div class="pop-sub">📷 ' + ({ sent: 'Сдал(а) — ждёт проверки. Оценка отправит ученику «проверено» в бот.', redo: 'На доработке — ждём новую сдачу.', checked: 'Проверено.' }[sb.st] || '') +
+      thumbsHtml(sb.ph) + (sb.st === 'sent' ? '<div class="pop-x"><button class="redo" data-act="subredo">↺ На доработку (с комментарием)</button></div>' : '') + '</div>';
     var pop = $('pop');
     pop.innerHTML = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(l.date) + ' · ' +
       (parts[2] === 'd' ? (nSh > 1 ? 'ДЗ, общая на ' + nSh + ' урока' : 'ДЗ') : 'урок') + (l.topic ? '<br>' + esc(l.topic.slice(0, 60)) : '') + '</span></div>' + src +
@@ -879,6 +1105,7 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
       '<label><input type="checkbox" id="popNext"' + (nextOn ? ' checked' : '') + '> дальше вниз</label>' +
       '<button class="btn" data-act="popclose">Закрыть</button></div>';
     pop.hidden = false;
+    fillThumbs(pop);
     $('popForm').onsubmit = function (ev) { ev.preventDefault(); setMark($('popIn').value); };
     $('popNext').onchange = function () { lsSet(LS.next, this.checked); };
   }
@@ -898,6 +1125,9 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
       } else if (had) del('mark', id);
       pendingRender = true;   // счётчик долгов у фамилии — после закрытия листа
     }
+    // оценка по сданной работе = «проверено» ученику, даже если оценка та же (стояла от автоматики)
+    var q2 = id.split('.'), sb = q2[2] === 'd' ? S.sub[q2[0] + '.' + q2[1]] : null;
+    if (v && sb && sb.st === 'sent') review(q2[0] + '.' + q2[1], 'checked', splitMark({ v: v }).g, c);
     var td = document.querySelector('td.c[data-c="' + id + '"]');
     if (td) { var cv = cellView(id); td.className = cv.cls + ' cur'; td.innerHTML = cv.inner; }
     if (lsGet(LS.next, true)) {   // следующий ученик в том же столбце
@@ -947,6 +1177,24 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
       else if (act === 'editlesson') openLesson(a.dataset.id, true);
       else if (act === 'dellesson') delLesson(a.dataset.id);
       else if (act === 'dl') downloadFile(a.dataset.id, a);
+      else if (act === 'login') openLogin('');
+      else if (act === 'view') openViewer(a.dataset.ph.split(','), +a.dataset.i);
+      else if (act === 'queue') {
+        var first = waitingSubs().sort(function (x, y) { return (x.at || 0) - (y.at || 0); })[0];
+        if (first) {
+          var fl = S.les[first.id.split('.')[0]];
+          if (fl.subj !== tab) { tab = fl.subj; lsSet(LS.tab, tab); render(); }
+          openCell(first.id + '.d');
+        }
+      }
+      else if (act === 'subredo' && cur) {
+        var cq = cur.split('.'), sid = cq[0] + '.' + cq[1], cm = $('popCm') ? $('popCm').value.trim() : '';
+        if (!cm && !confirm('Отправить на доработку без комментария? Лучше написать, что исправить.')) return;
+        if (S.sub[sid]) S.sub[sid].st = 'redo';   // до записи оценки: иначе она сама отправит «проверено»
+        var gOld = splitMark(S.mark[cur]).g;
+        review(sid, 'redo', '', cm);
+        setMark(gOld);
+      }
       else if (act === 'rmfile') {
         var rf = S.file[a.dataset.id];
         if (rf && confirm('Удалить файл «' + rf.name + '»? Ученики больше не смогут его скачать.')) { var rl = rf.les; del('file', rf.id); render(); openLesson(rl); }
@@ -988,6 +1236,7 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
     }
     var cell = t.closest('td.c[data-c]');
     if (cell && mode === 'teacher') { hideTip(); openCell(cell.dataset.c); return; }
+    if (cell && meId && cell.classList.contains('mine')) { hideTip(); openSubmit(cell.dataset.c); return; }
     if (cell) {   // ученик: нажал — подсказка, через 4 секунды прячется
       showTip(cell, cellTip(cell.dataset.c)); clearTimeout(tipT); tipT = setTimeout(hideTip, 4000); return;
     }
@@ -999,6 +1248,7 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
 
   document.addEventListener('change', function (ev) {
     if (ev.target.id === 'upFile' && ev.target.files.length) { uploadFiles(ev.target.dataset.les, ev.target.files); return; }
+    if (ev.target.id === 'subIn' && ev.target.files.length) { submitPhotos(ev.target); return; }
     var row = ev.target.closest('.srow');
     if (row) saveStudentRow(row);
   });
@@ -1021,6 +1271,7 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState !== 'visible') return;
     if (mode === 'teacher') sync();
+    else if (loaded && meId) meLoad().catch(function () { /* нет связи — покажем, что было */ });
     else if (loaded && lsGet(LS.pass, '')) view('');
   });
 
@@ -1060,8 +1311,13 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
   } else {
     // ссылка от учителя вида zhurnal.html#k=КОД — код сразу в дело, из адреса убираем
     var mk = /[#&]k=([^&]+)/.exec(location.hash);
-    if (mk) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } view(decodeURIComponent(mk[1])); }
-    else if (lsGet(LS.pass, '')) view(''); else gate('');
+    var byCode = function () {
+      if (mk) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } view(decodeURIComponent(mk[1])); }
+      else if (lsGet(LS.pass, '')) view(''); else gate('');
+    };
+    // вошёл через бота — журнал открывается без кода класса, со своей строкой и сдачей
+    if (ck() && !mk) { $('main').innerHTML = '<div class="empty">Открываю журнал…</div>'; meLoad().then(function (res) { if (res !== true) byCode(); }, byCode); }
+    else byCode();
     $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>';
   }
 })();
