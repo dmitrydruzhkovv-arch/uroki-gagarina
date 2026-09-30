@@ -258,8 +258,18 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 .dlg .big i{ font-style:normal; display:grid; place-items:center; min-width:48px; height:48px; padding:0 8px; border-radius:12px; font-size:22px; font-weight:800; }
 .dlg .kod{ font-size:26px; letter-spacing:.3em; text-align:center; font-family:'JetBrains Mono',ui-monospace,monospace; }
 .dlg .err{ color:#dc2626; font-size:14px; margin-top:8px; min-height:1em; }
-.view{ position:fixed; inset:0; z-index:60; background:rgba(10,6,16,.92); display:flex; flex-direction:column; }
-.view img{ flex:1; min-height:0; object-fit:contain; width:100%; padding:10px; }
+.view{ position:fixed; inset:0; z-index:60; background:#0e0a12; display:flex; flex-direction:column; }
+.view .vstage{ flex:1; min-height:0; display:grid; place-items:center; padding:8px; }
+.view canvas{ border-radius:6px; box-shadow:0 10px 40px -10px rgba(0,0,0,.6); background:#222; }
+.view .vtools{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center; padding:calc(10px + env(safe-area-inset-top,0px)) 10px 6px; }
+.view .vtools button{ min-width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,.12); color:#fff; font-weight:700; padding:0 10px; display:grid; place-items:center; }
+.view .vtools button[aria-pressed="true"]{ box-shadow:inset 0 0 0 2px #fff; }
+.view .vtools button span{ width:20px; height:20px; border-radius:50%; display:block; }
+.view .vtools button b{ border-radius:50%; background:#fff; display:block; }
+.view .vst{ color:#d8cfe6; font-size:12.5px; width:100%; text-align:center; }
+.view #vN{ color:#fff; align-self:center; }
+.thumbs button{ position:relative; }
+.thumbs .inked{ position:absolute; right:3px; bottom:3px; font-style:normal; font-size:13px; background:#fff; border-radius:6px; padding:0 2px; }
 .view .vbar{ display:flex; gap:8px; justify-content:center; padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px)); }
 .view .vbar button{ padding:10px 16px; border-radius:12px; background:#fff; color:#1a1720; font-weight:700; }
 @media (prefers-reduced-motion:reduce){ td.c.m5, td.c.sub-sent{ animation:none; } }
@@ -922,25 +932,129 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     }
     return photoCache[name];
   }
-  function thumbsHtml(ph) {
-    return '<div class="thumbs">' + (ph || []).map(function (n, i) { return '<button data-act="view" data-i="' + i + '" data-ph="' + esc(ph.join(',')) + '" aria-label="Фото ' + (i + 1) + '"><img data-f="' + esc(n) + '" alt=""></button>'; }).join('') + '</div>';
+  function thumbsHtml(ph, subId) {
+    var ink = subId && S.sub[subId] && S.sub[subId].ink || {};
+    return '<div class="thumbs">' + (ph || []).map(function (n, i) {
+      return '<button data-act="view" data-i="' + i + '" data-sub="' + esc(subId || '') + '" aria-label="Фото ' + (i + 1) + '"><img data-f="' + esc(n) + '" alt="">' +
+        (ink[n] ? '<i class="inked" title="есть разбор учителя">✏️</i>' : '') + '</button>';
+    }).join('') + '</div>';
   }
   function fillThumbs(root) {
     (root || document).querySelectorAll('img[data-f]:not([src])').forEach(function (img) {
       photoUrl(img.dataset.f).then(function (u) { img.src = u; }, function () { img.alt = '—'; });
     });
   }
-  function openViewer(list, i) {
-    var v = document.createElement('div');
-    v.className = 'view'; v.innerHTML = '<img alt="Фото домашки"><div class="vbar"><button data-v="-1">←</button><span style="color:#fff;align-self:center" id="vN"></span><button data-v="1">→</button><button data-v="x">Закрыть</button></div>';
+  /* ── просмотр фото и перо (шаг 5): D рисует разбор поверх фото, ученик видит его.
+     Штрихи — в долях размера фото, нажим пера планшета/Apple Pencil; Shift — прямая. Фото не меняется. ── */
+  var PEN_COLORS = ['#e11d48', '#16a34a', '#2563eb'], PEN_W = { s: 0.0025, m: 0.0045, l: 0.008 };
+  function drawInk(g, strokes, W, H) {
+    (strokes || []).forEach(function (st) {
+      var P = st.p; g.strokeStyle = st.c; g.fillStyle = st.c; g.lineCap = 'round'; g.lineJoin = 'round';
+      if (P.length === 1) { g.beginPath(); g.arc(P[0][0] * W, P[0][1] * H, st.w * W * (0.45 + P[0][2] * 1.1) / 2, 0, 7); g.fill(); return; }
+      for (var k = 1; k < P.length; k++) {
+        g.lineWidth = st.w * W * (0.45 + (P[k - 1][2] + P[k][2]) / 2 * 1.1);
+        g.beginPath(); g.moveTo(P[k - 1][0] * W, P[k - 1][1] * H); g.lineTo(P[k][0] * W, P[k][1] * H); g.stroke();
+      }
+    });
+  }
+  function openViewer(subId, i) {
+    var sb = S.sub[subId];
+    if (!sb || !sb.ph || !sb.ph.length) return;
+    var list = sb.ph, edit = mode === 'teacher', v = document.createElement('div');
+    var color = PEN_COLORS[0], width = PEN_W.m, strokes = [], stk = null, img = null, W = 0, H = 0, dirty = false, raf = 0;
+    v.className = 'view';
+    v.innerHTML = (edit ? '<div class="vtools">' + PEN_COLORS.map(function (c, k) { return '<button data-pc="' + c + '" aria-pressed="' + (k === 0) + '" title="Цвет"><span style="background:' + c + '"></span></button>'; }).join('') +
+        ['s', 'm', 'l'].map(function (w) { return '<button data-pw="' + w + '" aria-pressed="' + (w === 'm') + '" title="Толщина"><b style="width:' + { s: 4, m: 8, l: 13 }[w] + 'px;height:' + { s: 4, m: 8, l: 13 }[w] + 'px"></b></button>'; }).join('') +
+        '<button data-v="undo" title="Отменить (Ctrl+Z)">↶</button><button data-v="clear">Стереть всё</button><span class="vst" id="vSt">Рисуй пером, мышкой или пальцем · Shift — прямая</span></div>' : '') +
+      '<div class="vstage"><canvas></canvas></div>' +
+      '<div class="vbar"><button data-v="-1">←</button><span id="vN"></span><button data-v="1">→</button><button data-v="x">' + (edit ? 'Сохранить и закрыть' : 'Закрыть') + '</button></div>';
     document.body.appendChild(v);
-    var show = function () { photoUrl(list[i]).then(function (u) { v.querySelector('img').src = u; }); v.querySelector('#vN').textContent = (i + 1) + ' из ' + list.length; };
+    var cv = v.querySelector('canvas'), stage = v.querySelector('.vstage');
+    function redraw() {
+      raf = 0; if (!img) return;
+      var g = cv.getContext('2d'), dpr = window.devicePixelRatio || 1;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H); g.drawImage(img, 0, 0, W, H); drawInk(g, strokes, W, H);
+    }
+    function soon() { if (!raf) raf = requestAnimationFrame(redraw); }
+    function fit() {
+      if (!img) return;
+      var k = Math.min((stage.clientWidth - 16) / img.width, (stage.clientHeight - 16) / img.height), dpr = window.devicePixelRatio || 1;
+      W = Math.max(50, Math.round(img.width * k)); H = Math.max(50, Math.round(img.height * k));
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px'; redraw();
+    }
+    function saveInk() {
+      if (!dirty) return Promise.resolve();
+      var name = list[i], st = $('vSt'); dirty = false;
+      if (st) st.textContent = 'Сохраняю разбор…';
+      return post('/zhurnal/ink', { id: subId, f: name, s: strokes }, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
+        if (r.status !== 200 || !r.data.ok) throw r.status;
+        var o = r.data.obj, d = o.d; d.id = o.id; d.ts = o.ts; S.sub[o.id] = d; save();
+        if (st) st.textContent = 'Разбор сохранён ✓ — ученик увидит его на своём фото';
+      }).catch(function (e) {
+        dirty = true;
+        if (typeof e !== 'number') nextApi();   // сервер ответил ошибкой — дело не в сети, запасной не поможет
+        if (st) st.textContent = '⚠️ Разбор не сохранился — ' + (e === 404 ? 'ученик уже заменил это фото' : e === 400 || e === 413 ? 'слишком большой разбор' : typeof e === 'number' ? 'ошибка сервера' : 'нет связи') + '.';
+      });
+    }
+    // сохранить; не вышло — спросить, бросить ли разбор. → true, если можно уходить с фото
+    function leave() {
+      return saveInk().then(function () {
+        if (!dirty) return true;
+        if (!confirm('Разбор этого фото не сохранился. Уйти без сохранения?')) return false;
+        dirty = false; return true;
+      });
+    }
+    function show() {
+      img = null; v.querySelector('#vN').textContent = (i + 1) + ' из ' + list.length;
+      strokes = JSON.parse(JSON.stringify(((S.sub[subId] || {}).ink || {})[list[i]] || []));
+      photoUrl(list[i]).then(function (u) { var im = new Image(); im.onload = function () { img = im; fit(); }; im.src = u; });
+    }
+    function r4(x) { return Math.round(Math.min(1, Math.max(0, x)) * 1e4) / 1e4; }
+    function pt(ev) { var b = cv.getBoundingClientRect(); return [r4((ev.clientX - b.left) / b.width), r4((ev.clientY - b.top) / b.height), Math.round((ev.pointerType === 'pen' ? (ev.pressure || 0.5) : 0.5) * 100) / 100]; }
+    function addPt(q) {
+      var last = stk.p[stk.p.length - 1];
+      if (Math.abs(q[0] - last[0]) + Math.abs(q[1] - last[1]) < 0.0015) return;   // почти на месте — точка не нужна
+      if (stk.p.length >= 2900) { stk = { c: stk.c, w: stk.w, p: [last] }; strokes.push(stk); }   // сервер берёт до 3000 точек в штрихе
+      stk.p.push(q);
+    }
+    if (edit) {
+      cv.style.touchAction = 'none'; cv.style.cursor = 'crosshair';
+      cv.addEventListener('pointerdown', function (ev) {
+        if (ev.button > 0 || !img) return;
+        if (strokes.length >= 580) { var s0 = $('vSt'); if (s0) s0.textContent = 'На этом фото уже очень много штрихов — сотри лишнее или перейди к следующему.'; return; }
+        cv.setPointerCapture(ev.pointerId); stk = { c: color, w: width, p: [pt(ev)] }; strokes.push(stk); dirty = true; soon();
+      });
+      cv.addEventListener('pointermove', function (ev) {
+        if (!stk) return;
+        if (ev.shiftKey) stk.p = [stk.p[0], pt(ev)];
+        else (ev.getCoalescedEvents ? ev.getCoalescedEvents() : [ev]).forEach(function (x) { addPt(pt(x)); });
+        soon();
+      });
+      ['pointerup', 'pointercancel'].forEach(function (n) { cv.addEventListener(n, function () { stk = null; }); });
+    }
+    function close() {
+      leave().then(function (ok) {
+        if (!ok) return;   // D решил остаться — разбор на экране, можно повторить
+        v.remove(); document.removeEventListener('keydown', key, true); window.removeEventListener('resize', fit);
+        if (edit && cur) openCell(cur);   // обновить ✏️ на миниатюрах в листе оценки
+      });
+    }
+    function key(ev) {
+      if (ev.key === 'Escape') { ev.stopPropagation(); close(); }
+      else if (edit && (ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); ev.stopPropagation(); strokes.pop(); dirty = true; soon(); }
+    }
+    document.addEventListener('keydown', key, true);
+    window.addEventListener('resize', fit);
     v.addEventListener('click', function (ev) {
       ev.stopPropagation();   // клик по просмотру не закрывает лист оценки под ним
-      var b = ev.target.closest('[data-v]');
+      var c = ev.target.closest('[data-pc]'), w = ev.target.closest('[data-pw]'), b = ev.target.closest('[data-v]');
+      if (c) { color = c.dataset.pc; v.querySelectorAll('[data-pc]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === c)); }); }
+      if (w) { width = PEN_W[w.dataset.pw]; v.querySelectorAll('[data-pw]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === w)); }); }
       if (!b) return;
-      if (b.dataset.v === 'x') { v.remove(); return; }
-      i = (i + +b.dataset.v + list.length) % list.length; show();
+      if (b.dataset.v === 'x') { close(); return; }
+      if (b.dataset.v === 'undo') { strokes.pop(); dirty = true; soon(); return; }
+      if (b.dataset.v === 'clear') { if (strokes.length && confirm('Стереть весь разбор на этом фото?')) { strokes = []; dirty = true; soon(); } return; }
+      leave().then(function (ok) { if (ok) { i = (i + +b.dataset.v + list.length) % list.length; show(); } });
     });
     show();
   }
@@ -954,7 +1068,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       '<div class="lbl">Что задано</div><div class="txt">' + esc(l.hw || 'Смотри на сайте урока') + '</div>';
     if (m && (m.v || sm.c)) h += '<div class="lbl">Учитель</div><div class="big">' + (sm.g ? '<i class="' + markCls(m.v) + '">' + esc(sm.g) + '</i>' : '') + '<span>' + esc(sm.c || '') + '</span></div>';
     h += '<div class="lbl">Сдача</div><div class="note">' + (sub ? SUB_ST[sub.st] : 'Ещё не сдано. Сфотографируй решение целиком и нажми «Сдать фото».') + '</div>';
-    if (sub) h += thumbsHtml(sub.ph);
+    if (sub) h += thumbsHtml(sub.ph, q[0] + '.' + q[1]) + (sub.ink && Object.keys(sub.ink).length ? '<div class="note">✏️ На фото — разбор учителя. Нажми, чтобы открыть крупно, и перепиши исправления в тетрадь.</div>' : '');
     if (!sdachaOn) h += '<div class="note">Приём домашек через журнал пока выключен.</div>';
     else if (!sub || sub.st !== 'checked')
       h += '<label class="btn pri upl" style="margin-top:6px">📷 ' + (sub && sub.st === 'redo' ? 'Сдать заново' : sub ? 'Дослать фото' : 'Сдать фото') +
@@ -1092,7 +1206,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     else if (m && m.av) src = '<div class="pop-src">Ты исправил оценку автоматики. Она ставила <b>' + esc(m.av) + '</b>' + (m.an ? ' (' + esc(m.an) + ')' : '') + '.</div>';
     var sb = parts[2] === 'd' ? S.sub[parts[0] + '.' + parts[1]] : null;
     if (sb) src += '<div class="pop-sub">📷 ' + ({ sent: 'Сдал(а) — ждёт проверки. Оценка отправит ученику «проверено» в бот.', redo: 'На доработке — ждём новую сдачу.', checked: 'Проверено.' }[sb.st] || '') +
-      thumbsHtml(sb.ph) + (sb.st === 'sent' ? '<div class="pop-x"><button class="redo" data-act="subredo">↺ На доработку (с комментарием)</button></div>' : '') + '</div>';
+      thumbsHtml(sb.ph, parts[0] + '.' + parts[1]) + (sb.st === 'sent' ? '<div class="pop-x"><button class="redo" data-act="subredo">↺ На доработку (с комментарием)</button></div>' : '') + '</div>';
     var pop = $('pop');
     pop.innerHTML = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(l.date) + ' · ' +
       (parts[2] === 'd' ? (nSh > 1 ? 'ДЗ, общая на ' + nSh + ' урока' : 'ДЗ') : 'урок') + (l.topic ? '<br>' + esc(l.topic.slice(0, 60)) : '') + '</span></div>' + src +
@@ -1178,7 +1292,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       else if (act === 'dellesson') delLesson(a.dataset.id);
       else if (act === 'dl') downloadFile(a.dataset.id, a);
       else if (act === 'login') openLogin('');
-      else if (act === 'view') openViewer(a.dataset.ph.split(','), +a.dataset.i);
+      else if (act === 'view') openViewer(a.dataset.sub, +a.dataset.i);
       else if (act === 'queue') {
         var first = waitingSubs().sort(function (x, y) { return (x.at || 0) - (y.at || 0); })[0];
         if (first) {
