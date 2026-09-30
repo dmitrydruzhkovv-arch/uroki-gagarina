@@ -1315,8 +1315,27 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       if (mk) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } view(decodeURIComponent(mk[1])); }
       else if (lsGet(LS.pass, '')) view(''); else gate('');
     };
+    // кнопка «📒 Мой журнал» в боте: одноразовая ссылка #t=… → ключ входа, без 4 цифр
+    var mt = /[#&]t=([0-9a-f]{32})\b/.exec(location.hash);
+    var mine = function () { meLoad().then(function (res) { if (res !== true) byCode(); }, byCode); };
+    // сеть подвела — один раз через запасной сервер (VPN); ошибка загрузки журнала сюда не попадает
+    var magic = function (token, tries) {
+      fetch(chatBase() + '/chat/login/magic/finish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token }) })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d.ok && d.key) { lsSet(LS.ck, d.key); mine(); return; }
+          if (ck()) { mine(); return; }   // ссылку уже открывали — вход помнится
+          byCode();
+          setTimeout(function () { alert(d.error === 'not student' ? 'Ты больше не в классе в боте — спроси учителя.' : 'Ссылка из бота устарела или уже открывалась. Нажми «📒 Мой журнал» в боте ещё раз.'); }, 300);
+        }, function () { if (!tries) { nextApi(); magic(token, 1); } else byCode(); });
+    };
+    if (mt) {
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ }
+      $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
+      magic(mt[1], 0);
+    }
     // вошёл через бота — журнал открывается без кода класса, со своей строкой и сдачей
-    if (ck() && !mk) { $('main').innerHTML = '<div class="empty">Открываю журнал…</div>'; meLoad().then(function (res) { if (res !== true) byCode(); }, byCode); }
+    else if (ck() && !mk) { $('main').innerHTML = '<div class="empty">Открываю журнал…</div>'; meLoad().then(function (res) { if (res !== true) byCode(); }, byCode); }
     else byCode();
     $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>';
   }
