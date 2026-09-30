@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Журнал — Математика 9 класс</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#16131a">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script>
+  try { if (localStorage.getItem('tema') === 'night') document.documentElement.dataset.theme = 'night'; } catch (_) {}
+</script>
+<link rel="stylesheet" href="_движок/fonts/gf.css">
+<link rel="stylesheet" href="style.css">
+<!--
+  Журнал оценок (D, 29.09.2026). Эта страница — пустая оболочка: фамилий, имён и оценок
+  в ней нет (152-ФЗ). Данные приходят с нашего сервера в России (vk_bot/zhurnal.py):
+  ученику — по коду класса, только смотреть; D — по ключу Кабинета, можно менять.
+-->
+<style>
+/* Журнал живёт в стилях сайта (style.css): те же цвета тем Λ / D, те же цвета предметов
+   (.k-algebra, .k-geometriya, .k-veroyatnost → --g заливка, --s акцент, --glow свечение),
+   те же часы с переключателем. Здесь — только своё: вкладки, таблица, окна. */
+[hidden]{ display:none !important; }
+:root{
+  --z-line2:#d9d3e6; --z-head:#f2eff9; --z-hover:#f6f3fb; --z-focus:#16131a;
+  --z-shadow:0 18px 50px -18px rgba(40,24,70,.35);
+  --m5b:#d9f5e1; --m5t:#14683a; --m4b:#e9f5d0; --m4t:#3f6212; --m3b:#fdf0c8; --m3t:#8a4b08;
+  --m2b:#ffd9d6; --m2t:#b42318; --mnb:#ece9f2; --mnt:#5f5870;
+  --m5g:rgba(16,185,129,.55);
+}
+:root[data-theme="night"]{
+  --z-line2:#3a2447; --z-head:#231430; --z-hover:#231430; --z-focus:#ff5cc8;
+  --z-shadow:0 0 0 1px rgba(255,92,200,.18), 0 24px 60px -20px rgba(217,70,239,.45);
+  --m5b:rgba(16,185,129,.18); --m5t:#6ee7b7; --m4b:rgba(132,204,22,.15); --m4t:#bef264;
+  --m3b:rgba(251,191,36,.15); --m3t:#fcd34d; --m2b:rgba(244,63,94,.22); --m2t:#ff9fb7;
+  --mnb:rgba(255,255,255,.06); --mnt:#a58bb6;
+  --m5g:rgba(110,231,183,.7);
+}
+body{ background:var(--store); min-height:100vh; }
+input, textarea{ font:inherit; color:inherit; }
+
+/* шапка — как на главной */
+.zh-hero{
+  background:
+    radial-gradient(900px 400px at 85% -10%, rgba(168,85,247,.20), transparent 60%),
+    radial-gradient(700px 360px at 0% 110%, rgba(79,70,229,.14), transparent 60%),
+    var(--h-bg);
+  color:var(--h-txt); padding:22px 0 22px; border-bottom:1px solid var(--h-line);
+}
+[data-theme="night"] .zh-hero{
+  background:
+    radial-gradient(800px 380px at 90% -20%, rgba(217,70,239,.35), transparent 60%),
+    radial-gradient(700px 400px at -5% 120%, rgba(190,18,60,.28), transparent 60%),
+    var(--h-bg);
+  border-bottom-color:rgba(255,92,200,.28);
+}
+.zh-back{ display:inline-block; font-size:14px; font-weight:700; color:var(--h-soft); text-decoration:none; }
+.zh-back:hover{ color:var(--h-txt); }
+.zh-title{ display:flex; align-items:baseline; gap:6px 16px; flex-wrap:wrap; margin-top:10px; }
+.zh-title .kicker{ margin-top:0; }
+@media (max-width:700px){ .zh-hero{ padding-top:60px; } }
+
+/* вкладки предметов — заливка предмета, как кнопки на главной */
+.tabs{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px; }
+/* все три всегда яркие, в цвете предмета; выбранная — приподнята, с кольцом и свечением */
+.tab{ display:inline-flex; align-items:center; gap:8px; padding:9px 16px 9px 10px; border-radius:14px; font-weight:800; font-size:15px;
+  color:var(--on); background:var(--g); box-shadow:0 8px 18px -14px var(--glow), inset 0 1px 0 rgba(255,255,255,.3);
+  transition:transform .18s var(--ease), box-shadow .2s; }
+.tab i{ font-style:normal; width:30px; height:30px; border-radius:9px; display:grid; place-items:center; font-size:17px; background:rgba(255,255,255,.28); }
+.k-veroyatnost.tab i{ background:rgba(255,255,255,.7); }
+.tab:hover{ transform:translateY(-1px); }
+.tab:active{ transform:scale(.96); }
+.tab[aria-selected="true"]{ transform:translateY(-3px) scale(1.04);
+  box-shadow:0 0 0 3px var(--h-bg), 0 0 0 5px var(--s), 0 16px 30px -12px var(--glow); }
+.tab[aria-selected="true"] i{ animation:tab-pop .45s var(--ease); }
+@keyframes tab-pop{ 0%{ transform:scale(.7) rotate(-12deg); } 60%{ transform:scale(1.18) rotate(6deg); } 100%{ transform:none; } }
+[data-theme="night"] .tab{ box-shadow:0 0 18px -8px var(--glow), inset 0 1px 0 rgba(255,255,255,.25); }
+[data-theme="night"] .tab[aria-selected="true"]{ box-shadow:0 0 0 3px var(--h-bg), 0 0 0 5px var(--s), 0 0 34px -2px var(--glow); }
+.tab .sh{ display:none; }
+@media (max-width:560px){
+  .tabs{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .tab{ flex-direction:column; justify-content:center; gap:5px; padding:9px 4px; font-size:13.5px; text-align:center; }
+  .tab .lg{ display:none; } .tab .sh{ display:inline; }
+  .tab i{ width:32px; height:32px; font-size:18px; }
+  .st{ grid-column:1 / -1; margin-left:0; }
+}
+.st{ margin-left:auto; font-size:13px; color:var(--h-dim); display:flex; align-items:center; gap:6px; }
+.st em{ font-style:normal; }
+.st i{ width:8px; height:8px; border-radius:50%; background:var(--h-ghost); }
+.st.ok i{ background:#16a34a; } .st.wait i{ background:#f59e0b; } .st.bad i{ background:#dc2626; }
+[data-theme="night"] .st.ok i{ background:#6ee7b7; box-shadow:0 0 8px #6ee7b7; }
+
+.zh-main{ padding-top:18px; }
+
+/* панель учителя */
+.tools{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; font-size:14px; color:var(--sub); }
+.btn{ padding:8px 14px; border-radius:11px; font-weight:700; text-align:center; background:var(--card); color:var(--ink); box-shadow:inset 0 0 0 1px var(--z-line2); }
+.btn:hover{ background:var(--z-hover); }
+.btn.pri{ background:var(--g); color:var(--on); box-shadow:0 10px 22px -14px var(--glow); }
+.btn.danger{ color:#dc2626; }
+[data-theme="night"] .btn.danger{ color:#ff7aa8; }
+.warn{ color:#b45309; font-weight:600; }
+[data-theme="night"] .warn{ color:#fcd34d; }
+.codebox b{ color:var(--ink); }
+
+/* таблица */
+.wrap{ overflow:auto; max-height:calc(100vh - 120px); max-height:calc(100dvh - 120px); background:var(--card);
+  border-radius:18px; box-shadow:inset 0 0 0 1px var(--line), 0 14px 40px -28px rgba(40,24,70,.35);
+  -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
+[data-theme="night"] .wrap{ box-shadow:inset 0 0 0 1px rgba(217,70,239,.22), 0 20px 60px -30px rgba(217,70,239,.45); }
+table.zt{ border-collapse:separate; border-spacing:0; font-size:14px; }
+.zt th, .zt td{ border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
+.zt thead th{ position:sticky; top:0; z-index:2; background:var(--z-head); }
+.zt thead tr:first-child th{ height:46px; }
+.zt thead tr:nth-child(2) th{ top:46px; height:22px; }
+.zt .nm{ position:sticky; left:0; z-index:3; background:var(--card); text-align:left; padding:6px 10px;
+  min-width:128px; max-width:150px; font-weight:600; box-shadow:1px 0 0 var(--z-line2); }
+.zt thead .nm{ z-index:4; background:var(--z-head); font-size:12px; color:var(--muted); }
+.zt tbody .nm b{ display:block; font-weight:800; line-height:1.15; }
+.zt tbody .nm span{ display:block; font-size:12.5px; color:var(--sub); font-weight:500; }
+.dt{ padding:3px 6px; font-size:13px; white-space:nowrap; cursor:pointer; border-top:3px solid transparent; text-align:center; }
+.dt b{ display:block; font-weight:700; }
+.dt small{ display:block; font-size:10.5px; color:var(--muted); font-weight:600; }
+.dt:hover{ color:var(--s); }
+.dt a{ display:block; color:inherit; text-decoration:none; }
+.dt.go b i{ font-style:normal; font-size:11px; margin-left:3px; color:var(--s); }
+.dt.go:hover b{ text-decoration:underline; text-underline-offset:3px; }
+a.btn{ text-decoration:none; display:inline-flex; align-items:center; }
+.dt.today{ border-top-color:var(--s); background:color-mix(in srgb, var(--s) 12%, var(--z-head)); }
+.dt.today b::after{ content:' · сегодня'; font-weight:700; font-size:10.5px; color:var(--s); }
+[data-theme="night"] .dt.today{ box-shadow:inset 0 3px 12px -6px var(--glow); }
+.sub{ font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.sub.dz, td.d{ box-shadow:inset 1px 0 0 var(--line); }
+td.c{ width:46px; min-width:46px; height:44px; text-align:center; font-weight:800; font-size:15px; padding:2px; white-space:nowrap; }
+td.c.long{ font-size:11px; white-space:normal; line-height:1.1; font-weight:600; }
+td.d{ border-right:1px solid var(--z-line2); }
+.m5{ background:var(--m5b); color:var(--m5t); } .m4{ background:var(--m4b); color:var(--m4t); }
+.m3{ background:var(--m3b); color:var(--m3t); } .m2{ background:var(--m2b); color:var(--m2t); }
+.mn{ background:var(--mnb); color:var(--mnt); font-weight:600; }
+.edit td.c{ cursor:pointer; } .edit td.c:hover{ outline:2px solid var(--s); outline-offset:-2px; }
+td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
+[data-theme="night"] td.c.cur{ box-shadow:0 0 16px -2px #ff5cc8; }
+.zt tfoot th.nm{ font-size:12px; color:var(--muted); vertical-align:top; }
+.zt tfoot td{ vertical-align:top; padding:6px; font-size:12px; color:var(--sub); cursor:pointer; max-width:92px; }
+.zt tfoot td:hover{ background:var(--z-hover); }
+.clamp{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden; white-space:pre-line; word-break:break-word; }
+.tp td{ color:var(--ink); font-weight:600; }
+.addc{ padding:0 10px; vertical-align:middle; }
+.empty{ padding:40px 20px; text-align:center; color:var(--sub); }
+
+.legend{ display:flex; flex-wrap:wrap; gap:6px 14px; font-size:13px; color:var(--sub); padding:12px 2px 0; align-items:center; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.legend i{ display:inline-grid; place-items:center; min-width:24px; height:22px; padding:0 4px; border-radius:6px; font-style:normal; font-weight:800; font-size:12px; }
+
+/* вход по коду */
+.gate{ max-width:420px; margin:28px auto; background:var(--card); border-radius:20px; padding:26px 22px; text-align:center;
+  box-shadow:inset 0 0 0 1px var(--line), 0 18px 50px -30px rgba(40,24,70,.4); }
+[data-theme="night"] .gate{ box-shadow:inset 0 0 0 1px rgba(217,70,239,.25), 0 0 60px -24px rgba(217,70,239,.6); }
+.gate h2{ font-size:22px; font-weight:800; margin-bottom:6px; }
+.gate p{ color:var(--sub); font-size:15px; }
+.gate form{ display:flex; gap:8px; margin-top:18px; }
+.gate input{ flex:1; min-width:0; padding:12px 14px; border-radius:12px; border:1px solid var(--z-line2); background:var(--store); font-size:20px; text-align:center; letter-spacing:.12em; }
+.gate .err{ color:#dc2626; margin-top:12px; font-size:14px; min-height:1em; }
+[data-theme="night"] .gate .err{ color:#ff7aa8; }
+.link{ text-decoration:underline; text-underline-offset:3px; color:var(--sub); font-size:13px; }
+
+/* нижний лист: оценка */
+.pop{ position:fixed; left:50%; bottom:12px; transform:translateX(-50%); width:min(440px, calc(100vw - 16px)); z-index:40;
+  background:var(--card); color:var(--ink); border-radius:20px; box-shadow:var(--z-shadow), inset 0 0 0 1px var(--line); padding:14px; }
+.pop-h{ display:flex; justify-content:space-between; gap:10px; font-size:14px; margin-bottom:10px; }
+.pop-h span{ color:var(--sub); text-align:right; }
+.pop-q{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+.pop-q button{ height:46px; border-radius:12px; font-weight:800; font-size:18px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); }
+.pop-t{ display:flex; gap:6px; margin-top:8px; }
+.pop-t input{ flex:1; min-width:0; padding:10px 12px; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); }
+.pop-f{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:10px; font-size:14px; color:var(--sub); }
+.pop-f label{ display:flex; align-items:center; gap:6px; cursor:pointer; }
+
+/* окна: урок, ученики */
+.dlg-bg{ position:fixed; inset:0; background:rgba(16,10,24,.45); z-index:45; }
+[data-theme="night"] .dlg-bg{ background:rgba(5,2,8,.7); }
+.dlg{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:min(560px, calc(100vw - 16px)); max-height:calc(100dvh - 24px); overflow:auto;
+  background:var(--card); color:var(--ink); border-radius:20px; box-shadow:var(--z-shadow); padding:20px; z-index:46; }
+.dlg h3{ font-size:20px; font-weight:800; margin-bottom:4px; }
+.dlg .meta{ color:var(--muted); font-size:13px; margin-bottom:14px; }
+.dlg .txt{ white-space:pre-line; font-size:15px; margin:6px 0 14px; }
+.dlg .lbl{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-top:10px; }
+.dlg input, .dlg textarea{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); margin-top:4px; }
+.dlg textarea{ min-height:110px; resize:vertical; }
+.dlg .row{ display:flex; gap:8px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap; }
+.dlg .row .sp{ flex:1; }
+.srow{ display:grid; grid-template-columns:1fr 1fr 36px; gap:6px; margin-top:6px; }
+.srow input{ margin-top:0; }
+.srow button{ border-radius:10px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); color:#dc2626; }
+
+.zh-foot{ padding:22px 0 40px; font-size:13px; color:var(--muted); }
+
+/* ── живой журнал (ТЗ 17, шаги 1–3) ── */
+/* пятёрка светится — сдано, всё понятно */
+td.c.m5{ position:relative; z-index:1; box-shadow:inset 0 0 0 2px var(--m5g), 0 0 14px -3px var(--m5g); animation:z-glow 2.8s ease-in-out infinite; }
+@keyframes z-glow{ 50%{ box-shadow:inset 0 0 0 2px var(--m5g), 0 0 20px 1px var(--m5g); } }
+/* долг: двойка, единица, незачёт — красная рамка и сколько дней осталось на пересдачу */
+td.c.debt{ position:relative; box-shadow:inset 0 0 0 2px var(--m2t); }
+td.c sup{ position:absolute; top:2px; right:3px; font-size:9.5px; font-weight:800; line-height:1; font-family:'JetBrains Mono',ui-monospace,monospace; }
+td.c.zlate sup{ color:#fff; background:var(--m2t); border-radius:4px; padding:1px 3px; }
+/* кто поставил: А — автоматика, ✎ — D исправил оценку автоматики */
+td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:800; line-height:1; opacity:.75; }
+.zt tbody .nm em{ font-style:normal; color:var(--m2t); font-weight:700; }
+.sub.dz.sh{ letter-spacing:0; }
+.zt tfoot td[colspan="1"]{ min-width:88px; }
+.fcount{ display:inline-block; margin-left:4px; font-size:11px; font-weight:700; color:var(--muted); white-space:nowrap; }
+/* подсказка: навёл — вспомнил, что было */
+.ztip{ position:fixed; z-index:60; max-width:280px; padding:9px 11px; border-radius:12px; font-size:12.5px; line-height:1.4;
+  background:var(--night); color:#f3eaf7; box-shadow:var(--z-shadow); pointer-events:none; white-space:pre-line; }
+.ztip b{ display:block; font-size:13px; margin-bottom:2px; }
+[data-theme="night"] .ztip{ background:#2a1636; box-shadow:0 0 0 1px rgba(255,92,200,.3), 0 18px 40px -16px rgba(217,70,239,.6); }
+/* источник оценки в листе D */
+.pop-src{ font-size:13px; color:var(--sub); background:var(--z-head); border-radius:10px; padding:8px 10px; margin-bottom:10px; }
+.pop-x{ display:flex; gap:6px; margin-top:8px; }
+.pop-x button{ flex:1; height:36px; border-radius:10px; font-weight:700; font-size:14px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); }
+/* файлы урока в карточке */
+.files{ display:flex; flex-direction:column; gap:6px; margin:6px 0 4px; }
+.file{ display:flex; align-items:center; gap:8px; }
+.file .zdl{ flex:1; min-width:0; display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:12px; text-align:left; box-shadow:inset 0 0 0 1px var(--z-line2); }
+.file .zdl:hover{ background:var(--z-hover); }
+.file .ext{ font-family:'JetBrains Mono',ui-monospace,monospace; font-size:11px; font-weight:700; padding:3px 6px; border-radius:6px; background:var(--z-head); color:var(--sub); flex:none; text-transform:uppercase; }
+.file .fn{ flex:1; min-width:0; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.file .fz{ font-size:12px; color:var(--muted); white-space:nowrap; }
+.file .rm{ width:36px; height:36px; border-radius:10px; text-align:center; color:#dc2626; box-shadow:inset 0 0 0 1px var(--z-line2); flex:none; }
+.upl{ position:relative; overflow:hidden; display:inline-flex; align-items:center; cursor:pointer; }
+.upl input{ position:absolute; inset:0; opacity:0; cursor:pointer; margin:0; }
+.dlg .chk{ display:flex; gap:8px; align-items:flex-start; margin-top:12px; font-size:14px; color:var(--sub); cursor:pointer; }
+.dlg .chk input{ width:auto; margin-top:3px; }
+.note{ font-size:13px; color:var(--muted); margin-top:4px; }
+@media (prefers-reduced-motion:reduce){ td.c.m5{ animation:none; } }
+#footLinks:not(:empty)::before{ content:' · '; }
+</style>
+</head>
+<body>
+<header class="zh-hero">
+  <div class="shell">
+    <a class="zh-back" href="./">← Уроки</a>
+    <div class="zh-title">
+      <h1>Журнал</h1>
+      <span class="kicker">Школа Гагарина · 9 класс · 2026/27</span>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+  </div>
+</header>
+<div class="shell zh-main">
+  <div class="tools" id="tools" hidden></div>
+  <main id="main"></main>
+  <footer class="zh-foot">
+    <a class="link" href="pravila.html">Правила и конфиденциальность</a><span id="footLinks"></span>
+  </footer>
+</div>
+
+<!-- часы и тема — как на главной -->
+<div class="dock" id="dock">
+  <span class="clock mono" id="clock"></span>
+  <button class="tema tema-day" data-tema="day" title="Дневная тема" aria-label="Дневная тема">Λ</button>
+  <button class="tema tema-night" data-tema="night" title="Ночная тема" aria-label="Ночная тема">D</button>
+</div>
+<div class="pop" id="pop" hidden></div>
+<!-- уроки сайта: по ним журнал ведёт с даты прямо в урок (./#algebra-3) -->
+<script src="data.js"></script>
+<div id="dlg"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var SUBJ = [
+    { id: 'alg', name: 'Алгебра', short: 'Алгебра', k: 'k-algebra', icon: '🧮', kurs: 'algebra' },
+    { id: 'geo', name: 'Геометрия', short: 'Геометрия', k: 'k-geometriya', icon: '📐', kurs: 'geometriya' },
+    { id: 'ver', name: 'Вероятность и статистика', short: 'Вероятность', k: 'k-veroyatnost', icon: '🎲', kurs: 'veroyatnost' }
+  ];
+  var QUICK = ['5', '4', '3', '2', '1', 'н', '–'];
+  var LS = { kabKey: 'kab:key', key: 'zh:key', pass: 'zh:pass', tab: 'zh:tab', api: 'kab:api', cache: 'zh:cache', out: 'zh:out', next: 'zh:next' };
+  var KINDS = ['stu', 'les', 'mark', 'cfg', 'file'];
+  var DEBT_DAYS = 14;   // двойку пересдать за две недели (D, 30.09)
+
+  function lsGet(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* без памяти — только на этот раз */ } }
+  function lsDel(k) { try { localStorage.removeItem(k); } catch (e) { /* нечего чистить */ } }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function $(id) { return document.getElementById(id); }
+
+  /* ── адрес сервера: как у Кабинета — прямой RF и запасной через шлюз (с VPN) ── */
+  var APIS = (function () {
+    try {
+      var q = new URLSearchParams(location.search).get('api') || '';
+      if (/^http:\/\/(127\.0\.0\.1|localhost)(:\d{2,5})?(\/[\w\/-]*)?$/.test(q)) return [q.replace(/\/$/, '')];
+    } catch (e) { /* старый браузер — боевой адрес */ }
+    var list = ['https://194-87-110-53.nip.io/cabinet', 'https://hw.157-228-128-116.nip.io/cabinet'];
+    var saved = lsGet(LS.api, '');
+    return list.indexOf(saved) > 0 ? [saved].concat(list.filter(function (a) { return a !== saved; })) : list;
+  })();
+  var API = APIS[0];
+  function nextApi() { if (APIS.length > 1) API = APIS[(APIS.indexOf(API) + 1) % APIS.length]; }
+
+  function post(path, body, headers) {
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var guard = setTimeout(function () { if (ctrl) ctrl.abort(); }, 10000);
+    var h = { 'Content-Type': 'application/json' };
+    Object.keys(headers || {}).forEach(function (k) { h[k] = headers[k]; });
+    return fetch(API + path, { method: 'POST', headers: h, body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) {
+        clearTimeout(guard);
+        return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, data: j }; });
+      }, function (e) { clearTimeout(guard); throw e; });
+  }
+
+  /* ── состояние ── */
+  var S = blank();
+  // ключ Кабинета на этом устройстве — D узнан сам
+  var teacherKey = lsGet(LS.key, '') || lsGet(LS.kabKey, '');
+  var mode = teacherKey ? 'teacher' : 'view';
+  var outbox = mode === 'teacher' ? lsGet(LS.out, []) : [];
+  var tab = lsGet(LS.tab, 'alg');
+  if (/^#(alg|geo|ver)$/.test(location.hash)) tab = location.hash.slice(1);
+  if (!SUBJ.some(function (s) { return s.id === tab; })) tab = 'alg';
+  var loaded = false, cur = null, pendingRender = false, scrollPos = {};
+
+  function blank() { return { stu: {}, les: {}, mark: {}, cfg: {}, file: {} }; }
+  function fromObjects(list) {
+    var n = blank();
+    (list || []).forEach(function (o) {
+      if (!n[o.k] || !o.d || typeof o.d !== 'object') return;
+      var d = o.d; d.id = o.id; d.ts = o.ts; n[o.k][o.id] = d;
+    });
+    return n;
+  }
+  function vals(o) { return Object.keys(o).map(function (k) { return o[k]; }); }
+
+  /* ── даты: учебный год, сентябрь → май ── */
+  function dkey(date) {
+    var m = /^(\d{1,2})\.(\d{1,2})/.exec(date || '');
+    if (!m) return 99999;
+    var mo = +m[2];
+    return (mo >= 8 ? 0 : 10000) + mo * 100 + (+m[1]);
+  }
+  // 'ДД.ММ' → дата учебного года: сентябрь—декабрь этого года, январь—август следующего
+  function realDate(date) {
+    var m = /^(\d{1,2})\.(\d{1,2})/.exec(date || '');
+    if (!m) return null;
+    var now = new Date(), y0 = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
+    return new Date(+m[2] >= 8 ? y0 : y0 + 1, +m[2] - 1, +m[1]);
+  }
+  function ddmm(d) { return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2); }
+  function todayStr() { var d = new Date(); return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2); }
+  function lessons(subj) {
+    return vals(S.les).filter(function (l) { return l.subj === subj; }).sort(function (a, b) {
+      return dkey(a.date) - dkey(b.date) || (a.ord || 0) - (b.ord || 0) || (a.id < b.id ? -1 : 1);
+    });
+  }
+  function students() {
+    return vals(S.stu).sort(function (a, b) {
+      return (a.ord || 0) - (b.ord || 0) || String(a.fam).localeCompare(String(b.fam), 'ru');
+    });
+  }
+  // урок сайта для урока журнала: тот же предмет и дата. Два урока в один день (сдвоенный) —
+  // первый к первому, второй ко второму; на сайте один — оба ведут в него
+  function siteLink(l) {
+    try {
+      var sj = SUBJ.filter(function (s) { return s.id === l.subj; })[0];
+      var kurs = (window.DATA && DATA.kursy || []).filter(function (k) { return k.id === sj.kurs; })[0];
+      if (!kurs) return '';
+      var same = kurs.uroki.filter(function (u) { return u.date === l.date; }).sort(function (a, b) { return a.n - b.n; });
+      if (!same.length) return '';
+      var nth = lessons(l.subj).filter(function (x) { return x.date === l.date; }).indexOf(l);
+      var u = same[Math.min(Math.max(nth, 0), same.length - 1)];
+      return './#' + kurs.id + '-' + u.n;
+    } catch (e) { return ''; }
+  }
+
+  // что за оценка: 5-балльная («4», «2 (55 доделать)»), из 100 («85», «85/100», «70%»), дробью («4/5»),
+  // зачёт / незачёт, «н» — не был. red — долг: пересдать за DEBT_DAYS дней
+  function markInfo(v) {
+    var s = String(v || '').trim().toLowerCase();
+    if (!s) return { cls: '' };
+    if (/^незач/.test(s)) return { cls: 'm2', red: true };
+    if (/^(зач|✓)/.test(s)) return { cls: 'm4' };
+    if (s[0] === 'н') return { cls: 'mn' };
+    var m = /^(\d+(?:[.,]\d+)?)\s*(?:\/\s*(\d+))?\s*(%)?/.exec(s);
+    if (!m) return { cls: '' };
+    var n = parseFloat(m[1].replace(',', '.')), of = m[2] ? +m[2] : 0, cls;
+    if (of || m[3] || n > 5) {
+      var pc = Math.min(100, of ? n / of * 100 : n);
+      cls = pc >= 85 ? 'm5' : pc >= 65 ? 'm4' : pc >= 45 ? 'm3' : 'm2';
+    } else cls = ['m2', 'm2', 'm2', 'm3', 'm4', 'm5'][Math.floor(n)] || 'm2';
+    return { cls: cls, red: cls === 'm2' };
+  }
+  function markCls(v) { return markInfo(v).cls; }
+  // долг по клетке: до какого числа пересдать и сколько дней осталось (0 — сегодня последний день)
+  function debtOf(l, v) {
+    if (!markInfo(v).red) return null;
+    var d = realDate(l.date);
+    if (!d) return null;
+    d.setDate(d.getDate() + DEBT_DAYS);
+    var t = new Date(); t.setHours(0, 0, 0, 0);
+    return { until: ddmm(d), left: Math.round((d - t) / 864e5) };
+  }
+  function debtCount(sid) {
+    return Object.keys(S.mark).filter(function (id) {
+      var p = id.split('.'), l = S.les[p[0]];
+      if (l && p[2] === 'd' && l.sh && prevSameDay(l, l.date, l.subj)) return false;   // ДЗ сдвоенного урока не видна — не считаем
+      return p[1] === sid && l && debtOf(l, S.mark[id].v);
+    }).length;
+  }
+  // клетка целиком: класс, содержимое, подсказка
+  function cellView(id) {
+    var parts = id.split('.'), l = S.les[parts[0]], m = S.mark[id], v = m ? m.v : '';
+    var inf = markInfo(v), dbt = l ? debtOf(l, v) : null, cls = 'c ' + parts[2] + ' ' + inf.cls + (v.length > 3 ? ' long' : '');
+    var inner = esc(v);
+    if (dbt) { cls += ' debt' + (dbt.left < 0 ? ' zlate' : ''); inner += '<sup>' + (dbt.left < 0 ? '!' : dbt.left + 'д') + '</sup>'; }
+    if (m && m.by === 'auto') inner += '<i class="src" aria-hidden="true">A</i>';
+    else if (m && m.av) inner += '<i class="src" aria-hidden="true">✎</i>';
+    return { cls: cls, inner: inner };
+  }
+  // подсказка к клетке: кто, когда, что за урок, кто поставил, долг
+  function cellTip(id) {
+    var parts = id.split('.'), l = S.les[parts[0]], p = S.stu[parts[1]], m = S.mark[id];
+    if (!l || !p) return '';
+    var shared = parts[2] === 'd' && sharedCount(l) > 1;
+    var t = '<b>' + esc(p.fam + ' ' + p.name) + '</b>' + esc(l.date) + ' · ' + (parts[2] === 'd' ? (shared ? 'ДЗ, общая на ' + sharedCount(l) + ' урока' : 'ДЗ') : 'урок') +
+      (l.topic ? '\n' + esc(l.topic.slice(0, 90)) : '');
+    if (!m || !m.v) return t + '\nОценки нет';
+    t += '\nОценка: ' + esc(m.v);
+    if (m.by === 'auto') t += '\nПоставила автоматика' + (m.an ? ': ' + esc(m.an) : '');
+    else if (m.av) t += '\nD исправил. Автоматика ставила ' + esc(m.av) + (m.an ? ' (' + esc(m.an) + ')' : '');
+    var dbt = debtOf(l, m.v);
+    if (dbt) t += '\n' + (dbt.left < 0 ? 'Долг: срок пересдачи вышел ' + dbt.until : 'Долг: пересдать до ' + dbt.until + (dbt.left === 0 ? ' — сегодня последний день' : ', осталось ' + dbt.left + ' дн.'));
+    return t;
+  }
+
+  /* ── сдвоенный урок: одна домашка на оба (D, 30.09) ──
+     У второго урока дня sh=1 — его ДЗ-клетки нет, домашка общая, живёт в клетке ДЗ первого урока
+     и стоит после второго: урок · урок · ДЗ */
+  function layout(L) {
+    return L.map(function (l, i) {
+      var joinedNext = L[i + 1] && L[i + 1].sh && L[i + 1].date === l.date;
+      var own = l, j = i;
+      while (j > 0 && L[j].sh && L[j - 1].date === L[j].date) j--;
+      own = L[j];
+      var cols = [{ l: l, w: 'u' }];
+      if (!joinedNext) cols.push({ l: own, w: 'd', n: i - j + 1 });
+      return { l: l, own: own, cols: cols, joinedNext: !!joinedNext };
+    });
+  }
+  // на сколько уроков общая ДЗ, клетка которой у урока l (1 — обычная)
+  function sharedCount(l) {
+    var L = lessons(l.subj), i = L.indexOf(l), n = 1;
+    while (i >= 0 && L[i + n] && L[i + n].sh && L[i + n].date === l.date) n++;
+    return n;
+  }
+  function prevSameDay(l, date, subj) {   // урок того же дня перед l (для галочки «общая ДЗ»)
+    var L = lessons(subj).filter(function (x) { return x.date === date && x !== l; });
+    if (!l) return L[L.length - 1] || null;
+    return L.filter(function (x) { return (x.ord || 0) < (l.ord || 0); }).pop() || null;
+  }
+  function filesOf(lid) {
+    return vals(S.file).filter(function (f) { return f.les === lid; }).sort(function (a, b) { return (a.ord || 0) - (b.ord || 0); });
+  }
+  function kb(n) { return n >= 1048576 ? (n / 1048576).toFixed(1).replace('.', ',') + ' МБ' : Math.max(1, Math.round(n / 1024)) + ' КБ'; }
+
+  /* ── правки D: операция на сервер, побеждает более поздняя ── */
+  function newCode() {   // без похожих знаков: 0/о, 1/l, 3/з
+    var a = 'abcdefghkmnprstuvwxyz2456789', out = '';
+    for (var i = 0; i < 8; i++) out += (i === 4 ? '-' : '') + a[Math.floor(Math.random() * a.length)];
+    return out;
+  }
+  function newId(p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function stamp(k, id) { var p = S[k][id]; return Math.max(Date.now(), (p && p.ts || 0) + 1); }
+  function put(k, id, d) {
+    var ts = stamp(k, id), o = {};
+    Object.keys(d).forEach(function (x) { o[x] = d[x]; });
+    o.id = id; o.ts = ts; S[k][id] = o;
+    queue({ t: 'put', k: k, id: id, d: d, ts: ts });
+  }
+  function del(k, id) {
+    var ts = stamp(k, id);
+    delete S[k][id];
+    queue({ t: 'del', k: k, id: id, ts: ts });
+  }
+  function queue(op) {
+    outbox = outbox.filter(function (x) { return !(x.k === op.k && x.id === op.id); });
+    outbox.push(op);
+    save();
+    clearTimeout(queue.t);
+    queue.t = setTimeout(sync, 500);
+  }
+  function save() { lsSet(LS.out, outbox); lsSet(LS.cache, S); }
+
+  var busy = false, again = false, retryT = null;
+  function sync() {
+    if (mode !== 'teacher') return;
+    if (busy) { again = true; return; }
+    busy = true; setSt('wait', outbox.length ? 'сохраняю…' : 'сверяю…');
+    var sending = outbox.slice(0, 1500);
+    post('/zhurnal/sync', { ops: sending }, { Authorization: 'Bearer ' + teacherKey })
+      .then(function (r) {
+        if (r.status === 401 || r.status === 403) throw { badKey: true };
+        lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
+        if (r.status !== 200 || !r.data.ok) throw { http: r.status };
+        outbox = outbox.filter(function (o) {
+          return !sending.some(function (s) { return s.k === o.k && s.id === o.id && s.ts === o.ts; });
+        });
+        var next = fromObjects(r.data.objects);
+        outbox.forEach(function (op) {   // правки, сделанные пока шёл запрос, — сверху
+          if (op.t === 'put') { var o = JSON.parse(JSON.stringify(op.d)); o.id = op.id; o.ts = op.ts; next[op.k][op.id] = o; }
+          else delete next[op.k][op.id];
+        });
+        var changed = JSON.stringify(next) !== JSON.stringify(S);
+        S = next; loaded = true; save();
+        setSt('ok', 'сохранено');
+        if (changed || !sync.once) render();
+        sync.once = true;
+      })
+      .catch(function (e) {
+        if (e && e.badKey) {
+          // неотправленные оценки не трогаем: сервер мог просто перезапускаться
+          setSt('bad', 'ключ не подошёл — правки ждут на этом устройстве');
+          $('footLinks').innerHTML = '<button class="link" data-act="teacher">Ввести ключ учителя заново</button> · <button class="link" data-act="asview">Смотреть по коду класса</button>';
+          if (!loaded) $('main').innerHTML = '<div class="gate"><h2>Ключ учителя не подошёл</h2><p>Журнал на этом устройстве пока не открывался.</p>' +
+            '<p style="margin-top:14px"><button class="btn pri" data-act="teacher">Ввести ключ</button> <button class="btn" data-act="asview">Смотреть по коду</button></p></div>';
+          clearTimeout(retryT); retryT = setTimeout(sync, 60000);
+          return;
+        }
+        if (!e || !e.http) nextApi();
+        setSt('bad', 'нет связи — правки сохранятся, когда появится сеть');
+        clearTimeout(retryT); retryT = setTimeout(sync, 6000);
+      })
+      .then(function () {
+        busy = false;
+        if (again) { again = false; sync(); }
+      });
+  }
+  function setSt(cls, txt) { var st = $('st'); st.hidden = false; st.className = 'st ' + cls; $('stTxt').textContent = txt; }
+
+  /* ── ученик: смотреть по коду класса ── */
+  // code — введённый руками код класса; без него — пропуск этого устройства из прошлого входа
+  function view(code, tries) {
+    if (!loaded) $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
+    var body = code ? { code: code } : { pass: lsGet(LS.pass, '') };
+    post('/zhurnal/view', body)
+      .then(function (r) {
+        if (r.status === 403) {
+          lsDel(LS.pass);
+          gate(code ? 'Код не подошёл. Проверь его или спроси у учителя.' : 'Учитель сменил код класса — введи новый.');
+          return;
+        }
+        if (r.status === 429) { gate('Слишком много неверных попыток. Подожди 10 минут.'); return; }
+        if (r.status !== 200 || !r.data.ok) throw { http: r.status };
+        lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
+        if (r.data.pass) lsSet(LS.pass, r.data.pass);
+        S = fromObjects(r.data.objects); loaded = true; render();
+      })
+      .catch(function (e) {
+        if (!e || !e.http) nextApi();
+        if ((tries || 0) < 1) return view(code, 1);
+        $('main').innerHTML = '<div class="gate"><h2>Нет связи с журналом</h2><p>Проверь интернет. Если включён VPN — попробуй без него.</p>' +
+          '<p style="margin-top:14px"><button class="btn pri" data-act="retry">Ещё раз</button></p></div>';
+      });
+  }
+  function gate(err) {
+    loaded = false;
+    $('main').innerHTML =
+      '<div class="gate"><h2>Код класса</h2><p>Журнал открывается по коду. Его говорит учитель на уроке.</p>' +
+      '<form id="gateForm"><input id="gateIn" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="40" aria-label="Код класса" placeholder="код">' +
+      '<button class="btn pri" type="submit">Открыть</button></form><div class="err">' + esc(err || '') + '</div></div>';
+    var f = $('gateForm');
+    f.onsubmit = function (ev) { ev.preventDefault(); var c = $('gateIn').value.trim(); if (c) view(c); };
+    setTimeout(function () { var i = $('gateIn'); if (i) i.focus(); }, 50);
+  }
+
+  /* ── отрисовка ── */
+  function renderTabs() {
+    var st = $('st');
+    $('tabs').innerHTML = SUBJ.map(function (s) {
+      return '<button class="tab ' + s.k + '" role="tab" data-tab="' + s.id + '" aria-selected="' + (s.id === tab) + '">' +
+        '<i>' + s.icon + '</i><span class="lg">' + esc(s.name) + '</span><span class="sh">' + esc(s.short) + '</span></button>';
+    }).join('');
+    $('tabs').appendChild(st);   // статус сохранения — в строке предметов, справа
+    document.body.className = SUBJ.filter(function (s) { return s.id === tab; })[0].k + (mode === 'teacher' ? ' edit' : '');
+  }
+
+  function renderTools() {
+    var t = $('tools');
+    if (mode !== 'teacher') { t.hidden = true; return; }
+    t.hidden = false;
+    var code = S.cfg.code && S.cfg.code.v;
+    t.innerHTML = '<button class="btn pri" data-act="addles">＋ Урок</button>' +
+      '<button class="btn" data-act="students">Ученики</button>' +
+      (code ? '<span class="codebox">Код для класса: <b class="mono">' + esc(code) + '</b></span> <button class="link" data-act="code">изменить</button>'
+            : '<span class="warn">Код класса не задан — ученики журнал не увидят.</span> <button class="btn" data-act="code">Задать код</button>');
+  }
+
+  function render() {
+    if (cur) { pendingRender = true; return; }
+    renderTabs(); renderTools();
+    var main = $('main');
+    if (!loaded) return;
+    keepScroll();
+    var L = lessons(tab), P = students(), edit = mode === 'teacher';
+    if (!P.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Учеников пока нет — добавь их кнопкой «Ученики».' : 'Журнал пока пуст.') + '</div>'; return; }
+    if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый кнопкой «＋ Урок».' : 'По этому предмету пока нет уроков.') + '</div>'; return; }
+
+    var perDay = {}, nthOfDay = {};
+    L.forEach(function (l) { perDay[l.date] = (perDay[l.date] || 0) + 1; nthOfDay[l.id] = perDay[l.date]; });
+    var today = todayStr(), LY = layout(L);
+
+    var h = '<div class="wrap" id="wrap"><table class="zt"><thead><tr><th class="nm" rowspan="2">Ученик</th>';
+    LY.forEach(function (x) {
+      var l = x.l, go = siteLink(l), small = perDay[l.date] > 1 ? 'урок ' + nthOfDay[l.id] : '&nbsp;';
+      h += '<th class="dt' + (l.date === today ? ' today' : '') + (go ? ' go' : '') + '" colspan="' + x.cols.length + '" data-les="' + l.id + '">' +
+        (go ? '<a href="' + go + '" title="Открыть урок на сайте"><b class="mono">' + esc(l.date || '—') + '<i>↗</i></b><small>' + small + '</small></a>'
+            : '<b class="mono">' + esc(l.date || '—') + '</b><small>' + small + '</small>') + '</th>';
+    });
+    if (edit) h += '<th class="addc" rowspan="2"><button class="btn" data-act="addles">＋</button></th>';
+    h += '</tr><tr>';
+    LY.forEach(function (x) {
+      x.cols.forEach(function (c) {
+        h += c.w === 'u' ? '<th class="sub">урок</th>'
+          : c.n > 1 ? '<th class="sub dz sh" title="Одна домашка на ' + c.n + ' урока">ДЗ ×' + c.n + '</th>' : '<th class="sub dz">ДЗ</th>';
+      });
+    });
+    h += '</tr></thead><tbody>';
+    P.forEach(function (p) {
+      var dn = edit ? debtCount(p.id) : 0;   // счётчик долгов — только учителю; дети видят красные клетки (D, 30.09)
+      h += '<tr><th class="nm"><b>' + esc(p.fam) + '</b><span>' + esc(p.name) +
+        (dn ? ' · <em>' + dn + ' ' + (dn === 1 ? 'долг' : dn < 5 ? 'долга' : 'долгов') + '</em>' : '') + '</span></th>';
+      LY.forEach(function (x) {
+        x.cols.forEach(function (c) {
+          var id = c.l.id + '.' + p.id + '.' + c.w, cv = cellView(id);
+          h += '<td class="' + cv.cls + '" data-c="' + id + '">' + cv.inner + '</td>';
+        });
+      });
+      if (edit) h += '<td></td>';
+      h += '</tr>';
+    });
+    h += '</tbody><tfoot><tr class="tp"><th class="nm">Тема</th>';
+    LY.forEach(function (x) {
+      var nf = filesOf(x.l.id).length;
+      h += '<td colspan="' + x.cols.length + '" data-les="' + x.l.id + '"><div class="clamp">' + esc(x.l.topic) + '</div>' +
+        (nf ? '<span class="fcount" title="Файлы урока">📎 ' + nf + '</span>' : '') + '</td>';
+    });
+    if (edit) h += '<td></td>';
+    h += '</tr><tr class="hw"><th class="nm">Домашка</th>';
+    var span = 0;
+    LY.forEach(function (x) {   // сдвоенный урок с общей ДЗ — одна клетка на оба
+      if (x.joinedNext) { span += x.cols.length; return; }
+      h += '<td colspan="' + (span + x.cols.length) + '" data-les="' + x.own.id + '"><div class="clamp">' + esc(x.own.hw || '—') + '</div></td>';
+      span = 0;
+    });
+    if (edit) h += '<td></td>';
+    h += '</tr></tfoot></table></div>';
+    h += '<div class="legend"><span><i class="m5">5</i><i class="m4">4</i><i class="m3">3</i><i class="m2">2</i> оценки · <i class="m5">85</i> из 100 · <i class="m4">зач</i> зачёт</span>' +
+      '<span><i class="m2">2<small style="font-size:9px;margin-left:2px">9д</small></i> долг: пересдать за ' + DEBT_DAYS + ' дней, цифра — сколько осталось, <b style="color:var(--m2t)">!</b> — срок вышел</span>' +
+      '<span><i class="mn">н</i> не было на уроке</span><span><i class="m2">1</i> не принёс</span>' +
+      '<span><i class="mn">A</i> поставила автоматика · <i class="mn">✎</i> D исправил автоматику</span>' +
+      '<span>Наведи на клетку — вспомнишь, что было. Дата с ↗ — урок на сайте. Тема — карточка урока и файлы.</span></div>';
+    main.innerHTML = h;
+
+    var wrap = $('wrap');
+    wrap.dataset.subj = tab;
+    wrap.addEventListener('scroll', keepScroll, { passive: true });
+    if (scrollPos[tab]) { wrap.scrollLeft = scrollPos[tab][0]; wrap.scrollTop = scrollPos[tab][1]; }
+    else {
+      // первый раз открыли предмет — сразу к последним урокам, а не к началу сентября
+      var tk = dkey(today), target = null;
+      L.forEach(function (l) { if (dkey(l.date) <= tk) target = l; });
+      if (!target) target = L[0];
+      var th = wrap.querySelector('th.dt[data-les="' + target.id + '"]');
+      if (th) {
+        var nmw = wrap.querySelector('thead .nm').offsetWidth;
+        wrap.scrollLeft = Math.max(0, th.offsetLeft - nmw - (wrap.clientWidth - nmw) * 0.55);
+      }
+      keepScroll();
+    }
+  }
+
+  function keepScroll() {
+    var w = $('wrap');
+    if (w && w.dataset.subj) scrollPos[w.dataset.subj] = [w.scrollLeft, w.scrollTop];
+  }
+
+  /* ── урок целиком (и правка — для D) ── */
+  // карточка урока — у всех; D из неё же идёт в правку (✎)
+  function openLesson(id, editNow) {
+    var l = S.les[id], edit = mode === 'teacher';
+    if (!l && !edit) return;
+    var isNew = !l;
+    if (isNew) l = { subj: tab, date: todayStr(), topic: '', hw: '' };
+    var subj = SUBJ.filter(function (s) { return s.id === l.subj; })[0];
+    var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">';
+    if (!isNew && !editNow) {
+      var go = siteLink(l), F = filesOf(id), L0 = lessons(l.subj), li = L0.indexOf(l), own = l;
+      while (li > 0 && L0[li].sh && L0[li - 1].date === L0[li].date) { li--; own = L0[li]; }
+      var nSh = sharedCount(own);
+      h += '<h3>' + esc(l.topic || 'Урок') + '</h3><div class="meta">' + esc(subj.name) + ' · ' + esc(l.date) + '</div>' +
+        '<div class="lbl">Файлы урока</div>' +
+        (F.length ? '<div class="files">' + F.map(function (f) {
+          return '<div class="file"><button class="zdl" data-act="dl" data-id="' + f.id + '"><span class="ext">' + esc(f.ext) + '</span><span class="fn">' + esc(f.name) +
+            '</span><span class="fz">' + kb(f.size || 0) + ' ↓</span></button>' + (edit ? '<button class="rm" data-act="rmfile" data-id="' + f.id + '" title="Удалить файл" aria-label="Удалить файл">✕</button>' : '') + '</div>';
+        }).join('') + '</div>' : '<div class="note">' + (edit ? 'Пока нет. Добавь теорию, практику, презентацию — ученики скачают их здесь.' : 'К этому уроку файлов нет.') + '</div>') +
+        (edit ? '<label class="btn upl" style="margin-top:6px">＋ Добавить файлы<input type="file" id="upFile" data-les="' + id + '" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx,.xlsx"></label>' +
+          '<div class="note" id="upSt">PDF, картинки, PowerPoint, Word, Excel — до 25 МБ, до 10 файлов на урок.</div>' : '') +
+        '<div class="lbl">Домашка' + (nSh > 1 ? ' · общая на ' + nSh + ' урока' : '') + '</div><div class="txt">' + esc(own.hw || 'Не задано') + '</div>' +
+        '<div class="row">' + (edit ? '<button class="btn" data-act="editlesson" data-id="' + id + '">✎ Изменить</button>' : '') +
+        '<span class="sp"></span>' +
+        (go ? '<a class="btn pri" href="' + go + '">Открыть урок на сайте ↗</a>' : '<span class="meta" style="margin:0">Урока на сайте пока нет</span>') +
+        '<button class="btn" data-act="close">Закрыть</button></div></div>';
+    } else {
+      h += '<h3>' + (isNew ? 'Новый урок' : 'Урок') + '</h3><div class="meta">' + esc(subj.name) + '</div>' +
+        '<div class="lbl">Дата (ДД.ММ)</div><input id="fDate" class="mono" inputmode="decimal" maxlength="5" value="' + esc(l.date) + '">' +
+        '<div class="lbl">Тема</div><input id="fTopic" maxlength="400" value="' + esc(l.topic) + '">' +
+        '<div class="lbl">Домашка</div><textarea id="fHw" maxlength="1200">' + esc(l.hw) + '</textarea>' +
+        '<label class="chk"><input type="checkbox" id="fSh"' + (l.sh ? ' checked' : '') + '> Сдвоенный урок: домашка общая с предыдущим уроком этого дня (одна клетка ДЗ на оба)</label>' +
+        '<div class="row">' + (isNew ? '' : '<button class="btn danger" data-act="dellesson" data-id="' + id + '">Удалить урок</button>') +
+        '<span class="sp"></span><button class="btn" data-act="close">Отмена</button>' +
+        '<button class="btn pri" data-act="savelesson" data-id="' + (isNew ? '' : id) + '">Сохранить</button></div></div>';
+    }
+    $('dlg').innerHTML = h;
+    setTimeout(function () { var f = $(isNew ? 'fTopic' : 'fDate'); if (f) f.focus(); }, 30);
+  }
+  function saveLesson(id) {
+    var date = $('fDate').value.trim().replace(/[,/]/g, '.');
+    var m = /^(\d{1,2})\.(\d{1,2})$/.exec(date);
+    if (!m || +m[1] < 1 || +m[1] > 31 || +m[2] < 1 || +m[2] > 12) { alert('Дата — в виде ДД.ММ, например 30.09'); return; }
+    date = ('0' + m[1]).slice(-2) + '.' + ('0' + m[2]).slice(-2);
+    var old = id && S.les[id], subj = old ? old.subj : tab, ord = old ? old.ord : 0;
+    if (!old || old.date !== date) {   // новый или перенесён на другой день — в конец этого дня
+      ord = 1 + lessons(subj).filter(function (x) { return x.date === date && x.id !== id; })
+        .reduce(function (mx, x) { return Math.max(mx, x.ord || 0); }, 0);
+    }
+    var sh = $('fSh').checked, lid = id || newId('l');
+    if (sh) {
+      var mine = { id: lid, ord: ord };
+      if (!prevSameDay(mine, date, subj)) { alert('В этот день по предмету нет урока раньше этого — домашку не с чем объединить.'); return; }
+      var had = Object.keys(S.mark).filter(function (k) { var q = k.split('.'); return q[0] === lid && q[2] === 'd' && S.mark[k].v; });
+      if (had.length) { alert('У этого урока уже стоят оценки за ДЗ (' + had.length + '). Перенеси их в ДЗ первого урока или сотри — потом отметь «общая».'); return; }
+    }
+    var d = { subj: subj, date: date, topic: $('fTopic').value.trim(), hw: $('fHw').value.trim(), ord: ord };
+    if (sh) d.sh = 1;
+    put('les', lid, d);
+    closeDlg(); render();
+  }
+  function delLesson(id) {
+    var l = S.les[id];
+    if (!l || !confirm('Удалить урок ' + l.date + (l.topic ? ' «' + l.topic + '»' : '') + ' вместе с его оценками' + (filesOf(id).length ? ' и файлами' : '') + '?')) return;
+    Object.keys(S.mark).forEach(function (k) { if (k.indexOf(id + '.') === 0) del('mark', k); });
+    filesOf(id).forEach(function (f) { del('file', f.id); });
+    del('les', id);
+    closeDlg(); render();
+  }
+  function closeDlg() { $('dlg').innerHTML = ''; }
+
+  /* ── файлы урока: лежат на RF-сервере; D — по ключу, ученик — по пропуску устройства ── */
+  function downloadFile(fid, btn) {
+    var f = S.file[fid];
+    if (!f) return;
+    var h = { 'Content-Type': 'application/json' }, body = { id: fid };
+    if (mode === 'teacher') h.Authorization = 'Bearer ' + teacherKey; else body.pass = lsGet(LS.pass, '');
+    var was = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.querySelector('.fz').textContent = 'качаю…'; }
+    fetch(API + '/zhurnal/file', { method: 'POST', headers: h, body: JSON.stringify(body) })
+      .then(function (r) { if (!r.ok) throw r.status; return r.blob(); })
+      .then(function (b) {
+        var u = URL.createObjectURL(b), a = document.createElement('a');
+        a.href = u; a.download = f.name || 'файл'; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+      })
+      .catch(function (e) {
+        if (typeof e !== 'number') nextApi();
+        alert(e === 404 ? 'Файла больше нет — возможно, учитель его убрал.' : e === 403 ? 'Журнал на этом устройстве надо открыть заново по коду класса.' : 'Не получилось скачать. Проверь интернет и попробуй ещё раз.');
+      })
+      .then(function () { if (btn) { btn.disabled = false; btn.innerHTML = was; } });
+  }
+  function uploadFiles(lid, list) {
+    var files = Array.prototype.slice.call(list), st = $('upSt'), done = 0, errs = [];
+    var why = { 413: 'больше 25 МБ', 415: 'такой тип нельзя', 409: 'у урока уже 10 файлов', 404: 'урок ещё не сохранился — подожди «сохранено» и повтори', 401: 'ключ учителя не подошёл' };
+    function next() {
+      if (!files.length) {
+        if (st) st.textContent = errs.length ? 'Не загрузились: ' + errs.join('; ') : 'Готово: ' + done + ' ' + (done === 1 ? 'файл' : 'файла') + '.';
+        render(); if (!errs.length) openLesson(lid);
+        return;
+      }
+      var f = files.shift(), fd = new FormData();
+      if (st) st.textContent = 'Загружаю «' + f.name + '»…';
+      fd.append('les', lid); fd.append('file', f);
+      fetch(API + '/zhurnal/upload', { method: 'POST', headers: { Authorization: 'Bearer ' + teacherKey }, body: fd })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, j: j }; }); })
+        .then(function (r) {
+          if (r.status !== 200 || !r.j.ok) { errs.push(f.name + ' — ' + (why[r.status] || 'ошибка ' + r.status)); return; }
+          var o = r.j.obj, d = o.d; d.id = o.id; d.ts = o.ts; S.file[o.id] = d; save(); done++;
+        }, function () { nextApi(); errs.push(f.name + ' — нет связи'); })
+        .then(next);
+    }
+    next();
+  }
+
+  /* ── подсказка: навёл на клетку — вспомнил, что было; на телефоне — нажал ── */
+  var tipEl = document.createElement('div');
+  tipEl.className = 'ztip'; tipEl.hidden = true; document.body.appendChild(tipEl);
+  var tipT = null;
+  function showTip(el, html) {
+    if (!html) { hideTip(); return; }
+    tipEl.innerHTML = html; tipEl.hidden = false;
+    var b = el.getBoundingClientRect(), w = tipEl.offsetWidth, hh = tipEl.offsetHeight;
+    tipEl.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, b.left + b.width / 2 - w / 2)) + 'px';
+    tipEl.style.top = (b.top - hh - 8 < 8 ? b.bottom + 8 : b.top - hh - 8) + 'px';
+  }
+  function hideTip() { tipEl.hidden = true; clearTimeout(tipT); }
+  if (window.matchMedia && window.matchMedia('(hover:hover)').matches) {
+    document.addEventListener('mouseover', function (ev) {
+      var td = ev.target.closest && ev.target.closest('td.c[data-c]');
+      if (!td || cur || $('dlg').innerHTML) { hideTip(); return; }
+      showTip(td, cellTip(td.dataset.c));
+    });
+  }
+  window.addEventListener('scroll', hideTip, true);
+
+  /* ── ученики (D) ── */
+  function openStudents() {
+    var P = students();
+    var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true"><h3>Ученики</h3>' +
+      '<div class="meta">Общие для всех трёх предметов. Правка сохраняется сама.</div>';
+    P.forEach(function (p) {
+      h += '<div class="srow" data-sid="' + p.id + '"><input data-f="fam" placeholder="Фамилия" maxlength="40" value="' + esc(p.fam) + '">' +
+        '<input data-f="name" placeholder="Имя" maxlength="40" value="' + esc(p.name) + '">' +
+        '<button data-act="delstu" data-id="' + p.id + '" title="Убрать из журнала">✕</button></div>';
+    });
+    h += '<div class="row"><button class="btn" data-act="addstu">＋ Ученик</button><span class="sp"></span><button class="btn pri" data-act="close">Готово</button></div></div>';
+    $('dlg').innerHTML = h;
+  }
+  function saveStudentRow(row) {
+    var id = row.dataset.sid, p = S.stu[id];
+    var fam = row.querySelector('[data-f="fam"]').value.trim(), name = row.querySelector('[data-f="name"]').value.trim();
+    if (!p || (p.fam === fam && p.name === name)) return;
+    put('stu', id, { fam: fam, name: name, ord: p.ord || 0 });
+    render();
+  }
+
+  /* ── оценка (D): нижний лист ── */
+  function openCell(id) {
+    var parts = id.split('.'), l = S.les[parts[0]], p = S.stu[parts[1]];
+    if (!l || !p) return;
+    if (cur) { var old = document.querySelector('td.c.cur'); if (old) old.classList.remove('cur'); }
+    cur = id;
+    var td = document.querySelector('td.c[data-c="' + id + '"]');
+    if (td) { td.classList.add('cur'); td.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+    var m = S.mark[id], v = m ? m.v : '', nextOn = lsGet(LS.next, true), nSh = parts[2] === 'd' ? sharedCount(l) : 1;
+    var src = '';
+    if (m && m.by === 'auto') src = '<div class="pop-src">Поставила автоматика' + (m.an ? ': ' + esc(m.an) : '') + '. Исправишь — останется твоя оценка, автоматика её больше не тронет.</div>';
+    else if (m && m.av) src = '<div class="pop-src">Ты исправил оценку автоматики. Она ставила <b>' + esc(m.av) + '</b>' + (m.an ? ' (' + esc(m.an) + ')' : '') + '.</div>';
+    var pop = $('pop');
+    pop.innerHTML = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(l.date) + ' · ' +
+      (parts[2] === 'd' ? (nSh > 1 ? 'ДЗ, общая на ' + nSh + ' урока' : 'ДЗ') : 'урок') + (l.topic ? '<br>' + esc(l.topic.slice(0, 60)) : '') + '</span></div>' + src +
+      '<div class="pop-q">' + QUICK.map(function (q) { return '<button class="' + markCls(q) + '" data-q="' + q + '">' + q + '</button>'; }).join('') + '</div>' +
+      '<div class="pop-x"><button class="m4" data-q="зачёт">зачёт</button><button class="m2" data-q="незачёт">незачёт</button></div>' +
+      '<form class="pop-t" id="popForm"><input id="popIn" maxlength="40" placeholder="Своё: 85 (из 100), 2 (55 доделать)" value="' + esc(v) + '">' +
+      '<button class="btn pri" type="submit">OK</button></form>' +
+      '<div class="pop-f"><button class="btn danger" data-q="">Стереть</button>' +
+      '<label><input type="checkbox" id="popNext"' + (nextOn ? ' checked' : '') + '> дальше вниз</label>' +
+      '<button class="btn" data-act="popclose">Закрыть</button></div>';
+    pop.hidden = false;
+    $('popForm').onsubmit = function (ev) { ev.preventDefault(); setMark($('popIn').value); };
+    $('popNext').onchange = function () { lsSet(LS.next, this.checked); };
+  }
+  function setMark(v) {
+    var id = cur;
+    if (!id) return;
+    v = String(v || '').trim().slice(0, 40);
+    var old = S.mark[id], had = old ? old.v : '';
+    if (v !== had) {
+      if (v) {
+        var d = { v: v };
+        // правка поверх автоматики: помним, что она ставила, — автоматика больше не перезапишет
+        if (old && (old.by === 'auto' || old.av)) { d.by = 'D'; d.av = old.av || old.v; if (old.an) d.an = old.an; }
+        put('mark', id, d);
+      } else if (had) del('mark', id);
+      pendingRender = true;   // счётчик долгов у фамилии — после закрытия листа
+    }
+    var td = document.querySelector('td.c[data-c="' + id + '"]');
+    if (td) { var cv = cellView(id); td.className = cv.cls + ' cur'; td.innerHTML = cv.inner; }
+    if (lsGet(LS.next, true)) {   // следующий ученик в том же столбце
+      var P = students(), parts = id.split('.'), i = P.findIndex(function (p) { return p.id === parts[1]; });
+      if (i >= 0 && i < P.length - 1) { openCell(parts[0] + '.' + P[i + 1].id + '.' + parts[2]); return; }
+    }
+    closeCell();
+  }
+  function closeCell() {
+    cur = null; $('pop').hidden = true; $('pop').innerHTML = '';
+    var td = document.querySelector('td.c.cur'); if (td) td.classList.remove('cur');
+    if (pendingRender) { pendingRender = false; render(); }
+  }
+  function moveCell(dr, dc) {
+    var parts = cur.split('.'), P = students(), L = lessons(tab);
+    var cols = []; layout(L).forEach(function (x) { x.cols.forEach(function (c) { cols.push(c.l.id + '.' + c.w); }); });
+    var r = P.findIndex(function (p) { return p.id === parts[1]; }), c = cols.indexOf(parts[0] + '.' + parts[2]);
+    r = Math.min(P.length - 1, Math.max(0, r + dr)); c = Math.min(cols.length - 1, Math.max(0, c + dc));
+    var cc = cols[c].split('.');
+    openCell(cc[0] + '.' + P[r].id + '.' + cc[1]);
+  }
+
+  /* ── нажатия ── */
+  document.addEventListener('click', function (ev) {
+    var t = ev.target;
+    if (t.closest('a[href]')) { if (cur) closeCell(); return; }   // ссылка (урок на сайте) — пусть браузер откроет
+    var tm = t.closest('[data-tema]');
+    if (tm) { setTheme(tm.dataset.tema); return; }
+    var tb = t.closest('[data-tab]');
+    if (tb) {
+      if (cur) closeCell();
+      tab = tb.dataset.tab; lsSet(LS.tab, tab);
+      try { history.replaceState(null, '', '#' + tab); } catch (e) { /* не страшно */ }
+      render(); return;
+    }
+    var q = t.closest('[data-q]');
+    if (q && cur) { setMark(q.dataset.q); return; }
+    var a = t.closest('[data-act]');
+    if (a) {
+      var act = a.dataset.act;
+      if (act === 'close') closeDlg();
+      else if (act === 'popclose') closeCell();
+      else if (act === 'retry') view('');
+      else if (act === 'addles') openLesson(null);
+      else if (act === 'savelesson') saveLesson(a.dataset.id);
+      else if (act === 'editlesson') openLesson(a.dataset.id, true);
+      else if (act === 'dellesson') delLesson(a.dataset.id);
+      else if (act === 'dl') downloadFile(a.dataset.id, a);
+      else if (act === 'rmfile') {
+        var rf = S.file[a.dataset.id];
+        if (rf && confirm('Удалить файл «' + rf.name + '»? Ученики больше не смогут его скачать.')) { var rl = rf.les; del('file', rf.id); render(); openLesson(rl); }
+      }
+      else if (act === 'students') openStudents();
+      else if (act === 'addstu') {
+        var mx = students().reduce(function (m, p) { return Math.max(m, p.ord || 0); }, 0);
+        put('stu', newId('s'), { fam: 'Фамилия', name: 'Имя', ord: mx + 1 });
+        render(); openStudents();
+      }
+      else if (act === 'delstu') {
+        var p = S.stu[a.dataset.id];
+        if (p && confirm('Убрать ' + p.fam + ' ' + p.name + ' из журнала вместе со всеми оценками по трём предметам?')) {
+          Object.keys(S.mark).forEach(function (k) { if (k.split('.')[1] === p.id) del('mark', k); });
+          del('stu', p.id); render(); openStudents();
+        }
+      }
+      else if (act === 'code') {
+        var nc = prompt('Код для класса — не короче 6 знаков, лучше буквы и цифры. Ученики вводят его один раз, дальше журнал открывается сам. Сменишь код — всем придётся ввести новый.',
+          (S.cfg.code && S.cfg.code.v) || newCode());
+        if (nc != null) {
+          nc = nc.trim();
+          if (nc.length < 6) alert('Нужно хотя бы 6 знаков.');
+          else { put('cfg', 'code', { v: nc }); render(); }
+        }
+      }
+      else if (act === 'teacher') {
+        var k = prompt('Ключ учителя (тот же, что у Кабинета):');
+        if (k && k.trim()) { lsSet(LS.key, k.trim()); location.reload(); }
+      }
+      else if (act === 'recode') { lsDel(LS.pass); gate(''); }
+      else if (act === 'asview') {
+        clearTimeout(retryT); mode = 'view'; teacherKey = ''; $('st').hidden = true;
+        renderTabs(); renderTools();
+        $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>';
+        if (lsGet(LS.pass, '')) view(''); else gate('');
+      }
+      return;
+    }
+    var cell = t.closest('td.c[data-c]');
+    if (cell && mode === 'teacher') { hideTip(); openCell(cell.dataset.c); return; }
+    if (cell) {   // ученик: нажал — подсказка, через 4 секунды прячется
+      showTip(cell, cellTip(cell.dataset.c)); clearTimeout(tipT); tipT = setTimeout(hideTip, 4000); return;
+    }
+    hideTip();
+    var les = t.closest('[data-les]');
+    if (les) { if (cur) closeCell(); openLesson(les.dataset.les); return; }
+    if (cur && !t.closest('#pop')) closeCell();
+  });
+
+  document.addEventListener('change', function (ev) {
+    if (ev.target.id === 'upFile' && ev.target.files.length) { uploadFiles(ev.target.dataset.les, ev.target.files); return; }
+    var row = ev.target.closest('.srow');
+    if (row) saveStudentRow(row);
+  });
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') { if (cur) closeCell(); else closeDlg(); return; }
+    if (!cur || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    var inInput = ev.target.tagName === 'INPUT';
+    if (!inInput) {
+      var k = ev.key.toLowerCase();
+      if (/^[1-5]$/.test(k)) { ev.preventDefault(); setMark(k); return; }
+      if (k === 'н' || k === 'y') { ev.preventDefault(); setMark('н'); return; }
+      if (k === '-') { ev.preventDefault(); setMark('–'); return; }
+      if (k === 'backspace' || k === 'delete') { ev.preventDefault(); setMark(''); return; }
+      var mv = { arrowup: [-1, 0], arrowdown: [1, 0], arrowleft: [0, -1], arrowright: [0, 1] }[k];
+      if (mv) { ev.preventDefault(); moveCell(mv[0], mv[1]); }
+    }
+  });
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') return;
+    if (mode === 'teacher') sync();
+    else if (loaded && lsGet(LS.pass, '')) view('');
+  });
+
+  /* ── тема: Λ — дневная, D — ночная; выбор общий с главной (localStorage «tema») ── */
+  function markTheme() {
+    var night = document.documentElement.dataset.theme === 'night';
+    document.querySelectorAll('[data-tema]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String((b.dataset.tema === 'night') === night));
+    });
+    var mc = document.querySelector('meta[name=theme-color]');
+    if (mc) mc.content = night ? '#0a0510' : '#16131a';
+  }
+  function setTheme(v) {
+    if (v === 'night') document.documentElement.dataset.theme = 'night';
+    else delete document.documentElement.dataset.theme;
+    try { localStorage.setItem('tema', v); } catch (e) { /* без памяти — только на этот раз */ }
+    markTheme();
+  }
+  function tick() {
+    var n = new Date();
+    $('clock').textContent = [n.getHours(), n.getMinutes(), n.getSeconds()].map(function (x) { return ('0' + x).slice(-2); }).join(':');
+    setTimeout(tick, 1000 - n.getMilliseconds() + 5);
+  }
+  markTheme(); tick();
+
+  /* ── старт ── */
+  var stEl = document.createElement('span');
+  stEl.className = 'st'; stEl.id = 'st'; stEl.hidden = true; stEl.innerHTML = '<i></i><em id="stTxt"></em>';
+  document.body.appendChild(stEl);
+  renderTabs();
+  if (mode === 'teacher') {
+    var cache = lsGet(LS.cache, null);
+    if (cache && cache.les) { KINDS.forEach(function (k) { S[k] = cache[k] || {}; }); loaded = true; }
+    else $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
+    render(); sync();
+    setInterval(function () { if (document.visibilityState === 'visible' && !cur) sync(); }, 30000);
+  } else {
+    // ссылка от учителя вида zhurnal.html#k=КОД — код сразу в дело, из адреса убираем
+    var mk = /[#&]k=([^&]+)/.exec(location.hash);
+    if (mk) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } view(decodeURIComponent(mk[1])); }
+    else if (lsGet(LS.pass, '')) view(''); else gate('');
+    $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>';
+  }
+})();
+</script>
+</body>
+</html>
