@@ -217,6 +217,9 @@ td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:8
 [data-theme="night"] .ztip{ background:#2a1636; box-shadow:0 0 0 1px rgba(255,92,200,.3), 0 18px 40px -16px rgba(217,70,239,.6); }
 /* источник оценки в листе D */
 .pop-src{ font-size:13px; color:var(--sub); background:var(--z-head); border-radius:10px; padding:8px 10px; margin-bottom:10px; }
+.pop-cm{ width:100%; margin-top:8px; padding:9px 12px; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); resize:vertical; font-size:14px; }
+td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:solid; border-width:7px 7px 0 0; border-color:#7c3aed transparent transparent transparent; }
+[data-theme="night"] td.c .cmt{ border-color:#ff5cc8 transparent transparent transparent; }
 .pop-x{ display:flex; gap:6px; margin-top:8px; }
 .pop-x button{ flex:1; height:36px; border-radius:10px; font-weight:700; font-size:14px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); }
 /* файлы урока в карточке */
@@ -393,6 +396,13 @@ td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:8
     return { cls: cls, red: cls === 'm2' };
   }
   function markCls(v) { return markInfo(v).cls; }
+  // оценка и комментарий: «2 (55 доделать)» (старая запись) → 2 и «55 доделать». Новые записи — поле c
+  function splitMark(m) {
+    var v = String(m && m.v || '').trim();
+    var x = /^(незач[её]т|незач|зач[её]т|зач|н|–|-|\d+(?:[.,]\d+)?(?:\s*\/\s*\d+)?%?)\s*(.*)$/i.exec(v);
+    var g = x ? x[1] : v, note = x ? x[2].replace(/^\(\s*|\s*\)$/g, '').trim() : '';
+    return { g: g, c: (m && m.c) || note };
+  }
   // долг по клетке: до какого числа пересдать и сколько дней осталось (0 — сегодня последний день)
   function debtOf(l, v) {
     if (!markInfo(v).red) return null;
@@ -412,8 +422,9 @@ td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:8
   // клетка целиком: класс, содержимое, подсказка
   function cellView(id) {
     var parts = id.split('.'), l = S.les[parts[0]], m = S.mark[id], v = m ? m.v : '';
-    var inf = markInfo(v), dbt = l ? debtOf(l, v) : null, cls = 'c ' + parts[2] + ' ' + inf.cls + (v.length > 3 ? ' long' : '');
-    var inner = esc(v);
+    var inf = markInfo(v), dbt = l ? debtOf(l, v) : null, cls = 'c ' + parts[2] + ' ' + inf.cls + (splitMark(m).g.length > 3 ? ' long' : '');
+    var sm = splitMark(m), inner = esc(sm.g);
+    if (/[0-9a-zа-яё]/i.test(sm.c)) inner += '<i class="cmt" aria-label="есть комментарий"></i>';
     if (dbt) { cls += ' debt' + (dbt.left < 0 ? ' zlate' : ''); inner += '<sup>' + (dbt.left < 0 ? '!' : dbt.left + 'д') + '</sup>'; }
     if (m && m.by === 'auto') inner += '<i class="src" aria-hidden="true">A</i>';
     else if (m && m.av) inner += '<i class="src" aria-hidden="true">✎</i>';
@@ -426,8 +437,9 @@ td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:8
     var shared = parts[2] === 'd' && sharedCount(l) > 1;
     var t = '<b>' + esc(p.fam + ' ' + p.name) + '</b>' + esc(l.date) + ' · ' + (parts[2] === 'd' ? (shared ? 'ДЗ, общая на ' + sharedCount(l) + ' урока' : 'ДЗ') : 'урок') +
       (l.topic ? '\n' + esc(l.topic.slice(0, 90)) : '');
-    if (!m || !m.v) return t + '\nОценки нет';
-    t += '\nОценка: ' + esc(m.v);
+    var sm = splitMark(m);
+    if (!m || (!m.v && !sm.c)) return t + '\nОценки нет';
+    t += '\nОценка: ' + esc(sm.g || '—') + (sm.c ? '\nКомментарий: ' + esc(sm.c) : '');
     if (m.by === 'auto') t += '\nПоставила автоматика' + (m.an ? ': ' + esc(m.an) : '');
     else if (m.av) t += '\nD исправил. Автоматика ставила ' + esc(m.av) + (m.an ? ' (' + esc(m.an) + ')' : '');
     var dbt = debtOf(l, m.v);
@@ -860,9 +872,10 @@ td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:8
       (parts[2] === 'd' ? (nSh > 1 ? 'ДЗ, общая на ' + nSh + ' урока' : 'ДЗ') : 'урок') + (l.topic ? '<br>' + esc(l.topic.slice(0, 60)) : '') + '</span></div>' + src +
       '<div class="pop-q">' + QUICK.map(function (q) { return '<button class="' + markCls(q) + '" data-q="' + q + '">' + q + '</button>'; }).join('') + '</div>' +
       '<div class="pop-x"><button class="m4" data-q="зачёт">зачёт</button><button class="m2" data-q="незачёт">незачёт</button></div>' +
-      '<form class="pop-t" id="popForm"><input id="popIn" maxlength="40" placeholder="Своё: 85 (из 100), 2 (55 доделать)" value="' + esc(v) + '">' +
+      '<form class="pop-t" id="popForm"><input id="popIn" maxlength="20" placeholder="Своё: 85, 4/5" value="' + esc(splitMark(m).g) + '">' +
       '<button class="btn pri" type="submit">OK</button></form>' +
-      '<div class="pop-f"><button class="btn danger" data-q="">Стереть</button>' +
+      '<textarea id="popCm" class="pop-cm" maxlength="300" rows="2" placeholder="Комментарий ученику: «переписать №3»">' + esc(splitMark(m).c) + '</textarea>' +
+      '<div class="pop-f"><button class="btn danger" data-q="" data-wipe="1">Стереть</button>' +
       '<label><input type="checkbox" id="popNext"' + (nextOn ? ' checked' : '') + '> дальше вниз</label>' +
       '<button class="btn" data-act="popclose">Закрыть</button></div>';
     pop.hidden = false;
@@ -872,11 +885,13 @@ td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:8
   function setMark(v) {
     var id = cur;
     if (!id) return;
-    v = String(v || '').trim().slice(0, 40);
-    var old = S.mark[id], had = old ? old.v : '';
-    if (v !== had) {
-      if (v) {
+    v = String(v || '').trim().slice(0, 20);
+    var cmEl = $('popCm'), c = v === '' && cmEl && cmEl.dataset.wipe ? '' : cmEl ? cmEl.value.trim().slice(0, 300) : '';
+    var old = S.mark[id], was = splitMark(old), had = old ? old.v + '|' + (old.c || '') : '';
+    if (v + '|' + c !== had || (old && was.g !== old.v)) {
+      if (v || c) {
         var d = { v: v };
+        if (c) d.c = c;
         // правка поверх автоматики: помним, что она ставила, — автоматика больше не перезапишет
         if (old && (old.by === 'auto' || old.av)) { d.by = 'D'; d.av = old.av || old.v; if (old.an) d.an = old.an; }
         put('mark', id, d);
@@ -919,6 +934,7 @@ td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:8
       render(); return;
     }
     var q = t.closest('[data-q]');
+    if (q && q.dataset.wipe && $('popCm')) $('popCm').dataset.wipe = '1';
     if (q && cur) { setMark(q.dataset.q); return; }
     var a = t.closest('[data-act]');
     if (a) {
