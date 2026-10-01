@@ -271,6 +271,26 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
 .pop-x{ display:flex; gap:6px; margin-top:8px; }
 .pop-x button{ flex:1; height:36px; border-radius:10px; font-weight:700; font-size:14px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); }
 /* файлы урока в карточке */
+/* карточка дня: тема → файлы плитками → домашка */
+.dsec{ margin-top:14px; }
+.dsec-h{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:16.5px; line-height:1.25; }
+.dsec-h .no{ width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font-size:13px; font-weight:800; background:var(--z-head); color:var(--sub); flex:none; }
+.sjchip{ padding:3px 9px; border-radius:999px; font-size:12px; font-weight:800; color:var(--on); background:var(--g); flex:none; }
+.ftiles{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 6px; }
+.ft{ position:relative; width:104px; }
+.ftb{ width:100%; padding:0; display:flex; flex-direction:column; gap:4px; text-align:left; }
+.fpv{ width:104px; height:104px; border-radius:14px; overflow:hidden; display:grid; place-items:center; background:var(--z-head); box-shadow:inset 0 0 0 1px var(--z-line2); transition:transform .15s var(--ease); }
+.ftb:hover .fpv{ transform:translateY(-2px); box-shadow:inset 0 0 0 2px var(--s); }
+.fpv img{ width:100%; height:100%; object-fit:cover; display:block; }
+.fpv i{ font-style:normal; font-family:'JetBrains Mono',ui-monospace,monospace; font-weight:800; font-size:20px; text-transform:uppercase; letter-spacing:.04em; color:#fff; }
+.fpv.x-pdf{ background:linear-gradient(135deg,#f87171,#dc2626); } .fpv.x-pptx{ background:linear-gradient(135deg,#fb923c,#ea580c); }
+.fpv.x-docx{ background:linear-gradient(135deg,#60a5fa,#2563eb); } .fpv.x-xlsx{ background:linear-gradient(135deg,#4ade80,#16a34a); }
+.fnm{ font-size:12px; font-weight:600; line-height:1.2; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; word-break:break-word; }
+.ftb .fz{ font-size:11px; color:var(--muted); }
+.frm{ position:absolute; top:-6px; right:-6px; width:24px; height:24px; padding:0; border-radius:50%; display:grid; place-items:center; font-size:12px; color:#dc2626; background:var(--card); box-shadow:0 0 0 1px var(--z-line2), 0 4px 10px -6px rgba(0,0,0,.4); }
+.btn.sm{ padding:5px 10px; font-size:13px; }
+.dhw{ margin-top:12px; padding:10px 12px; border-radius:12px; background:var(--z-head); }
+.dhw .lbl{ margin-top:0; }
 .files{ display:flex; flex-direction:column; gap:6px; margin:6px 0 4px; }
 .file{ display:flex; align-items:center; gap:8px; }
 .file .zdl{ flex:1; min-width:0; display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:12px; text-align:left; box-shadow:inset 0 0 0 1px var(--z-line2); }
@@ -1086,21 +1106,33 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var subj = SUBJ.filter(function (s) { return s.id === l.subj; })[0];
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">';
     if (!isNew && !editNow) {
-      var go = siteLink(l), F = filesOf(id), L0 = lessons(l.subj), li = L0.indexOf(l), own = l;
-      while (li > 0 && L0[li].sh && L0[li - 1].date === L0[li].date) { li--; own = L0[li]; }
-      var nSh = sharedCount(own);
-      h += '<h3>' + (l.topic ? fmt(l.topic) : 'Урок') + '</h3><div class="meta">' + esc(subj.name) + ' · ' + esc(l.date) + '</div>' +
-        '<div class="lbl">Файлы урока</div>' +
-        (F.length ? '<div class="files">' + F.map(function (f) {
-          return '<div class="file"><button class="zdl" data-act="dl" data-id="' + f.id + '"><span class="ext">' + esc(f.ext) + '</span><span class="fn">' + esc(f.name) +
-            '</span><span class="fz">' + kb(f.size || 0) + ' ↓</span></button>' + (edit ? '<button class="rm" data-act="rmfile" data-id="' + f.id + '" title="Удалить файл" aria-label="Удалить файл">✕</button>' : '') + '</div>';
-        }).join('') + '</div>' : '<div class="note">' + (edit ? 'Пока нет. Добавь теорию, практику, презентацию — ученики скачают их здесь.' : 'К этому уроку файлов нет.') + '</div>') +
-        (edit ? '<label class="btn upl" style="margin-top:6px">＋ Добавить файлы<input type="file" id="upFile" data-lid="' + id + '" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx,.xlsx"></label>' +
-          '<div class="note" id="upSt">PDF, картинки, PowerPoint, Word, Excel — до 25 МБ, до 10 файлов на урок.</div>' : '') +
-        '<div class="lbl">Домашка' + (nSh > 1 ? ' · общая на ' + nSh + ' урока' : '') + '</div><div class="txt">' + (hwOf(own).t ? fmt(hwOf(own).t) : 'Не задано') + '</div>' +
+      // карточка дня (D, 01.10): все уроки дня в одном окне — у каждой темы свои файлы плитками, под ними домашка
+      var go = siteLink(l), DL = layout(lessons(l.subj).filter(function (x) { return x.date === l.date; }));
+      var rd = realDate(l.date), many = DL.length > 1;
+      h += '<h3>' + (rd ? ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'][rd.getDay()] + ', ' : '') + esc(l.date) + '</h3>' +
+        (feed() ? '' : '<div class="meta">' + esc(subj.name) + '</div>');
+      DL.forEach(function (x, k) {
+        var sj = ALLSUBJ.filter(function (q) { return q.id === x.l.subj; })[0], F = filesOf(x.l.id);
+        h += '<div class="dsec"><div class="dsec-h">' + (many ? '<span class="no">' + (k + 1) + '</span>' : '') +
+          (feed() && sj ? '<span class="sjchip ' + sj.k + '">' + (sj.id === 'mat' ? 'М' : esc(sj.id === 'ver' ? 'Статистика' : sj.name)) + '</span>' : '') +
+          '<b>' + (x.l.topic ? fmt(x.l.topic) : (topicOf(x.l).t ? esc(topicOf(x.l).t) : 'Тема не указана')) + '</b></div>' +
+          (F.length ? '<div class="ftiles">' + F.map(function (f) {
+            var img = /^(png|jpe?g|webp)$/i.test(f.ext), nm = String(f.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/^\d+[_\s.-]+/, '').replace(/_/g, ' ');
+            return '<div class="ft"><button class="ftb" data-act="dl" data-id="' + f.id + '" title="' + esc(f.name) + ' — скачать">' +
+              '<span class="fpv x-' + esc(String(f.ext).toLowerCase()) + '">' + (img ? '<img data-ff="' + f.id + '" alt="">' : '<i>' + esc(f.ext) + '</i>') + '</span>' +
+              '<span class="fnm">' + esc(nm) + '</span><span class="fz">' + kb(f.size || 0) + ' ↓</span></button>' +
+              (edit ? '<button class="frm" data-act="rmfile" data-id="' + f.id + '" title="Удалить файл" aria-label="Удалить файл">✕</button>' : '') + '</div>';
+          }).join('') + '</div>' : '<div class="note">' + (edit ? 'Файлов пока нет.' : 'К этому уроку файлов нет.') + '</div>') +
+          (edit ? '<label class="btn upl sm">＋ Файлы<input type="file" class="upFile" data-lid="' + x.l.id + '" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx,.xlsx"></label>' : '') + '</div>';
+        if (!x.joinedNext) {
+          var hw = hwOf(x.own).t, nsh = x.cols[x.cols.length - 1].n || 1;
+          h += '<div class="dhw"><div class="lbl">Домашка' + (nsh > 1 ? ' · общая на ' + nsh + ' урока' : '') + '</div><div class="txt">' + (hw ? fmt(hw) : 'Не задано') + '</div></div>';
+        }
+      });
+      h += (edit ? '<div class="note" id="upSt">Файлы: PDF, картинки, PowerPoint, Word, Excel — до 25 МБ, до 10 на урок. Нажми на плитку — скачается.</div>' : '') +
         '<div class="row">' + (edit ? '<button class="btn" data-act="editlesson" data-id="' + id + '">✎ Изменить</button>' : '') +
         '<span class="sp"></span>' +
-        (go ? '<a class="btn pri" href="' + go + '">Открыть урок на сайте ↗</a>' : '<span class="meta" style="margin:0">Урока на сайте пока нет</span>') +
+        (go ? '<a class="btn pri" href="' + go + '">Открыть урок на сайте ↗</a>' : '') +
         '<button class="btn" data-act="close">Закрыть</button></div></div>';
     } else {
       h += '<h3>' + (isNew ? 'Новый урок' : 'Урок') + '</h3><div class="meta">' + esc(subj.name) + '</div>' +
@@ -1113,6 +1145,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         '<button class="btn pri" data-act="savelesson" data-id="' + (isNew ? '' : id) + '">Сохранить</button></div></div>';
     }
     $('dlg').innerHTML = h;
+    fillFileThumbs($('dlg'));
     setTimeout(function () { var f = $(isNew ? 'fTopic' : 'fDate'); if (f) f.focus(); }, 30);
   }
   function saveLesson(id) {
@@ -1294,17 +1327,29 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   }
 
   /* ── файлы урока: лежат на RF-сервере; D — по ключу, ученик — по пропуску устройства ── */
+  // файл урока с сервера → Blob (D — по ключу, ученик — по входу или пропуску устройства)
+  function fileBlob(fid) {
+    var h = { 'Content-Type': 'application/json' }, body = { id: fid, j: J };
+    if (mode === 'teacher') h.Authorization = 'Bearer ' + teacherKey;
+    else if (meId) { var sh4 = stuH(); Object.keys(sh4).forEach(function (k) { h[k] = sh4[k]; }); }
+    else body.pass = lsGet(LS.pass, '');
+    return fetch(API + '/zhurnal/file', { method: 'POST', headers: h, body: JSON.stringify(body) }).then(function (r) { if (!r.ok) throw r.status; return r.blob(); });
+  }
+  // картинки — плитками с самим изображением; адреса помним, пока открыта страница
+  var fileUrls = {};
+  function fillFileThumbs(root) {
+    (root || document).querySelectorAll('img[data-ff]:not([src])').forEach(function (img) {
+      var id = img.dataset.ff;
+      if (!fileUrls[id]) fileUrls[id] = fileBlob(id).then(function (b) { return URL.createObjectURL(b); });
+      fileUrls[id].then(function (u) { img.src = u; }, function () { delete fileUrls[id]; var i = document.createElement('i'); i.textContent = (S.file[id] || {}).ext || '?'; img.replaceWith(i); });
+    });
+  }
   function downloadFile(fid, btn) {
     var f = S.file[fid];
     if (!f) return;
-    var h = { 'Content-Type': 'application/json' }, body = { id: fid, j: J };
-    if (mode === 'teacher') h.Authorization = 'Bearer ' + teacherKey;
-    else if (meId) { var sh3 = stuH(); Object.keys(sh3).forEach(function (k) { h[k] = sh3[k]; }); }   // вошёл через бота или по личной ссылке
-    else body.pass = lsGet(LS.pass, '');
     var was = btn ? btn.innerHTML : '';
     if (btn) { btn.disabled = true; btn.querySelector('.fz').textContent = 'качаю…'; }
-    fetch(API + '/zhurnal/file', { method: 'POST', headers: h, body: JSON.stringify(body) })
-      .then(function (r) { if (!r.ok) throw r.status; return r.blob(); })
+    fileBlob(fid)
       .then(function (b) {
         var u = URL.createObjectURL(b), a = document.createElement('a');
         a.href = u; a.download = f.name || 'файл'; document.body.appendChild(a); a.click(); a.remove();
@@ -1910,7 +1955,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   document.addEventListener('mousedown', function (ev) { if (ev.target.closest && ev.target.closest('[data-fmt]')) ev.preventDefault(); });
 
   document.addEventListener('change', function (ev) {
-    if (ev.target.id === 'upFile' && ev.target.files.length) { uploadFiles(ev.target.dataset.lid, ev.target.files); return; }
+    if (ev.target.classList && ev.target.classList.contains('upFile') && ev.target.files.length) { uploadFiles(ev.target.dataset.lid, ev.target.files); return; }
     if (ev.target.id === 'subIn' && ev.target.files.length) { submitPhotos(ev.target); return; }
     var row = ev.target.closest('.srow');
     if (row) saveStudentRow(row);
