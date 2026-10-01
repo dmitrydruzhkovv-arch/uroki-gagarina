@@ -276,6 +276,27 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 .view .vbar button{ padding:10px 16px; border-radius:12px; background:#fff; color:#1a1720; font-weight:700; }
 @media (prefers-reduced-motion:reduce){ td.c.m5, td.c.sub-sent{ animation:none; } }
 #footLinks:not(:empty)::before{ content:' · '; }
+/* дни и месяцы (D, 01.10): одна дата на день, жирная черта между днями, листаем по месяцам */
+.zt th.dend, .zt td.dend{ border-right:2px solid var(--muted); }
+[data-theme="night"] .zt th.dend, [data-theme="night"] .zt td.dend{ border-right-color:rgba(255,92,200,.45); }
+.months{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+.mo{ padding:6px 12px; border-radius:999px; font-weight:700; font-size:13.5px; color:var(--sub); box-shadow:inset 0 0 0 1px var(--z-line2); background:var(--card); }
+.mo[aria-selected="true"]{ background:var(--g); color:var(--on); box-shadow:0 8px 18px -12px var(--glow); }
+/* телефон боком: шапка в одну строку, таблица — на весь экран */
+@media (orientation:landscape) and (max-height:520px){
+  .zh-hero{ padding:8px 0; }
+  .zh-back, .zh-title .kicker{ display:none; }
+  .zh-title{ display:none; }
+  .tabs{ margin-top:0; margin-right:250px; }   /* справа — часы и тема (fixed), не накрывать вкладки и «сохранено» */ .tab{ padding:5px 12px 5px 6px; font-size:14px; } .tab i{ width:24px; height:24px; font-size:14px; }
+  .zh-main{ padding-top:8px; } .months{ margin-bottom:6px; } .mo{ padding:4px 10px; }
+  .wrap{ max-height:calc(100dvh - 16px); }
+  .dock{ transform:scale(.8); transform-origin:top right; }
+}
+/* средний балл — маленькая цифра в углу клетки ученика, по нажатию */
+.zt tbody th.nm{ cursor:pointer; }
+.zt tbody .nm{ position:sticky; }
+.zt tbody .nm i.avg{ position:absolute; top:3px; right:5px; font-style:normal; font-size:11px; font-weight:800; line-height:1;
+  padding:2px 4px; border-radius:5px; background:var(--z-head); color:var(--ink); font-family:'JetBrains Mono',ui-monospace,monospace; }
 </style>
 </head>
 <body>
@@ -475,7 +496,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       inner += '<i class="cam" aria-label="сдано фото">📷</i>';
     }
     if (parts[2] === 'd' && parts[1] === meId) cls += ' mine';
-    if (m && m.by === 'auto') inner += '<i class="src" aria-hidden="true">A</i>';
+    if (mode !== 'teacher') { /* A и ✎ — пометки для D, детям без легенды непонятны */ }
+    else if (m && m.by === 'auto') inner += '<i class="src" aria-hidden="true">A</i>';
     else if (m && m.av) inner += '<i class="src" aria-hidden="true">✎</i>';
     return { cls: cls, inner: inner };
   }
@@ -497,6 +519,64 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (sb0) t += '\n📷 ' + ({ sent: 'Сдано, ждёт проверки', redo: 'На доработке', checked: 'Сдано и проверено' }[sb0.st] || '');
     if (dbt) t += '\n' + (dbt.left < 0 ? 'Долг: срок пересдачи вышел ' + dbt.until : 'Долг: пересдать до ' + dbt.until + (dbt.left === 0 ? ' — сегодня последний день' : ', осталось ' + dbt.left + ' дн.'));
     return t;
+  }
+
+  /* ── месяцы и средний балл (D, 01.10) ── */
+  var MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  var WD = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  var monthSel = {};   // предмет → '09' | 'all'; при открытии — текущий месяц
+  function monthOf(date) { var m = /^\d{1,2}\.(\d{1,2})/.exec(date || ''); return m ? ('0' + m[1]).slice(-2) : ''; }
+  function months(L) {
+    var out = [];
+    L.forEach(function (l) { var m = monthOf(l.date); if (m && out.indexOf(m) < 0) out.push(m); });   // L уже по порядку учебного года
+    return out;
+  }
+  function defaultMonth(MS) {
+    var now = monthOf(todayStr()), tk = dkey(todayStr()), best = MS[0];
+    if (MS.indexOf(now) >= 0) return now;
+    MS.forEach(function (m) { if (dkey('01.' + m) <= tk) best = m; });   // каникулы — последний прошедший месяц
+    return best || 'all';
+  }
+  // показать месяц урока l, если сейчас открыт другой (не «Весь год»). → true, если переключили
+  function goMonth(l) {
+    var sel = monthSel[l.subj], m = monthOf(l.date);
+    if (!sel || sel === 'all' || !m || m === sel) return false;
+    monthSel[l.subj] = m; resetScroll(l.subj);
+    return true;
+  }
+  // забыть прокрутку предмета: таблица заново встанет к сегодняшним урокам. Старая таблица
+  // больше не своя — иначе render() первым делом запишет её прокрутку обратно
+  function resetScroll(subj) { delete scrollPos[subj]; var w = $('wrap'); if (w && w.dataset.subj === subj) w.dataset.subj = ''; }
+  // кому показан средний балл: нажал на ученика — видно, ещё раз — спрятано. Помнится на этом устройстве
+  var avgOn = lsGet('zh:avg', {});
+  // оценка → число для среднего: 1–5 как есть, из 100 → 5/4/3/2, незачёт → 2; зачёт, «н», «–» не считаются
+  function gradeVal(v) {
+    var s = String(v || '').trim().toLowerCase();
+    if (!s) return null;
+    if (/^незач/.test(s)) return 2;
+    if (/^(зач|✓|н|–|-)/.test(s)) return null;
+    var m = /^(\d+(?:[.,]\d+)?)\s*(?:\/\s*(\d+))?\s*(%)?/.exec(s);
+    if (!m) return null;
+    var n = parseFloat(m[1].replace(',', '.')), of = m[2] ? +m[2] : 0;
+    if (of || m[3] || n > 5) { var pc = Math.min(100, of ? n / of * 100 : n); return pc >= 85 ? 5 : pc >= 65 ? 4 : pc >= 45 ? 3 : 2; }
+    return Math.max(1, Math.min(5, n));
+  }
+  // средний по строке за показанный период. Пустая клетка ДЗ, когда домашка была задана и следующий урок
+  // предмета уже прошёл, а фото не сдано и ученик был на уроке, — как 2 («несданное — двойка», D 01.10)
+  function rowAvg(sid, LY, LA, today) {
+    var sum = 0, n = 0, tk = dkey(today);
+    LY.forEach(function (x) {
+      x.cols.forEach(function (c) {
+        var m = S.mark[c.l.id + '.' + sid + '.' + c.w], g = gradeVal(splitMark(m).g);
+        if (g == null && c.w === 'd' && !(m && m.v)) {
+          var hw = String(c.l.hw || '').trim(), next = LA.filter(function (l) { return dkey(l.date) > dkey(c.l.date); })[0];
+          var absent = /^н/i.test(String((S.mark[x.l.id + '.' + sid + '.u'] || {}).v || ''));
+          if (hw && hw !== '—' && next && dkey(next.date) < tk && !S.sub[c.l.id + '.' + sid] && !absent) g = 2;
+        }
+        if (g != null) { sum += g; n++; }
+      });
+    });
+    return n ? { v: (sum / n).toFixed(1).replace('.', ','), n: n } : null;
   }
 
   /* ── сдвоенный урок: одна домашка на оба (D, 30.09) ──
@@ -655,9 +735,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (mode !== 'teacher') {
       if (!loaded) { t.hidden = true; return; }
       t.hidden = false;
-      var me = meId && S.stu[meId];
-      t.innerHTML = '<div class="stbar">' + (me ? '📷 Ты — <b>' + esc(me.fam + ' ' + me.name) + '</b>. Нажми на свою клетку «ДЗ», чтобы сдать фото домашки.'
-        : ck() ? '<button class="btn pri" data-act="pickme">📷 Сдавать домашку — найди себя в списке</button>'
+      if (meId && S.stu[meId]) { t.hidden = true; return; }   // своя строка подсвечена — подпись сверху не нужна (D, 01.10)
+      t.innerHTML = '<div class="stbar">' + (ck() ? '<button class="btn pri" data-act="pickme">📷 Сдавать домашку — найди себя в списке</button>'
         : '<button class="btn pri" data-act="login">📷 Сдавать домашку — войти через Телеграм</button>') + '</div>';
       return;
     }
@@ -680,43 +759,62 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (!P.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Учеников пока нет — добавь их кнопкой «Ученики».' : 'Журнал пока пуст.') + '</div>'; return; }
     if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый кнопкой «＋ Урок».' : 'По этому предмету пока нет уроков.') + '</div>'; return; }
 
-    var perDay = {}, nthOfDay = {};
-    L.forEach(function (l) { perDay[l.date] = (perDay[l.date] || 0) + 1; nthOfDay[l.id] = perDay[l.date]; });
-    var today = todayStr(), LY = layout(L);
+    // месяц: журнал листается по месяцам, а не тянется вправо на весь год (D, 01.10)
+    var MS = months(L), mo = monthSel[tab];
+    if (mo !== 'all' && MS.indexOf(mo) < 0) mo = monthSel[tab] = defaultMonth(MS);
+    var LA = L;   // весь предмет: для «срок ДЗ прошёл» нужен следующий урок, даже в другом месяце
+    if (mo !== 'all') L = L.filter(function (l) { return monthOf(l.date) === mo; });
+    var today = todayStr(), LY = layout(L), DAYS = [];
+    LY.forEach(function (x) {   // день = все уроки одной даты: одна дата в шапке, под ней 1 урок · 2 урок · ДЗ
+      var g = DAYS[DAYS.length - 1];
+      if (!g || g.date !== x.l.date) DAYS.push(g = { date: x.l.date, xs: [] });
+      g.xs.push(x); x.day = g;
+    });
+    DAYS.forEach(function (g) { g.xs[g.xs.length - 1].last = true; });
 
-    var h = '<div class="wrap" id="wrap"><table class="zt"><thead><tr><th class="nm" rowspan="2">Ученик</th>';
-    LY.forEach(function (x) {
-      var l = x.l, go = siteLink(l), small = perDay[l.date] > 1 ? 'урок ' + nthOfDay[l.id] : '&nbsp;';
-      h += '<th class="dt' + (l.date === today ? ' today' : '') + (go ? ' go' : '') + '" colspan="' + x.cols.length + '" data-les="' + l.id + '">' +
-        (go ? '<a href="' + go + '" title="Открыть урок на сайте"><b class="mono">' + esc(l.date || '—') + '<i>↗</i></b><small>' + small + '</small></a>'
-            : '<b class="mono">' + esc(l.date || '—') + '</b><small>' + small + '</small>') + '</th>';
+    var h = '<div class="months" role="tablist">' + MS.map(function (m) {
+      return '<button class="mo" data-month="' + m + '" aria-selected="' + (m === mo) + '">' + MONTHS[+m - 1] + '</button>';
+    }).join('') + '<button class="mo" data-month="all" aria-selected="' + (mo === 'all') + '">Весь год</button></div>';
+    h += '<div class="wrap" id="wrap"><table class="zt"><thead><tr><th class="nm" rowspan="2">Ученик</th>';
+    DAYS.forEach(function (g) {
+      var l = g.xs[0].l, go = siteLink(l), n = g.xs.reduce(function (a, x) { return a + x.cols.length; }, 0);
+      var rd = realDate(g.date), lbl = (rd ? WD[rd.getDay()] + ' ' : '') + esc(g.date || '—');
+      h += '<th class="dt dend' + (g.date === today ? ' today' : '') + (go ? ' go' : '') + '" colspan="' + n + '" data-les="' + l.id + '">' +
+        (go ? '<a href="' + go + '" title="Открыть урок на сайте"><b class="mono">' + lbl + '<i>↗</i></b></a>' : '<b class="mono">' + lbl + '</b>') + '</th>';
     });
     if (edit) h += '<th class="addc" rowspan="2"><button class="btn" data-act="addles">＋</button></th>';
     h += '</tr><tr>';
-    LY.forEach(function (x) {
-      x.cols.forEach(function (c) {
-        h += c.w === 'u' ? '<th class="sub">урок</th>'
-          : c.n > 1 ? '<th class="sub dz sh" title="Одна домашка на ' + c.n + ' урока">ДЗ ×' + c.n + '</th>' : '<th class="sub dz">ДЗ</th>';
+    DAYS.forEach(function (g) {
+      g.xs.forEach(function (x, k) {
+        x.cols.forEach(function (c, ci) {
+          var end = x.last && ci === x.cols.length - 1 ? ' dend' : '';
+          h += c.w === 'u' ? '<th class="sub' + end + '">' + (g.xs.length > 1 ? (k + 1) + ' урок' : 'урок') + '</th>'
+            : '<th class="sub dz' + end + '"' + (c.n > 1 ? ' title="Одна домашка на ' + c.n + ' урока"' : '') + '>ДЗ</th>';
+        });
       });
     });
     h += '</tr></thead><tbody>';
     P.forEach(function (p) {
       var dn = edit ? debtCount(p.id) : 0;   // счётчик долгов — только учителю; дети видят красные клетки (D, 30.09)
-      h += '<tr' + (p.id === meId ? ' class="me"' : '') + '><th class="nm"><b>' + esc(p.fam) + '</b><span>' + esc(p.name) + (p.id === meId ? ' · это ты' : '') +
+      var av = avgOn[p.id] ? rowAvg(p.id, LY, LA, today) : null;
+      h += '<tr' + (p.id === meId ? ' class="me"' : '') + '><th class="nm" data-sid="' + p.id + '" title="Нажми — средний балл">' +
+        (av ? '<i class="avg" title="Средний балл ' + (mo === 'all' ? 'за год' : 'за месяц') + ': ' + av.n + ' оц. Несданная вовремя ДЗ — как 2">' + av.v + '</i>' : '') +
+        '<b>' + esc(p.fam) + '</b><span>' + esc(p.name) + (p.id === meId ? ' · это ты' : '') +
         (dn ? ' · <em>' + dn + ' ' + (dn === 1 ? 'долг' : dn < 5 ? 'долга' : 'долгов') + '</em>' : '') + '</span></th>';
       LY.forEach(function (x) {
-        x.cols.forEach(function (c) {
+        x.cols.forEach(function (c, ci) {
           var id = c.l.id + '.' + p.id + '.' + c.w, cv = cellView(id);
-          h += '<td class="' + cv.cls + '" data-c="' + id + '">' + cv.inner + '</td>';
+          h += '<td class="' + cv.cls + (x.last && ci === x.cols.length - 1 ? ' dend' : '') + '" data-c="' + id + '">' + cv.inner + '</td>';
         });
       });
       if (edit) h += '<td></td>';
       h += '</tr>';
     });
+    if (!L.length) h += '<tr><td class="empty" colspan="2">В этом месяце уроков нет.</td></tr>';
     h += '</tbody><tfoot><tr class="tp"><th class="nm">Тема</th>';
     LY.forEach(function (x) {
       var nf = filesOf(x.l.id).length;
-      h += '<td colspan="' + x.cols.length + '" data-les="' + x.l.id + '"><div class="clamp">' + esc(x.l.topic) + '</div>' +
+      h += '<td colspan="' + x.cols.length + '"' + (x.last ? ' class="dend"' : '') + ' data-les="' + x.l.id + '"><div class="clamp">' + esc(x.l.topic) + '</div>' +
         (nf ? '<span class="fcount" title="Файлы урока">📎 ' + nf + '</span>' : '') + '</td>';
     });
     if (edit) h += '<td></td>';
@@ -724,7 +822,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var span = 0;
     LY.forEach(function (x) {   // сдвоенный урок с общей ДЗ — одна клетка на оба
       if (x.joinedNext) { span += x.cols.length; return; }
-      h += '<td colspan="' + (span + x.cols.length) + '" data-les="' + x.own.id + '"><div class="clamp">' + esc(x.own.hw || '—') + '</div></td>';
+      h += '<td colspan="' + (span + x.cols.length) + '"' + (x.last ? ' class="dend"' : '') + ' data-les="' + x.own.id + '"><div class="clamp">' + esc(x.own.hw || '—') + '</div></td>';
       span = 0;
     });
     if (edit) h += '<td></td>';
@@ -732,7 +830,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     h += '<div class="legend"><span><i class="m5">5</i><i class="m4">4</i><i class="m3">3</i><i class="m2">2</i> оценки · <i class="m5">85</i> из 100 · <i class="m4">зач</i> зачёт</span>' +
       '<span><i class="m2">2<small style="font-size:9px;margin-left:2px">9д</small></i> долг: пересдать за ' + DEBT_DAYS + ' дней, цифра — сколько осталось, <b style="color:var(--m2t)">!</b> — срок вышел</span>' +
       '<span><i class="mn">н</i> не было на уроке</span><span><i class="m2">1</i> не принёс</span>' +
-      '<span><i class="mn">A</i> поставила автоматика · <i class="mn">✎</i> D исправил автоматику</span>' +
+      '<span>Нажми на фамилию — средний балл, ещё раз — спрятать. Несданная вовремя ДЗ считается как 2.</span>' +
       '<span>Наведи на клетку — вспомнишь, что было. Дата с ↗ — урок на сайте. Тема — карточка урока и файлы.</span></div>';
     main.innerHTML = h;
 
@@ -745,7 +843,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       var tk = dkey(today), target = null;
       L.forEach(function (l) { if (dkey(l.date) <= tk) target = l; });
       if (!target) target = L[0];
-      var th = wrap.querySelector('th.dt[data-les="' + target.id + '"]');
+      var th = target && wrap.querySelector('th.dt[data-les="' + (L.filter(function (l) { return l.date === target.date; })[0] || target).id + '"]');
       if (th) {
         var nmw = wrap.querySelector('thead .nm').offsetWidth;
         wrap.scrollLeft = Math.max(0, th.offsetLeft - nmw - (wrap.clientWidth - nmw) * 0.55);
@@ -818,6 +916,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var d = { subj: subj, date: date, topic: $('fTopic').value.trim(), hw: $('fHw').value.trim(), ord: ord };
     if (sh) d.sh = 1;
     put('les', lid, d);
+    goMonth(d);   // урок другого месяца — показать его, а не прятать
     closeDlg(); render();
   }
   function delLesson(id) {
@@ -1224,6 +1323,10 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function openCell(id) {
     var parts = id.split('.'), l = S.les[parts[0]], p = S.stu[parts[1]];
     if (!l || !p) return;
+    if (l.subj === tab && goMonth(l)) {   // «Ждут проверки» и стрелки ходят по всему году — показываем месяц клетки
+      if (cur) { var oc = document.querySelector('td.c.cur'); if (oc) oc.classList.remove('cur'); cur = null; }
+      render();
+    }
     if (cur) { var old = document.querySelector('td.c.cur'); if (old) old.classList.remove('cur'); }
     cur = id;
     var td = document.querySelector('td.c[data-c="' + id + '"]');
@@ -1301,6 +1404,13 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (t.closest('input, select, textarea')) return;
     var tm = t.closest('[data-tema]');
     if (tm) { setTheme(tm.dataset.tema); return; }
+    var mb = t.closest('[data-month]');
+    if (mb) { if (cur) closeCell(); monthSel[tab] = mb.dataset.month; resetScroll(tab); render(); return; }
+    var nmc = t.closest('tbody th.nm[data-sid]');
+    if (nmc) {
+      if (avgOn[nmc.dataset.sid]) delete avgOn[nmc.dataset.sid]; else avgOn[nmc.dataset.sid] = 1;
+      lsSet('zh:avg', avgOn); if (cur) closeCell(); render(); return;
+    }
     var tb = t.closest('[data-tab]');
     if (tb) {
       if (cur) closeCell();
