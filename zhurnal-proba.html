@@ -144,6 +144,13 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
 .zt tfoot th.nm{ font-size:12px; color:var(--muted); vertical-align:top; }
 .zt tfoot td{ vertical-align:top; padding:6px; font-size:12px; color:var(--sub); cursor:pointer; max-width:92px; }
 .zt tfoot td:hover{ background:var(--z-hover); }
+/* тема дня: по две строки на урок, на один урок — четыре */
+.tl{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; word-break:break-word; line-height:1.3; }
+.tl.one{ -webkit-line-clamp:4; }
+.hw .tl{ white-space:pre-line; }
+.tl b{ font-weight:800; color:var(--muted); }
+.tl.site{ color:var(--sub); font-style:italic; }
+.zt tfoot td{ min-width:138px; }
 .clamp{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden; white-space:pre-line; word-break:break-word; }
 .tp td{ color:var(--ink); font-weight:600; }
 .addc{ padding:0 10px; vertical-align:middle; }
@@ -211,7 +218,7 @@ td.c.zlate sup{ color:#fff; background:var(--m2t); border-radius:4px; padding:1p
 td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:800; line-height:1; opacity:.75; }
 .zt tbody .nm em{ font-style:normal; color:var(--m2t); font-weight:700; }
 .sub.dz.sh{ letter-spacing:0; }
-.zt tfoot td[colspan="1"]{ min-width:88px; }
+.zt tfoot td[colspan="1"], .zt tfoot td[colspan="2"]{ min-width:96px; }
 .fcount{ display:inline-block; margin-left:4px; font-size:11px; font-weight:700; color:var(--muted); white-space:nowrap; }
 /* подсказка: навёл — вспомнил, что было */
 .ztip{ position:fixed; z-index:60; max-width:280px; padding:9px 11px; border-radius:12px; font-size:12.5px; line-height:1.4;
@@ -430,16 +437,45 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   // урок сайта для урока журнала: тот же предмет и дата. Два урока в один день (сдвоенный) —
   // первый к первому, второй ко второму; на сайте один — оба ведут в него
   function siteLink(l) {
+    var x = siteLesson(l.subj, l.date, lessons(l.subj).filter(function (y) { return y.date === l.date; }).indexOf(l));
+    return x ? './#' + x.kurs + '-' + x.u.n : '';
+  }
+  // урок сайта (его ведёт Хирон) по предмету, дате и номеру урока в этот день; нет — null
+  function siteLesson(subj, date, nth, exact) {
     try {
-      var sj = SUBJ.filter(function (s) { return s.id === l.subj; })[0];
+      var sj = SUBJ.filter(function (s) { return s.id === subj; })[0];
       var kurs = (window.DATA && DATA.kursy || []).filter(function (k) { return k.id === sj.kurs; })[0];
-      if (!kurs) return '';
-      var same = kurs.uroki.filter(function (u) { return u.date === l.date; }).sort(function (a, b) { return a.n - b.n; });
-      if (!same.length) return '';
-      var nth = lessons(l.subj).filter(function (x) { return x.date === l.date; }).indexOf(l);
-      var u = same[Math.min(Math.max(nth, 0), same.length - 1)];
-      return './#' + kurs.id + '-' + u.n;
-    } catch (e) { return ''; }
+      if (!kurs) return null;
+      var same = kurs.uroki.filter(function (u) { return u.date === date; }).sort(function (a, b) { return a.n - b.n; });
+      if (!same.length || (exact && nth >= same.length)) return null;
+      return { kurs: kurs.id, u: same[Math.min(Math.max(nth, 0), same.length - 1)] };
+    } catch (e) { return null; }
+  }
+  // домашка сайта коротко, для клетки журнала: первая строка каждого задания, учебник, веб-ДЗ, срок
+  function siteHw(u) {
+    var dz = u && u.dz, out = [];
+    if (!dz) return '';
+    (dz.web || []).forEach(function (x) { out.push('На телефоне: ' + x.label); });
+    (dz.print || []).concat(dz.tetrad || []).forEach(function (t) { out.push(String(t).split('\n')[0]); });
+    (dz.uchit || []).forEach(function (t) { out.push('Выучить: ' + String(t).split('\n')[0]); });
+    if ((dz.book || []).length) out.push('Учебник: ' + dz.book.map(function (x) { return '№ ' + x.no + (x.bukvy ? ' (' + x.bukvy + ')' : ''); }).join('; '));
+    return out.join('\n') + (out.length && dz.due ? '\nк ' + dz.due : '');
+  }
+  // тема и домашка в журнале: своя — если D написал, иначе с сайта (Хирону не заливать в два места)
+  function topicOf(l) {
+    if (l.topic) return { t: l.topic };
+    var x = siteLesson(l.subj, l.date, lessons(l.subj).filter(function (y) { return y.date === l.date; }).indexOf(l), true);
+    return { t: x ? x.u.title || '' : '', site: !!x };
+  }
+  // домашка дня на сайте — у сдвоенного урока она бывает записана у любого из двух
+  function siteDayHw(subj, date) {
+    for (var n = 0, x; (x = siteLesson(subj, date, n, true)); n++) if (siteHw(x.u)) return siteHw(x.u);
+    return '';
+  }
+  function hwOf(l) {
+    if (l.hw) return { t: l.hw };
+    var t = siteDayHw(l.subj, l.date);
+    return { t: t, site: !!t };
   }
 
   // что за оценка: 5-балльная («4», «2 (55 доделать)»), из 100 («85», «85/100», «70%»), дробью («4/5»),
@@ -569,7 +605,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       x.cols.forEach(function (c) {
         var m = S.mark[c.l.id + '.' + sid + '.' + c.w], g = gradeVal(splitMark(m).g);
         if (g == null && c.w === 'd' && !(m && m.v)) {
-          var hw = String(c.l.hw || '').trim(), next = LA.filter(function (l) { return dkey(l.date) > dkey(c.l.date); })[0];
+          var hw = String(hwOf(c.l).t || '').trim(), next = LA.filter(function (l) { return dkey(l.date) > dkey(c.l.date); })[0];
           var absent = /^н/i.test(String((S.mark[x.l.id + '.' + sid + '.u'] || {}).v || ''));
           if (hw && hw !== '—' && next && dkey(next.date) < tk && !S.sub[c.l.id + '.' + sid] && !absent) g = 2;
         }
@@ -743,7 +779,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     t.hidden = false;
     var code = S.cfg.code && S.cfg.code.v, waiting = waitingSubs().length;
     t.innerHTML = (waiting ? '<button class="btn queue" data-act="queue">📥 Ждут проверки: ' + waiting + '</button>' : '') +
-      '<button class="btn pri" data-act="addles">＋ Урок</button>' +
+      '<button class="btn pri" data-act="addles">＋ День</button>' +
       '<button class="btn" data-act="students">Ученики</button>' +
       (code ? '<span class="codebox">Код для класса: <b class="mono">' + esc(code) + '</b></span> <button class="link" data-act="code">изменить</button>'
             : '<span class="warn">Код класса не задан — ученики журнал не увидят.</span> <button class="btn" data-act="code">Задать код</button>');
@@ -757,7 +793,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     keepScroll();
     var L = lessons(tab), P = students(), edit = mode === 'teacher';
     if (!P.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Учеников пока нет — добавь их кнопкой «Ученики».' : 'Журнал пока пуст.') + '</div>'; return; }
-    if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый кнопкой «＋ Урок».' : 'По этому предмету пока нет уроков.') + '</div>'; return; }
+    if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый день кнопкой «＋ День».' : 'По этому предмету пока нет уроков.') + '</div>'; return; }
 
     // месяц: журнал листается по месяцам, а не тянется вправо на весь год (D, 01.10)
     var MS = months(L), mo = monthSel[tab];
@@ -782,14 +818,14 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       h += '<th class="dt dend' + (g.date === today ? ' today' : '') + (go ? ' go' : '') + '" colspan="' + n + '" data-les="' + l.id + '">' +
         (go ? '<a href="' + go + '" title="Открыть урок на сайте"><b class="mono">' + lbl + '<i>↗</i></b></a>' : '<b class="mono">' + lbl + '</b>') + '</th>';
     });
-    if (edit) h += '<th class="addc" rowspan="2"><button class="btn" data-act="addles">＋</button></th>';
+    if (edit) h += '<th class="addc" rowspan="2"><button class="btn" data-act="addles" title="Добавить день">＋</button></th>';
     h += '</tr><tr>';
     DAYS.forEach(function (g) {
       g.xs.forEach(function (x, k) {
         x.cols.forEach(function (c, ci) {
           var end = x.last && ci === x.cols.length - 1 ? ' dend' : '';
-          h += c.w === 'u' ? '<th class="sub' + end + '">' + (g.xs.length > 1 ? (k + 1) + ' урок' : 'урок') + '</th>'
-            : '<th class="sub dz' + end + '"' + (c.n > 1 ? ' title="Одна домашка на ' + c.n + ' урока"' : '') + '>ДЗ</th>';
+          h += c.w === 'u' ? '<th class="sub' + end + '" title="' + (k + 1) + '-й урок">У' + (g.xs.length > 1 ? k + 1 : '') + '</th>'
+            : '<th class="sub dz' + end + '" title="' + (c.n > 1 ? 'Домашка, одна на ' + c.n + ' урока' : 'Домашка') + '">Д</th>';
         });
       });
     });
@@ -812,18 +848,21 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     });
     if (!L.length) h += '<tr><td class="empty" colspan="2">В этом месяце уроков нет.</td></tr>';
     h += '</tbody><tfoot><tr class="tp"><th class="nm">Тема</th>';
-    LY.forEach(function (x) {
-      var nf = filesOf(x.l.id).length;
-      h += '<td colspan="' + x.cols.length + '"' + (x.last ? ' class="dend"' : '') + ' data-les="' + x.l.id + '"><div class="clamp">' + esc(x.l.topic) + '</div>' +
-        (nf ? '<span class="fcount" title="Файлы урока">📎 ' + nf + '</span>' : '') + '</td>';
+    // день — одна клетка: у каждого урока по две строки («1.», «2.»), длинное — многоточием (D, 01.10)
+    var dayCell = function (g, items) {
+      var n = g.xs.reduce(function (a, x) { return a + x.cols.length; }, 0), many = items.length > 1;
+      return '<td colspan="' + n + '" class="dend" data-les="' + items[0].l.id + '">' + items.map(function (it, k) {
+        return '<div class="tl' + (many ? '' : ' one') + (it.site ? ' site' : '') + '" data-les="' + it.l.id + '"' + (it.site ? ' title="С сайта уроков"' : '') + '>' +
+          (many ? '<b>' + (k + 1) + '.</b> ' : '') + esc(it.t || '—') + (it.nf ? ' <span class="fcount">📎 ' + it.nf + '</span>' : '') + '</div>';
+      }).join('') + '</td>';
+    };
+    DAYS.forEach(function (g) {
+      h += dayCell(g, g.xs.map(function (x) { var tp = topicOf(x.l); return { l: x.l, t: tp.t, site: tp.site, nf: filesOf(x.l.id).length }; }));
     });
     if (edit) h += '<td></td>';
     h += '</tr><tr class="hw"><th class="nm">Домашка</th>';
-    var span = 0;
-    LY.forEach(function (x) {   // сдвоенный урок с общей ДЗ — одна клетка на оба
-      if (x.joinedNext) { span += x.cols.length; return; }
-      h += '<td colspan="' + (span + x.cols.length) + '"' + (x.last ? ' class="dend"' : '') + ' data-les="' + x.own.id + '"><div class="clamp">' + esc(x.own.hw || '—') + '</div></td>';
-      span = 0;
+    DAYS.forEach(function (g) {   // сдвоенный урок — одна домашка на день
+      h += dayCell(g, g.xs.filter(function (x) { return !x.joinedNext; }).map(function (x) { var hw = hwOf(x.own); return { l: x.own, t: hw.t, site: hw.site }; }));
     });
     if (edit) h += '<td></td>';
     h += '</tr></tfoot></table></div>';
@@ -878,7 +917,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         }).join('') + '</div>' : '<div class="note">' + (edit ? 'Пока нет. Добавь теорию, практику, презентацию — ученики скачают их здесь.' : 'К этому уроку файлов нет.') + '</div>') +
         (edit ? '<label class="btn upl" style="margin-top:6px">＋ Добавить файлы<input type="file" id="upFile" data-lid="' + id + '" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx,.xlsx"></label>' +
           '<div class="note" id="upSt">PDF, картинки, PowerPoint, Word, Excel — до 25 МБ, до 10 файлов на урок.</div>' : '') +
-        '<div class="lbl">Домашка' + (nSh > 1 ? ' · общая на ' + nSh + ' урока' : '') + '</div><div class="txt">' + esc(own.hw || 'Не задано') + '</div>' +
+        '<div class="lbl">Домашка' + (nSh > 1 ? ' · общая на ' + nSh + ' урока' : '') + '</div><div class="txt">' + esc(hwOf(own).t || 'Не задано') + '</div>' +
         '<div class="row">' + (edit ? '<button class="btn" data-act="editlesson" data-id="' + id + '">✎ Изменить</button>' : '') +
         '<span class="sp"></span>' +
         (go ? '<a class="btn pri" href="' + go + '">Открыть урок на сайте ↗</a>' : '<span class="meta" style="margin:0">Урока на сайте пока нет</span>') +
@@ -928,6 +967,71 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     closeDlg(); render();
   }
   function closeDlg() { $('dlg').innerHTML = ''; }
+
+  /* ── день целиком (D, 01.10): ＋ справа — новый день, ✎ в карточке — правка. Алгебра и геометрия —
+     два урока: тема 1, тема 2, одна домашка (второй урок sh=1). Пустые поля — с сайта уроков ── */
+  function dayLessons(subj, date) { return lessons(subj).filter(function (l) { return l.date === date; }); }
+  function openDay(date) {
+    var subj = SUBJ.filter(function (s) { return s.id === tab; })[0], D = date ? dayLessons(tab, date) : [];
+    var isNew = !D.length, two = isNew ? tab !== 'ver' : D.length > 1;
+    if (isNew) date = dayLessons(tab, todayStr()).length ? '' : todayStr();
+    var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
+      '<h3>' + (isNew ? 'Новый день' : 'День ' + esc(date)) + '</h3><div class="meta">' + esc(subj.name) + '. Оставишь поле пустым — журнал возьмёт тему и домашку с сайта уроков (серым — что там сейчас).</div>' +
+      '<div class="lbl">Дата (ДД.ММ)</div><input id="fDate" class="mono" inputmode="decimal" maxlength="5" value="' + esc(date || '') + '">' +
+      '<label class="chk"><input type="checkbox" id="fTwo"' + (two ? ' checked' : '') + '> Два урока в этот день: У1 · У2 · Д, домашка одна</label>' +
+      '<div class="lbl">Тема 1-го урока</div><input id="fT1" maxlength="400" value="' + esc(D[0] ? D[0].topic : '') + '">' +
+      '<div id="fT2box"' + (two ? '' : ' hidden') + '><div class="lbl">Тема 2-го урока</div><input id="fT2" maxlength="400" value="' + esc(D[1] ? D[1].topic : '') + '"></div>' +
+      '<div class="lbl">Домашка</div><textarea id="fHw" maxlength="1200">' + esc([D[0] && D[0].hw, D[1] && !D[1].sh && D[1].hw].filter(Boolean).join('\n')) + '</textarea>' +
+      '<div class="row">' + (isNew ? '' : '<button class="btn danger" data-act="delday" data-date="' + esc(date) + '">Удалить день</button>') +
+      '<span class="sp"></span><button class="btn" data-act="close">Отмена</button>' +
+      '<button class="btn pri" data-act="saveday" data-date="' + esc(isNew ? '' : date) + '">Сохранить</button></div></div>';
+    $('dlg').innerHTML = h;
+    // с сайта — серой подсказкой, а не копией: пустое поле журнал берёт с сайта живьём,
+    // и правка Хирона на сайте сразу видна здесь
+    var hint = function () {
+      var d = normDate($('fDate').value), a = d && siteLesson(tab, d, 0, true), b = d && siteLesson(tab, d, 1, true), hw = d ? siteDayHw(tab, d) : '';
+      $('fT1').placeholder = a ? 'С сайта: ' + (a.u.title || '') : '';
+      $('fT2').placeholder = b ? 'С сайта: ' + (b.u.title || '') : '';
+      $('fHw').placeholder = hw ? 'С сайта:\n' + hw : '';
+    };
+    $('fDate').addEventListener('input', hint);
+    $('fTwo').addEventListener('change', function () { $('fT2box').hidden = !$('fTwo').checked; });
+    hint();
+    setTimeout(function () { var f = $(date ? 'fT1' : 'fDate'); if (f) f.focus(); }, 30);
+  }
+  function normDate(v) {
+    var m = /^(\d{1,2})[.,/](\d{1,2})$/.exec(String(v || '').trim());
+    if (!m || +m[1] < 1 || +m[1] > 31 || +m[2] < 1 || +m[2] > 12) return '';
+    return ('0' + m[1]).slice(-2) + '.' + ('0' + m[2]).slice(-2);
+  }
+  function hasMarks(lid, w) { return Object.keys(S.mark).some(function (k) { var q = k.split('.'); return q[0] === lid && (!w || q[2] === w) && S.mark[k].v; }); }
+  function saveDay(oldDate) {
+    var date = normDate($('fDate').value);
+    if (!date) { alert('Дата — в виде ДД.ММ, например 30.09'); return; }
+    var D = oldDate ? dayLessons(tab, oldDate) : [];
+    if (date !== oldDate && dayLessons(tab, date).length) { alert('На ' + date + ' день уже есть — открой его в журнале и поправь там.'); return; }
+    var two = $('fTwo').checked, l1 = D[0], l2 = D[1];
+    if (two && l2 && !l2.sh && hasMarks(l2.id, 'd')) { alert('У 2-го урока свои оценки за ДЗ. Перенеси их в Д первого урока или сотри — тогда домашка станет общей.'); return; }
+    if (!two && l2 && (hasMarks(l2.id) || filesOf(l2.id).length)) { alert('У 2-го урока есть оценки или файлы — сначала сотри их, потом убирай урок.'); return; }
+    var id1 = l1 ? l1.id : newId('l');
+    put('les', id1, { subj: tab, date: date, topic: $('fT1').value.trim(), hw: $('fHw').value.trim(), ord: 1 });
+    if (two) put('les', l2 ? l2.id : newId('l'), { subj: tab, date: date, topic: $('fT2').value.trim(), hw: '', ord: 2, sh: 1 });
+    else if (l2) del('les', l2.id);
+    D.slice(2).forEach(function (x, i) { var o = {}; Object.keys(x).forEach(function (k) { if (k !== 'id' && k !== 'ts') o[k] = x[k]; }); o.date = date; o.ord = 3 + i; put('les', x.id, o); });
+    goMonth({ subj: tab, date: date });
+    closeDlg(); render();
+  }
+  function delDay(date) {
+    var D = dayLessons(tab, date), nm = 0;
+    D.forEach(function (l) { nm += Object.keys(S.mark).filter(function (k) { return k.indexOf(l.id + '.') === 0 && S.mark[k].v; }).length; });
+    if (!D.length || !confirm('Удалить день ' + date + (D.length > 1 ? ' (' + D.length + ' урока)' : '') + (nm ? ' вместе с оценками (' + nm + ')' : '') + '?')) return;
+    D.forEach(function (l) {
+      Object.keys(S.mark).forEach(function (k) { if (k.indexOf(l.id + '.') === 0) del('mark', k); });
+      filesOf(l.id).forEach(function (f) { del('file', f.id); });
+      del('les', l.id);
+    });
+    closeDlg(); render();
+  }
 
   /* ── файлы урока: лежат на RF-сервере; D — по ключу, ученик — по пропуску устройства ── */
   function downloadFile(fid, btn) {
@@ -1189,7 +1293,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var subj = SUBJ.filter(function (x) { return x.id === l.subj; })[0], n = sharedCount(l);
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
       '<h3>Домашка · ' + esc(l.date) + '</h3><div class="meta">' + esc(subj.name) + (n > 1 ? ' · общая на ' + n + ' урока' : '') + (l.topic ? ' · ' + esc(l.topic) : '') + '</div>' +
-      '<div class="lbl">Что задано</div><div class="txt">' + esc(l.hw || 'Смотри на сайте урока') + '</div>';
+      '<div class="lbl">Что задано</div><div class="txt">' + esc(hwOf(l).t || 'Смотри на сайте урока') + '</div>';
     if (m && (m.v || sm.c)) h += '<div class="lbl">Учитель</div><div class="big">' + (sm.g ? '<i class="' + markCls(m.v) + '">' + esc(sm.g) + '</i>' : '') + '<span>' + esc(sm.c || '') + '</span></div>';
     h += '<div class="lbl">Сдача</div><div class="note">' + (sub ? SUB_ST[sub.st] : 'Ещё не сдано. Сфотографируй решение целиком и нажми «Сдать фото».') + '</div>';
     if (sub) h += thumbsHtml(sub.ph, q[0] + '.' + q[1]) + (sub.ink && Object.keys(sub.ink).length ? '<div class="note">✏️ На фото — разбор учителя. Нажми, чтобы открыть крупно, и перепиши исправления в тетрадь.</div>' : '');
@@ -1427,9 +1531,11 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       if (act === 'close') closeDlg();
       else if (act === 'popclose') closeCell();
       else if (act === 'retry') view('');
-      else if (act === 'addles') openLesson(null);
+      else if (act === 'addles') openDay(null);
+      else if (act === 'saveday') saveDay(a.dataset.date);
+      else if (act === 'delday') delDay(a.dataset.date);
       else if (act === 'savelesson') saveLesson(a.dataset.id);
-      else if (act === 'editlesson') openLesson(a.dataset.id, true);
+      else if (act === 'editlesson') { var el = S.les[a.dataset.id]; if (el) openDay(el.date); }
       else if (act === 'dellesson') delLesson(a.dataset.id);
       else if (act === 'dl') downloadFile(a.dataset.id, a);
       else if (act === 'login') openLogin('');
