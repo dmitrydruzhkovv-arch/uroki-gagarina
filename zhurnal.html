@@ -277,15 +277,20 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
 .dsec-h .no{ width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font-size:13px; font-weight:800; background:var(--z-head); color:var(--sub); flex:none; }
 .sjchip{ padding:3px 9px; border-radius:999px; font-size:12px; font-weight:800; color:var(--on); background:var(--g); flex:none; }
 .ftiles{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 6px; }
-.ft{ position:relative; width:104px; }
+.ft{ position:relative; width:150px; }
 .ftb{ width:100%; padding:0; display:flex; flex-direction:column; gap:4px; text-align:left; }
-.fpv{ width:104px; height:104px; border-radius:14px; overflow:hidden; display:grid; place-items:center; background:var(--z-head); box-shadow:inset 0 0 0 1px var(--z-line2); transition:transform .15s var(--ease); }
-.ftb:hover .fpv{ transform:translateY(-2px); box-shadow:inset 0 0 0 2px var(--s); }
-.fpv img{ width:100%; height:100%; object-fit:cover; display:block; }
+.fpv{ width:150px; height:196px; border-radius:14px; overflow:hidden; display:grid; place-items:center; background:var(--z-head); box-shadow:0 0 0 1px var(--z-line2), 0 8px 18px -14px rgba(40,24,70,.5); transition:transform .15s var(--ease); }
+.ftb:hover .fpv{ transform:translateY(-2px); box-shadow:0 0 0 2px var(--s), 0 12px 22px -14px rgba(40,24,70,.6); }
+.fpv img{ width:100%; height:100%; object-fit:cover; object-position:top; display:block; background:#fff; }
+.fpv img:not([src]){ visibility:hidden; }
+@media (max-width:560px){ .ft{ width:calc(50% - 5px); } .fpv{ width:100%; height:auto; aspect-ratio:150/196; } }
 .fpv i{ font-style:normal; font-family:'JetBrains Mono',ui-monospace,monospace; font-weight:800; font-size:20px; text-transform:uppercase; letter-spacing:.04em; color:#fff; }
-.fpv.x-pdf{ background:linear-gradient(135deg,#f87171,#dc2626); } .fpv.x-pptx{ background:linear-gradient(135deg,#fb923c,#ea580c); }
+.fpv.x-pdf{ background:linear-gradient(135deg,#f87171,#dc2626); position:relative; }
+.fpv.x-pdf img:not([src]){ position:absolute; }
+.fpv.x-pdf.cover{ background:#fff; }
+.fpv.x-pdf.cover::after{ content:'PDF'; position:absolute; left:6px; bottom:6px; padding:2px 6px; border-radius:6px; font:800 10px 'JetBrains Mono',ui-monospace,monospace; color:#fff; background:#dc2626; } .fpv.x-pptx{ background:linear-gradient(135deg,#fb923c,#ea580c); }
 .fpv.x-docx{ background:linear-gradient(135deg,#60a5fa,#2563eb); } .fpv.x-xlsx{ background:linear-gradient(135deg,#4ade80,#16a34a); }
-.fnm{ font-size:12px; font-weight:600; line-height:1.2; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; word-break:break-word; }
+.fnm{ font-size:13px; font-weight:600; line-height:1.2; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; word-break:break-word; }
 .ftb .fz{ font-size:11px; color:var(--muted); }
 .frm{ position:absolute; top:-6px; right:-6px; width:24px; height:24px; padding:0; border-radius:50%; display:grid; place-items:center; font-size:12px; color:#dc2626; background:var(--card); box-shadow:0 0 0 1px var(--z-line2), 0 4px 10px -6px rgba(0,0,0,.4); }
 .btn.sm{ padding:5px 10px; font-size:13px; }
@@ -1119,7 +1124,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
           (F.length ? '<div class="ftiles">' + F.map(function (f) {
             var img = /^(png|jpe?g|webp)$/i.test(f.ext), nm = String(f.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/^\d+[_\s.-]+/, '').replace(/_/g, ' ');
             return '<div class="ft"><button class="ftb" data-act="dl" data-id="' + f.id + '" title="' + esc(f.name) + ' — скачать">' +
-              '<span class="fpv x-' + esc(String(f.ext).toLowerCase()) + '">' + (img ? '<img data-ff="' + f.id + '" alt="">' : '<i>' + esc(f.ext) + '</i>') + '</span>' +
+              '<span class="fpv x-' + esc(String(f.ext).toLowerCase()) + '">' + (img ? '<img data-ff="' + f.id + '" alt="">' : /^pdf$/i.test(f.ext) ? '<img data-ff="' + f.id + '" data-pdf="1" alt=""><i>' + esc(f.ext) + '</i>' : '<i>' + esc(f.ext) + '</i>') + '</span>' +
               '<span class="fnm">' + esc(nm) + '</span><span class="fz">' + kb(f.size || 0) + ' ↓</span></button>' +
               (edit ? '<button class="frm" data-act="rmfile" data-id="' + f.id + '" title="Удалить файл" aria-label="Удалить файл">✕</button>' : '') + '</div>';
           }).join('') + '</div>' : '<div class="note">' + (edit ? 'Файлов пока нет.' : 'К этому уроку файлов нет.') + '</div>') +
@@ -1335,13 +1340,41 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     else body.pass = lsGet(LS.pass, '');
     return fetch(API + '/zhurnal/file', { method: 'POST', headers: h, body: JSON.stringify(body) }).then(function (r) { if (!r.ok) throw r.status; return r.blob(); });
   }
-  // картинки — плитками с самим изображением; адреса помним, пока открыта страница
-  var fileUrls = {};
+  // плитка файла — сама картинка, у PDF — его первая страница; адреса помним, пока открыта страница
+  var fileUrls = {}, pdfLib = null;
+  function loadPdfLib() {   // библиотека PDF лежит рядом с сайтом (lib/), грузится только когда в окне есть PDF
+    if (!pdfLib) pdfLib = new Promise(function (ok, bad) {
+      var sc = document.createElement('script');
+      sc.src = 'lib/pdf.min.js';
+      sc.onload = function () { try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.min.js'; ok(window.pdfjsLib); } catch (e) { pdfLib = null; bad(e); } };
+      sc.onerror = function () { pdfLib = null; bad(new Error('pdf lib')); };
+      document.head.appendChild(sc);
+    });
+    return pdfLib;
+  }
+  function pdfCover(blob) {   // первая страница → картинка шириной 450 пикселей
+    return Promise.all([loadPdfLib(), blob.arrayBuffer()]).then(function (r) {
+      return r[0].getDocument({ data: r[1] }).promise.then(function (doc) {
+        return doc.getPage(1).then(function (pg) {
+          var v0 = pg.getViewport({ scale: 1 }), vp = pg.getViewport({ scale: 450 / v0.width }), cv = document.createElement('canvas');
+          cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+          return pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise.then(function () { return cv.toDataURL('image/jpeg', 0.85); });
+        }).then(function (u) { doc.destroy(); return u; }, function (e) { doc.destroy(); throw e; });
+      });
+    });
+  }
   function fillFileThumbs(root) {
     (root || document).querySelectorAll('img[data-ff]:not([src])').forEach(function (img) {
-      var id = img.dataset.ff;
-      if (!fileUrls[id]) fileUrls[id] = fileBlob(id).then(function (b) { return URL.createObjectURL(b); });
-      fileUrls[id].then(function (u) { img.src = u; }, function () { delete fileUrls[id]; var i = document.createElement('i'); i.textContent = (S.file[id] || {}).ext || '?'; img.replaceWith(i); });
+      var id = img.dataset.ff, pdf = !!img.dataset.pdf;
+      if (!fileUrls[id]) fileUrls[id] = fileBlob(id).then(function (b) { return pdf ? pdfCover(b) : URL.createObjectURL(b); });
+      fileUrls[id].then(function (u) {
+        img.src = u;
+        if (pdf) { var i = img.nextElementSibling; if (i) i.remove(); img.parentNode.classList.add('cover'); }
+      }, function () {
+        if (pdf) { img.remove(); return; }   // не вышло — остаётся цветная плитка «PDF»; заново этот файл не качаем
+        delete fileUrls[id];
+        var i = document.createElement('i'); i.textContent = (S.file[id] || {}).ext || '?'; img.replaceWith(i);
+      });
     });
   }
   function downloadFile(fid, btn) {
