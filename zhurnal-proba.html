@@ -144,6 +144,11 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
 .zt tfoot th.nm{ font-size:12px; color:var(--muted); vertical-align:top; }
 .zt tfoot td{ vertical-align:top; padding:6px; font-size:12px; color:var(--sub); cursor:pointer; max-width:92px; }
 .zt tfoot td:hover{ background:var(--z-hover); }
+/* журналы: переключатель над предметами */
+.jsw{ display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
+.jr{ padding:6px 12px; border-radius:999px; font-weight:700; font-size:13.5px; color:var(--h-soft); box-shadow:inset 0 0 0 1px var(--h-line); }
+.jr[aria-pressed="true"]{ background:var(--h-txt); color:var(--h-bg); box-shadow:none; }
+.jr.add{ color:var(--h-dim); border:1px dashed var(--h-line); box-shadow:none; }
 /* оформление: точка в начале строки, кнопки Ж К Ч • */
 .li{ display:block; padding-left:1.05em; text-indent:-1.05em; }
 .li::before{ content:'•'; display:inline-block; width:1.05em; text-indent:0; color:var(--s); font-weight:900; }
@@ -209,7 +214,8 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
 .dlg textarea{ min-height:110px; resize:vertical; }
 .dlg .row{ display:flex; gap:8px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap; }
 .dlg .row .sp{ flex:1; }
-.srow{ display:grid; grid-template-columns:1fr 1fr 36px; gap:6px; margin-top:6px; }
+.srow{ display:grid; grid-template-columns:1fr 1fr 36px 36px; gap:6px; margin-top:6px; }
+.srow button.lnk{ color:var(--ink); } .srow button.lnk.on{ background:var(--z-head); box-shadow:inset 0 0 0 2px #7c3aed; }
 .srow input{ margin-top:0; }
 .srow-tg{ grid-column:1 / -1; padding:9px 10px; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); color:inherit; font:inherit; font-size:14px; }
 .srow button{ border-radius:10px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); color:#dc2626; }
@@ -324,6 +330,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       <h1>Журнал</h1>
       <span class="kicker">Школа Гагарина · 9 класс · 2026/27</span>
     </div>
+    <nav class="jsw" id="jsw" hidden></nav>
     <nav class="tabs" id="tabs" role="tablist"></nav>
   </div>
 </header>
@@ -350,13 +357,28 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 (function () {
   'use strict';
 
-  var SUBJ = [
+  // все предметы; у журнала — свои из них (meta.subj). mat — «Математика» у индивидуалов (D, 01.10)
+  var ALLSUBJ = [
     { id: 'alg', name: 'Алгебра', short: 'Алгебра', k: 'k-algebra', icon: '🧮', kurs: 'algebra' },
     { id: 'geo', name: 'Геометрия', short: 'Геометрия', k: 'k-geometriya', icon: '📐', kurs: 'geometriya' },
-    { id: 'ver', name: 'Вероятность и статистика', short: 'Вероятность', k: 'k-veroyatnost', icon: '🎲', kurs: 'veroyatnost' }
+    { id: 'ver', name: 'Вероятность и статистика', short: 'Вероятность', k: 'k-veroyatnost', icon: '🎲', kurs: 'veroyatnost' },
+    { id: 'mat', name: 'Математика', short: 'Математика', k: 'k-oge', icon: '📘', kurs: '' }
   ];
+  var SUBJ = ALLSUBJ.slice(0, 3);
+  // журнал в работе: g9 — Гагарин; индивидуалы и группы — свои (D, 01.10, ТЗ 16 «класс из одного»)
+  var MAIN_J = 'g9', J = MAIN_J, META = { title: '9 класс · Школа Гагарина', subj: ['alg', 'geo', 'ver'], kind: 'cls' }, JOURNALS = [], creating = '';
+  function setMeta(m) {
+    META = m || META;
+    SUBJ = (META.subj || []).map(function (id) { return ALLSUBJ.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean);
+    if (!SUBJ.length) SUBJ = ALLSUBJ.slice(0, 3);
+    if (!SUBJ.some(function (x) { return x.id === tab; })) tab = SUBJ[0].id;
+    var kk = document.querySelector('.zh-title .kicker');
+    if (kk) kk.textContent = META.title + ' · 2026/27';
+  }
   var QUICK = ['5', '4', '3', '2', '1', 'н', '–'];
-  var LS = { kabKey: 'kab:key', key: 'zh:key', pass: 'zh:pass', tab: 'zh:tab', api: 'kab:api', cache: 'zh:cache', out: 'zh:out', next: 'zh:next' };
+  var LS = { kabKey: 'kab:key', key: 'zh:key', pass: 'zh:pass', tab: 'zh:tab', api: 'kab:api', cache: 'zh:cache', out: 'zh:out', next: 'zh:next', j: 'zh:j', sk: 'zh:sk' };
+  // кэш и неотправленные правки — у каждого журнала свои (у Гагарина — прежние ключи)
+  function lk(base) { return J === MAIN_J ? base : base + ':' + J; }
   var KINDS = ['stu', 'les', 'mark', 'cfg', 'file', 'sub'];
   var DEBT_DAYS = 14;   // двойку пересдать за две недели (D, 30.09)
 
@@ -401,6 +423,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var guard = setTimeout(function () { if (ctrl) ctrl.abort(); }, 10000);
     var h = { 'Content-Type': 'application/json' };
     Object.keys(headers || {}).forEach(function (k) { h[k] = headers[k]; });
+    if (body && typeof body === 'object' && !('j' in body) && path.indexOf('/zhurnal/') === 0 && path !== '/zhurnal/view') body.j = J;
     return fetch(API + path, { method: 'POST', headers: h, body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) {
         clearTimeout(guard);
@@ -413,14 +436,19 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   // ключ Кабинета на этом устройстве — D узнан сам
   var teacherKey = lsGet(LS.key, '') || lsGet(LS.kabKey, '');
   var mode = teacherKey ? 'teacher' : 'view';
-  var outbox = mode === 'teacher' ? lsGet(LS.out, []) : [];
+  if (mode === 'teacher' && /^[a-z0-9]{2,16}$/.test(lsGet(LS.j, ''))) J = lsGet(LS.j, '');
+  if (mode === 'teacher' && lsGet('zh:mk', '') === J) creating = J;   // журнал заведён, но сервер его ещё не видел
+  var outbox = mode === 'teacher' ? lsGet(lk(LS.out), []) : [];
   var tab = lsGet(LS.tab, 'alg');
-  if (/^#(alg|geo|ver)$/.test(location.hash)) tab = location.hash.slice(1);
-  if (!SUBJ.some(function (s) { return s.id === tab; })) tab = 'alg';
+  if (/^#(alg|geo|ver|mat)$/.test(location.hash)) tab = location.hash.slice(1);
+  if (mode === 'teacher' && J !== MAIN_J) setMeta(lsGet(lk(LS.cache), {}).meta || { title: 'Журнал', subj: ['mat'], kind: 'ind' });
+  if (!SUBJ.some(function (s) { return s.id === tab; })) tab = SUBJ[0].id;
   var loaded = false, cur = null, pendingRender = false, scrollPos = {};
   var meId = null, sdachaOn = false;   // ученик, вошедший через бота (сдача ДЗ, шаг 4)
   LS.ck = 'zh:ck'; LS.vhod = 'zh:vhod';
   function ck() { return lsGet(LS.ck, ''); }
+  function sk() { return lsGet(LS.sk, ''); }   // личная ссылка ученика без Телеграма: <журнал>.<ключ>
+  function stuH() { return sk() ? { 'X-Stu-Key': sk() } : { 'X-Chat-Key': ck() }; }
   function chatBase() { return API.replace(/\/cabinet$/, ''); }
   var BOT = /[?&]test=chat\b/.test(location.search) ? 'Lemma_test1_bot' : 'D_mathh_bot';
 
@@ -698,7 +726,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     clearTimeout(queue.t);
     queue.t = setTimeout(sync, 500);
   }
-  function save() { lsSet(LS.out, outbox); lsSet(LS.cache, S); }
+  function save() { lsSet(lk(LS.out), outbox); var c = {}; KINDS.forEach(function (k) { c[k] = S[k]; }); c.meta = META; lsSet(lk(LS.cache), c); }
 
   var busy = false, again = false, retryT = null, stNote = '';   // stNote — «проверено, ушло в Телеграм»: не затирать «сохранено»
   function sync() {
@@ -706,14 +734,21 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (busy) { again = true; return; }
     busy = true; setSt('wait', outbox.length ? 'сохраняю…' : 'сверяю…');
     var sending = outbox.slice(0, 1500);
-    post('/zhurnal/sync', { ops: sending }, { Authorization: 'Bearer ' + teacherKey })
+    var jSent = J;
+    post('/zhurnal/sync', { ops: sending, j: J, create: creating === J }, { Authorization: 'Bearer ' + teacherKey })
       .then(function (r) {
         if (r.status === 401 || r.status === 403) throw { badKey: true };
+        if (jSent !== J) throw { gone: true };   // пока шёл запрос, D переключил журнал — ответ уже не про него
+        if (r.status === 404 && jSent !== MAIN_J && creating !== J) { switchJournal(MAIN_J, true); throw { gone: true }; }   // журнала нет — к Гагарину
+        if (r.status === 200 && r.data.ok && (r.data.j || MAIN_J) !== J) throw { http: 'old' };   // сервер не знает журналов — данные чужого не брать (Гагарин — как раньше)
         lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
         if (r.status !== 200 || !r.data.ok) throw { http: r.status };
         outbox = outbox.filter(function (o) {
           return !sending.some(function (s) { return s.k === o.k && s.id === o.id && s.ts === o.ts; });
         });
+        if (creating === J) { creating = ''; lsDel('zh:mk'); }
+        if (r.data.meta) setMeta(r.data.meta);
+        if (r.data.journals) { JOURNALS = r.data.journals; renderJournals(); }
         var next = fromObjects(r.data.objects);
         outbox.forEach(function (op) {   // правки, сделанные пока шёл запрос, — сверху
           if (op.t === 'put') { var o = JSON.parse(JSON.stringify(op.d)); o.id = op.id; o.ts = op.ts; next[op.k][op.id] = o; }
@@ -724,8 +759,10 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         setSt('ok', stNote || 'сохранено'); stNote = '';
         if (changed || !sync.once) render();
         sync.once = true;
+        if (pendingSwitch && !outbox.length) setTimeout(function () { switchJournal(pendingSwitch); }, 0);
       })
       .catch(function (e) {
+        if (e && e.gone) return;
         if (e && e.badKey) {
           // неотправленные оценки не трогаем: сервер мог просто перезапускаться
           setSt('bad', 'ключ не подошёл — правки ждут на этом устройстве');
@@ -762,6 +799,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         if (r.status !== 200 || !r.data.ok) throw { http: r.status };
         lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
         if (r.data.pass) lsSet(LS.pass, r.data.pass);
+        if (r.data.j) J = r.data.j;
+        if (r.data.meta) setMeta(r.data.meta);
         S = fromObjects(r.data.objects); loaded = true; render();
       })
       .catch(function (e) {
@@ -793,6 +832,93 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     document.body.className = SUBJ.filter(function (s) { return s.id === tab; })[0].k + (mode === 'teacher' ? ' edit' : '');
   }
 
+  /* ── журналы (D, 01.10): Гагарин, индивидуалы, мини-группы — у D переключатель, у ученика — если их несколько ── */
+  function renderJournals() {
+    var el = $('jsw'), list = JOURNALS.length ? JOURNALS : [{ j: J, title: META.title }];
+    var show = mode === 'teacher' || list.length > 1;
+    el.hidden = !show;
+    if (!show) return;
+    el.innerHTML = list.map(function (x) {
+      return '<button class="jr" data-jr="' + esc(x.j) + '" aria-pressed="' + (x.j === J) + '">' + esc(x.title) + '</button>';
+    }).join('') + (mode === 'teacher' && JOURNALS.length ? '<button class="jr add" data-act="newjournal" title="Новый журнал: индивидуал или группа">＋ Журнал</button>' : '');
+  }
+  var pendingSwitch = '';
+  function switchJournal(j, force) {
+    if (j === J && loaded) return;
+    if (mode === 'teacher' && outbox.length && !force) {   // правки этого журнала — сначала на сервер, потом переключаемся
+      pendingSwitch = j; setSt('wait', 'сохраняю — потом переключу'); sync(); return;
+    }
+    pendingSwitch = '';
+    if (cur) closeCell();
+    closeDlg();
+    if (mode !== 'teacher') {   // ученик: журнал с сервера, свой
+      $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
+      meLoad(j).then(function (res) { if (res === 'nolink') pickMe(); else if (res !== true) location.reload(); }, function () { render(); });
+      return;
+    }
+    save();
+    J = j; lsSet(LS.j, j);
+    outbox = lsGet(lk(LS.out), []);
+    var c = lsGet(lk(LS.cache), null), info = JOURNALS.filter(function (x) { return x.j === j; })[0];
+    S = blank();
+    if (c && c.les) KINDS.forEach(function (k) { S[k] = c[k] || {}; });
+    loaded = !!(c && c.les);
+    setMeta((c && c.meta) || info || { title: 'Журнал', subj: ['mat'], kind: 'ind' });
+    monthSel = {}; scrollPos = {}; sync.once = false;
+    renderJournals(); render();
+    if (!loaded) $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
+    sync();
+  }
+  function openNewJournal() {
+    $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true"><h3>Новый журнал</h3>' +
+      '<div class="meta">Индивидуал — журнал из одного ученика: он видит только его. Мини-группа — несколько учеников.</div>' +
+      '<div class="lbl">Название</div><input id="njT" maxlength="80" placeholder="Например: 6 класс · Маша">' +
+      '<div class="lbl">Кто</div><label class="chk"><input type="radio" name="njK" value="ind" checked> Индивидуальный ученик</label>' +
+      '<label class="chk"><input type="radio" name="njK" value="grp"> Мини-группа</label>' +
+      '<div class="lbl">Предметы</div>' + ALLSUBJ.map(function (x) {
+        return '<label class="chk"><input type="checkbox" class="njS" value="' + x.id + '"' + (x.id === 'mat' ? ' checked' : '') + '> ' + esc(x.name) + '</label>';
+      }).join('') +
+      '<div class="row"><span class="sp"></span><button class="btn" data-act="close">Отмена</button><button class="btn pri" data-act="mkjournal">Создать</button></div></div>';
+    setTimeout(function () { var f = $('njT'); if (f) f.focus(); }, 30);
+  }
+  function makeJournal() {
+    var title = $('njT').value.trim(), kind = (document.querySelector('input[name=njK]:checked') || {}).value || 'ind';
+    var subj = Array.prototype.map.call(document.querySelectorAll('.njS:checked'), function (x) { return x.value; });
+    if (!title) { alert('Напиши название — например «6 класс · Маша».'); return; }
+    if (outbox.length) { alert('Сохраняю правки этого журнала — нажми «Создать» ещё раз через пару секунд.'); sync(); return; }
+    if (!subj.length) { alert('Отметь хотя бы один предмет.'); return; }
+    var a = 'abcdefghkmnprstuvwxyz23456789', id = 'j';
+    for (var i = 0; i < 7; i++) id += a[Math.floor(Math.random() * a.length)];
+    save(); closeDlg();
+    J = id; lsSet(LS.j, id); outbox = []; S = blank(); loaded = true; creating = id; lsSet('zh:mk', id);
+    setMeta({ title: title, subj: subj, kind: kind });
+    JOURNALS = JOURNALS.concat([{ j: id, title: title, subj: subj, kind: kind }]);
+    monthSel = {}; scrollPos = {};
+    put('cfg', 'meta', { title: title, subj: subj, kind: kind });
+    renderJournals(); render();
+  }
+  // личная ссылка: ученик без Телеграма открывает свой журнал и сдаёт фото; одноклассникам ключ не виден
+  function newKey() {
+    var b = new Uint8Array(16); (window.crypto || window.msCrypto).getRandomValues(b);
+    return Array.prototype.map.call(b, function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+  }
+  function stuLink(id, renew) {
+    var p = S.stu[id];
+    if (!p) return;
+    if (!p.key || renew) {
+      var d = {}; Object.keys(p).forEach(function (k) { if (k !== 'id' && k !== 'ts') d[k] = p[k]; });
+      d.key = newKey(); put('stu', id, d); p = S.stu[id];
+    }
+    var url = location.origin + location.pathname + '#s=' + J + '.' + p.key;
+    $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
+      '<h3>Личная ссылка · ' + esc(p.fam + ' ' + p.name) + '</h3>' +
+      '<div class="meta">Для тех, кого нет в Телеграме. Отправь её ученику один раз (ВК, WhatsApp). Он увидит только этот журнал и сможет сдавать фото домашки. Заработает, когда сверху загорится «сохранено».</div>' +
+      '<input id="lnkIn" readonly value="' + esc(url) + '">' +
+      '<div class="row"><button class="btn danger" data-act="stulinknew" data-id="' + esc(id) + '">Новая ссылка</button><span class="sp"></span>' +
+      '<button class="btn" data-act="students">Назад</button><button class="btn pri" data-act="copylink">Скопировать</button></div>' +
+      '<div class="note">«Новая ссылка» — старая перестанет работать (если её переслали не тому).</div></div>';
+  }
+
   function renderTools() {
     var t = $('tools');
     if (mode !== 'teacher') {
@@ -808,7 +934,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     t.innerHTML = (waiting ? '<button class="btn queue" data-act="queue">📥 Ждут проверки: ' + waiting + '</button>' : '') +
       '<button class="btn pri" data-act="addles">＋ День</button>' +
       '<button class="btn" data-act="students">Ученики</button>' +
-      (code ? '<span class="codebox">Код для класса: <b class="mono">' + esc(code) + '</b></span> <button class="link" data-act="code">изменить</button>'
+      (META.kind !== 'cls' ? '<span class="codebox">Ученикам — кнопка «📒 Мой журнал» в боте или личная ссылка (🔗 в «Учениках»)</span>'
+        : code ? '<span class="codebox">Код для класса: <b class="mono">' + esc(code) + '</b></span> <button class="link" data-act="code">изменить</button>'
             : '<span class="warn">Код класса не задан — ученики журнал не увидят.</span> <button class="btn" data-act="code">Задать код</button>');
   }
 
@@ -1000,7 +1127,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function dayLessons(subj, date) { return lessons(subj).filter(function (l) { return l.date === date; }); }
   function openDay(date) {
     var subj = SUBJ.filter(function (s) { return s.id === tab; })[0], D = date ? dayLessons(tab, date) : [];
-    var isNew = !D.length, two = isNew ? tab !== 'ver' : D.length > 1;
+    var isNew = !D.length, two = isNew ? tab === 'alg' || tab === 'geo' : D.length > 1;   // сдвоенные — алгебра и геометрия Гагарина
     if (isNew) date = dayLessons(tab, todayStr()).length ? '' : todayStr();
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
       '<h3>' + (isNew ? 'Новый день' : 'День ' + esc(date)) + '</h3><div class="meta">' + esc(subj.name) + '. Оставишь поле пустым — журнал возьмёт тему и домашку с сайта уроков (серым — что там сейчас).</div>' +
@@ -1099,8 +1226,10 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function downloadFile(fid, btn) {
     var f = S.file[fid];
     if (!f) return;
-    var h = { 'Content-Type': 'application/json' }, body = { id: fid };
-    if (mode === 'teacher') h.Authorization = 'Bearer ' + teacherKey; else body.pass = lsGet(LS.pass, '');
+    var h = { 'Content-Type': 'application/json' }, body = { id: fid, j: J };
+    if (mode === 'teacher') h.Authorization = 'Bearer ' + teacherKey;
+    else if (meId) { var sh3 = stuH(); Object.keys(sh3).forEach(function (k) { h[k] = sh3[k]; }); }   // вошёл через бота или по личной ссылке
+    else body.pass = lsGet(LS.pass, '');
     var was = btn ? btn.innerHTML : '';
     if (btn) { btn.disabled = true; btn.querySelector('.fz').textContent = 'качаю…'; }
     fetch(API + '/zhurnal/file', { method: 'POST', headers: h, body: JSON.stringify(body) })
@@ -1127,7 +1256,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       }
       var f = files.shift(), fd = new FormData();
       if (st) st.textContent = 'Загружаю «' + f.name + '»…';
-      fd.append('les', lid); fd.append('file', f);
+      fd.append('les', lid); fd.append('j', J); fd.append('file', f);
       fetch(API + '/zhurnal/upload', { method: 'POST', headers: { Authorization: 'Bearer ' + teacherKey }, body: fd })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, j: j }; }); })
         .then(function (r) {
@@ -1141,12 +1270,14 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 
   /* ── сдача ДЗ (шаг 4): ученик входит через бота, сдаёт фото в свою клетку ── */
   // ученик с ключом: журнал класса + свои сдачи. → true | 'nolink' | false (ключ не годен)
-  function meLoad() {
-    return post('/zhurnal/me', {}, { 'X-Chat-Key': ck() }).then(function (r) {
-      if (r.status === 401) { lsDel(LS.ck); return false; }
+  function meLoad(want) {
+    return post('/zhurnal/me', { j: want || J }, stuH()).then(function (r) {
+      if (r.status === 401) { lsDel(sk() ? LS.sk : LS.ck); return false; }
       if (r.status !== 200 || !r.data.ok) throw { http: r.status };
       lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
+      JOURNALS = r.data.journals || []; J = r.data.j || MAIN_J; renderJournals();
       if (!r.data.stu) { meId = null; freeRows = r.data.free || []; return 'nolink'; }
+      setMeta(r.data.meta);
       meId = r.data.stu; sdachaOn = !!r.data.sdacha;
       S = fromObjects(r.data.objects); loaded = true; render();
       return true;
@@ -1160,6 +1291,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (freeRows.length) h += '<div class="pick">' + freeRows.map(function (x) {
       return '<button class="btn" data-act="claim" data-id="' + esc(x.id) + '" data-nm="' + esc(x.fam + ' ' + x.name) + '"><b>' + esc(x.fam) + '</b> ' + esc(x.name) + '</button>';
     }).join('') + '</div>';
+    else if (!JOURNALS.length) h = '<div class="gate"><h2>Журнала пока нет</h2><p>Учитель ещё не завёл тебе журнал или не отметил тебя в нём. Напиши ему — это минута.</p>';
     else h += '<p style="margin-top:14px"><b>Свободных фамилий нет.</b> Напиши учителю, он отметит тебя сам.</p>';
     h += '<div class="err">' + esc(err || '') + '</div><p style="margin-top:10px;font-size:13px">Себя не нашёл или нажал не ту — напиши учителю.</p></div>';
     $('main').innerHTML = h;
@@ -1167,7 +1299,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function claim(id, nm) {
     if (!confirm('Ты — ' + nm + '?\nПоменять потом сможет только учитель.')) return;
     $('main').innerHTML = '<div class="empty">Запоминаю…</div>';
-    post('/zhurnal/claim', { stu: id }, { 'X-Chat-Key': ck() }).then(function (r) {
+    post('/zhurnal/claim', { stu: id }, stuH()).then(function (r) {
       if (r.status === 200 && r.data.ok) return meLoad().then(function (res) { if (res === 'nolink') pickMe(); });
       if (r.status === 401) { lsDel(LS.ck); alert('Вход устарел. Нажми «📒 Мой журнал» в боте ещё раз.'); location.reload(); return; }
       if (r.status === 403) { pickMe('Выбрать себя может только ученик класса из бота. Напиши учителю.'); return; }
@@ -1199,7 +1331,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     fetch(chatBase() + '/chat/login/finish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: v.t, kod: kod }) })
       .then(function (r) { return r.json(); }).then(function (d) {
         if (d.ok && d.key) {
-          lsDel(LS.vhod); lsSet(LS.ck, d.key); closeDlg();
+          lsDel(LS.vhod); lsSet(LS.ck, d.key); lsDel(LS.sk); closeDlg();
           meLoad().then(function (res) { if (res === 'nolink') pickMe(); else if (res !== true) render(); }, function () { render(); });
           return;
         }
@@ -1214,8 +1346,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function photoUrl(name) {
     if (!photoCache[name]) {
       var h = { 'Content-Type': 'application/json' };
-      if (mode === 'teacher') h.Authorization = 'Bearer ' + teacherKey; else h['X-Chat-Key'] = ck();
-      photoCache[name] = fetch(API + '/zhurnal/photo', { method: 'POST', headers: h, body: JSON.stringify({ f: name }) })
+      if (mode === 'teacher') h.Authorization = 'Bearer ' + teacherKey; else { var sh2 = stuH(); Object.keys(sh2).forEach(function (k) { h[k] = sh2[k]; }); }
+      photoCache[name] = fetch(API + '/zhurnal/photo', { method: 'POST', headers: h, body: JSON.stringify({ f: name, j: J }) })
         .then(function (r) { if (!r.ok) throw r.status; return r.blob(); })
         .then(function (b) { return URL.createObjectURL(b); })
         .catch(function (e) { delete photoCache[name]; throw e; });
@@ -1389,7 +1521,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       fd.append('les', lid);
       blobs.forEach(function (b, i) { fd.append('photo', b, 'foto' + (i + 1) + '.jpg'); });
       if (st) st.textContent = 'Отправляю…';
-      return fetch(API + '/zhurnal/submit', { method: 'POST', headers: { 'X-Chat-Key': ck() }, body: fd })
+      fd.append('j', J);
+      return fetch(API + '/zhurnal/submit', { method: 'POST', headers: stuH(), body: fd })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, j: j }; }); });
     }).then(function (r) {
       if (r.status === 200 && r.j.ok) {
@@ -1454,6 +1587,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     P.forEach(function (p) {
       h += '<div class="srow" data-sid="' + p.id + '"><input data-f="fam" placeholder="Фамилия" maxlength="40" value="' + esc(p.fam) + '">' +
         '<input data-f="name" placeholder="Имя" maxlength="40" value="' + esc(p.name) + '">' +
+        '<button data-act="stulink" data-id="' + p.id + '" class="lnk' + (p.key ? ' on' : '') + '" title="Личная ссылка — для тех, кого нет в Телеграме">🔗</button>' +
         '<button data-act="delstu" data-id="' + p.id + '" title="Убрать из журнала">✕</button>' +
         '<select data-f="tg" class="srow-tg">' + opts(p.tg) + '</select></div>';
     });
@@ -1482,6 +1616,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (tg !== (p.tg || '')) d.tg = tg;
     put('stu', id, d);
     if (!('tg' in d) && p.tg) S.stu[id].tg = p.tg;
+    if (p.key) S.stu[id].key = p.key;   // личную ссылку правка фамилии не трогает — сервер её тоже хранит
     render();
   }
 
@@ -1572,6 +1707,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (tm) { setTheme(tm.dataset.tema); return; }
     var fb = t.closest('[data-fmt]');
     if (fb) { applyFmt(fb.closest('.fmtbar').dataset.for, fb.dataset.fmt); return; }
+    var jb = t.closest('[data-jr]');
+    if (jb) { switchJournal(jb.dataset.jr); return; }
     var mb = t.closest('[data-month]');
     if (mb) { if (cur) closeCell(); monthSel[tab] = mb.dataset.month; resetScroll(tab); render(); return; }
     var nmc = t.closest('tbody th.nm[data-sid]');
@@ -1630,6 +1767,14 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         if (rf && confirm('Удалить файл «' + rf.name + '»? Ученики больше не смогут его скачать.')) { var rl = rf.les; del('file', rf.id); render(); openLesson(rl); }
       }
       else if (act === 'students') openStudents();
+      else if (act === 'newjournal') openNewJournal();
+      else if (act === 'mkjournal') makeJournal();
+      else if (act === 'stulink') stuLink(a.dataset.id);
+      else if (act === 'stulinknew') { if (confirm('Сделать новую ссылку? Старая перестанет работать.')) stuLink(a.dataset.id, true); }
+      else if (act === 'copylink') {
+        var li = $('lnkIn'); li.select();
+        (navigator.clipboard ? navigator.clipboard.writeText(li.value) : Promise.reject()).then(function () { a.textContent = 'Скопировано ✓'; }, function () { document.execCommand('copy'); a.textContent = 'Скопировано ✓'; });
+      }
       else if (act === 'addstu') {
         var mx = students().reduce(function (m, p) { return Math.max(m, p.ord || 0); }, 0);
         put('stu', newId('s'), { fam: 'Фамилия', name: 'Имя', ord: mx + 1 });
@@ -1734,9 +1879,9 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   var stEl = document.createElement('span');
   stEl.className = 'st'; stEl.id = 'st'; stEl.hidden = true; stEl.innerHTML = '<i></i><em id="stTxt"></em>';
   document.body.appendChild(stEl);
-  renderTabs();
+  renderTabs(); renderJournals();
   if (mode === 'teacher') {
-    var cache = lsGet(LS.cache, null);
+    var cache = lsGet(lk(LS.cache), null);
     if (cache && cache.les) { KINDS.forEach(function (k) { S[k] = cache[k] || {}; }); loaded = true; }
     else $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
     render(); sync();
@@ -1748,6 +1893,9 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       if (mk) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } view(decodeURIComponent(mk[1])); }
       else if (lsGet(LS.pass, '')) view(''); else gate('');
     };
+    // личная ссылка ученика без Телеграма (#s=<журнал>.<ключ>) — запомнить и открыть свой журнал
+    var ms = /[#&]s=([a-z0-9]{2,16}\.[0-9a-f]{32})\b/.exec(location.hash);
+    if (ms) { lsSet(LS.sk, ms[1]); J = ms[1].split('.')[0]; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } }
     // кнопка «📒 Мой журнал» в боте: одноразовая ссылка #t=… → ключ входа, без 4 цифр
     var mt = /[#&]t=([0-9a-f]{32})\b/.exec(location.hash);
     var afterMe = function (res) { if (res === 'nolink') pickMe(); else if (res !== true) byCode(); };
@@ -1757,7 +1905,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       fetch(chatBase() + '/chat/login/magic/finish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token }) })
         .then(function (r) { return r.json(); })
         .then(function (d) {
-          if (d.ok && d.key) { lsSet(LS.ck, d.key); mine(); return; }
+          if (d.ok && d.key) { lsSet(LS.ck, d.key); lsDel(LS.sk); mine(); return; }
           if (ck()) { mine(); return; }   // ссылку уже открывали — вход помнится
           byCode();
           setTimeout(function () { alert(d.error === 'not student' ? 'Ты больше не в классе в боте — спроси учителя.' : 'Ссылка из бота устарела или уже открывалась. Нажми «📒 Мой журнал» в боте ещё раз.'); }, 300);
@@ -1769,6 +1917,10 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       magic(mt[1], 0);
     }
     // вошёл через бота — журнал открывается без кода класса, со своей строкой и сдачей
+    else if (sk() && !mk) {   // по личной ссылке
+      $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
+      meLoad().then(function (res) { if (res !== true) { byCode(); setTimeout(function () { alert('Ссылка больше не работает — попроси у учителя новую.'); }, 300); } }, byCode);
+    }
     else if (ck() && !mk) { $('main').innerHTML = '<div class="empty">Открываю журнал…</div>'; meLoad().then(afterMe, byCode); }
     else byCode();
     $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>';
