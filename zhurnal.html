@@ -37,7 +37,25 @@
   --mnb:rgba(255,255,255,.06); --mnt:#a58bb6;
   --m5g:rgba(110,231,183,.7);
 }
-body{ background:var(--store); min-height:100vh; }
+/* фон под журналом — изометрические ромбы, фирменная сетка (D, 01.10) */
+body{ min-height:100vh; background:var(--store) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='74'%3E%3Cpath d='M0 37 64 0l64 37-64 37z' fill='none' stroke='%23dcd5ee' stroke-width='1.3'/%3E%3C/svg%3E") 0 0 / 128px 74px; }
+[data-theme="night"] body{ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='74'%3E%3Cpath d='M0 37 64 0l64 37-64 37z' fill='none' stroke='%23d946ef' stroke-opacity='.16' stroke-width='1.3'/%3E%3C/svg%3E"); }
+.legend, .zh-foot{ position:relative; }
+/* обложка журнала — одна на все журналы: кубики трёх предметов на той же сетке ромбов */
+.zh-hero{ position:relative; overflow:hidden; }
+.zh-hero .shell{ position:relative; z-index:1; }
+.zh-cover{ position:absolute; inset:0; pointer-events:none; }
+.zh-cover svg{ position:absolute; right:120px; top:50%; height:112%; min-height:230px; transform:translateY(-50%); }
+.zh-cover .grid{ stroke:#cfc4ea; }
+.zh-cover .cube{ animation:zc-float 7s var(--ease, ease-in-out) infinite alternate; }
+@keyframes zc-float{ from{ transform:translateY(0); } to{ transform:translateY(-5px); } }
+@media (prefers-reduced-motion:reduce){ .zh-cover .cube{ animation:none; } }
+[data-theme="night"] .zh-cover .grid{ stroke:#d946ef; stroke-opacity:.35; }
+[data-theme="night"] .zh-cover svg{ opacity:.8; }
+@media (min-width:701px){ .zh-hero{ min-height:186px; } }
+@media (max-width:1100px){ .zh-cover svg{ right:-40px; } }
+@media (max-width:700px){ .zh-cover svg{ right:-170px; opacity:.55; } }
+@media (orientation:landscape) and (max-height:520px){ .zh-cover{ display:none; } }
 input, textarea{ font:inherit; color:inherit; }
 
 /* шапка — как на главной */
@@ -371,6 +389,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 </head>
 <body>
 <header class="zh-hero">
+  <div class="zh-cover" id="zhCover" aria-hidden="true"></div>
   <div class="shell">
     <a class="zh-back" href="./">← Уроки</a>
     <div class="zh-title">
@@ -870,6 +889,39 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     f.onsubmit = function (ev) { ev.preventDefault(); var c = $('gateIn').value.trim(); if (c) view(c); };
     setTimeout(function () { var i = $('gateIn'); if (i) i.focus(); }, 50);
   }
+
+  /* ── обложка (D, 01.10): кубики на изометрической сетке — та же сетка ромбов, что под журналом.
+     Цвета — предметы: алгебра, геометрия, статистика, и нежные дополнения. Рисуется один раз ── */
+  (function cover() {
+    var el = $('zhCover');
+    if (!el) return;
+    var A = 32, B = 18.5, OX = 500, OY = 78;   // полромба по x и y; начало сетки
+    var at = function (i, j, k) { return [OX + (i - j) * A, OY + (i + j) * B - (k || 0) * 2 * B]; };
+    var poly = function (pts, fill, op) { return '<polygon points="' + pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '" fill="' + fill + '"' + (op != null ? ' fill-opacity="' + op + '"' : '') + '/>'; };
+    var tile = function (i, j, c, op) { var p = at(i, j); return poly([[p[0], p[1]], [p[0] + A, p[1] + B], [p[0], p[1] + 2 * B], [p[0] - A, p[1] + B]], c, op); };
+    var cube = function (i, j, k, c, d) {   // верх светлый, левая грань в цвет, правая темнее
+      var p = at(i, j, k + 1), x = p[0], y = p[1];
+      return '<g class="cube" style="animation-delay:' + d + 's">' +
+        poly([[x - A, y + B], [x, y + 2 * B], [x, y + 4 * B], [x - A, y + 3 * B]], c[1]) +
+        poly([[x + A, y + B], [x, y + 2 * B], [x, y + 4 * B], [x + A, y + 3 * B]], c[2]) +
+        poly([[x, y], [x + A, y + B], [x, y + 2 * B], [x - A, y + B]], c[0]) + '</g>';
+    };
+    // нежные тона: верх — почти белый, грани — пастель цвета предмета
+    var ALG = ['#ffecd6', '#ffcb96', '#f6a765'], GEO = ['#e6e7ff', '#b9bbfb', '#9092ee'], VER = ['#ffffff', '#e8ecf2', '#cbd3de'],
+      PINK = ['#ffeaf5', '#fbc9e2', '#f2a3cb'], MINT = ['#e4fbf0', '#b0efd4', '#7ddcb4'];
+    var h = '<svg viewBox="0 0 760 300" preserveAspectRatio="xMaxYMid meet"><defs><linearGradient id="zcFade" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity="1"/><stop offset=".86" stop-color="#fff" stop-opacity="1"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+      '<mask id="zcMask"><rect width="760" height="300" fill="url(#zcFade)"/></mask></defs><g mask="url(#zcMask)">';
+    var g = '';   // сетка ромбов — растворяется влево
+    for (var i = -8; i <= 14; i++) { var a = at(i, -10), b = at(i, 14), c = at(-10, i), d = at(14, i); g += 'M' + a[0] + ' ' + a[1] + 'L' + b[0] + ' ' + b[1] + 'M' + c[0] + ' ' + c[1] + 'L' + d[0] + ' ' + d[1]; }
+    h += '<path class="grid" d="' + g + '" fill="none" stroke-width="1.2"/>';
+    [[-2, 3, '#fb9a3c', .18], [-1, 3, '#6d6ff5', .16], [0, 4, '#f9a8d4', .22], [2, 5, '#6ee7b7', .2], [4, 0, '#6d6ff5', .14], [5, 1, '#fb9a3c', .16], [-3, 1, '#f9a8d4', .18], [3, -2, '#6ee7b7', .18], [1, 6, '#a3afbf', .22], [-4, 4, '#6d6ff5', .1]]
+      .forEach(function (t) { h += tile(t[0], t[1], t[2], t[3]); });
+    // кубики: дальние раньше, ближние позже — чтобы правильно перекрывались
+    [[0, 0, 0, GEO, 0], [1, 0, 0, ALG, -2], [0, 1, 0, VER, -4], [1, 1, 0, PINK, -1], [0, 0, 1, ALG, -3], [1, 0, 1, MINT, -5],
+      [3, 2, 0, GEO, -2.5], [3, 3, 0, VER, -.5], [3, 2, 1, PINK, -4.5], [-2, 2, 0, MINT, -3.5], [5, -1, 0, ALG, -1.5], [2, 5, 0, GEO, -6]]
+      .forEach(function (q) { h += cube(q[0], q[1], q[2], q[3], q[4]); });
+    el.innerHTML = h + '</g></svg>';
+  })();
 
   /* ── отрисовка ── */
   function renderTabs() {
