@@ -972,7 +972,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var today = todayStr(), LY = layout(L), DAYS = [];
     LY.forEach(function (x) {   // день = все уроки одной даты: одна дата в шапке, под ней 1 урок · 2 урок · ДЗ
       var g = DAYS[DAYS.length - 1];
-      if (!g || g.date !== x.l.date) DAYS.push(g = { date: x.l.date, xs: [] });
+      if (!g || g.date !== x.l.date || (feed() && g.subj !== x.l.subj && !x.l.sh)) DAYS.push(g = { date: x.l.date, subj: x.l.subj, xs: [] });   // лента: алгебра и геометрия в один день — две шапки, каждая своего цвета
       g.xs.push(x); x.day = g;
     });
     DAYS.forEach(function (g) { g.xs[g.xs.length - 1].last = true; });
@@ -1021,6 +1021,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     // день — одна клетка: у каждого урока по две строки («1.», «2.»), длинное — многоточием (D, 01.10)
     var dayCell = function (g, items) {
       var n = g.xs.reduce(function (a, x) { return a + x.cols.length; }, 0), many = items.length > 1;
+      if (!items.length) return '<td colspan="' + n + '" class="dend"></td>';
       return '<td colspan="' + n + '" class="dend" data-les="' + items[0].l.id + '">' + items.map(function (it, k) {
         return '<div class="tl' + (many ? '' : ' one') + (it.site ? ' site' : '') + '" data-les="' + it.l.id + '"' + (it.site ? ' title="С сайта уроков"' : '') + '>' +
           (many ? '<span class="no">' + (k + 1) + '.</span> ' : '') + (it.t ? fmt(it.t) : '—') + (it.nf ? ' <span class="fcount">📎 ' + it.nf + '</span>' : '') + '</div>';
@@ -1140,7 +1141,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 
   /* ── день целиком (D, 01.10): ＋ справа — новый день, ✎ в карточке — правка. Алгебра и геометрия —
      два урока: тема 1, тема 2, одна домашка (второй урок sh=1). Пустые поля — с сайта уроков ── */
-  var daySubj = 'mat';   // предмет дня, выбранный в окне «День» (лента)
+  var daySubj = 'mat', daySubj2 = 'mat';   // предметы 1-го и 2-го урока дня, выбранные в окне «День» (лента)
   function dayLessons(subj, date) { return lessons(subj).filter(function (l) { return l.date === date; }); }
   function openDay(date) {
     var subj = SUBJ.filter(function (s) { return s.id === tab; })[0], D = date ? dayLessons(tab, date) : [];
@@ -1149,19 +1150,28 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     // лента: предмет — у дня. Новый день — тот же предмет, что в прошлый раз
     var all = lessons(tab);
     daySubj = D[0] ? D[0].subj : all.length ? all[all.length - 1].subj : 'mat';
+    daySubj2 = D[1] ? D[1].subj : daySubj;
+    // два разных предмета в один день (алгебра + геометрия подряд) — у каждого своя домашка и своя клетка Д (D, 01.10)
+    var split0 = !!(D[1] && !D[1].sh);   // у второго урока своя домашка — показываем её отдельно, а не склеиваем с первой
+    var pick = function (id, cur) {
+      return '<div class="sjpick" id="' + id + '">' + ALLSUBJ.map(function (x) {
+        return '<button type="button" class="' + x.k + '" data-sj="' + x.id + '" aria-pressed="' + (x.id === cur) + '" title="' + esc(x.name) + '">' + (x.id === 'mat' ? 'М' : esc(x.id === 'ver' ? 'Статистика' : x.name)) + '</button>';
+      }).join('') + '</div>';
+    };
+    var bar = function (id, li) { return '<span class="fmtbar" data-for="' + id + '"><button type="button" data-fmt="b" title="Жирный"><b>Ж</b></button><button type="button" data-fmt="i" title="Курсив"><i>К</i></button><button type="button" data-fmt="u" title="Подчёркнутый"><u>Ч</u></button>' + (li ? '<button type="button" data-fmt="li" title="Точка в начале строки">•</button>' : '') + '</span>'; };
     var rd0 = date ? realDate(date) : null, y0 = (function () { var n = new Date(); return n.getMonth() >= 7 ? n.getFullYear() : n.getFullYear() - 1; })();
     var iso = function (d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); };
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
       '<h3>' + (isNew ? 'Новый день' : 'День ' + esc(date)) + '</h3>' +
-      (feed() ? '<div class="lbl">Предмет</div><div class="sjpick" id="sjPick">' + ALLSUBJ.map(function (x) {
-        return '<button type="button" class="' + x.k + '" data-sj="' + x.id + '" aria-pressed="' + (x.id === daySubj) + '" title="' + esc(x.name) + '">' + (x.id === 'mat' ? 'М' : esc(x.id === 'ver' ? 'Статистика' : x.name)) + '</button>';
-      }).join('') + '</div>'
+      (feed() ? '<div class="lbl">Предмет</div>' + pick('sjPick', daySubj)
         : '<div class="meta">' + esc(subj.name) + (J === MAIN_J ? '. Оставишь поле пустым — журнал возьмёт тему и домашку с сайта уроков (серым — что там сейчас).' : '') + '</div>') +
       '<div class="lbl">Дата</div><input id="fDate" type="date" min="' + y0 + '-08-01" max="' + (y0 + 1) + '-07-31" value="' + (rd0 ? iso(rd0) : '') + '">' +
-      '<label class="chk"><input type="checkbox" id="fTwo"' + (two ? ' checked' : '') + '> Два урока в этот день: У1 · У2 · Д, домашка одна</label>' +
+      '<label class="chk"><input type="checkbox" id="fTwo"' + (two ? ' checked' : '') + '> ' + (feed() ? 'Два урока в этот день (один предмет — домашка общая, разные — у каждого своя)' : 'Два урока в этот день: У1 · У2 · Д, домашка одна') + '</label>' +
       '<div class="lbl">Тема 1-го урока' + '<span class="fmtbar" data-for="fT1"><button type="button" data-fmt="b" title="Жирный"><b>Ж</b></button><button type="button" data-fmt="i" title="Курсив"><i>К</i></button><button type="button" data-fmt="u" title="Подчёркнутый"><u>Ч</u></button></span>' + '</div><input id="fT1" autocomplete="off" maxlength="400" value="' + esc(D[0] ? D[0].topic : '') + '">' +
-      '<div id="fT2box"' + (two ? '' : ' hidden') + '><div class="lbl">Тема 2-го урока' + '<span class="fmtbar" data-for="fT2"><button type="button" data-fmt="b" title="Жирный"><b>Ж</b></button><button type="button" data-fmt="i" title="Курсив"><i>К</i></button><button type="button" data-fmt="u" title="Подчёркнутый"><u>Ч</u></button></span>' + '</div><input id="fT2" autocomplete="off" maxlength="400" value="' + esc(D[1] ? D[1].topic : '') + '"></div>' +
-      '<div class="lbl">Домашка' + '<span class="fmtbar" data-for="fHw"><button type="button" data-fmt="b" title="Жирный"><b>Ж</b></button><button type="button" data-fmt="i" title="Курсив"><i>К</i></button><button type="button" data-fmt="u" title="Подчёркнутый"><u>Ч</u></button><button type="button" data-fmt="li" title="Точка в начале строки">•</button></span>' + '</div><textarea id="fHw" autocomplete="off" maxlength="1200">' + esc([D[0] && D[0].hw, D[1] && !D[1].sh && D[1].hw].filter(Boolean).join('\n')) + '</textarea>' +
+      '<div id="fT2box"' + (two ? '' : ' hidden') + '>' + (feed() ? '<div class="lbl">Предмет 2-го урока</div>' + pick('sjPick2', daySubj2) : '') +
+      '<div class="lbl">Тема 2-го урока' + bar('fT2') + '</div><input id="fT2" autocomplete="off" maxlength="400" value="' + esc(D[1] ? D[1].topic : '') + '"></div>' +
+      '<div class="lbl"><span id="fHwLbl">Домашка</span>' + bar('fHw', true) + '</div><textarea id="fHw" autocomplete="off" maxlength="1200">' + esc(split0 ? D[0].hw : [D[0] && D[0].hw, D[1] && !D[1].sh && D[1].hw].filter(Boolean).join('\n')) + '</textarea>' +
+      '<div id="fHw2box" hidden><div class="lbl"><span>Домашка 2-го урока</span>' + bar('fHw2', true) + '</div><textarea id="fHw2" autocomplete="off" maxlength="1200">' + esc(split0 ? D[1].hw : '') + '</textarea></div>' +
       '<div class="fprev" id="fHwPrev" hidden></div>' +
       '<div class="row">' + (isNew ? '' : '<button class="btn danger" data-act="delday" data-date="' + esc(date) + '">Удалить день</button>') +
       '<span class="sp"></span><button class="btn" data-act="close">Отмена</button>' +
@@ -1176,16 +1186,28 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       $('fHw').placeholder = hw ? 'С сайта:\n' + hw : '';
     };
     $('fDate').addEventListener('input', hint);
-    if ($('sjPick')) $('sjPick').addEventListener('click', function (ev) {
-      var b = ev.target.closest('[data-sj]');
-      if (!b) return;
-      daySubj = b.dataset.sj;
-      Array.prototype.forEach.call($('sjPick').children, function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    // вторая домашка — только когда уроков два и предметы разные
+    var upd = function () {
+      var two2 = $('fTwo').checked, split = feed() && two2 && daySubj2 !== daySubj;
+      $('fT2box').hidden = !two2; $('fHw2box').hidden = !split;
+      $('fHwLbl').textContent = split ? 'Домашка 1-го урока' : 'Домашка';
+    };
+    ['sjPick', 'sjPick2'].forEach(function (id) {
+      if ($(id)) $(id).addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-sj]');
+        if (!b) return;
+        var same = daySubj2 === daySubj;
+        if (id === 'sjPick') { daySubj = b.dataset.sj; if (same) daySubj2 = daySubj; } else daySubj2 = b.dataset.sj;   // второй шёл за первым — идёт и дальше
+        ['sjPick', 'sjPick2'].forEach(function (q) {
+          if ($(q)) Array.prototype.forEach.call($(q).children, function (x) { x.setAttribute('aria-pressed', String(x.dataset.sj === (q === 'sjPick' ? daySubj : daySubj2))); });
+        });
+        upd();
+      });
     });
     var prev = function () { var v = $('fHw').value, pv = $('fHwPrev'); pv.hidden = fmt(v) === esc(v).replace(/\n/g, '\n') && !/^\s*[•\-–]\s/m.test(v); pv.innerHTML = '<span class="fprev-h">Так увидят:</span>' + fmt(v); };
     $('fHw').addEventListener('input', prev); prev();
-    $('fTwo').addEventListener('change', function () { $('fT2box').hidden = !$('fTwo').checked; });
-    hint();
+    $('fTwo').addEventListener('change', upd);
+    upd(); hint();
     setTimeout(function () { var f = $(date ? 'fT1' : 'fDate'); if (f) f.focus(); }, 30);
   }
   function applyFmt(id, kind) {
@@ -1235,11 +1257,15 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var D = oldDate ? dayLessons(tab, oldDate) : [];
     if (date !== oldDate && dayLessons(tab, date).length) { alert('На ' + date + ' день уже есть — открой его в журнале и поправь там.'); return; }
     var two = $('fTwo').checked, l1 = D[0], l2 = D[1];
-    if (two && l2 && !l2.sh && hasMarks(l2.id, 'd')) { alert('У 2-го урока свои оценки за ДЗ. Перенеси их в Д первого урока или сотри — тогда домашка станет общей.'); return; }
+    var sj2 = feed() ? daySubj2 : tab, split = feed() && two && sj2 !== sj;   // разные предметы — домашки раздельные
+    if (two && !split && l2 && !l2.sh && hasMarks(l2.id, 'd')) { alert('У 2-го урока свои оценки за ДЗ. Перенеси их в Д первого урока или сотри — тогда домашка станет общей.'); return; }
     if (!two && l2 && (hasMarks(l2.id) || filesOf(l2.id).length)) { alert('У 2-го урока есть оценки или файлы — сначала сотри их, потом убирай урок.'); return; }
     var id1 = l1 ? l1.id : newId('l');
-    put('les', id1, { subj: sj, date: date, topic: $('fT1').value.trim(), hw: $('fHw').value.trim(), ord: 1 });
-    if (two) put('les', l2 ? l2.id : newId('l'), { subj: sj, date: date, topic: $('fT2').value.trim(), hw: '', ord: 2, sh: 1 });
+    var hw1 = $('fHw').value.trim();
+    if (two && !split && l2 && !l2.sh && $('fHw2').value.trim()) hw1 = [hw1, $('fHw2').value.trim()].filter(Boolean).join('\n');   // были раздельные, стала общая — вторую не теряем
+    put('les', id1, { subj: sj, date: date, topic: $('fT1').value.trim(), hw: hw1, ord: 1 });
+    if (two) put('les', l2 ? l2.id : newId('l'), split ? { subj: sj2, date: date, topic: $('fT2').value.trim(), hw: $('fHw2').value.trim(), ord: 2 }
+      : { subj: sj, date: date, topic: $('fT2').value.trim(), hw: '', ord: 2, sh: 1 });
     else if (l2) del('les', l2.id);
     D.slice(2).forEach(function (x, i) { var o = {}; Object.keys(x).forEach(function (k) { if (k !== 'id' && k !== 'ts') o[k] = x[k]; }); o.date = date; o.ord = 3 + i; if (feed()) o.subj = sj; put('les', x.id, o); });
     goMonth({ subj: tab, date: date });
