@@ -2114,8 +2114,11 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var mine = function () { meLoad().then(afterMe, byCode); };
     // сеть подвела — один раз через запасной сервер (VPN); ошибка загрузки журнала сюда не попадает
     var magic = function (token, tries) {
-      fetch(chatBase() + '/chat/login/magic/finish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token }) })
+      // с ограничением по времени: при VPN прямой адрес молчит, и без него «Открываю журнал…» висело бы вечно (телефон ученицы, 01.10)
+      var ctrl = window.AbortController ? new AbortController() : null, guard = setTimeout(function () { if (ctrl) ctrl.abort(); }, 7000);
+      fetch(chatBase() + '/chat/login/magic/finish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token }), signal: ctrl ? ctrl.signal : undefined })
         .then(function (r) { return r.json(); })
+        .then(function (d) { clearTimeout(guard); return d; }, function (e) { clearTimeout(guard); throw e; })
         .then(function (d) {
           if (d.ok && d.key) { lsSet(LS.ck, d.key); lsDel(LS.sk); mine(); return; }
           if (ck()) { mine(); return; }   // ссылку уже открывали — вход помнится
