@@ -1271,11 +1271,12 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   /* ── сдача ДЗ (шаг 4): ученик входит через бота, сдаёт фото в свою клетку ── */
   // ученик с ключом: журнал класса + свои сдачи. → true | 'nolink' | false (ключ не годен)
   function meLoad(want) {
-    return post('/zhurnal/me', { j: want || J }, stuH()).then(function (r) {
+    return post('/zhurnal/me', { j: want || lsGet('zh:sj', '') }, stuH()).then(function (r) {
       if (r.status === 401) { lsDel(sk() ? LS.sk : LS.ck); return false; }
       if (r.status !== 200 || !r.data.ok) throw { http: r.status };
       lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
       JOURNALS = r.data.journals || []; J = r.data.j || MAIN_J; renderJournals();
+      if (want && r.data.j === want) lsSet('zh:sj', want);   // выбрал в переключателе и он открылся — в следующий раз откроется он
       if (!r.data.stu) { meId = null; freeRows = r.data.free || []; return 'nolink'; }
       setMeta(r.data.meta);
       meId = r.data.stu; sdachaOn = !!r.data.sdacha;
@@ -1576,7 +1577,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function openStudents() {
     var P = students();
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true"><h3>Ученики</h3>' +
-      '<div class="meta">Общие для всех трёх предметов. Правка сохраняется сама.</div>';
+      '<div class="meta">' + (SUBJ.length > 1 ? 'Общие для всех предметов журнала. ' : '') + 'Правка сохраняется сама.</div>';
     var opts = function (cur) {
       var list = tgPeople || [];
       if (cur && !list.some(function (x) { return x.tg === cur; })) list = list.concat([{ tg: cur, name: 'связан (' + cur.split(':')[1] + ')' }]);
