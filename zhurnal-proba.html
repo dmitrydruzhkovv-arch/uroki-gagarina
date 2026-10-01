@@ -161,6 +161,8 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
 .gate p{ color:var(--sub); font-size:15px; }
 .gate form{ display:flex; gap:8px; margin-top:18px; }
 .gate input{ flex:1; min-width:0; padding:12px 14px; border-radius:12px; border:1px solid var(--z-line2); background:var(--store); font-size:20px; text-align:center; letter-spacing:.12em; }
+.gate .pick{ display:grid; gap:8px; margin-top:16px; }
+.gate .pick .btn{ width:100%; justify-content:flex-start; text-align:left; padding:12px 14px; font-size:16px; }
 .gate .err{ color:#dc2626; margin-top:12px; font-size:14px; min-height:1em; }
 [data-theme="night"] .gate .err{ color:#ff7aa8; }
 .link{ text-decoration:underline; text-underline-offset:3px; color:var(--sub); font-size:13px; }
@@ -655,7 +657,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       t.hidden = false;
       var me = meId && S.stu[meId];
       t.innerHTML = '<div class="stbar">' + (me ? '📷 Ты — <b>' + esc(me.fam + ' ' + me.name) + '</b>. Нажми на свою клетку «ДЗ», чтобы сдать фото домашки.'
-        : ck() ? 'Ты вошёл через Телеграм, но учитель ещё не отметил тебя в журнале — скажи ему.'
+        : ck() ? '<button class="btn pri" data-act="pickme">📷 Сдавать домашку — найди себя в списке</button>'
         : '<button class="btn pri" data-act="login">📷 Сдавать домашку — войти через Телеграм</button>') + '</div>';
       return;
     }
@@ -776,7 +778,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
           return '<div class="file"><button class="zdl" data-act="dl" data-id="' + f.id + '"><span class="ext">' + esc(f.ext) + '</span><span class="fn">' + esc(f.name) +
             '</span><span class="fz">' + kb(f.size || 0) + ' ↓</span></button>' + (edit ? '<button class="rm" data-act="rmfile" data-id="' + f.id + '" title="Удалить файл" aria-label="Удалить файл">✕</button>' : '') + '</div>';
         }).join('') + '</div>' : '<div class="note">' + (edit ? 'Пока нет. Добавь теорию, практику, презентацию — ученики скачают их здесь.' : 'К этому уроку файлов нет.') + '</div>') +
-        (edit ? '<label class="btn upl" style="margin-top:6px">＋ Добавить файлы<input type="file" id="upFile" data-les="' + id + '" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx,.xlsx"></label>' +
+        (edit ? '<label class="btn upl" style="margin-top:6px">＋ Добавить файлы<input type="file" id="upFile" data-lid="' + id + '" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx,.xlsx"></label>' +
           '<div class="note" id="upSt">PDF, картинки, PowerPoint, Word, Excel — до 25 МБ, до 10 файлов на урок.</div>' : '') +
         '<div class="lbl">Домашка' + (nSh > 1 ? ' · общая на ' + nSh + ' урока' : '') + '</div><div class="txt">' + esc(own.hw || 'Не задано') + '</div>' +
         '<div class="row">' + (edit ? '<button class="btn" data-act="editlesson" data-id="' + id + '">✎ Изменить</button>' : '') +
@@ -879,11 +881,34 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       if (r.status === 401) { lsDel(LS.ck); return false; }
       if (r.status !== 200 || !r.data.ok) throw { http: r.status };
       lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
-      if (!r.data.stu) { meId = null; return 'nolink'; }
+      if (!r.data.stu) { meId = null; freeRows = r.data.free || []; return 'nolink'; }
       meId = r.data.stu; sdachaOn = !!r.data.sdacha;
       S = fromObjects(r.data.objects); loaded = true; render();
       return true;
     }, function (e) { nextApi(); throw e; });
+  }
+  // вошёл через бота, а строка ни с кем не связана — ученик сам жмёт свою фамилию, D приходит уведомление
+  var freeRows = [];
+  function pickMe(err) {
+    loaded = false; renderTools();
+    var h = '<div class="gate"><h2>Кто ты?</h2><p>Нажми свою фамилию. Это один раз: дальше журнал будет узнавать тебя сам.</p>';
+    if (freeRows.length) h += '<div class="pick">' + freeRows.map(function (x) {
+      return '<button class="btn" data-act="claim" data-id="' + esc(x.id) + '" data-nm="' + esc(x.fam + ' ' + x.name) + '"><b>' + esc(x.fam) + '</b> ' + esc(x.name) + '</button>';
+    }).join('') + '</div>';
+    else h += '<p style="margin-top:14px"><b>Свободных фамилий нет.</b> Напиши учителю, он отметит тебя сам.</p>';
+    h += '<div class="err">' + esc(err || '') + '</div><p style="margin-top:10px;font-size:13px">Себя не нашёл или нажал не ту — напиши учителю.</p></div>';
+    $('main').innerHTML = h;
+  }
+  function claim(id, nm) {
+    if (!confirm('Ты — ' + nm + '?\nПоменять потом сможет только учитель.')) return;
+    $('main').innerHTML = '<div class="empty">Запоминаю…</div>';
+    post('/zhurnal/claim', { stu: id }, { 'X-Chat-Key': ck() }).then(function (r) {
+      if (r.status === 200 && r.data.ok) return meLoad().then(function (res) { if (res === 'nolink') pickMe(); });
+      if (r.status === 401) { lsDel(LS.ck); alert('Вход устарел. Нажми «📒 Мой журнал» в боте ещё раз.'); location.reload(); return; }
+      if (r.status === 403) { pickMe('Выбрать себя может только ученик класса из бота. Напиши учителю.'); return; }
+      if (r.status === 409) return meLoad().then(function (res) { if (res === 'nolink') pickMe('Эту фамилию уже кто-то выбрал. Если это ты — напиши учителю.'); });
+      throw { http: r.status };
+    }).catch(function () { pickMe('Не получилось. Проверь интернет и нажми ещё раз.'); });
   }
   function openLogin(err) {
     $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
@@ -910,7 +935,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       .then(function (r) { return r.json(); }).then(function (d) {
         if (d.ok && d.key) {
           lsDel(LS.vhod); lsSet(LS.ck, d.key); closeDlg();
-          meLoad().then(function (res) { if (res !== true) render(); }, function () { render(); });
+          meLoad().then(function (res) { if (res === 'nolink') pickMe(); else if (res !== true) render(); }, function () { render(); });
           return;
         }
         $('kodIn').value = '';
@@ -1072,7 +1097,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (!sdachaOn) h += '<div class="note">Приём домашек через журнал пока выключен.</div>';
     else if (!sub || sub.st !== 'checked')
       h += '<label class="btn pri upl" style="margin-top:6px">📷 ' + (sub && sub.st === 'redo' ? 'Сдать заново' : sub ? 'Дослать фото' : 'Сдать фото') +
-        '<input type="file" id="subIn" data-les="' + l.id + '" data-mark="' + markId + '" accept="image/*" multiple></label><div class="note" id="subSt">Можно несколько страниц сразу, до 12 фото.</div>';
+        '<input type="file" id="subIn" data-lid="' + l.id + '" data-mark="' + markId + '" accept="image/*" multiple></label><div class="note" id="subSt">Можно несколько страниц сразу, до 12 фото.</div>';
     h += '<div class="row"><span class="sp"></span><button class="btn" data-act="close">Закрыть</button></div></div>';
     $('dlg').innerHTML = h; fillThumbs($('dlg'));
   }
@@ -1091,7 +1116,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     });
   }
   function submitPhotos(input) {
-    var files = Array.prototype.slice.call(input.files, 0, 12), st = $('subSt'), lid = input.dataset.les, markId = input.dataset.mark;
+    var files = Array.prototype.slice.call(input.files, 0, 12), st = $('subSt'), lid = input.dataset.lid, markId = input.dataset.mark;
     if (st) st.textContent = 'Готовлю ' + files.length + ' фото…';
     input.disabled = true;
     Promise.all(files.map(shrink)).then(function (blobs) {
@@ -1187,8 +1212,11 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var tg = row.querySelector('[data-f="tg"]').value;
     if (!p || (p.fam === fam && p.name === name && (p.tg || '') === tg)) return;
     var d = { fam: fam, name: name, ord: p.ord || 0 };
-    if (tg) d.tg = tg;
+    // Телеграм шлём, только если D его поменял ('' — развязать). Нет поля — сервер оставит связь как есть:
+    // ученик мог выбрать себя сам (/claim), пока эта страница не сверилась
+    if (tg !== (p.tg || '')) d.tg = tg;
     put('stu', id, d);
+    if (!('tg' in d) && p.tg) S.stu[id].tg = p.tg;
     render();
   }
 
@@ -1268,6 +1296,9 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   document.addEventListener('click', function (ev) {
     var t = ev.target;
     if (t.closest('a[href]')) { if (cur) closeCell(); return; }   // ссылка (урок на сайте) — пусть браузер откроет
+    // поле ввода — не клетка и не урок: нажатие на «Сдать фото» доходит сюда кликом по input,
+    // и раньше открывало карточку урока поверх выбора фото (сдача терялась)
+    if (t.closest('input, select, textarea')) return;
     var tm = t.closest('[data-tema]');
     if (tm) { setTheme(tm.dataset.tema); return; }
     var tb = t.closest('[data-tab]');
@@ -1292,6 +1323,11 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       else if (act === 'dellesson') delLesson(a.dataset.id);
       else if (act === 'dl') downloadFile(a.dataset.id, a);
       else if (act === 'login') openLogin('');
+      else if (act === 'claim') claim(a.dataset.id, a.dataset.nm);
+      else if (act === 'pickme') meLoad().then(function (res) {
+        if (res === 'nolink') pickMe();
+        else if (res === false) { alert('Вход устарел. Нажми «📒 Мой журнал» в боте ещё раз.'); render(); }
+      }, function () { alert('Нет связи с журналом. Проверь интернет и нажми ещё раз.'); });
       else if (act === 'view') openViewer(a.dataset.sub, +a.dataset.i);
       else if (act === 'queue') {
         var first = waitingSubs().sort(function (x, y) { return (x.at || 0) - (y.at || 0); })[0];
@@ -1361,7 +1397,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   });
 
   document.addEventListener('change', function (ev) {
-    if (ev.target.id === 'upFile' && ev.target.files.length) { uploadFiles(ev.target.dataset.les, ev.target.files); return; }
+    if (ev.target.id === 'upFile' && ev.target.files.length) { uploadFiles(ev.target.dataset.lid, ev.target.files); return; }
     if (ev.target.id === 'subIn' && ev.target.files.length) { submitPhotos(ev.target); return; }
     var row = ev.target.closest('.srow');
     if (row) saveStudentRow(row);
@@ -1431,7 +1467,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     };
     // кнопка «📒 Мой журнал» в боте: одноразовая ссылка #t=… → ключ входа, без 4 цифр
     var mt = /[#&]t=([0-9a-f]{32})\b/.exec(location.hash);
-    var mine = function () { meLoad().then(function (res) { if (res !== true) byCode(); }, byCode); };
+    var afterMe = function (res) { if (res === 'nolink') pickMe(); else if (res !== true) byCode(); };
+    var mine = function () { meLoad().then(afterMe, byCode); };
     // сеть подвела — один раз через запасной сервер (VPN); ошибка загрузки журнала сюда не попадает
     var magic = function (token, tries) {
       fetch(chatBase() + '/chat/login/magic/finish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token }) })
@@ -1449,7 +1486,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       magic(mt[1], 0);
     }
     // вошёл через бота — журнал открывается без кода класса, со своей строкой и сдачей
-    else if (ck() && !mk) { $('main').innerHTML = '<div class="empty">Открываю журнал…</div>'; meLoad().then(function (res) { if (res !== true) byCode(); }, byCode); }
+    else if (ck() && !mk) { $('main').innerHTML = '<div class="empty">Открываю журнал…</div>'; meLoad().then(afterMe, byCode); }
     else byCode();
     $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>';
   }
