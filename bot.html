@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Лемма в Телеграме</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#16131a">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script>
+  try { if (localStorage.getItem('tema') === 'night') document.documentElement.dataset.theme = 'night'; } catch (_) {}
+</script>
+<link rel="stylesheet" href="_движок/fonts/gf.css">
+<link rel="stylesheet" href="style.css">
+<!--
+  Переходник в Телеграм-бота (D, 01.10.2026). Ссылка вида bot.html#<код приглашения>.
+  Зачем: ссылка t.me из ВК открывается в браузере, а сайт t.me из России часто не грузится —
+  прокси у детей стоит только внутри приложения Телеграм. Эта страница открывается как сайт
+  уроков и сразу зовёт приложение (tg://), минуя t.me. Не открылось — код крупно: найти бота
+  и отправить код сообщением (бот его понимает, tg_bot/student.py).
+  Код живёт после #: в адрес запроса к серверу он не уходит.
+-->
+<style>
+body{ background:var(--store); min-height:100vh; }
+.box{ max-width:440px; margin:0 auto; padding:40px 18px 32px; }
+.card{ background:var(--card); border-radius:22px; padding:24px 20px; box-shadow:inset 0 0 0 1px var(--line), 0 18px 50px -30px rgba(40,24,70,.4); }
+[data-theme="night"] .card{ box-shadow:inset 0 0 0 1px rgba(217,70,239,.25), 0 0 60px -24px rgba(217,70,239,.6); }
+h1{ font-size:24px; font-weight:800; line-height:1.2; }
+p{ color:var(--sub); font-size:15.5px; margin-top:8px; line-height:1.45; }
+.go{ display:block; text-align:center; margin-top:18px; padding:15px 16px; border-radius:14px; font-weight:800; font-size:17px; text-decoration:none;
+  background:linear-gradient(135deg,#38bdf8 0%,#0ea5e9 55%,#0284c7 100%); color:#fff; box-shadow:0 12px 26px -14px rgba(2,132,199,.7); }
+.go:active{ transform:scale(.98); }
+h2{ font-size:15px; font-weight:800; margin-top:26px; }
+ol{ margin:8px 0 0 20px; color:var(--sub); font-size:15px; line-height:1.55; }
+ol b{ color:var(--ink); }
+.kod{ display:flex; gap:8px; margin-top:12px; align-items:stretch; }
+.kod code{ flex:1; min-width:0; display:grid; place-items:center; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:24px; font-weight:800; letter-spacing:.06em;
+  background:var(--store); border-radius:12px; padding:10px; user-select:all; -webkit-user-select:all; word-break:break-all; }
+.kod button{ padding:0 14px; border-radius:12px; font-weight:700; box-shadow:inset 0 0 0 1px var(--line); background:var(--card); color:var(--ink); }
+.ok{ font-size:13px; color:#16a34a; min-height:1.2em; margin-top:6px; }
+.web{ display:inline-block; margin-top:14px; font-size:14px; color:var(--sub); }
+.bad{ text-align:center; }
+</style>
+</head>
+<body>
+<main class="box">
+  <div class="card" id="card">
+    <h1>Открываю Телеграм…</h1>
+    <p>Сейчас откроется бот. Если ничего не произошло — нажми кнопку.</p>
+  </div>
+  <p style="font-size:12px;text-align:center;margin-top:18px">© 2026 Дмитрий Дружков · <a href="pravila.html" style="color:inherit">Правила и конфиденциальность</a></p>
+</main>
+<script>
+(function () {
+  'use strict';
+  // код приглашения бота: [A-Za-z0-9_-], до 64 знаков (так его принимает Телеграм)
+  var m = /^#([A-Za-z0-9_-]{4,64})$/.exec(location.hash);
+  var bot = /[?&]b=Lemma_test1_bot\b/.test(location.search) ? 'Lemma_test1_bot' : 'D_mathh_bot';
+  var card = document.getElementById('card');
+  if (!m) {
+    card.className = 'card bad';
+    card.innerHTML = '<h1>Ссылка неполная</h1><p>Попроси учителя прислать ссылку ещё раз — целиком.</p>';
+    return;
+  }
+  var code = m[1], app = 'tg://resolve?domain=' + bot + '&start=' + code, web = 'https://t.me/' + bot + '?start=' + code;
+  card.innerHTML =
+    '<h1>Лемма в Телеграме</h1>' +
+    '<p>Это бот Д: домашки, расписание, журнал. Нажми — откроется приложение Телеграм, там нажми «Запустить».</p>' +
+    '<a class="go" href="' + app + '">✈️ Открыть Телеграм</a>' +
+    '<h2>Не открылось?</h2>' +
+    '<ol><li>Открой Телеграм сам.</li><li>В поиске найди <b>@' + bot + '</b>.</li><li>Отправь ему этот код сообщением:</li></ol>' +
+    '<div class="kod"><code id="kod">' + code + '</code><button type="button" id="copy">Скопировать</button></div><div class="ok" id="ok"></div>' +
+    '<a class="web" href="' + web + '">Открыть через сайт Телеграма</a>';
+  document.getElementById('copy').onclick = function () {
+    var done = function () { document.getElementById('ok').textContent = 'Скопировано — вставь в чат с ботом.'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, pick);
+    else pick();
+    function pick() {   // старый браузер: выделить код — останется «Скопировать» из меню
+      var r = document.createRange(); r.selectNodeContents(document.getElementById('kod'));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      document.getElementById('ok').textContent = 'Код выделен — нажми «Скопировать».';
+    }
+  };
+  // сразу зовём приложение; браузер без Телеграма просто останется на этой странице
+  setTimeout(function () { location.href = app; }, 300);
+})();
+</script>
+</body>
+</html>
