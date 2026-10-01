@@ -516,7 +516,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     return Object.keys(S.mark).filter(function (id) {
       var p = id.split('.'), l = S.les[p[0]];
       if (l && p[2] === 'd' && l.sh && prevSameDay(l, l.date, l.subj)) return false;   // ДЗ сдвоенного урока не видна — не считаем
-      return p[1] === sid && l && debtOf(l, S.mark[id].v);
+      return p[1] === sid && l && l.subj === tab && debtOf(l, S.mark[id].v);   // долги открытого предмета (Атлас, 30.09)
     }).length;
   }
   // клетка целиком: класс, содержимое, подсказка
