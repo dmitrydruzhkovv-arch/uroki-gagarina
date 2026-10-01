@@ -144,6 +144,13 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
 .zt tfoot th.nm{ font-size:12px; color:var(--muted); vertical-align:top; }
 .zt tfoot td{ vertical-align:top; padding:6px; font-size:12px; color:var(--sub); cursor:pointer; max-width:92px; }
 .zt tfoot td:hover{ background:var(--z-hover); }
+/* галочка D в углу темы и домашки: «урок готов», «домашка задана» — видит только он */
+.edit .zt tfoot td[data-les]{ position:relative; padding-right:26px; min-width:124px; }   /* шире: галочка не должна ломать слова темы */
+.rdy{ position:absolute; top:5px; right:5px; width:19px; height:19px; padding:0; border-radius:6px; display:grid; place-items:center; font-size:13px; line-height:1; font-weight:900;
+  color:transparent; background:var(--card); box-shadow:inset 0 0 0 1.5px var(--z-line2); }
+.rdy:hover{ box-shadow:inset 0 0 0 1.5px #16a34a; }
+.rdy[aria-pressed="true"]{ background:#16a34a; color:#fff; box-shadow:none; }
+[data-theme="night"] .rdy[aria-pressed="true"]{ background:#34d399; color:#062b1c; }
 /* журналы: переключатель над предметами */
 .jsw{ display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
 .jr{ padding:6px 12px; border-radius:999px; font-weight:700; font-size:13.5px; color:var(--h-soft); box-shadow:inset 0 0 0 1px var(--h-line); }
@@ -1019,21 +1026,23 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (!L.length) h += '<tr><td class="empty" colspan="2">В этом месяце уроков нет.</td></tr>';
     h += '</tbody><tfoot><tr class="tp"><th class="nm">Тема</th>';
     // день — одна клетка: у каждого урока по две строки («1.», «2.»), длинное — многоточием (D, 01.10)
-    var dayCell = function (g, items) {
+    var dayCell = function (g, items, flag) {
       var n = g.xs.reduce(function (a, x) { return a + x.cols.length; }, 0), many = items.length > 1;
       if (!items.length) return '<td colspan="' + n + '" class="dend"></td>';
-      return '<td colspan="' + n + '" class="dend" data-les="' + items[0].l.id + '">' + items.map(function (it, k) {
+      var on = !!items[0].l[flag];
+      return '<td colspan="' + n + '" class="dend" data-les="' + items[0].l.id + '">' + (edit ? '<button class="rdy" data-rdy="' + flag + '" data-id="' + items[0].l.id + '" aria-pressed="' + on +
+        '" title="' + (flag === 'rt' ? (on ? 'Урок готов' : 'Отметить: урок готов') : (on ? 'Домашка задана' : 'Отметить: домашка задана')) + ' — пометка только для тебя">✓</button>' : '') + items.map(function (it, k) {
         return '<div class="tl' + (many ? '' : ' one') + (it.site ? ' site' : '') + '" data-les="' + it.l.id + '"' + (it.site ? ' title="С сайта уроков"' : '') + '>' +
           (many ? '<span class="no">' + (k + 1) + '.</span> ' : '') + (it.t ? fmt(it.t) : '—') + (it.nf ? ' <span class="fcount">📎 ' + it.nf + '</span>' : '') + '</div>';
       }).join('') + '</td>';
     };
     DAYS.forEach(function (g) {
-      h += dayCell(g, g.xs.map(function (x) { var tp = topicOf(x.l); return { l: x.l, t: tp.t, site: tp.site, nf: filesOf(x.l.id).length }; }));
+      h += dayCell(g, g.xs.map(function (x) { var tp = topicOf(x.l); return { l: x.l, t: tp.t, site: tp.site, nf: filesOf(x.l.id).length }; }), 'rt');
     });
     if (edit) h += '<td></td>';
     h += '</tr><tr class="hw"><th class="nm">Домашка</th>';
     DAYS.forEach(function (g) {   // сдвоенный урок — одна домашка на день
-      h += dayCell(g, g.xs.filter(function (x) { return !x.joinedNext; }).map(function (x) { var hw = hwOf(x.own); return { l: x.own, t: hw.t, site: hw.site }; }));
+      h += dayCell(g, g.xs.filter(function (x) { return !x.joinedNext; }).map(function (x) { var hw = hwOf(x.own); return { l: x.own, t: hw.t, site: hw.site }; }), 'rh');
     });
     if (edit) h += '<td></td>';
     h += '</tr></tfoot></table></div>';
@@ -1263,9 +1272,10 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var id1 = l1 ? l1.id : newId('l');
     var hw1 = $('fHw').value.trim();
     if (two && !split && l2 && !l2.sh && $('fHw2').value.trim()) hw1 = [hw1, $('fHw2').value.trim()].filter(Boolean).join('\n');   // были раздельные, стала общая — вторую не теряем
-    put('les', id1, { subj: sj, date: date, topic: $('fT1').value.trim(), hw: hw1, ord: 1 });
-    if (two) put('les', l2 ? l2.id : newId('l'), split ? { subj: sj2, date: date, topic: $('fT2').value.trim(), hw: $('fHw2').value.trim(), ord: 2 }
-      : { subj: sj, date: date, topic: $('fT2').value.trim(), hw: '', ord: 2, sh: 1 });
+    var keep = function (o, l) { if (l) ['rt', 'rh'].forEach(function (f) { if (l[f]) o[f] = 1; }); return o; };   // галочки готовности правка дня не стирает
+    put('les', id1, keep({ subj: sj, date: date, topic: $('fT1').value.trim(), hw: hw1, ord: 1 }, l1));
+    if (two) put('les', l2 ? l2.id : newId('l'), keep(split ? { subj: sj2, date: date, topic: $('fT2').value.trim(), hw: $('fHw2').value.trim(), ord: 2 }
+      : { subj: sj, date: date, topic: $('fT2').value.trim(), hw: '', ord: 2, sh: 1 }, l2));
     else if (l2) del('les', l2.id);
     D.slice(2).forEach(function (x, i) { var o = {}; Object.keys(x).forEach(function (k) { if (k !== 'id' && k !== 'ts') o[k] = x[k]; }); o.date = date; o.ord = 3 + i; if (feed()) o.subj = sj; put('les', x.id, o); });
     goMonth({ subj: tab, date: date });
@@ -1881,6 +1891,16 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       showTip(cell, cellTip(cell.dataset.c)); clearTimeout(tipT); tipT = setTimeout(hideTip, 4000); return;
     }
     hideTip();
+    var rdy = t.closest('[data-rdy]');
+    if (rdy && mode === 'teacher') {   // галочка готовности: пометка D, урок не открываем
+      var rl = S.les[rdy.dataset.id], rd = {};
+      if (rl) {
+        Object.keys(rl).forEach(function (k) { if (k !== 'id' && k !== 'ts') rd[k] = rl[k]; });
+        if (rd[rdy.dataset.rdy]) delete rd[rdy.dataset.rdy]; else rd[rdy.dataset.rdy] = 1;
+        put('les', rl.id, rd); render();
+      }
+      return;
+    }
     var les = t.closest('[data-les]');
     if (les) { if (cur) closeCell(); openLesson(les.dataset.les); return; }
     if (cur && !t.closest('#pop')) closeCell();
