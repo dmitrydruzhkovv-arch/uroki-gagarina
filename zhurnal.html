@@ -309,6 +309,8 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
 .ftb .fz{ font-size:11px; color:var(--muted); }
 .frm{ position:absolute; top:-6px; right:-6px; width:24px; height:24px; padding:0; border-radius:50%; display:grid; place-items:center; font-size:12px; color:#dc2626; background:var(--card); box-shadow:0 0 0 1px var(--z-line2), 0 4px 10px -6px rgba(0,0,0,.4); }
 .btn.sm{ padding:5px 10px; font-size:13px; }
+.autorow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:8px 0 2px; }
+.autorow .note{ margin:0; }
 .dhw{ margin-top:12px; padding:10px 12px; border-radius:12px; background:var(--z-head); }
 .dhw .lbl{ margin-top:0; }
 .files{ display:flex; flex-direction:column; gap:6px; margin:6px 0 4px; }
@@ -1115,12 +1117,12 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       }).join('') + '</td>';
     };
     DAYS.forEach(function (g) {
-      h += dayCell(g, g.xs.map(function (x) { var tp = topicOf(x.l); return { l: x.l, t: tp.t, site: tp.site, nf: filesOf(x.l.id).length }; }), 'rt');
+      h += dayCell(g, g.xs.map(function (x) { var tp = topicOf(x.l); return { l: x.l, t: (tp.t || (autoUrl(x.l.au) ? 'Срез' : '')) + (autoUrl(x.l.au) ? ' 🎯' : ''), site: tp.site, nf: filesOf(x.l.id).length }; }), 'rt');
     });
     if (edit) h += '<td></td>';
     h += '</tr><tr class="hw"><th class="nm">Домашка</th>';
     DAYS.forEach(function (g) {   // сдвоенный урок — одна домашка на день
-      h += dayCell(g, g.xs.filter(function (x) { return !x.joinedNext; }).map(function (x) { var hw = hwOf(x.own); return { l: x.own, t: hw.t, site: hw.site }; }), 'rh');
+      h += dayCell(g, g.xs.filter(function (x) { return !x.joinedNext; }).map(function (x) { var hw = hwOf(x.own); return { l: x.own, t: (hw.t || (autoUrl(x.own.ad) ? 'Веб-домашка' : '')) + (autoUrl(x.own.ad) ? ' 🕹' : ''), site: hw.site }; }), 'rh');
     });
     if (edit) h += '<td></td>';
     h += '</tr></tfoot></table></div>';
@@ -1181,10 +1183,12 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
               '<span class="fnm">' + esc(nm) + '</span><span class="fz">' + kb(f.size || 0) + ' ↓</span></button>' +
               (edit ? '<button class="frm" data-act="rmfile" data-id="' + f.id + '" title="Удалить файл" aria-label="Удалить файл">✕</button>' : '') + '</div>';
           }).join('') + '</div>' : '<div class="note">' + (edit ? 'Файлов пока нет.' : 'К этому уроку файлов нет.') + '</div>') +
+          (autoUrl(x.l.au) ? '<div class="autorow">' + autoBtn(x.l.au, '🎯 Срез: ввести ответы') + '<span class="note">Балл сам появится в журнале. Считается первая попытка.</span></div>' : '') +
           (edit ? '<label class="btn upl sm">＋ Файлы<input type="file" class="upFile" data-lid="' + x.l.id + '" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx,.xlsx"></label>' : '') + '</div>';
         if (!x.joinedNext) {
           var hw = hwOf(x.own).t, nsh = x.cols[x.cols.length - 1].n || 1;
-          h += '<div class="dhw"><div class="lbl">Домашка' + (nsh > 1 ? ' · общая на ' + nsh + ' урока' : '') + '</div><div class="txt">' + (hw ? fmt(hw) : 'Не задано') + '</div></div>';
+          h += '<div class="dhw"><div class="lbl">Домашка' + (nsh > 1 ? ' · общая на ' + nsh + ' урока' : '') + '</div><div class="txt">' + (hw ? fmt(hw) : (autoUrl(x.own.ad) ? '' : 'Не задано')) + '</div>' +
+            (autoUrl(x.own.ad) ? '<div class="autorow">' + autoBtn(x.own.ad, '🕹 Открыть домашку') + '<span class="note">Балл сам появится в журнале. Можно перерешать — считается лучший результат.</span></div>' : '') + '</div>';
         }
       });
       h += (edit ? '<div class="note" id="upSt">Файлы: PDF, картинки, PowerPoint, Word, Excel — до 25 МБ, до 10 на урок. Нажми на плитку — скачается.</div>' : '') +
@@ -1238,6 +1242,17 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     closeDlg(); render();
   }
   function closeDlg() { $('dlg').innerHTML = ''; }
+  // автоматические задания урока (D, 01.10): au — срез с телефона, балл сам ляжет в клетку урока;
+  // ad — веб-домашка, балл в клетку ДЗ. Адрес — из hw_id: «t-<тест>» → сайт мини-тестов, «dz_<тема>_urok<N>» → её сайт
+  var GH = 'https://dmitrydruzhkovv-arch.github.io/';
+  function autoUrl(id) {
+    var t = /^t-([a-z0-9-]{2,40})$/.exec(id || ''), d = /^dz_([a-z]+)_urok(\d+)$/.exec(id || '');
+    return t ? GH + 'di-test/?t=' + t[1] : d ? GH + 'di-dz-' + d[1] + '-' + d[2] + '/?k=' + MAIN_J : '';
+  }
+  function autoBtn(id, label) {
+    var u = autoUrl(id);
+    return u ? '<a class="btn pri sm auto" href="' + esc(u) + '" target="_blank" rel="noopener">' + label + ' ↗</a>' : '';
+  }
 
   /* ── день целиком (D, 01.10): ＋ справа — новый день, ✎ в карточке — правка. Алгебра и геометрия —
      два урока: тема 1, тема 2, одна домашка (второй урок sh=1). Пустые поля — с сайта уроков ── */
@@ -1363,7 +1378,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var id1 = l1 ? l1.id : newId('l');
     var hw1 = $('fHw').value.trim();
     if (two && !split && l2 && !l2.sh && $('fHw2').value.trim()) hw1 = [hw1, $('fHw2').value.trim()].filter(Boolean).join('\n');   // были раздельные, стала общая — вторую не теряем
-    var keep = function (o, l) { if (l) ['rt', 'rh'].forEach(function (f) { if (l[f]) o[f] = 1; }); return o; };   // галочки готовности правка дня не стирает
+    // галочки готовности и привязку автоматических заданий (au, ad) правка дня не стирает
+    var keep = function (o, l) { if (l) { ['rt', 'rh'].forEach(function (f) { if (l[f]) o[f] = 1; }); ['au', 'ad'].forEach(function (f) { if (l[f]) o[f] = l[f]; }); } return o; };
     put('les', id1, keep({ subj: sj, date: date, topic: $('fT1').value.trim(), hw: hw1, ord: 1 }, l1));
     if (two) put('les', l2 ? l2.id : newId('l'), keep(split ? { subj: sj2, date: date, topic: $('fT2').value.trim(), hw: $('fHw2').value.trim(), ord: 2 }
       : { subj: sj, date: date, topic: $('fT2').value.trim(), hw: '', ord: 2, sh: 1 }, l2));
