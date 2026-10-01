@@ -51,7 +51,7 @@ body{ background:var(--store); min-height:100vh; }
 [data-theme="night"] .zh-cover svg{ opacity:.8; }
 @media (min-width:701px){ .zh-hero{ min-height:186px; } }
 @media (max-width:1100px){ .zh-cover svg{ right:-40px; } }
-@media (max-width:700px){ .zh-cover svg{ right:-170px; opacity:.55; } }
+@media (max-width:700px){ .zh-cover svg{ right:-150px; top:0; transform:none; height:200px; min-height:0; opacity:.5; } }   /* на телефоне шапка высокая — кубики не растут вместе с ней */
 @media (orientation:landscape) and (max-height:520px){ .zh-cover{ display:none; } }
 input, textarea{ font:inherit; color:inherit; }
 
@@ -388,7 +388,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 <header class="zh-hero">
   <div class="zh-cover" id="zhCover" aria-hidden="true"></div>
   <div class="shell">
-    <a class="zh-back" href="./">← Уроки</a>
+    <a class="zh-back" id="zhBack" href="./">← Уроки</a>
     <div class="zh-title">
       <h1>Журнал</h1>
       <span class="kicker">Школа Гагарина · 9 класс · 2026/27</span>
@@ -508,6 +508,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   if (/^#(alg|geo|ver|mat)$/.test(location.hash)) tab = location.hash.slice(1);
   if (mode === 'teacher' && J !== MAIN_J) setMeta(lsGet(lk(LS.cache), {}).meta || { title: 'Журнал', subj: ['mat'], kind: 'ind' });
   if (!SUBJ.some(function (s) { return s.id === tab; })) tab = SUBJ[0].id;
+  var botEntry = /[#&][ts]=/.test(location.hash);   // пришёл по ссылке из бота или по личной ссылке
   var loaded = false, cur = null, pendingRender = false, scrollPos = {};
   var meId = null, sdachaOn = false;   // ученик, вошедший через бота (сдача ДЗ, шаг 4)
   LS.ck = 'zh:ck'; LS.vhod = 'zh:vhod';
@@ -928,6 +929,9 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         '<i>' + s.icon + '</i><span class="lg">' + esc(s.name) + '</span><span class="sh">' + esc(s.short) + '</span></button>';
     }).join('');
     $('tabs').appendChild(st);   // статус сохранения — в строке предметов, справа
+    // «← Уроки» ведёт на сайт 9 класса Гагарина: ученику индивидуального журнала там делать нечего (D, 01.10)
+    // пока журнал грузится по входу из бота или личной ссылке, чей он — ещё неизвестно: тоже прячем
+    $('zhBack').hidden = mode !== 'teacher' && (feed() || (!loaded && (botEntry || !!ck() || !!sk())));
     document.body.className = (feed() ? 'k-mat' : SUBJ.filter(function (s) { return s.id === tab; })[0].k) + (mode === 'teacher' ? ' edit' : '');
   }
 
