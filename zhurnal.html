@@ -2170,7 +2170,23 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
           setTimeout(function () { alert(d.error === 'not student' ? 'Ты больше не в классе в боте — спроси учителя.' : 'Ссылка из бота устарела или уже открывалась. Нажми «📒 Мой журнал» в боте ещё раз.'); }, 300);
         }, function () { if (!tries) { nextApi(); magic(token, 1); } else byCode(); });
     };
-    if (mt) {
+    // кнопка-ссылка в меню бота (#b=<ключ входа>, D 02.10): журнал одним нажатием. Ключ — тот же, что страница
+    // получает после входа; из адреса убираем. Срок ключа в ссылке вышел, а свой вход ещё помнится — берём свой
+    var mb = /[#&]b=((?:main|test)\.\d{1,20}\.(\d{9,12})\.[0-9a-f]{32})\b/.exec(location.hash);
+    if (mb) {
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ }
+      if (!(ck() && +mb[2] * 1000 < Date.now())) { lsSet(LS.ck, mb[1]); lsDel(LS.sk); }
+      $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
+      // сеть подвела — один раз через запасной сервер (VPN): meLoad при сбое сам переключает адрес
+      var direct = function (tries) {
+        meLoad().then(function (res) {
+          if (res === 'nolink') pickMe();
+          else if (res !== true) { byCode(); setTimeout(function () { alert('Вход из бота не сработал. Нажми в боте «Меню» (/start) — кнопка журнала обновится.'); }, 300); }
+        }, function () { if (!tries) direct(1); else byCode(); });
+      };
+      direct(0);
+    }
+    else if (mt) {
       try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ }
       $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
       magic(mt[1], 0);
