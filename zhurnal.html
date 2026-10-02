@@ -1817,7 +1817,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       (tgPeople ? '' : ' Загружаю список из бота…') + '</div>';
     h += '<div class="row"><button class="btn" data-act="addstu">＋ Ученик</button><span class="sp"></span><button class="btn pri" data-act="close">Готово</button></div></div>';
     $('dlg').innerHTML = h;
-    if (!tgPeople) post('/zhurnal/tgpeople', {}, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
+    // список берём при каждом открытии: подпись «в каком журнале» меняется после привязки (D, 02.10)
+    post('/zhurnal/tgpeople', {}, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
       if (r.status !== 200 || !r.data.ok) return;
       tgPeople = r.data.people;
       $('dlg').querySelectorAll('.srow-tg').forEach(function (sel) { sel.innerHTML = opts(sel.value); });
