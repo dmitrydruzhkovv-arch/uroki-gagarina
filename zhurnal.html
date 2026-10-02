@@ -255,6 +255,9 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
 .srow button.lnk{ color:var(--ink); } .srow button.lnk.on{ background:var(--z-head); box-shadow:inset 0 0 0 2px #7c3aed; }
 .srow input{ margin-top:0; }
 .srow-tg{ grid-column:1 / -1; padding:9px 10px; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); color:inherit; font:inherit; font-size:14px; }
+.srow-ph{ grid-column:1 / 3; font-size:14px; }
+.srow-call{ grid-column:3 / -1; display:flex; align-items:center; justify-content:center; border-radius:10px; box-shadow:inset 0 0 0 1px var(--z-line2); text-decoration:none; }
+.srow-call[hidden]{ display:none; }
 .srow button{ border-radius:10px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); color:#dc2626; }
 
 .zh-foot{ padding:22px 0 40px; font-size:13px; color:var(--muted); }
@@ -1811,18 +1814,35 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         '<input data-f="name" placeholder="Имя" maxlength="40" value="' + esc(p.name) + '">' +
         '<button data-act="stulink" data-id="' + p.id + '" class="lnk' + (p.key ? ' on' : '') + '" title="Личная ссылка — для тех, кого нет в Телеграме">🔗</button>' +
         '<button data-act="delstu" data-id="' + p.id + '" title="Убрать из журнала">✕</button>' +
-        '<select data-f="tg" class="srow-tg">' + opts(p.tg) + '</select></div>';
+        '<select data-f="tg" class="srow-tg">' + opts(p.tg) + '</select>' +
+        // телефон: вписал D — в поле; поделился в боте сам ученик — серым подсказкой. Видит только D (02.10)
+        '<input data-f="ph" class="srow-ph" type="tel" inputmode="tel" maxlength="24" autocomplete="off" value="' + esc(p.ph || '') + '">' +
+        '<a class="srow-call" title="Позвонить" hidden>📞</a></div>';
     });
     h += '<div class="note">Телеграм — кто этот ученик в боте. Связанный ученик входит в журнал через бота и сдаёт фото домашки в свою клетку.' +
-      (tgPeople ? '' : ' Загружаю список из бота…') + '</div>';
+      '<span id="tgLoad">' + (tgPeople ? '' : ' Загружаю список из бота…') + '</span></div>';
     h += '<div class="row"><button class="btn" data-act="addstu">＋ Ученик</button><span class="sp"></span><button class="btn pri" data-act="close">Готово</button></div></div>';
-    $('dlg').innerHTML = h;
+    $('dlg').innerHTML = h; phFill();
     // список берём при каждом открытии: подпись «в каком журнале» меняется после привязки (D, 02.10)
     post('/zhurnal/tgpeople', {}, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
       if (r.status !== 200 || !r.data.ok) return;
       tgPeople = r.data.people;
       $('dlg').querySelectorAll('.srow-tg').forEach(function (sel) { sel.innerHTML = opts(sel.value); });
+      if ($('tgLoad')) $('tgLoad').textContent = '';
+      phFill();
     }, function () { /* нет связи — список подтянется при следующем открытии */ });
+  }
+  // подсказка в поле телефона и кнопка «позвонить»: свой номер D главнее номера из бота
+  function phFill() {
+    $('dlg').querySelectorAll('.srow').forEach(function (row) {
+      var inp = row.querySelector('[data-f="ph"]'), call = row.querySelector('.srow-call'), tg = row.querySelector('[data-f="tg"]').value;
+      var bot = '';
+      (tgPeople || []).forEach(function (x) { if (tg && x.tg === tg && x.ph) bot = x.ph; });
+      inp.placeholder = bot ? bot + ' · из бота' : 'Телефон';
+      var num = (inp.value.trim() || bot).replace(/[^+\d]/g, '');
+      call.hidden = !num;
+      if (num) call.href = 'tel:' + num; else call.removeAttribute('href');
+    });
   }
   var tgPeople = null;
   function waitingSubs() {
@@ -1831,14 +1851,17 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function saveStudentRow(row) {
     var id = row.dataset.sid, p = S.stu[id];
     var fam = row.querySelector('[data-f="fam"]').value.trim(), name = row.querySelector('[data-f="name"]').value.trim();
-    var tg = row.querySelector('[data-f="tg"]').value;
-    if (!p || (p.fam === fam && p.name === name && (p.tg || '') === tg)) return;
+    var tg = row.querySelector('[data-f="tg"]').value, ph = row.querySelector('[data-f="ph"]').value.trim();
+    phFill();
+    if (!p || (p.fam === fam && p.name === name && (p.tg || '') === tg && (p.ph || '') === ph)) return;
     var d = { fam: fam, name: name, ord: p.ord || 0 };
     // Телеграм шлём, только если D его поменял ('' — развязать). Нет поля — сервер оставит связь как есть:
     // ученик мог выбрать себя сам (/claim), пока эта страница не сверилась
     if (tg !== (p.tg || '')) d.tg = tg;
+    if (ph !== (p.ph || '')) d.ph = ph;      // телефон — так же: шлём, только если D его поменял ('' — стереть)
     put('stu', id, d);
     if (!('tg' in d) && p.tg) S.stu[id].tg = p.tg;
+    if (!('ph' in d) && p.ph) S.stu[id].ph = p.ph;
     if (p.key) S.stu[id].key = p.key;   // личную ссылку правка фамилии не трогает — сервер её тоже хранит
     render();
   }
