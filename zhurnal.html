@@ -25,14 +25,16 @@
 :root{
   --z-line2:#d9d3e6; --z-head:#f2eff9; --z-hover:#f6f3fb; --z-focus:#16131a;
   --z-shadow:0 18px 50px -18px rgba(40,24,70,.35);
-  /* расцветка плиток оценок — вся здесь. --mNb фон, --mNt цифра, --m5s / --m2s свет. Выбор D 03.10 из вариантов
-     (_стенд_журнала/варианты_плиток.mjs): днём пятёрка — белая со светом, плохие оценки (2, 1, прочерк, незачёт) —
-     тёмная плитка, красная цифра и красный свет; четвёрка и тройка — серые плитки без света. Ночью — «Лайм». */
-  --m5b:#fff; --m5t:#047857; --m5s:0 0 0 1px rgba(16,185,129,.22), 0 3px 12px -1px rgba(16,185,129,.55), 0 0 26px -3px rgba(52,227,164,.8);
-  --m2b:linear-gradient(160deg,#2c2636,#0e0b14); --m2c:#ff5d73; --m2s:0 4px 14px -2px rgba(225,29,72,.7), 0 0 26px -4px rgba(255,45,85,.6);
-  --m2u:#ff8fa0; --m2uc:#16131a;   /* счётчик дней в углу плохой оценки; «!» — наоборот, этим цветом залит */
+  /* расцветка плиток оценок — вся здесь. --mNb фон, --mNt цифра, --m5s / --m2s свет. Выбор D из вариантов
+     (_стенд_журнала/варианты_плиток.mjs): «Лайм» в обеих темах (ночь — 03.10, день — 04.10). Пятёрка — лайм со светом,
+     плохие оценки (2, 1, прочерк, незачёт) — алая плитка с красным светом; у четвёрки цифра зелёная, у тройки охристая,
+     плитки у них серые, без света. */
+  --m5b:linear-gradient(160deg,#e4fb6e,#a8e02a); --m5t:#2a3d00; --m5s:0 4px 14px -3px rgba(132,204,22,.8), 0 0 24px -6px rgba(132,204,22,.65);
+  --m2b:linear-gradient(160deg,#ff5a5a,#dc2626); --m2c:#fff; --m2s:0 4px 14px -3px rgba(220,38,38,.6), 0 0 22px -6px rgba(220,38,38,.5);
+  --m2u:#fff; --m2uc:#dc2626;   /* счётчик дней в углу плохой оценки; «!» — наоборот, этим цветом залит */
+  --m2k:rgba(60,0,10,.34);      /* подложка под счётчиком дней: мелкие белые цифры на алом читаются */
   --m2t:#b42318;                /* красный текст на обычном фоне: «2 долга» у имени */
-  --m4b:#e3deee; --m4t:#1f1a29; --m3b:#ece8f4; --m3t:#5b5470; --mnb:#ece9f2; --mnt:#5f5870;
+  --m4b:#e9e5f1; --m4t:#35701a; --m3b:#e9e5f1; --m3t:#8f5d02; --mnb:#ece9f2; --mnt:#5f5870;
   --z-tile:#f4f2f9; --z-chip:#efecf6; --z-rule:#ebe6f2;
   --z-ring:#fff;   /* светлая подложка под рамкой выбора, наведения и сдачи: рамка видна и на чёрной, и на белой плитке */
   --z-sent:#7c3aed; --z-sent2:#c4b5fd; --z-redo:#c026d3;
@@ -149,6 +151,15 @@ table.zt{ border-collapse:separate; border-spacing:0; font-size:14px; }
 .zt thead .nm{ z-index:4; font-size:12px; color:var(--muted); }
 .zt tbody .nm b{ display:block; font-weight:800; font-size:15.5px; line-height:1.15; }   /* имя — крупно, фамилия — мелко и серым (D, 01.10) */
 .zt tbody .nm span{ display:block; font-size:11.5px; color:var(--muted); font-weight:500; }
+/* имя и фамилия — каждая в одну строку (D, 04.10): «Воротников · 2 долга» переносилось, строка становилась выше остальных,
+   и плитки в ней растягивались. Не помещается — многоточием сжимается только сама фамилия (.fm): «· это ты» и число долгов
+   остаются целыми. На широком экране столбец имён шире, и фамилии видны целиком */
+.zt tbody .nm b, .zt tbody .nm span{ white-space:nowrap; max-width:130px; }
+.zt tbody .nm b, .zt tbody .nm .fm{ overflow:hidden; text-overflow:ellipsis; }
+.zt tbody .nm span{ display:flex; }
+.zt tbody .nm .fm{ font-style:normal; min-width:0; }
+.zt tbody .nm em{ flex:none; }
+@media (min-width:1000px){ .zt .nm{ max-width:230px; } .zt tbody .nm b, .zt tbody .nm span{ max-width:210px; } }
 .dt{ padding:3px 6px; font-size:13px; white-space:nowrap; cursor:pointer; border-top:3px solid transparent; text-align:center; }
 .dt b{ display:block; font-weight:700; }
 .dt small{ display:block; font-size:10.5px; color:var(--muted); font-weight:600; }
@@ -225,7 +236,7 @@ td.c.long{ font-size:11px; white-space:normal; line-height:1.1; font-weight:600;
 .lgd .ch{ display:inline-flex; gap:3px; flex:none; justify-content:flex-end; min-width:105px; }   /* значки — столбцом справа, подписи — слева в линию */
 .lgd .dbt .ch{ min-width:54px; }
 .lgd .ch i{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:22px; padding:0 4px; border-radius:6px; font-style:normal; font-weight:800; font-size:12px; box-shadow:0 0 0 1px rgba(127,127,127,.14); }
-.lgd .ch i small{ align-self:flex-start; margin:2px -1px 0 2px; padding:0 2px; border-radius:3px; font:800 8.5px/1.3 'JetBrains Mono',ui-monospace,monospace; color:var(--m2u); }
+.lgd .ch i small{ align-self:flex-start; margin:2px -1px 0 2px; padding:0 2px; border-radius:3px; font:800 8.5px/1.3 'JetBrains Mono',ui-monospace,monospace; color:var(--m2u); background:var(--m2k); }
 .lgd .ch i small.late{ background:var(--m2u); color:var(--m2uc); }
 .lgd .sjc{ min-width:0; }
 .lgd .sjc i{ width:24px; background:var(--g); box-shadow:inset 0 0 0 1px rgba(127,127,127,.25); }
@@ -285,8 +296,8 @@ td.c.long{ font-size:11px; white-space:normal; line-height:1.1; font-weight:600;
 
 /* ── живой журнал (ТЗ 17, шаги 1–3) ── */
 /* долг (двойка, единица, незачёт): в углу плитки — сколько дней осталось на пересдачу, «!» — срок вышел */
-td.c sup{ position:absolute; top:1px; right:2px; color:var(--m2u); font-size:9.5px; font-weight:800; line-height:1; font-family:'JetBrains Mono',ui-monospace,monospace; }
-td.c.zlate sup{ color:var(--m2uc); background:var(--m2u); border-radius:4px; padding:1px 3px; }
+td.c sup{ position:absolute; top:1px; right:2px; color:var(--m2u); font-size:9.5px; font-weight:800; line-height:1; font-family:'JetBrains Mono',ui-monospace,monospace; background:var(--m2k); border-radius:4px; padding:1px 3px; }
+td.c.zlate sup{ color:var(--m2uc); background:var(--m2u); }
 /* кто поставил: А — автоматика, ✎ — D исправил оценку автоматики */
 td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:800; line-height:1; opacity:.75; }
 .zt tbody .nm em{ font-style:normal; color:var(--m2t); font-weight:700; }
@@ -1140,8 +1151,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       var av = avgOn[p.id] ? rowAvg(p.id, LY, LA, today) : null;
       h += '<tr' + (p.id === meId ? ' class="me"' : '') + '><th class="nm" data-sid="' + p.id + '" title="Нажми — средний балл">' +
         (av ? '<i class="avg" title="Средний балл ' + (mo === 'all' ? 'за год' : 'за месяц') + ': ' + av.n + ' оц. Несданная вовремя ДЗ — как 2">' + av.v + '</i>' : '') +
-        '<b>' + esc(p.name || p.fam) + '</b><span>' + esc(p.name ? p.fam : '') + (p.id === meId ? ' · это ты' : '') +
-        (dn ? ' · <em>' + dn + ' ' + (dn === 1 ? 'долг' : dn < 5 ? 'долга' : 'долгов') + '</em>' : '') + '</span></th>';
+        '<b>' + esc(p.name || p.fam) + '</b><span><i class="fm">' + esc(p.name ? p.fam : '') + '</i>' + (p.id === meId ? '\u00a0·\u00a0это ты' : '') +   // пробелы неразрывные: в строке-ряду обычный пробел у края пропал бы
+        (dn ? '\u00a0·\u00a0<em>' + dn + ' ' + (dn === 1 ? 'долг' : dn < 5 ? 'долга' : 'долгов') + '</em>' : '') + '</span></th>';
       LY.forEach(function (x) {
         x.cols.forEach(function (c, ci) {
           var id = c.l.id + '.' + p.id + '.' + c.w, cv = cellView(id);
