@@ -1,6 +1,10 @@
 /* ════════════════════════════════════════════════════════════════
    fon.js — живая стена на фоне всей шапки (заказ D, 17.09.2026).
    Лежит ПОД панелями календаря и дня, видна вокруг них и снизу.
+   С 03.10.2026 она же — обложка журнала (zhurnal.html): шапка там ниже,
+   поэтому число плиток задаётся на самом #gifWall — data-cols, data-rows
+   (data-cols-uzko, data-rows-uzko — для телефона); data-svoi — только
+   свои плитки, GIPHY не звать даже с ключом (на странице журнала — оценки).
 
    Наклонённая в перспективу сетка плиток, чуть размыта и притушена.
    Каждые пару секунд случайная плитка плавно меняется на новую.
@@ -26,8 +30,9 @@ if (!stena) return;
 const CFG = (typeof DATA !== 'undefined' && DATA.fon) || {};
 const TIHO = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const UZKO = matchMedia('(max-width:700px)').matches;
-const KOLONKI = UZKO ? 4 : 8;
-const RYADY = UZKO ? 6 : 6;
+const chislo = (v, zapas) => { const n = parseInt(v, 10); return n > 0 && n <= 24 ? n : zapas; };
+const KOLONKI = UZKO ? chislo(stena.dataset.colsUzko, 4) : chislo(stena.dataset.cols, 8);
+const RYADY = UZKO ? chislo(stena.dataset.rowsUzko, 6) : chislo(stena.dataset.rows, 6);
 
 /* ── свои плитки: неон + математика, SVG с CSS-анимацией ── */
 const NEON = [['#A855F7', '#D946EF'], ['#4F46E5', '#22D3EE'], ['#D946EF', '#FB7185'], ['#7C3AED', '#A5B4FC'], ['#22D3EE', '#A855F7']];
@@ -67,7 +72,7 @@ function svoyaPlitka(){
 /* ── GIPHY: пул ссылок, кэш на час в sessionStorage (лимит бесплатного ключа — 100 запросов в час) ── */
 let PUL = [];
 async function sobratPul(){
-  if (!CFG.giphyKey) return false;
+  if (!CFG.giphyKey || 'svoi' in stena.dataset) return false;
   try {
     const kesh = JSON.parse(sessionStorage.getItem('gifPul') || 'null');
     if (kesh && Date.now() - kesh.t < 3600e3 && kesh.url.length){ PUL = kesh.url; return true; }

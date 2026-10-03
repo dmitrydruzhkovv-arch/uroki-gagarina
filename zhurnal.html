@@ -25,34 +25,43 @@
 :root{
   --z-line2:#d9d3e6; --z-head:#f2eff9; --z-hover:#f6f3fb; --z-focus:#16131a;
   --z-shadow:0 18px 50px -18px rgba(40,24,70,.35);
-  --m5b:#d9f5e1; --m5t:#14683a; --m4b:#e9f5d0; --m4t:#3f6212; --m3b:#fdf0c8; --m3t:#8a4b08;
-  --m2b:#ffd9d6; --m2t:#b42318; --mnb:#ece9f2; --mnt:#5f5870;
-  --m5g:rgba(16,185,129,.55);
+  /* расцветка плиток оценок — вся здесь. --mNb фон, --mNt цифра, --m5s / --m2s свет. Выбор D 03.10 из вариантов
+     (_стенд_журнала/варианты_плиток.mjs): днём пятёрка — белая со светом, плохие оценки (2, 1, прочерк, незачёт) —
+     тёмная плитка, красная цифра и красный свет; четвёрка и тройка — серые плитки без света. Ночью — «Лайм». */
+  --m5b:#fff; --m5t:#047857; --m5s:0 0 0 1px rgba(16,185,129,.22), 0 3px 12px -1px rgba(16,185,129,.55), 0 0 26px -3px rgba(52,227,164,.8);
+  --m2b:linear-gradient(160deg,#2c2636,#0e0b14); --m2c:#ff5d73; --m2s:0 4px 14px -2px rgba(225,29,72,.7), 0 0 26px -4px rgba(255,45,85,.6);
+  --m2u:#ff8fa0; --m2uc:#16131a;   /* счётчик дней в углу плохой оценки; «!» — наоборот, этим цветом залит */
+  --m2t:#b42318;                /* красный текст на обычном фоне: «2 долга» у имени */
+  --m4b:#e3deee; --m4t:#1f1a29; --m3b:#ece8f4; --m3t:#5b5470; --mnb:#ece9f2; --mnt:#5f5870;
+  --z-tile:#f4f2f9; --z-chip:#efecf6; --z-rule:#ebe6f2;
+  --z-ring:#fff;   /* светлая подложка под рамкой выбора, наведения и сдачи: рамка видна и на чёрной, и на белой плитке */
+  --z-sent:#7c3aed; --z-sent2:#c4b5fd; --z-redo:#c026d3;
 }
 :root[data-theme="night"]{
   --z-line2:#3a2447; --z-head:#231430; --z-hover:#231430; --z-focus:#ff5cc8;
   --z-shadow:0 0 0 1px rgba(255,92,200,.18), 0 24px 60px -20px rgba(217,70,239,.45);
-  --m5b:rgba(16,185,129,.18); --m5t:#6ee7b7; --m4b:rgba(132,204,22,.15); --m4t:#bef264;
-  --m3b:rgba(251,191,36,.15); --m3t:#fcd34d; --m2b:rgba(244,63,94,.22); --m2t:#ff9fb7;
-  --mnb:rgba(255,255,255,.06); --mnt:#a58bb6;
-  --m5g:rgba(110,231,183,.7);
+  /* ночь — «Лайм»: пятёрка кислотная, плохие оценки алые; у четвёрки цифра зеленоватая, у тройки желтоватая */
+  --m5b:linear-gradient(160deg,#f0ff8a,#a6f01f); --m5t:#1c2b00; --m5s:0 0 18px -1px rgba(190,255,60,.85), 0 0 38px -6px rgba(170,240,40,.75);
+  --m2b:linear-gradient(160deg,#ff5a5a,#d61f1f); --m2c:#fff; --m2s:0 0 16px -2px rgba(255,60,60,.9), 0 0 30px -8px rgba(255,60,60,.7);
+  --m2u:#fff; --m2uc:#d61f1f; --m2t:#ffa6bd;
+  --m4b:rgba(255,255,255,.085); --m4t:#b9e69c; --m3b:rgba(255,255,255,.085); --m3t:#ecca78; --mnb:rgba(255,255,255,.04); --mnt:#9a86ad;
+  --z-tile:rgba(255,255,255,.04); --z-chip:rgba(255,255,255,.07); --z-rule:rgba(255,255,255,.07);
+  --z-sent:#a78bfa; --z-sent2:#ddd6fe; --z-redo:#e879f9;
 }
 body{ background:var(--store); min-height:100vh; }
-/* обложка журнала — одна на все журналы: кубики трёх предметов на той же сетке ромбов */
-.zh-hero{ position:relative; overflow:hidden; }
+/* обложка журнала (D, 03.10) — та же живая стена, что за календарём на главной: fon.js и его стили в style.css.
+   Шапка журнала ниже календаря, поэтому плитки мельче (data-cols / data-rows), а слева, под заголовком
+   и вкладками, стена притушена сильнее */
+.zh-hero{ position:relative; overflow:hidden; isolation:isolate; }
 .zh-hero .shell{ position:relative; z-index:1; }
-.zh-cover{ position:absolute; inset:0; pointer-events:none; }
-.zh-cover svg{ position:absolute; right:120px; top:50%; height:112%; min-height:230px; transform:translateY(-50%); }
-.zh-cover .grid{ stroke:#cfc4ea; }
-.zh-cover .cube{ animation:zc-float 7s var(--ease, ease-in-out) infinite alternate; }
-@keyframes zc-float{ from{ transform:translateY(0); } to{ transform:translateY(-5px); } }
-@media (prefers-reduced-motion:reduce){ .zh-cover .cube{ animation:none; } }
-[data-theme="night"] .zh-cover .grid{ stroke:#d946ef; stroke-opacity:.35; }
-[data-theme="night"] .zh-cover svg{ opacity:.8; }
+.zh-hero .gif-wall{ display:flex; align-items:center; }
+.zh-hero .gw-plane{ position:relative; flex:0 0 128%; left:-12%; top:auto; width:auto; height:auto; gap:12px; }   /* высота — по своим плиткам, стоит по центру шапки: на любой ширине накрывает её целиком */
+.zh-hero .gif-wall::after{ background:
+  linear-gradient(90deg, var(--h-bg) 0%, color-mix(in srgb, var(--h-bg) 82%, transparent) 30%, color-mix(in srgb, var(--h-bg) 30%, transparent) 62%, color-mix(in srgb, var(--h-bg) 18%, transparent) 100%),
+  linear-gradient(180deg, color-mix(in srgb, var(--h-bg) 55%, transparent) 0%, transparent 34%, transparent 70%, color-mix(in srgb, var(--h-bg) 70%, transparent) 100%); }
 @media (min-width:701px){ .zh-hero{ min-height:186px; } }
-@media (max-width:1100px){ .zh-cover svg{ right:-40px; } }
-@media (max-width:700px){ .zh-cover svg{ right:-150px; top:0; transform:none; height:200px; min-height:0; opacity:.5; } }   /* на телефоне шапка высокая — кубики не растут вместе с ней */
-@media (orientation:landscape) and (max-height:520px){ .zh-cover{ display:none; } }
+@media (max-width:700px){ .zh-hero .gw-plane{ flex-basis:160%; left:-30%; gap:10px; } }
+@media (orientation:landscape) and (max-height:520px){ .zh-hero .gif-wall{ display:none; } }
 input, textarea{ font:inherit; color:inherit; }
 
 /* шапка — как на главной */
@@ -93,11 +102,18 @@ input, textarea{ font:inherit; color:inherit; }
 [data-theme="night"] .tab{ box-shadow:0 0 18px -8px var(--glow), inset 0 1px 0 rgba(255,255,255,.25); }
 [data-theme="night"] .tab[aria-selected="true"]{ box-shadow:0 0 0 3px var(--h-bg), 0 0 0 5px var(--s), 0 0 34px -2px var(--glow); }
 .tab .sh{ display:none; }
+/* «Все» (D, 03.10): чёрная, как «Математика»; значок — полоски в цветах предметов журнала */
+.tab.vse i{ display:flex; gap:2px; padding:7px 6px; align-items:stretch; background:rgba(255,255,255,.14); }
+.tab.vse i b{ flex:1; border-radius:2px; background:var(--g); }
+[data-theme="night"] .tab.vse{ box-shadow:inset 0 0 0 1px rgba(255,255,255,.3), 0 0 18px -8px var(--glow); }
 @media (max-width:560px){
   .tabs{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
   .tab{ flex-direction:column; justify-content:center; gap:5px; padding:9px 4px; font-size:13.5px; text-align:center; }
   .tab .lg{ display:none; } .tab .sh{ display:inline; }
   .tab i{ width:32px; height:32px; font-size:18px; }
+  .tab.vse{ grid-column:1 / -1; flex-direction:row; gap:8px; padding:6px 12px; }   /* под тремя предметами — узкая полоса во всю ширину */
+  .tab.vse i{ width:26px; height:26px; padding:6px 5px; }
+  .tab.vse[aria-selected="true"]{ transform:translateY(-2px); }
   .st{ grid-column:1 / -1; margin-left:0; }
 }
 .st{ margin-left:auto; font-size:13px; color:var(--h-dim); display:flex; align-items:center; gap:6px; }
@@ -123,15 +139,14 @@ input, textarea{ font:inherit; color:inherit; }
 .wrap{ overflow:auto; max-height:calc(100vh - 120px); max-height:calc(100dvh - 120px); background:var(--card);
   border-radius:18px; box-shadow:inset 0 0 0 1px var(--line), 0 14px 40px -28px rgba(40,24,70,.35);
   -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
-[data-theme="night"] .wrap{ box-shadow:inset 0 0 0 1px rgba(217,70,239,.22), 0 20px 60px -30px rgba(217,70,239,.45); }
 table.zt{ border-collapse:separate; border-spacing:0; font-size:14px; }
-.zt th, .zt td{ border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
-.zt thead th{ position:sticky; top:0; z-index:2; background:var(--z-head); }
+.zt th, .zt td{ border-right:1px solid transparent; border-bottom:1px solid transparent; }   /* линий сетки нет (плитки, ниже) — поля держат шаг */
+.zt thead th{ position:sticky; top:0; z-index:2; background:var(--card); }
 .zt thead tr:first-child th{ height:46px; }
 .zt thead tr:nth-child(2) th{ top:46px; height:22px; }
 .zt .nm{ position:sticky; left:0; z-index:3; background:var(--card); text-align:left; padding:6px 10px;
   min-width:128px; max-width:150px; font-weight:600; box-shadow:1px 0 0 var(--z-line2); }
-.zt thead .nm{ z-index:4; background:var(--z-head); font-size:12px; color:var(--muted); }
+.zt thead .nm{ z-index:4; font-size:12px; color:var(--muted); }
 .zt tbody .nm b{ display:block; font-weight:800; font-size:15.5px; line-height:1.15; }   /* имя — крупно, фамилия — мелко и серым (D, 01.10) */
 .zt tbody .nm span{ display:block; font-size:11.5px; color:var(--muted); font-weight:500; }
 .dt{ padding:3px 6px; font-size:13px; white-space:nowrap; cursor:pointer; border-top:3px solid transparent; text-align:center; }
@@ -142,20 +157,14 @@ table.zt{ border-collapse:separate; border-spacing:0; font-size:14px; }
 .dt.go b i{ font-style:normal; font-size:11px; margin-left:3px; color:var(--s); }
 .dt.go:hover b{ text-decoration:underline; text-underline-offset:3px; }
 a.btn{ text-decoration:none; display:inline-flex; align-items:center; }
-.dt.today{ border-top-color:var(--s); background:color-mix(in srgb, var(--s) 12%, var(--z-head)); }
 .dt.today b::after{ content:' · сегодня'; font-weight:700; font-size:10.5px; color:var(--s); }
-[data-theme="night"] .dt.today{ box-shadow:inset 0 3px 12px -6px var(--glow); }
 .sub{ font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
-.sub.dz, td.d{ box-shadow:inset 1px 0 0 var(--line); }
-td.c{ width:46px; min-width:46px; height:44px; text-align:center; font-weight:800; font-size:15px; padding:2px; white-space:nowrap; }
+td.c{ position:relative; width:46px; min-width:46px; height:44px; text-align:center; font-weight:800; font-size:15px; padding:2px; white-space:nowrap; }
 td.c.long{ font-size:11px; white-space:normal; line-height:1.1; font-weight:600; }
-td.d{ border-right:1px solid var(--z-line2); }
 .m5{ background:var(--m5b); color:var(--m5t); } .m4{ background:var(--m4b); color:var(--m4t); }
-.m3{ background:var(--m3b); color:var(--m3t); } .m2{ background:var(--m2b); color:var(--m2t); }
+.m3{ background:var(--m3b); color:var(--m3t); } .m2{ background:var(--m2b); color:var(--m2c); }
 .mn{ background:var(--mnb); color:var(--mnt); font-weight:600; }
-.edit td.c{ cursor:pointer; } .edit td.c:hover{ outline:2px solid var(--s); outline-offset:-2px; }
-td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
-[data-theme="night"] td.c.cur{ box-shadow:0 0 16px -2px #ff5cc8; }
+.edit td.c{ cursor:pointer; }
 .zt tfoot th.nm{ font-size:12px; color:var(--muted); vertical-align:top; }
 .zt tfoot td{ vertical-align:top; padding:6px; font-size:12px; color:var(--sub); cursor:pointer; max-width:92px; }
 .zt tfoot td:hover{ background:var(--z-hover); }
@@ -183,15 +192,14 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
 .k-mat{ --g:linear-gradient(135deg,#3a3642 0%,#16131a 60%,#000 100%); --s:#16131a; --on:#fff; --t:#ecebef; --d:#16131a; --glow:rgba(0,0,0,.45); }
 [data-theme="night"] .k-mat{ --g:linear-gradient(135deg,#2c2436 0%,#0a070d 70%,#000 100%); --s:#f3ecff; --on:#fff; --t:rgba(255,255,255,.08); --d:#f3ecff; --glow:rgba(255,255,255,.35); }
 /* лента дней индивидуала: предмет дня — цветом под днём недели и датой */
-.zt thead th.dt.sjc{ background:var(--g); color:var(--on); border-top-color:transparent; }
 .dt.sjc:hover{ color:var(--on); }
-.dt.sjc.today{ box-shadow:inset 0 -3px 0 var(--on); }
+.dt.sjc.go b i{ color:inherit; opacity:.75; }   /* стрелка «урок на сайте» на цветной шапке — цветом текста, а не предмета (иначе оранжевая на оранжевом) */
 .dt.sjc.today b::after{ color:inherit; }
-[data-theme="night"] .dt.sjc.k-mat{ box-shadow:inset 0 0 0 1px rgba(255,255,255,.35); }
 /* выбор предмета дня в окне «День» */
 .sjpick{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
 .sjpick button{ padding:9px 14px; min-width:44px; border-radius:12px; font-weight:800; font-size:14px; color:var(--on); background:var(--g); opacity:.45;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.3); transition:opacity .15s, transform .15s var(--ease); }
+.sjpick.go button{ opacity:1; }
 .sjpick button[aria-pressed="true"]{ opacity:1; transform:translateY(-2px); box-shadow:0 0 0 2px var(--card), 0 0 0 4px var(--s), 0 10px 20px -12px var(--glow); }
 .dlg input[type="date"]{ width:auto; min-width:170px; font-weight:700; }
 .fprev{ white-space:pre-line; font-size:14px; background:var(--z-head); border-radius:10px; padding:8px 10px; margin-top:6px; }
@@ -208,9 +216,22 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
 .addc{ padding:0 10px; vertical-align:middle; }
 .empty{ padding:40px 20px; text-align:center; color:var(--sub); }
 
-.legend{ display:flex; flex-wrap:wrap; gap:6px 14px; font-size:13px; color:var(--sub); padding:12px 2px 0; align-items:center; }
-.legend span{ display:inline-flex; align-items:center; gap:6px; }
-.legend i{ display:inline-grid; place-items:center; min-width:24px; height:22px; padding:0 4px; border-radius:6px; font-style:normal; font-weight:800; font-size:12px; }
+/* легенда (D, 03.10): отдельная карточка ниже таблицы — значок и два-три слова, по столбцам */
+.lgd{ margin-top:30px; padding:16px 20px 18px; border-radius:18px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px 30px;
+  font-size:13px; line-height:1.3; color:var(--sub); background:color-mix(in srgb, var(--card) 60%, transparent); box-shadow:inset 0 0 0 1px var(--line); }
+.lgd h4{ font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+.lgd ul{ list-style:none; display:grid; gap:7px; }
+.lgd li{ display:flex; align-items:center; gap:9px; }
+.lgd .ch{ display:inline-flex; gap:3px; flex:none; justify-content:flex-end; min-width:105px; }   /* значки — столбцом справа, подписи — слева в линию */
+.lgd .dbt .ch{ min-width:54px; }
+.lgd .ch i{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:22px; padding:0 4px; border-radius:6px; font-style:normal; font-weight:800; font-size:12px; box-shadow:0 0 0 1px rgba(127,127,127,.14); }
+.lgd .ch i small{ align-self:flex-start; margin:2px -1px 0 2px; padding:0 2px; border-radius:3px; font:800 8.5px/1.3 'JetBrains Mono',ui-monospace,monospace; color:var(--m2u); }
+.lgd .ch i small.late{ background:var(--m2u); color:var(--m2uc); }
+.lgd .sjc{ min-width:0; }
+.lgd .sjc i{ width:24px; background:var(--g); box-shadow:inset 0 0 0 1px rgba(127,127,127,.25); }
+.lgd .tips li{ align-items:baseline; }
+.lgd .tips li::before{ content:''; flex:none; width:5px; height:5px; border-radius:50%; background:var(--muted); transform:translateY(-2px); }
+@media (max-width:560px){ .lgd{ margin-top:22px; padding:14px 14px 16px; gap:14px; } }
 
 /* вход по коду */
 .gate{ max-width:420px; margin:28px auto; background:var(--card); border-radius:20px; padding:26px 22px; text-align:center;
@@ -263,13 +284,9 @@ td.c.cur{ outline:3px solid var(--z-focus) !important; outline-offset:-3px; }
 .zh-foot{ padding:22px 0 40px; font-size:13px; color:var(--muted); }
 
 /* ── живой журнал (ТЗ 17, шаги 1–3) ── */
-/* пятёрка светится — сдано, всё понятно */
-td.c.m5{ position:relative; z-index:1; box-shadow:inset 0 0 0 2px var(--m5g), 0 0 14px -3px var(--m5g); animation:z-glow 2.8s ease-in-out infinite; }
-@keyframes z-glow{ 50%{ box-shadow:inset 0 0 0 2px var(--m5g), 0 0 20px 1px var(--m5g); } }
-/* долг: двойка, единица, незачёт — красная рамка и сколько дней осталось на пересдачу */
-td.c.debt{ position:relative; box-shadow:inset 0 0 0 2px var(--m2t); }
-td.c sup{ position:absolute; top:2px; right:3px; font-size:9.5px; font-weight:800; line-height:1; font-family:'JetBrains Mono',ui-monospace,monospace; }
-td.c.zlate sup{ color:#fff; background:var(--m2t); border-radius:4px; padding:1px 3px; }
+/* долг (двойка, единица, незачёт): в углу плитки — сколько дней осталось на пересдачу, «!» — срок вышел */
+td.c sup{ position:absolute; top:1px; right:2px; color:var(--m2u); font-size:9.5px; font-weight:800; line-height:1; font-family:'JetBrains Mono',ui-monospace,monospace; }
+td.c.zlate sup{ color:var(--m2uc); background:var(--m2u); border-radius:4px; padding:1px 3px; }
 /* кто поставил: А — автоматика, ✎ — D исправил оценку автоматики */
 td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:800; line-height:1; opacity:.75; }
 .zt tbody .nm em{ font-style:normal; color:var(--m2t); font-weight:700; }
@@ -284,8 +301,7 @@ td.c .src{ position:absolute; bottom:2px; left:3px; font-size:9px; font-weight:8
 /* источник оценки в листе D */
 .pop-src{ font-size:13px; color:var(--sub); background:var(--z-head); border-radius:10px; padding:8px 10px; margin-bottom:10px; }
 .pop-cm{ width:100%; margin-top:8px; padding:9px 12px; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); resize:vertical; font-size:14px; }
-td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:solid; border-width:7px 7px 0 0; border-color:#7c3aed transparent transparent transparent; }
-[data-theme="night"] td.c .cmt{ border-color:#ff5cc8 transparent transparent transparent; }
+td.c .cmt{ position:absolute; top:4px; left:4px; width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.8; }   /* есть комментарий — точка в углу, цветом цифры */
 .pop-x{ display:flex; gap:6px; margin-top:8px; }
 .pop-x button{ flex:1; height:36px; border-radius:10px; font-weight:700; font-size:14px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); }
 /* файлы урока в карточке */
@@ -329,14 +345,10 @@ td.c .cmt{ position:absolute; top:0; left:0; width:0; height:0; border-style:sol
 .dlg .chk{ display:flex; gap:8px; align-items:flex-start; margin-top:12px; font-size:14px; color:var(--sub); cursor:pointer; }
 .dlg .chk input{ width:auto; margin-top:3px; }
 .note{ font-size:13px; color:var(--muted); margin-top:4px; }
-/* сдача ДЗ (шаг 4): сдано — фиолетовое кольцо, на доработку — пунктир, 📷 — есть фото */
-td.c.sub-sent{ box-shadow:inset 0 0 0 3px #7c3aed; animation:z-sent 1.8s ease-in-out infinite; }
-@keyframes z-sent{ 50%{ box-shadow:inset 0 0 0 3px #a78bfa, 0 0 14px -2px #7c3aed; } }
-td.c.sub-redo{ outline:2px dashed #c026d3; outline-offset:-4px; }
+/* сдача ДЗ (шаг 4): 📷 — есть фото; кольцо «сдано» и пунктир «на доработку» — в блоке плиток */
 td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:normal; line-height:1; }
-.zt tbody tr.me th.nm{ background:color-mix(in srgb, #7c3aed 12%, var(--card)); box-shadow:inset 4px 0 0 #7c3aed, 1px 0 0 var(--z-line2); }
+.zt tbody tr.me th.nm{ background:color-mix(in srgb, #7c3aed 12%, var(--card)); box-shadow:inset 4px 0 0 #7c3aed, 1px 0 0 var(--z-rule); }
 .zt tbody tr.me td.c.d.mine{ cursor:pointer; }
-.zt tbody tr.me td.c.d.mine:hover{ outline:2px solid #7c3aed; outline-offset:-2px; }
 .stbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; font-size:14px; color:var(--sub); }
 .btn.queue{ background:#7c3aed; color:#fff; box-shadow:0 10px 22px -14px #7c3aed; }
 .thumbs{ display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
@@ -347,7 +359,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 .pop-sub .pop-x button.ok{ background:#16a34a; color:#fff; box-shadow:none; }
 .pop-sub .pop-x button.redo{ color:#c026d3; }
 .dlg .big{ display:flex; align-items:center; gap:12px; margin:6px 0; }
-.dlg .big i{ font-style:normal; display:grid; place-items:center; min-width:48px; height:48px; padding:0 8px; border-radius:12px; font-size:22px; font-weight:800; }
+.dlg .big i{ font-style:normal; display:grid; place-items:center; min-width:48px; height:48px; padding:0 8px; border-radius:12px; font-size:22px; font-weight:800; box-shadow:inset 0 0 0 1px var(--z-line2); }
 .dlg .kod{ font-size:26px; letter-spacing:.3em; text-align:center; font-family:'JetBrains Mono',ui-monospace,monospace; }
 .dlg .err{ color:#dc2626; font-size:14px; margin-top:8px; min-height:1em; }
 .view{ position:fixed; inset:0; z-index:60; background:#0e0a12; display:flex; flex-direction:column; }
@@ -364,17 +376,69 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 .thumbs .inked{ position:absolute; right:3px; bottom:3px; font-style:normal; font-size:13px; background:#fff; border-radius:6px; padding:0 2px; }
 .view .vbar{ display:flex; gap:8px; justify-content:center; padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px)); }
 .view .vbar button{ padding:10px 16px; border-radius:12px; background:#fff; color:#1a1720; font-weight:700; }
-@media (prefers-reduced-motion:reduce){ td.c.m5, td.c.sub-sent{ animation:none; } }
 #footLinks:not(:empty)::before{ content:' · '; }
 /* дни и месяцы (D, 01.10): одна дата на день, жирная черта между днями, листаем по месяцам */
-.zt th.dend, .zt td.dend{ border-right:2px solid var(--muted); }
-[data-theme="night"] .zt th.dend, [data-theme="night"] .zt td.dend{ border-right-color:rgba(255,92,200,.45); }
+.zt th.dend, .zt td.dend{ border-right:2px solid transparent; }   /* конец дня; у плиток и подписей поле шире — в блоке плиток */
 .months{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
 .mo{ padding:6px 12px; border-radius:999px; font-weight:700; font-size:13.5px; color:var(--sub); box-shadow:inset 0 0 0 1px var(--z-line2); background:var(--card); }
 .mo[aria-selected="true"]{ background:var(--g); color:var(--on); box-shadow:0 8px 18px -12px var(--glow); }
+/* ── таблица плитками (D, 03.10) — как дни календаря на главной, в обеих темах ──
+   Сетки линий нет. Клетка — скруглённая плитка: пустая едва видна, оценка красит её целиком.
+   Пятёрка светится и «дышит», двойка и кол светятся красным, четвёрка и тройка — просто плитки.
+   Рамок у оценок нет; между днями — просвет. Цвета — переменные --m… и --z-… в начале файла.
+   :root в начале каждого правила — чтобы оно было сильнее прежних правил таблицы выше. */
+:root .zt .nm{ box-shadow:1px 0 0 var(--z-rule); }
+:root .zt td.c{ border:2px solid transparent; border-radius:11px; background:var(--z-tile) padding-box; box-shadow:none; }
+:root .zt td.c.m5{ --z-tile:var(--m5b); z-index:1; }
+:root .zt td.c.m4{ --z-tile:var(--m4b); }
+:root .zt td.c.m3{ --z-tile:var(--m3b); }
+:root .zt td.c.m2{ --z-tile:var(--m2b); z-index:1; }
+:root .zt td.c.mn{ --z-tile:var(--mnb); }
+/* свет — отдельным слоем точно по плитке; красный горит ровно, у пятёрки на ноутбуке дышит прозрачностью (без перерисовки тени) */
+:root .zt td.c.m5::after, :root .zt td.c.m2::after{ content:''; position:absolute; inset:0; border-radius:9px; pointer-events:none; }
+:root .zt td.c.m5::after{ box-shadow:var(--m5s); }
+:root .zt td.c.m2::after{ box-shadow:var(--m2s); }
+@keyframes z-glow{ 50%{ opacity:.5; } }
+@media (hover:hover) and (pointer:fine){ :root .zt td.c.m5::after{ animation:z-glow 3.2s ease-in-out infinite; } }   /* дышит только на ноутбуке: на телефоне сотни вечных анимаций — батарея и рывки */
+/* между днями — просвет: правое поле шире, а угол скруглён с запасом, чтобы плитка осталась плиткой */
+:root .zt td.c.dend{ border-right-width:12px; width:56px; min-width:56px; border-radius:11px 21px 21px 11px / 11px; }
+/* рамки — внутри плитки (тенью внутрь), а не контуром по клетке: у последней клетки дня поле справа шире */
+:root .zt td.c.sub-sent{ box-shadow:inset 0 0 0 1.5px var(--z-ring), inset 0 0 0 4px var(--z-sent); animation:z-sent 1.8s ease-in-out infinite; }   /* сдано, ждёт проверки */
+@keyframes z-sent{ 50%{ box-shadow:inset 0 0 0 1.5px var(--z-ring), inset 0 0 0 4px var(--z-sent2); } }
+:root .zt td.c.sub-redo::before{ content:''; position:absolute; inset:3px; border:2px solid var(--z-ring); outline:2px dashed var(--z-redo); outline-offset:-2px; border-radius:7px; pointer-events:none; }   /* на доработке: пунктир по светлой подложке */
+:root .edit .zt td.c:not(.cur):hover{ box-shadow:inset 0 0 0 1.5px var(--z-ring), inset 0 0 0 3px var(--s); }   /* выбранную клетку наведение не перебивает */
+:root .zt tbody tr.me td.c.d.mine:hover{ box-shadow:inset 0 0 0 1.5px var(--z-ring), inset 0 0 0 3px var(--z-sent); }
+:root .zt td.c.cur{ box-shadow:inset 0 0 0 2px var(--z-ring), inset 0 0 0 4.5px var(--z-focus); animation:none; }
+/* шапка дня — та же плитка: сама клетка глухая (под ней едут оценки), плашка — внутри */
+:root .zt thead th.dt{ padding:4px 2px; border-top-width:0; }
+:root .zt thead th.dt.dend{ padding-right:10px; }   /* + 2px прозрачной границы = те же 12, что у плиток */
+:root .zt thead th.dt > *{ display:block; padding:8px 4px; border-radius:11px; background:var(--z-chip); }
+:root .zt thead th.dt > a > b{ display:block; }
+:root .zt thead th.dt.today > *{ background:color-mix(in srgb, var(--s) 22%, transparent); box-shadow:inset 0 0 0 1.5px var(--s), 0 0 16px -6px var(--glow); }
+:root .zt thead th.dt.sjc{ color:var(--on); }
+:root .zt thead th.dt.sjc > *{ background:var(--g); box-shadow:0 0 16px -8px var(--glow); }
+:root .zt thead th.dt.sjc.today > *{ box-shadow:inset 0 0 0 2px var(--on); }
+:root .zt th.sub.dend{ border-right-width:12px; }
+/* тема и домашка — под тонкой чертой, без клеток */
+:root .zt tfoot tr > *{ border-top:1px solid var(--z-rule); }
+:root .zt tfoot td.dend{ border-right:12px solid transparent; }
+@media (prefers-reduced-motion:reduce){ :root .zt td.c.m5::after, :root .zt td.c.sub-sent{ animation:none; } }
+
+/* ночь: свои фон таблицы, свечение и мелочи */
+[data-theme="night"] .wrap{ --card:#140a1b; background:var(--card);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), 0 24px 70px -34px rgba(217,70,239,.55); }
+[data-theme="night"] .zt thead th.dt.sjc.k-mat > *{ box-shadow:inset 0 0 0 1px rgba(255,255,255,.35); }
+[data-theme="night"] .zt tfoot td:hover{ background:rgba(255,255,255,.04); }
+[data-theme="night"] .rdy{ background:transparent; box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.18); }
+[data-theme="night"] .zt tbody tr.me th.nm{ background:color-mix(in srgb, #a78bfa 16%, var(--card)); box-shadow:inset 4px 0 0 #a78bfa; }
+/* чёрное «Все» и «Математика» ночью терялись на чёрном: выбранный месяц и главная кнопка — светлые */
+[data-theme="night"] .k-mat .mo[aria-selected="true"], [data-theme="night"] .k-mat .btn.pri{ background:#f3ecff; color:#16131a; box-shadow:0 0 18px -6px rgba(243,236,255,.6); }
+[data-theme="night"] .lgd{ background:rgba(255,255,255,.03); box-shadow:inset 0 0 0 1px rgba(255,255,255,.07); }
+
 /* телефон боком: шапка в одну строку, таблица — на весь экран */
 @media (orientation:landscape) and (max-height:520px){
-  .zh-hero{ padding:8px 0; }
+  .zh-hero{ padding:8px 0; min-height:0; }
+  .tab .lg{ display:none; } .tab .sh{ display:inline; } .tab.vse .lg{ display:inline; } .tab.vse .sh{ display:none; }   /* четыре вкладки — в одну строку */
   .zh-back, .zh-title .kicker{ display:none; }
   .zh-title{ display:none; }
   .tabs{ margin-top:0; margin-right:250px; }   /* справа — часы и тема (fixed), не накрывать вкладки и «сохранено» */ .tab{ padding:5px 12px 5px 6px; font-size:14px; } .tab i{ width:24px; height:24px; font-size:14px; }
@@ -391,7 +455,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 </head>
 <body>
 <header class="zh-hero">
-  <div class="zh-cover" id="zhCover" aria-hidden="true"></div>
+  <!-- живая стена — фон шапки, как на главной; data-svoi: только свои плитки, наружу журнал не ходит -->
+  <div class="gif-wall" id="gifWall" data-cols="11" data-rows="6" data-cols-uzko="5" data-rows-uzko="8" data-svoi="1" aria-hidden="true"></div>
   <div class="shell">
     <a class="zh-back" id="zhBack" href="./">← Уроки</a>
     <div class="zh-title">
@@ -419,6 +484,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 <div class="pop" id="pop" hidden></div>
 <!-- уроки сайта: по ним журнал ведёт с даты прямо в урок (./#algebra-3) -->
 <script src="data.js"></script>
+<script src="fon.js"></script>
 <div id="dlg"></div>
 
 <script>
@@ -437,11 +503,16 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   var MAIN_J = 'g9', J = MAIN_J, META = { title: '9 класс · Школа Гагарина', subj: ['alg', 'geo', 'ver'], kind: 'cls' }, JOURNALS = [], creating = '';
   // лента (D, 01.10): у индивидуала и мини-группы не вкладки предметов, а одна лента дней; предмет — у дня, цветом
   function feed() { return META.kind !== 'cls'; }
+  // «Все» (D, 03.10): у класса — ещё одна вкладка, все предметы одной лентой дней; день — в цвете предмета, как у индивидуала
+  var ALL = 'all';
+  function mix() { return feed() || tab === ALL; }
+  function inTab(l) { return feed() || (tab === ALL ? SUBJ.some(function (s) { return s.id === l.subj; }) : l.subj === tab); }
+  function tabOk() { return tab === ALL ? feed() || SUBJ.length > 1 : SUBJ.some(function (x) { return x.id === tab; }); }   // у индивидуала вкладок нет — «Все» просто помнится до возврата к классу
   function setMeta(m) {
     META = m || META;
     SUBJ = feed() ? ALLSUBJ.slice() : (META.subj || []).map(function (id) { return ALLSUBJ.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean);
     if (!SUBJ.length) SUBJ = ALLSUBJ.slice(0, 3);
-    if (!SUBJ.some(function (x) { return x.id === tab; })) tab = SUBJ[0].id;
+    if (!tabOk()) tab = SUBJ[0].id;
     var kk = document.querySelector('.zh-title .kicker');
     if (kk) kk.textContent = META.title + ' · 2026/27';
   }
@@ -510,9 +581,9 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   if (mode === 'teacher' && lsGet('zh:mk', '') === J) creating = J;   // журнал заведён, но сервер его ещё не видел
   var outbox = mode === 'teacher' ? lsGet(lk(LS.out), []) : [];
   var tab = lsGet(LS.tab, 'alg');
-  if (/^#(alg|geo|ver|mat)$/.test(location.hash)) tab = location.hash.slice(1);
+  if (/^#(alg|geo|ver|mat|all)$/.test(location.hash)) tab = location.hash.slice(1);
   if (mode === 'teacher' && J !== MAIN_J) setMeta(lsGet(lk(LS.cache), {}).meta || { title: 'Журнал', subj: ['mat'], kind: 'ind' });
-  if (!SUBJ.some(function (s) { return s.id === tab; })) tab = SUBJ[0].id;
+  if (!tabOk()) tab = SUBJ[0].id;
   var botEntry = /[#&][ts]=/.test(location.hash);   // пришёл по ссылке из бота или по личной ссылке
   var loaded = false, cur = null, pendingRender = false, scrollPos = {};
   var meId = null, sdachaOn = false;   // ученик, вошедший через бота (сдача ДЗ, шаг 4)
@@ -551,8 +622,11 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function ddmm(d) { return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2); }
   function todayStr() { var d = new Date(); return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2); }
   function lessons(subj) {
-    return vals(S.les).filter(function (l) { return feed() || l.subj === subj; }).sort(function (a, b) {
-      return dkey(a.date) - dkey(b.date) || (a.ord || 0) - (b.ord || 0) || (a.id < b.id ? -1 : 1);
+    // «Все»: предметы этого журнала; два предмета в один день — в порядке вкладок, уроки одного предмета рядом
+    var all = subj === ALL && !feed();
+    var si = function (l) { for (var i = 0; i < SUBJ.length; i++) if (SUBJ[i].id === l.subj) return i; return -1; };
+    return vals(S.les).filter(function (l) { return feed() || (all ? si(l) >= 0 : l.subj === subj); }).sort(function (a, b) {
+      return dkey(a.date) - dkey(b.date) || (all ? si(a) - si(b) : 0) || (a.ord || 0) - (b.ord || 0) || (a.id < b.id ? -1 : 1);
     });
   }
   function students() {
@@ -606,13 +680,14 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   }
 
   // что за оценка: 5-балльная («4», «2 (55 доделать)»), из 100 («85», «85/100», «70%»), дробью («4/5»),
-  // зачёт / незачёт, «н» — не был. red — долг: пересдать за DEBT_DAYS дней
+  // зачёт / незачёт, «н» — не был, «–» — прочерк. red — долг: пересдать за DEBT_DAYS дней
   function markInfo(v) {
     var s = String(v || '').trim().toLowerCase();
     if (!s) return { cls: '' };
     if (/^незач/.test(s)) return { cls: 'm2', red: true };
     if (/^(зач|✓)/.test(s)) return { cls: 'm4' };
     if (s[0] === 'н') return { cls: 'mn' };
+    if (/^[–-](?:\s|\(|$)/.test(s)) return { cls: 'm2' };   // прочерк — плохая оценка на вид (D, 03.10); не долг: срока пересдачи у него нет. «-2 балла» — не прочерк
     var m = /^(\d+(?:[.,]\d+)?)\s*(?:\/\s*(\d+))?\s*(%)?/.exec(s);
     if (!m) return { cls: '' };
     var n = parseFloat(m[1].replace(',', '.')), of = m[2] ? +m[2] : 0, cls;
@@ -643,7 +718,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     return Object.keys(S.mark).filter(function (id) {
       var p = id.split('.'), l = S.les[p[0]];
       if (l && p[2] === 'd' && l.sh && prevSameDay(l, l.date, l.subj)) return false;   // ДЗ сдвоенного урока не видна — не считаем
-      return p[1] === sid && l && (feed() || l.subj === tab) && debtOf(l, S.mark[id].v);   // долги открытого предмета (Атлас, 30.09)
+      return p[1] === sid && l && inTab(l) && debtOf(l, S.mark[id].v);   // долги открытого предмета (Атлас, 30.09); во «Все» — по всем предметам журнала
     }).length;
   }
   // клетка целиком: класс, содержимое, подсказка
@@ -702,7 +777,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   }
   // показать месяц урока l, если сейчас открыт другой (не «Весь год»). → true, если переключили
   function goMonth(l) {
-    var key = feed() ? tab : l.subj, sel = monthSel[key], m = monthOf(l.date);
+    var key = mix() ? tab : l.subj, sel = monthSel[key], m = monthOf(l.date);
     if (!sel || sel === 'all' || !m || m === sel) return false;
     monthSel[key] = m; resetScroll(key);
     return true;
@@ -732,7 +807,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       x.cols.forEach(function (c) {
         var m = S.mark[c.l.id + '.' + sid + '.' + c.w], g = gradeVal(splitMark(m).g);
         if (g == null && c.w === 'd' && !(m && m.v)) {
-          var hw = String(hwOf(c.l).t || '').trim(), next = LA.filter(function (l) { return dkey(l.date) > dkey(c.l.date); })[0];
+          var hw = String(hwOf(c.l).t || '').trim(), next = LA.filter(function (l) { return dkey(l.date) > dkey(c.l.date) && (feed() || l.subj === c.l.subj); })[0];   // во «Все» — следующий урок того же предмета
           var absent = /^н/i.test(String((S.mark[x.l.id + '.' + sid + '.u'] || {}).v || ''));
           if (hw && hw !== '—' && next && dkey(next.date) < tk && !S.sub[c.l.id + '.' + sid] && !absent) g = 2;
         }
@@ -746,10 +821,12 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
      У второго урока дня sh=1 — его ДЗ-клетки нет, домашка общая, живёт в клетке ДЗ первого урока
      и стоит после второго: урок · урок · ДЗ */
   function layout(L) {
+    // пара «урок + сдвоенный»: тот же день, а у класса — и тот же предмет (во «Все» в один день рядом стоят разные)
+    var pair = function (a, b) { return b.sh && a.date === b.date && (feed() || a.subj === b.subj); };
     return L.map(function (l, i) {
-      var joinedNext = L[i + 1] && L[i + 1].sh && L[i + 1].date === l.date;
+      var joinedNext = L[i + 1] && pair(l, L[i + 1]);
       var own = l, j = i;
-      while (j > 0 && L[j].sh && L[j - 1].date === L[j].date) j--;
+      while (j > 0 && pair(L[j - 1], L[j])) j--;
       own = L[j];
       var cols = [{ l: l, w: 'u' }];
       if (!joinedNext) cols.push({ l: own, w: 'd', n: i - j + 1 });
@@ -893,51 +970,19 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     setTimeout(function () { var i = $('gateIn'); if (i) i.focus(); }, 50);
   }
 
-  /* ── обложка (D, 01.10): кубики на изометрической сетке — та же сетка ромбов, что под журналом.
-     Цвета — предметы: алгебра, геометрия, статистика, и нежные дополнения. Рисуется один раз ── */
-  (function cover() {
-    var el = $('zhCover');
-    if (!el) return;
-    var A = 32, B = 18.5, OX = 500, OY = 78;   // полромба по x и y; начало сетки
-    var at = function (i, j, k) { return [OX + (i - j) * A, OY + (i + j) * B - (k || 0) * 2 * B]; };
-    var poly = function (pts, fill, op) { return '<polygon points="' + pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '" fill="' + fill + '"' + (op != null ? ' fill-opacity="' + op + '"' : '') + '/>'; };
-    var tile = function (i, j, c, op) { var p = at(i, j); return poly([[p[0], p[1]], [p[0] + A, p[1] + B], [p[0], p[1] + 2 * B], [p[0] - A, p[1] + B]], c, op); };
-    var cube = function (i, j, k, c, d) {   // верх светлый, левая грань в цвет, правая темнее
-      var p = at(i, j, k + 1), x = p[0], y = p[1];
-      return '<g class="cube" style="animation-delay:' + d + 's">' +
-        poly([[x - A, y + B], [x, y + 2 * B], [x, y + 4 * B], [x - A, y + 3 * B]], c[1]) +
-        poly([[x + A, y + B], [x, y + 2 * B], [x, y + 4 * B], [x + A, y + 3 * B]], c[2]) +
-        poly([[x, y], [x + A, y + B], [x, y + 2 * B], [x - A, y + B]], c[0]) + '</g>';
-    };
-    // нежные тона: верх — почти белый, грани — пастель цвета предмета
-    var ALG = ['#ffecd6', '#ffcb96', '#f6a765'], GEO = ['#e6e7ff', '#b9bbfb', '#9092ee'], VER = ['#ffffff', '#e8ecf2', '#cbd3de'],
-      PINK = ['#ffeaf5', '#fbc9e2', '#f2a3cb'], MINT = ['#e4fbf0', '#b0efd4', '#7ddcb4'];
-    var h = '<svg viewBox="0 0 760 300" preserveAspectRatio="xMaxYMid meet"><defs><linearGradient id="zcFade" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity="1"/><stop offset=".86" stop-color="#fff" stop-opacity="1"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
-      '<mask id="zcMask"><rect width="760" height="300" fill="url(#zcFade)"/></mask></defs><g mask="url(#zcMask)">';
-    var g = '';   // сетка ромбов — растворяется влево
-    for (var i = -8; i <= 14; i++) { var a = at(i, -10), b = at(i, 14), c = at(-10, i), d = at(14, i); g += 'M' + a[0] + ' ' + a[1] + 'L' + b[0] + ' ' + b[1] + 'M' + c[0] + ' ' + c[1] + 'L' + d[0] + ' ' + d[1]; }
-    h += '<path class="grid" d="' + g + '" fill="none" stroke-width="1.2"/>';
-    [[-2, 3, '#fb9a3c', .18], [-1, 3, '#6d6ff5', .16], [0, 4, '#f9a8d4', .22], [2, 5, '#6ee7b7', .2], [4, 0, '#6d6ff5', .14], [5, 1, '#fb9a3c', .16], [-3, 1, '#f9a8d4', .18], [3, -2, '#6ee7b7', .18], [1, 6, '#a3afbf', .22], [-4, 4, '#6d6ff5', .1]]
-      .forEach(function (t) { h += tile(t[0], t[1], t[2], t[3]); });
-    // кубики: дальние раньше, ближние позже — чтобы правильно перекрывались
-    [[0, 0, 0, GEO, 0], [1, 0, 0, ALG, -2], [0, 1, 0, VER, -4], [1, 1, 0, PINK, -1], [0, 0, 1, ALG, -3], [1, 0, 1, MINT, -5],
-      [3, 2, 0, GEO, -2.5], [3, 3, 0, VER, -.5], [3, 2, 1, PINK, -4.5], [-2, 2, 0, MINT, -3.5], [5, -1, 0, ALG, -1.5], [2, 5, 0, GEO, -6]]
-      .forEach(function (q) { h += cube(q[0], q[1], q[2], q[3], q[4]); });
-    el.innerHTML = h + '</g></svg>';
-  })();
-
   /* ── отрисовка ── */
   function renderTabs() {
     var st = $('st');
     $('tabs').innerHTML = feed() ? '' : SUBJ.map(function (s) {
       return '<button class="tab ' + s.k + '" role="tab" data-tab="' + s.id + '" aria-selected="' + (s.id === tab) + '">' +
         '<i>' + s.icon + '</i><span class="lg">' + esc(s.name) + '</span><span class="sh">' + esc(s.short) + '</span></button>';
-    }).join('');
+    }).join('') + (SUBJ.length > 1 ? '<button class="tab vse k-mat" role="tab" data-tab="' + ALL + '" aria-selected="' + (tab === ALL) + '" title="Все предметы подряд: день — в цвете предмета">' +
+      '<i>' + SUBJ.map(function (s) { return '<b class="' + s.k + '"></b>'; }).join('') + '</i><span class="lg">Все</span><span class="sh">Все предметы</span></button>' : '');
     $('tabs').appendChild(st);   // статус сохранения — в строке предметов, справа
     // «← Уроки» ведёт на сайт 9 класса Гагарина: ученику индивидуального журнала там делать нечего (D, 01.10)
     // пока журнал грузится по входу из бота или личной ссылке, чей он — ещё неизвестно: тоже прячем
     $('zhBack').hidden = mode !== 'teacher' && (feed() || (!loaded && (botEntry || !!ck() || !!sk())));
-    document.body.className = (feed() ? 'k-mat' : SUBJ.filter(function (s) { return s.id === tab; })[0].k) + (mode === 'teacher' ? ' edit' : '');
+    document.body.className = (mix() ? 'k-mat' : SUBJ.filter(function (s) { return s.id === tab; })[0].k) + (mode === 'teacher' ? ' edit' : '');
   }
 
   /* ── журналы (D, 01.10): Гагарин, индивидуалы, мини-группы — у D переключатель, у ученика — если их несколько ── */
@@ -1052,7 +1097,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     keepScroll();
     var L = lessons(tab), P = students(), edit = mode === 'teacher';
     if (!P.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Учеников пока нет — добавь их кнопкой «Ученики».' : 'Журнал пока пуст.') + '</div>'; return; }
-    if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый день кнопкой «＋ День».' : 'По этому предмету пока нет уроков.') + '</div>'; return; }
+    if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый день кнопкой «＋ День».' : mix() ? 'Уроков пока нет.' : 'По этому предмету пока нет уроков.') + '</div>'; return; }
 
     // месяц: журнал листается по месяцам, а не тянется вправо на весь год (D, 01.10)
     var MS = months(L), mo = monthSel[tab];
@@ -1062,7 +1107,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var today = todayStr(), LY = layout(L), DAYS = [];
     LY.forEach(function (x) {   // день = все уроки одной даты: одна дата в шапке, под ней 1 урок · 2 урок · ДЗ
       var g = DAYS[DAYS.length - 1];
-      if (!g || g.date !== x.l.date || (feed() && g.subj !== x.l.subj && !x.l.sh)) DAYS.push(g = { date: x.l.date, subj: x.l.subj, xs: [] });   // лента: алгебра и геометрия в один день — две шапки, каждая своего цвета
+      if (!g || g.date !== x.l.date || (mix() && g.subj !== x.l.subj && !(feed() && x.l.sh))) DAYS.push(g = { date: x.l.date, subj: x.l.subj, xs: [] });   // лента: алгебра и геометрия в один день — две шапки, каждая своего цвета (у класса другой предмет — всегда своя шапка)
       g.xs.push(x); x.day = g;
     });
     DAYS.forEach(function (g) { g.xs[g.xs.length - 1].last = true; });
@@ -1074,7 +1119,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     DAYS.forEach(function (g) {
       var l = g.xs[0].l, go = siteLink(l), n = g.xs.reduce(function (a, x) { return a + x.cols.length; }, 0);
       var rd = realDate(g.date), lbl = (rd ? WD[rd.getDay()] + ' ' : '') + esc(g.date || '—');
-      var sj = feed() ? ALLSUBJ.filter(function (s) { return s.id === l.subj; })[0] : null;
+      var sj = mix() ? ALLSUBJ.filter(function (s) { return s.id === l.subj; })[0] : null;
       h += '<th class="dt dend' + (g.date === today ? ' today' : '') + (go ? ' go' : '') + (sj ? ' sjc ' + sj.k : '') + '" colspan="' + n + '" data-les="' + l.id + '"' + (sj ? ' title="' + esc(sj.name) + '"' : '') + '>' +
         (go ? '<a href="' + go + '" title="Открыть урок на сайте"><b class="mono">' + lbl + '<i>↗</i></b></a>' : '<b class="mono">' + lbl + '</b>') + '</th>';
     });
@@ -1129,11 +1174,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     });
     if (edit) h += '<td></td>';
     h += '</tr></tfoot></table></div>';
-    h += '<div class="legend"><span><i class="m5">5</i><i class="m4">4</i><i class="m3">3</i><i class="m2">2</i> оценки · <i class="m5">85</i> из 100 · <i class="m4">зач</i> зачёт</span>' +
-      '<span><i class="m2">2<small style="font-size:9px;margin-left:2px">9д</small></i> долг: пересдать за ' + DEBT_DAYS + ' дней, цифра — сколько осталось, <b style="color:var(--m2t)">!</b> — срок вышел</span>' +
-      '<span><i class="mn">н</i> не было на уроке</span><span><i class="m2">1</i><i class="m2">2</i> за домашку — не сдано: исправь и сдай заново</span>' +
-      '<span>Нажми на ученика — средний балл, ещё раз — спрятать. Несданная вовремя ДЗ считается как 2.</span>' +
-      '<span>Наведи на клетку — вспомнишь, что было. Дата с ↗ — урок на сайте. Тема — карточка урока и файлы.</span></div>';
+    h += legend();
     main.innerHTML = h;
 
     var wrap = $('wrap');
@@ -1154,6 +1195,33 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     }
   }
 
+  // легенда: значок и пара слов. «Цвет дня» — только в ленте («Все» и индивидуал), там предмет виден цветом даты
+  function legend() {
+    var li = function (ch, t) { return '<li><span class="ch">' + ch + '</span>' + t + '</li>'; };
+    var sj = !mix() ? [] : (feed() ? ALLSUBJ : SUBJ).filter(function (x) {   // у индивидуала — только предметы, что были
+      return !feed() || vals(S.les).some(function (l) { return l.subj === x.id; });
+    });
+    return '<aside class="lgd" aria-label="Как читать журнал">' +
+      '<div><h4>Оценки</h4><ul>' +
+        li('<i class="m5">5</i><i class="m4">4</i><i class="m3">3</i><i class="m2">2</i>', 'за урок или домашку') +
+        li('<i class="m5">85</i>', 'баллы из 100') +
+        li('<i class="m4">зач</i>', 'зачёт') +
+        li('<i class="mn">н</i>', 'не было на уроке') + '</ul></div>' +
+      '<div class="dbt"><h4>Долги</h4><ul>' +
+        li('<i class="m2">2<small>9д</small></i>', 'пересдать за ' + DEBT_DAYS + ' дней; в углу — сколько осталось') +
+        li('<i class="m2">2<small class="late">!</small></i>', 'срок пересдачи вышел') +
+        li('<i class="m2">1</i><i class="m2">2</i>', 'за домашку — не сдано: исправь и сдай заново') + '</ul></div>' +
+      (sj.length ? '<div><h4>Цвет дня — предмет</h4><ul>' + sj.map(function (x) {
+        return '<li><span class="ch sjc ' + x.k + '"><i></i></span>' + esc(x.name) + '</li>';
+      }).join('') + '</ul></div>' : '') +
+      '<div><h4>Подсказки</h4><ul class="tips">' +
+        '<li>Нажми на имя — средний балл, ещё раз — спрятать</li>' +
+        '<li>Несданная вовремя домашка считается как 2</li>' +
+        '<li>' + (mode === 'teacher' ? 'Наведи' : 'Нажми') + ' на клетку — вспомнишь, что было</li>' +
+        (J === MAIN_J ? '<li>Дата с ↗ — урок на сайте</li>' : '') +
+        '<li>Тема — карточка урока и файлы</li></ul></div></aside>';
+  }
+
   function keepScroll() {
     var w = $('wrap');
     if (w && w.dataset.subj) scrollPos[w.dataset.subj] = [w.scrollLeft, w.scrollTop];
@@ -1165,7 +1233,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var l = S.les[id], edit = mode === 'teacher';
     if (!l && !edit) return;
     var isNew = !l;
-    if (isNew) l = { subj: tab, date: todayStr(), topic: '', hw: '' };
+    if (isNew) l = { subj: tab === ALL ? SUBJ[0].id : tab, date: todayStr(), topic: '', hw: '' };
     var subj = SUBJ.filter(function (s) { return s.id === l.subj; })[0];
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">';
     if (!isNew && !editNow) {
@@ -1218,7 +1286,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var m = /^(\d{1,2})\.(\d{1,2})$/.exec(date);
     if (!m || +m[1] < 1 || +m[1] > 31 || +m[2] < 1 || +m[2] > 12) { alert('Дата — в виде ДД.ММ, например 30.09'); return; }
     date = ('0' + m[1]).slice(-2) + '.' + ('0' + m[2]).slice(-2);
-    var old = id && S.les[id], subj = old ? old.subj : tab, ord = old ? old.ord : 0;
+    var old = id && S.les[id], subj = old ? old.subj : tab === ALL ? SUBJ[0].id : tab, ord = old ? old.ord : 0;
     if (!old || old.date !== date) {   // новый или перенесён на другой день — в конец этого дня
       ord = 1 + lessons(subj).filter(function (x) { return x.date === date && x.id !== id; })
         .reduce(function (mx, x) { return Math.max(mx, x.ord || 0); }, 0);
@@ -1260,13 +1328,23 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   /* ── день целиком (D, 01.10): ＋ справа — новый день, ✎ в карточке — правка. Алгебра и геометрия —
      два урока: тема 1, тема 2, одна домашка (второй урок sh=1). Пустые поля — с сайта уроков ── */
   var daySubj = 'mat', daySubj2 = 'mat';   // предметы 1-го и 2-го урока дня, выбранные в окне «День» (лента)
+  var dayTab = '';   // вкладка, для которой открыто окно «День»; во «Все» у класса — предмет самого дня (sj)
   function dayLessons(subj, date) { return lessons(subj).filter(function (l) { return l.date === date; }); }
-  function openDay(date) {
-    var subj = SUBJ.filter(function (s) { return s.id === tab; })[0], D = date ? dayLessons(tab, date) : [];
-    var isNew = !D.length, two = isNew ? !feed() && (tab === 'alg' || tab === 'geo') : D.length > 1;   // сдвоенные — алгебра и геометрия Гагарина
-    if (isNew) date = dayLessons(tab, todayStr()).length ? '' : todayStr();
+  // «＋ День» во «Все»: сначала — какой предмет, дальше обычное окно дня этого предмета
+  function pickDaySubj() {
+    $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true"><h3>Новый день</h3>' +
+      '<div class="meta">Какой предмет?</div><div class="sjpick go">' + SUBJ.map(function (x) {
+        return '<button type="button" class="' + x.k + '" data-act="daysubj" data-sj="' + x.id + '">' + esc(x.short) + '</button>';
+      }).join('') + '</div><div class="row"><span class="sp"></span><button class="btn" data-act="close">Отмена</button></div></div>';
+  }
+  function openDay(date, sj) {
+    dayTab = !feed() && tab === ALL ? (SUBJ.some(function (s) { return s.id === sj; }) ? sj : '') : tab;
+    if (!dayTab) { pickDaySubj(); return; }
+    var subj = SUBJ.filter(function (s) { return s.id === dayTab; })[0], D = date ? dayLessons(dayTab, date) : [];
+    var isNew = !D.length, two = isNew ? !feed() && (dayTab === 'alg' || dayTab === 'geo') : D.length > 1;   // сдвоенные — алгебра и геометрия Гагарина
+    if (isNew) date = dayLessons(dayTab, todayStr()).length ? '' : todayStr();
     // лента: предмет — у дня. Новый день — тот же предмет, что в прошлый раз
-    var all = lessons(tab);
+    var all = lessons(dayTab);
     daySubj = D[0] ? D[0].subj : all.length ? all[all.length - 1].subj : 'mat';
     daySubj2 = D[1] ? D[1].subj : daySubj;
     // два разных предмета в один день (алгебра + геометрия подряд) — у каждого своя домашка и своя клетка Д (D, 01.10)
@@ -1298,7 +1376,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     // с сайта — серой подсказкой, а не копией: пустое поле журнал берёт с сайта живьём,
     // и правка Хирона на сайте сразу видна здесь
     var hint = function () {
-      var d = normDate($('fDate').value), a = d && siteLesson(tab, d, 0, true), b = d && siteLesson(tab, d, 1, true), hw = d ? siteDayHw(tab, d) : '';
+      var d = normDate($('fDate').value), a = d && siteLesson(dayTab, d, 0, true), b = d && siteLesson(dayTab, d, 1, true), hw = d ? siteDayHw(dayTab, d) : '';
       $('fT1').placeholder = a ? 'С сайта: ' + (a.u.title || '') : '';
       $('fT2').placeholder = b ? 'С сайта: ' + (b.u.title || '') : '';
       $('fHw').placeholder = hw ? 'С сайта:\n' + hw : '';
@@ -1371,11 +1449,11 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function saveDay(oldDate) {
     var date = normDate($('fDate').value);
     if (!date) { alert('Выбери дату урока.'); return; }
-    var sj = feed() ? daySubj : tab;
-    var D = oldDate ? dayLessons(tab, oldDate) : [];
-    if (date !== oldDate && dayLessons(tab, date).length) { alert('На ' + date + ' день уже есть — открой его в журнале и поправь там.'); return; }
+    var sj = feed() ? daySubj : dayTab;
+    var D = oldDate ? dayLessons(dayTab, oldDate) : [];
+    if (date !== oldDate && dayLessons(dayTab, date).length) { alert('На ' + date + ' день уже есть — открой его в журнале и поправь там.'); return; }
     var two = $('fTwo').checked, l1 = D[0], l2 = D[1];
-    var sj2 = feed() ? daySubj2 : tab, split = feed() && two && sj2 !== sj;   // разные предметы — домашки раздельные
+    var sj2 = feed() ? daySubj2 : dayTab, split = feed() && two && sj2 !== sj;   // разные предметы — домашки раздельные
     if (two && !split && l2 && !l2.sh && hasMarks(l2.id, 'd')) { alert('У 2-го урока свои оценки за ДЗ. Перенеси их в Д первого урока или сотри — тогда домашка станет общей.'); return; }
     if (!two && l2 && (hasMarks(l2.id) || filesOf(l2.id).length)) { alert('У 2-го урока есть оценки или файлы — сначала сотри их, потом убирай урок.'); return; }
     var id1 = l1 ? l1.id : newId('l');
@@ -1388,11 +1466,11 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       : { subj: sj, date: date, topic: $('fT2').value.trim(), hw: '', ord: 2, sh: 1 }, l2));
     else if (l2) del('les', l2.id);
     D.slice(2).forEach(function (x, i) { var o = {}; Object.keys(x).forEach(function (k) { if (k !== 'id' && k !== 'ts') o[k] = x[k]; }); o.date = date; o.ord = 3 + i; if (feed()) o.subj = sj; put('les', x.id, o); });
-    goMonth({ subj: tab, date: date });
+    goMonth({ subj: dayTab, date: date });
     closeDlg(); render();
   }
   function delDay(date) {
-    var D = dayLessons(tab, date), nm = 0;
+    var D = dayLessons(dayTab, date), nm = 0;
     D.forEach(function (l) { nm += Object.keys(S.mark).filter(function (k) { return k.indexOf(l.id + '.') === 0 && S.mark[k].v; }).length; });
     if (!D.length || !confirm('Удалить день ' + date + (D.length > 1 ? ' (' + D.length + ' урока)' : '') + (nm ? ' вместе с оценками (' + nm + ')' : '') + '?')) return;
     D.forEach(function (l) {
@@ -1870,7 +1948,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function openCell(id) {
     var parts = id.split('.'), l = S.les[parts[0]], p = S.stu[parts[1]];
     if (!l || !p) return;
-    if ((feed() || l.subj === tab) && goMonth(l)) {   // «Ждут проверки» и стрелки ходят по всему году — показываем месяц клетки
+    if (inTab(l) && goMonth(l)) {   // «Ждут проверки» и стрелки ходят по всему году — показываем месяц клетки
       if (cur) { var oc = document.querySelector('td.c.cur'); if (oc) oc.classList.remove('cur'); cur = null; }
       render();
     }
@@ -1921,7 +1999,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var q2 = id.split('.'), sb = q2[2] === 'd' ? S.sub[q2[0] + '.' + q2[1]] : null;
     if (v && sb && sb.st === 'sent') review(q2[0] + '.' + q2[1], 'checked', splitMark({ v: v }).g, c);
     var td = document.querySelector('td.c[data-c="' + id + '"]');
-    if (td) { var cv = cellView(id); td.className = cv.cls + ' cur'; td.innerHTML = cv.inner; }
+    if (td) { var cv = cellView(id); td.className = cv.cls + (td.classList.contains('dend') ? ' dend' : '') + ' cur'; td.innerHTML = cv.inner; }
     if (lsGet(LS.next, true)) {   // следующий ученик в том же столбце
       var P = students(), parts = id.split('.'), i = P.findIndex(function (p) { return p.id === parts[1]; });
       if (i >= 0 && i < P.length - 1) { openCell(parts[0] + '.' + P[i + 1].id + '.' + parts[2]); return; }
@@ -1982,7 +2060,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       else if (act === 'saveday') saveDay(a.dataset.date);
       else if (act === 'delday') delDay(a.dataset.date);
       else if (act === 'savelesson') saveLesson(a.dataset.id);
-      else if (act === 'editlesson') { var el = S.les[a.dataset.id]; if (el) openDay(el.date); }
+      else if (act === 'editlesson') { var el = S.les[a.dataset.id]; if (el) openDay(el.date, el.subj); }
+      else if (act === 'daysubj') openDay(null, a.dataset.sj);
       else if (act === 'dellesson') delLesson(a.dataset.id);
       else if (act === 'dl') downloadFile(a.dataset.id, a);
       else if (act === 'login') openLogin('');
@@ -1996,7 +2075,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         var first = waitingSubs().sort(function (x, y) { return (x.at || 0) - (y.at || 0); })[0];
         if (first) {
           var fl = S.les[first.id.split('.')[0]];
-          if (!feed() && fl.subj !== tab) { tab = fl.subj; lsSet(LS.tab, tab); render(); }
+          if (!mix() && fl.subj !== tab) { tab = fl.subj; lsSet(LS.tab, tab); render(); }
           openCell(first.id + '.d');
         }
       }
