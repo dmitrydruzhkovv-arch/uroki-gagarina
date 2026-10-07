@@ -336,7 +336,7 @@ async function otpravit(){
   const body = {
     token: `${KLASS}-${imya}`.slice(0, 40),
     reason: prichina,
-    pro: d ? `${d.k.name} · урок ${d.u.n} «${korotko(d.u.title)}» · к ${d.u.dz.due}` : (spisok.length ? 'Не про домашку' : ''),
+    pro: d ? `${d.k.name} · ${d.u.zh ? 'урок ' + d.u.date : 'урок ' + d.u.n} «${korotko(d.u.title)}» · к ${d.u.dz.due}` : (spisok.length ? 'Не про домашку' : ''),
     urok: d ? `${d.k.id}-${d.u.n}` : '',
     text: okno.querySelector('.vq-tekst').value.trim().slice(0, 300),
   };

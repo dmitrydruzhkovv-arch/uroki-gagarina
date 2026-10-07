@@ -59,10 +59,14 @@ function cherez(d){
 
 /* ── уроки плоским списком, свежие первыми ── */
 const KURS = Object.fromEntries(DATA.kursy.map(k => [k.id, k]));
-const UROKI = DATA.kursy
+const sobratUroki = () => DATA.kursy
   .flatMap(k => (k.uroki || []).map(u => ({ ...u, kurs:k, dt:dateOf(u.date) })))
   .filter(u => u.dt)
   .sort((a, b) => (b.dt - a.dt) || (b.n - a.n));
+let UROKI = sobratUroki();   // пересобирается, когда пришла лента журнала (см. «ЖУРНАЛ → САЙТ» внизу)
+/* «урок 5» — номер по счёту data.js; у урока из журнала такого номера нет — показываем дату */
+const nomer = u => u.zh ? `${u.dt.getDate()} ${MES_K[u.dt.getMonth()]}` : `урок ${u.n}`;
+const Nomer = u => { const t = nomer(u); return t.charAt(0).toUpperCase() + t.slice(1); };
 const najti = (kid, n) => UROKI.find(u => u.kurs.id === kid && String(u.n) === String(n));
 
 /* ── галочки: тот же ключ, что у боевого сайта — отметки не теряются при переезде ── */
@@ -441,7 +445,7 @@ function oblozhka(u){
 function knopka(m){
   const url = esc(LIVE + m.out), isPdf = /\.pdf$/i.test(m.out), prak = m.kind !== 'teoriya';
   return `<span class="a-pair"><a class="a-main ${prak ? 'prak' : 'teor'}" href="${url}" target="_blank" rel="noopener" title="${esc(m.hint || '')}">${prak ? '✏️' : '📘'} ${esc(m.label)} ↗</a>` +
-    (isPdf ? `<a class="a-dl" href="${url}" download title="Скачать PDF" aria-label="Скачать PDF">⤓</a>` : '') + `</span>`;
+    (isPdf ? `<a class="a-dl" href="${url}${m.zh ? '?dl=1' : ''}" download title="Скачать PDF" aria-label="Скачать PDF">⤓</a>` : '') + `</span>`;
 }
 function knopki(u){
   const mat = u.mat || [];
@@ -478,7 +482,7 @@ function karta(u){
   return `<article class="card k-${u.kurs.id}">
     ${obloshkaHTML(u, 'c-pic')}
     <div class="c-body">
-      <div class="c-n">Урок ${esc(u.n)}</div>
+      <div class="c-n">${esc(Nomer(u))}</div>
       <h3 class="c-title"><button data-open="${u.kurs.id}|${u.n}">${esc(u.title)}</button></h3>
       ${knopki(u)}
       ${dzChip(u)}
@@ -490,7 +494,7 @@ function glavnaya(u){
   return `<article class="feat k-${u.kurs.id}">
     ${obloshkaHTML(u, 'f-pic')}
     <div class="f-body">
-      <div class="f-kick">Последний урок · урок ${esc(u.n)}</div>
+      <div class="f-kick">Последний урок · ${esc(nomer(u))}</div>
       <h3 class="f-title">${esc(u.title)}</h3>
       ${u.lead ? `<p class="f-lead">${esc(u.lead)}</p>` : ''}
       ${knopki(u)}
@@ -550,7 +554,7 @@ function materialy(u){
           : `<a class="m-link" href="${esc(url)}" target="_blank" rel="noopener">${esc(m.label)}<span aria-hidden="true"> ↗</span></a>`}
         ${m.hint ? `<small>${esc(m.hint)}</small>` : ''}
       </span>
-      ${isPdf ? `<a class="dl" href="${esc(url)}" download title="Скачать PDF" aria-label="Скачать PDF">⤓</a>` : ''}
+      ${isPdf ? `<a class="dl" href="${esc(url)}${m.zh ? '?dl=1' : ''}" download title="Скачать PDF" aria-label="Скачать PDF">⤓</a>` : ''}
     </div>`;
   }).join('');
   return html || `<div class="nomat">Урок вели по учебнику — своих материалов нет</div>`;
@@ -568,7 +572,7 @@ function otkryt(kid, n, push = true){
   sh.className = 'sheet k-' + kid;
   sh.innerHTML = `
     <div class="sh-bar">
-      <span class="sh-kurs">${u.kurs.icon} ${esc(u.kurs.name)} · урок ${esc(u.n)}</span>
+      <span class="sh-kurs">${u.kurs.icon} ${esc(u.kurs.name)} · ${esc(nomer(u))}</span>
       <button class="x" data-close aria-label="Закрыть">✕</button>
     </div>
     <div class="sh-scroll">
@@ -729,6 +733,99 @@ $('#foot').innerHTML = `
 if (DATA.ktp && DATA.ktp.url) $('#year').href = DATA.ktp.url;
 else $('#year').remove();
 
+/* ═════════════════ ЖУРНАЛ → САЙТ (D, 07.10.2026) ═════════════════
+   D заполняет только журнал (zhurnal.html): тема, обложка, файлы, домашка. Сайт берёт их из открытой
+   ленты сервера и достраивает то, чего нет в data.js:
+     • в день, где в data.js урока этого предмета нет, — блок урока целиком (тема, обложка, файлы, домашка);
+     • в день, где урок в data.js есть, — его не трогаем (он собран подробно); только домашку из журнала
+       добавляем, если в data.js её у этого дня нет.
+   Срок домашки — следующий урок этого предмета по расписанию. Лента не ответила — сайт остаётся как был. */
+const ZH_KURS = { alg:'algebra', geo:'geometriya', ver:'veroyatnost' };
+const ZH_API = (() => {
+  try {
+    const q = new URLSearchParams(location.search).get('api') || '';
+    if (/^http:\/\/(127\.0\.0\.1|localhost)(:\d{2,5})?(\/[\w\/-]*)?$/.test(q)) return [q.replace(/\/$/, '')];
+  } catch (_) {}
+  return ['https://194-87-110-53.nip.io/cabinet', 'https://hw.157-228-128-116.nip.io/cabinet'];
+})();
+const GH = 'https://dmitrydruzhkovv-arch.github.io/';
+const zhAuto = id => {   // веб-домашка и срез — те же адреса, что в журнале
+  const t = /^t-([a-z0-9-]{2,40})$/.exec(id || ''), d = /^dz_([a-z]+)_urok(\d+)$/.exec(id || '');
+  return t ? GH + 'di-test/?t=' + t[1] : d ? GH + 'di-dz-' + d[1] + '-' + d[2] + '/?k=g9' : '';
+};
+/* разметка журнала (**жирный**, __подчёркнутый__, *курсив*, точка в начале строки) — на сайте простым текстом */
+const zhText = t => String(t || '').replace(/\*\*|__/g, '').replace(/(^|[\s(«"])\*(?=\S)/g, '$1').replace(/(\S)\*(?=[\s.,;:!?)»"]|$)/g, '$1').replace(/^[ \t]*[•\-–][ \t]+/gm, '').trim();
+const zhImya = f => String(f.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/^[a-zа-я]?\d+[_\s.-]+/i, '').replace(/[_-]+/g, ' ').trim() || 'Файл';
+function sleduyushchiy(kid, d){   // следующий день после d, когда этот предмет стоит в расписании
+  for (let i = 1; i <= 45; i++){
+    const x = new Date(d.getTime() + i * DAY);
+    if (!pro(x).off && matDnya(x).some(z => z.kurs === kid)) return x;
+  }
+  return new Date(d.getTime() + 7 * DAY);
+}
+function izZhurnala(lenta, api){
+  const ddmm = d => String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0');
+  const adres = f => `${api}/zhurnal/pub/${f.id}/${encodeURIComponent(String(f.name || 'file.' + f.ext).replace(/[\/?#%]/g, '_'))}`;
+  const fajly = (lid, w) => (lenta.file || []).filter(f => f.les === lid && (f.w || '') === w).sort((a, b) => (a.ord || 0) - (b.ord || 0));
+  let novoe = 0;
+  DATA.kursy.forEach(k => {
+    k.uroki = (k.uroki || []).filter(u => !u.zh);   // повторный вызов не копит блоки
+    k.uroki.forEach(u => { if (u.dzZh) { delete u.dz; delete u.dzZh; } });
+    const L = (lenta.les || []).filter(l => ZH_KURS[l.subj] === k.id && dateOf(l.date))
+      .sort((a, b) => dateOf(a.date) - dateOf(b.date) || (a.ord || 0) - (b.ord || 0));
+    const dni = [...new Set(L.map(l => l.date))];
+    dni.forEach(date => {
+      const dt = dateOf(date);
+      if (dt > TODAY) return;                         // будущий день в журнале — заготовка D, ученикам рано
+      const D = L.filter(l => l.date === date), svoi = k.uroki.filter(u => u.dt ? +u.dt === +dt : +dateOf(u.date) === +dt);
+      // домашка дня: текст и файлы домашки со всех уроков дня (у сдвоенного она одна)
+      const tekst = D.map(l => zhText(l.hw)).filter(Boolean).join('\n'), hf = D.flatMap(l => fajly(l.id, 'hw')), web = D.map(l => zhAuto(l.ad)).filter(Boolean);
+      let dz = null;
+      if (tekst || hf.length || web.length){
+        dz = { due: ddmm(sleduyushchiy(k.id, dt)), tetrad: tekst ? tekst.split('\n').map(x => x.trim()).filter(Boolean) : [], ssylki: {} };
+        if (web.length) dz.web = web.map(url => ({ label: 'Веб-домашка', url }));
+        // подпись файла — с расширением и без повторов: ссылка ищется в тексте по подписи, одна не должна быть началом другой
+        hf.forEach(f => { let s = `📎 ${zhImya(f)}.${f.ext}`, k = 2; while (dz.ssylki[s]) s = `📎 ${zhImya(f)} (${k++}).${f.ext}`; dz.tetrad.push(s); dz.ssylki[s] = adres(f); });
+      }
+      if (svoi.length){                               // день уже собран в data.js — только домашка, если её там нет
+        if (dz && !svoi.some(u => u.dz)) { svoi[0].dz = dz; svoi[0].dzZh = true; novoe++; }
+        return;
+      }
+      D.forEach((l, i) => {
+        const mat = fajly(l.id, '').map((f, j) => ({ kind: /теори|конспект|справ/i.test(f.name) || (j === 0 && !/практ|задач|домаш|образ/i.test(f.name)) ? 'teoriya' : 'dz',
+          label: zhImya(f), hint: '', out: adres(f), zh: true }));
+        const cov = fajly(l.id, 'cover')[0], title = zhText(l.topic).replace(/\n+/g, ' ');
+        const moyaDz = dz && i === 0 ? dz : null;
+        if (!title && !mat.length && !cov && !moyaDz) return;   // пустая строка журнала — блока нет
+        k.uroki.push({ zh: true, n: (dt.getMonth() + 1) * 1000 + dt.getDate() * 10 + i + 90000, date, title: title || 'Урок ' + date,
+          mat, cover: cov ? adres(cov) : '', ...(moyaDz ? { dz: moyaDz } : {}) });
+        novoe++;
+      });
+    });
+  });
+  return novoe;
+}
+function vzyatZhurnal(i = 0){
+  if (i >= ZH_API.length || typeof fetch !== 'function') return;
+  const api = ZH_API[i], ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+  const t = setTimeout(() => ctrl && ctrl.abort(), 8000);
+  fetch(api + '/zhurnal/lenta', { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(d => {
+      clearTimeout(t);
+      const vse = () => { UROKI = sobratUroki(); risovatKalendar(); risovatDen(); risovatZadano(); risovatPredmety(); risovatVitrinu(); };
+      try {
+        if (!d || !d.ok || !izZhurnala(d, api)) return;
+        vse();
+        const h = /^#([a-z]+)-(\d+)$/.exec(location.hash);
+        if (h && !document.body.classList.contains('sheet-open')) otkryt(h[1], h[2], false);
+      } catch (e) {   // запись журнала, которую сайт не смог показать, — возвращаемся к data.js, сеть тут ни при чём
+        try { console.error('журнал → сайт', e); } catch (_) {}
+        izZhurnala({ les: [], file: [] }, api); vse();
+      }
+    }, e => { clearTimeout(t); if (typeof e !== 'number') vzyatZhurnal(i + 1); });   // нет связи — запасной адрес; сервер ответил отказом — он не поможет
+}
+
 /* ═════════════════ СТАРТ ═════════════════ */
 pometitTemu();
 tik();
@@ -738,4 +835,5 @@ risovatZadano();
 risovatPredmety(); risovatVitrinu();
 const hash = /^#([a-z]+)-(\d+)$/.exec(location.hash);
 if (hash) otkryt(hash[1], hash[2], false);
+vzyatZhurnal();
 })();

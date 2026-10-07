@@ -829,18 +829,12 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   /* ── месяцы и средний балл (D, 01.10) ── */
   var MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
   var WD = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
-  var monthSel = {};   // предмет → '09' | 'all'; при открытии — текущий месяц
+  var monthSel = {};   // предмет → '09' | 'all'; при открытии — весь год, таблица сама прокручена к сегодняшнему дню
   function monthOf(date) { var m = /^\d{1,2}\.(\d{1,2})/.exec(date || ''); return m ? ('0' + m[1]).slice(-2) : ''; }
   function months(L) {
     var out = [];
     L.forEach(function (l) { var m = monthOf(l.date); if (m && out.indexOf(m) < 0) out.push(m); });   // L уже по порядку учебного года
     return out;
-  }
-  function defaultMonth(MS) {
-    var now = monthOf(todayStr()), tk = dkey(todayStr()), best = MS[0];
-    if (MS.indexOf(now) >= 0) return now;
-    MS.forEach(function (m) { if (dkey('01.' + m) <= tk) best = m; });   // каникулы — последний прошедший месяц
-    return best || 'all';
   }
   // показать месяц урока l, если сейчас открыт другой (не «Весь год»). → true, если переключили
   function goMonth(l) {
@@ -1186,7 +1180,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 
     // месяц: журнал листается по месяцам, а не тянется вправо на весь год (D, 01.10)
     var MS = months(L), mo = monthSel[tab];
-    if (mo !== 'all' && MS.indexOf(mo) < 0) mo = monthSel[tab] = defaultMonth(MS);
+    if (mo !== 'all' && MS.indexOf(mo) < 0) mo = monthSel[tab] = 'all';   // журнал открывается сразу за весь год (D, 07.10); месяц — по кнопке
     var LA = L;   // весь предмет: для «срок ДЗ прошёл» нужен следующий урок, даже в другом месяце
     if (mo !== 'all') L = L.filter(function (l) { return monthOf(l.date) === mo; });
     var today = todayStr(), LY = layout(L), DAYS = [];
