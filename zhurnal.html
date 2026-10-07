@@ -343,7 +343,10 @@ td.c .cmt{ position:absolute; top:4px; left:4px; width:6px; height:6px; border-r
 .cov{ position:relative; width:min(100%, 300px); margin:10px 0 2px; }
 .covb{ display:block; width:100%; padding:0; border-radius:14px; overflow:hidden; box-shadow:0 0 0 1px var(--z-line2), 0 8px 18px -14px rgba(40,24,70,.5); }
 .cov img{ display:block; width:100%; aspect-ratio:16/9; object-fit:cover; object-position:top; background:var(--z-head); }
-.tcov{ display:block; width:100%; max-width:150px; aspect-ratio:16/9; object-fit:cover; object-position:top; border-radius:8px; margin:0 0 4px; background:var(--z-head); }
+.ti + .ti{ margin-top:6px; padding-top:6px; border-top:1px solid var(--z-line2); }
+.zt tfoot .tl:not(.one){ -webkit-line-clamp:3; }
+.edit .zt tfoot td[data-les]{ padding-right:6px; }   /* галочек готовности больше нет — картинка и текст во всю ширину колонки */
+.tcov{ display:block; width:100%; aspect-ratio:16/9; object-fit:cover; object-position:top; border-radius:8px; margin:0 0 4px; background:var(--z-head); }
 .tcov:not([src]), .cov img:not([src]){ visibility:hidden; }
 /* плитку можно подвинуть: ◀ ▶ и «в домашку / к теме»; мышкой — перетащить */
 .fmv{ display:flex; gap:3px; margin-top:4px; }
@@ -1223,11 +1226,11 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       var n = g.xs.reduce(function (a, x) { return a + x.cols.length; }, 0), many = items.length > 1;
       if (!items.length) return '<td colspan="' + n + '" class="dend"></td>';
       var on = !!items[0].l[flag];
-      return '<td colspan="' + n + '" class="dend" data-les="' + items[0].l.id + '">' + (edit ? '<button class="rdy" data-rdy="' + flag + '" data-id="' + items[0].l.id + '" aria-pressed="' + on +
-        '" title="' + (flag === 'rt' ? (on ? 'Урок готов' : 'Отметить: урок готов') : (on ? 'Домашка задана' : 'Отметить: домашка задана')) + ' — пометка только для тебя">✓</button>' : '') + items.map(function (it, k) {
-        return (it.cov ? '<img class="tcov" data-ff="' + it.cov + '" data-les="' + it.l.id + '" alt="">' : '') +
+      return '<td colspan="' + n + '" class="dend" data-les="' + items[0].l.id + '">' + items.map(function (it, k) {
+        // у дня из двух уроков темы идут одна под другой через полоску — без «1.» «2.»: буквы нужнее (D, 07.10)
+        return '<div class="ti">' + (it.cov ? '<img class="tcov" data-ff="' + it.cov + '" data-les="' + it.l.id + '" alt="">' : '') +
           '<div class="tl' + (many ? '' : ' one') + (it.site ? ' site' : '') + '" data-les="' + it.l.id + '"' + (it.site ? ' title="С сайта уроков"' : '') + '>' +
-          (many ? '<span class="no">' + (k + 1) + '.</span> ' : '') + (it.t ? fmt(it.t) : '—') + (it.nf ? ' <span class="fcount">📎 ' + it.nf + '</span>' : '') + '</div>';
+          (it.t ? fmt(it.t) : '—') + (it.nf ? ' <span class="fcount">📎 ' + it.nf + '</span>' : '') + '</div></div>';
       }).join('') + '</td>';
     };
     DAYS.forEach(function (g) {
@@ -2373,11 +2376,12 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function subMoveList() {
     var q = cur.split('.'), l = S.les[q[0]], box = $('popMove');
     if (!l || !box) return;
-    var L = lessons(l.subj).filter(function (x) { return !x.sh && x.id !== l.id && !S.sub[x.id + '.' + q[1]]; })
+    var L = lessons(l.subj).filter(function (x) { return !x.sh && x.id !== l.id; })
       .sort(function (a, b) { return Math.abs(dkey(a.date) - dkey(l.date)) - Math.abs(dkey(b.date) - dkey(l.date)); }).slice(0, 10)
       .sort(function (a, b) { return dkey(a.date) - dkey(b.date) || (a.ord || 0) - (b.ord || 0); });
-    box.innerHTML = L.length ? '<div class="pop-move"><span>Куда перенести:</span>' + L.map(function (x) { return '<button data-act="submoveto" data-to="' + x.id + '">' + esc(x.date) + '</button>'; }).join('') + '</div>'
-      : '<div class="note">Переносить некуда: в других днях у ученика уже есть сдача.</div>';
+    box.innerHTML = L.length ? '<div class="pop-move"><span>Куда перенести:</span>' + L.map(function (x) { return '<button data-act="submoveto" data-to="' + x.id + '" title="' + (S.sub[x.id + '.' + q[1]] ? 'Там уже есть сдача — фото добавятся к ней' : '') + '">' + esc(x.date) + (S.sub[x.id + '.' + q[1]] ? ' 📷' : '') + '</button>'; }).join('') + '</div>' +
+      '<div class="note">📷 — в этом дне у ученика уже есть сдача: фото добавятся к ней.</div>'
+      : '<div class="note">Других дней по этому предмету пока нет.</div>';
   }
   function subMove(to) {
     var q = cur.split('.'), from = q[0] + '.' + q[1];
@@ -2390,7 +2394,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       setSt('ok', 'сдача перенесена на ' + (S.les[o.id.split('.')[0]] || {}).date);
     }).catch(function (e) {
       if (typeof e !== 'number') nextApi();
-      alert(e === 409 ? 'В том дне у ученика уже есть сдача.' : e === 404 ? 'Сдачи или урока уже нет — обнови страницу.' : 'Не получилось перенести. Проверь интернет и попробуй ещё раз.');
+      alert(e === 409 ? 'В том дне станет больше 12 фото — столько в одну сдачу не помещается.' : e === 404 ? 'Сдачи или урока уже нет — обнови страницу.' : 'Не получилось перенести. Проверь интернет и попробуй ещё раз.');
     });
   }
   function setMark(v) {
