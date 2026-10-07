@@ -339,6 +339,28 @@ td.c .cmt{ position:absolute; top:4px; left:4px; width:6px; height:6px; border-r
 .ftb .fz{ font-size:11px; color:var(--muted); }
 .frm{ position:absolute; top:-6px; right:-6px; width:24px; height:24px; padding:0; border-radius:50%; display:grid; place-items:center; font-size:12px; color:#dc2626; background:var(--card); box-shadow:0 0 0 1px var(--z-line2), 0 4px 10px -6px rgba(0,0,0,.4); }
 .btn.sm{ padding:5px 10px; font-size:13px; }
+/* обложка темы (D, 07.10): в карточке — над файлами, в таблице — над строкой темы */
+.cov{ position:relative; width:min(100%, 300px); margin:10px 0 2px; }
+.covb{ display:block; width:100%; padding:0; border-radius:14px; overflow:hidden; box-shadow:0 0 0 1px var(--z-line2), 0 8px 18px -14px rgba(40,24,70,.5); }
+.cov img{ display:block; width:100%; aspect-ratio:16/9; object-fit:cover; object-position:top; background:var(--z-head); }
+.tcov{ display:block; width:100%; max-width:150px; aspect-ratio:16/9; object-fit:cover; object-position:top; border-radius:8px; margin:0 0 4px; background:var(--z-head); }
+.tcov:not([src]), .cov img:not([src]){ visibility:hidden; }
+/* плитку можно подвинуть: ◀ ▶ и «в домашку / к теме»; мышкой — перетащить */
+.fmv{ display:flex; gap:3px; margin-top:4px; }
+.fmv button{ flex:1; height:24px; padding:0 4px; border-radius:7px; font-size:11px; font-weight:700; color:var(--sub); box-shadow:inset 0 0 0 1px var(--z-line2); white-space:nowrap; }
+.fmv button:hover{ background:var(--z-hover); }
+.ft[draggable="true"]{ cursor:grab; } .ft.drag{ opacity:.4; }
+.zone-on{ outline:2px dashed var(--s); outline-offset:3px; border-radius:12px; }
+.uprow{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+/* файлы в окне «Изменить»: что уже лежит и что уйдёт вместе с «Сохранить» */
+.fslot{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:6px 0 2px; padding:6px; border-radius:12px; background:var(--z-head); }
+.fchip{ display:inline-flex; align-items:center; gap:4px; max-width:100%; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:600; color:var(--sub); background:var(--card); box-shadow:inset 0 0 0 1px var(--z-line2); }
+.fchip span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:170px; }
+.fchip.new{ color:var(--on); background:var(--s); box-shadow:none; }
+.fchip button{ width:16px; height:16px; padding:0; border-radius:50%; font-size:10px; line-height:1; color:inherit; background:rgba(255,255,255,.25); }
+.pop-sub .pop-x button.redo{ flex:2; }
+.pop-move{ display:flex; gap:5px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+.pop-move button{ padding:5px 9px; border-radius:9px; font-size:13px; font-weight:700; box-shadow:inset 0 0 0 1px var(--z-line2); background:var(--card); }
 .autorow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:8px 0 2px; }
 .autorow .note{ margin:0; }
 .dhw{ margin-top:12px; padding:10px 12px; border-radius:12px; background:var(--z-head); }
@@ -873,11 +895,22 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function filesOf(lid, w) {
     return vals(S.file).filter(function (f) { return f.les === lid && (w === '*' || (f.w || '') === (w || '')); }).sort(function (a, b) { return (a.ord || 0) - (b.ord || 0); });
   }
+  function coverOf(lid) { return filesOf(lid, 'cover')[0] || null; }   // обложка темы — одна картинка на урок
+  // правки ещё едут на сервер — ждём: файл к уроку, которого сервер пока не знает, он не примет
+  function whenSaved(cb) { (function w() { if (!outbox.length && !busy) cb(); else setTimeout(w, 250); })(); }
   // файлы блока домашки, клетка которой у урока own; у сдвоенного — со всех его уроков: домашку могли объединить позже
   function hwFiles(own) {
     var L = lessons(own.subj), i = L.indexOf(own), out = [];
     for (var k = 0, n = i < 0 ? 0 : sharedCount(own); k < n; k++) out = out.concat(filesOf(L[i + k].id, 'hw'));
-    return out;
+    return out.sort(function (a, b) { return (a.ord || 0) - (b.ord || 0); });
+  }
+  // соседи файла по блоку — в том порядке, как плитки на экране
+  function blockOf(f) {
+    var l = S.les[f.les];
+    if (f.w !== 'hw' || !l) return filesOf(f.les, f.w);
+    var L = lessons(l.subj), i = L.indexOf(l);
+    while (i > 0 && L[i].sh && L[i - 1].date === l.date) i--;
+    return hwFiles(L[i]);
   }
   function kb(n) { return n >= 1048576 ? (n / 1048576).toFixed(1).replace('.', ',') + ' МБ' : Math.max(1, Math.round(n / 1024)) + ' КБ'; }
 
@@ -1192,12 +1225,13 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       var on = !!items[0].l[flag];
       return '<td colspan="' + n + '" class="dend" data-les="' + items[0].l.id + '">' + (edit ? '<button class="rdy" data-rdy="' + flag + '" data-id="' + items[0].l.id + '" aria-pressed="' + on +
         '" title="' + (flag === 'rt' ? (on ? 'Урок готов' : 'Отметить: урок готов') : (on ? 'Домашка задана' : 'Отметить: домашка задана')) + ' — пометка только для тебя">✓</button>' : '') + items.map(function (it, k) {
-        return '<div class="tl' + (many ? '' : ' one') + (it.site ? ' site' : '') + '" data-les="' + it.l.id + '"' + (it.site ? ' title="С сайта уроков"' : '') + '>' +
+        return (it.cov ? '<img class="tcov" data-ff="' + it.cov + '" data-les="' + it.l.id + '" alt="">' : '') +
+          '<div class="tl' + (many ? '' : ' one') + (it.site ? ' site' : '') + '" data-les="' + it.l.id + '"' + (it.site ? ' title="С сайта уроков"' : '') + '>' +
           (many ? '<span class="no">' + (k + 1) + '.</span> ' : '') + (it.t ? fmt(it.t) : '—') + (it.nf ? ' <span class="fcount">📎 ' + it.nf + '</span>' : '') + '</div>';
       }).join('') + '</td>';
     };
     DAYS.forEach(function (g) {
-      h += dayCell(g, g.xs.map(function (x) { var tp = topicOf(x.l); return { l: x.l, t: (tp.t || (autoUrl(x.l.au) ? 'Срез' : '')) + (autoUrl(x.l.au) ? ' 🎯' : ''), site: tp.site, nf: filesOf(x.l.id).length }; }), 'rt');
+      h += dayCell(g, g.xs.map(function (x) { var tp = topicOf(x.l); return { l: x.l, t: (tp.t || (autoUrl(x.l.au) ? 'Срез' : '')) + (autoUrl(x.l.au) ? ' 🎯' : ''), site: tp.site, nf: filesOf(x.l.id).length, cov: (coverOf(x.l.id) || {}).id }; }), 'rt');
     });
     if (edit) h += '<td></td>';
     h += '</tr><tr class="hw"><th class="nm">Домашка</th>';
@@ -1211,6 +1245,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     h += '</tr></tfoot></table></div>';
     h += legend();
     main.innerHTML = h;
+    fillFileThumbs(main);   // обложки тем
 
     var wrap = $('wrap');
     wrap.dataset.subj = tab;
@@ -1264,16 +1299,46 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 
   /* ── урок целиком (и правка — для D) ── */
   // плитки файлов — у темы и в блоке домашки. Картинка и PDF открываются на весь экран, остальное скачивается
-  var FILE_ACCEPT = '.pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx,.xlsx';
+  var FILE_ACCEPT = '.pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx,.xlsx', IMG_ACCEPT = '.png,.jpg,.jpeg,.webp';
   function canShow(f) { return /^(png|jpe?g|webp|pdf)$/i.test(f.ext || ''); }
   function tilesHtml(F, edit) {
     return '<div class="ftiles">' + F.map(function (f) {
       var img = /^(png|jpe?g|webp)$/i.test(f.ext), nm = String(f.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/^\d+[_\s.-]+/, '').replace(/_/g, ' '), show = canShow(f);
-      return '<div class="ft"><button class="ftb" data-act="' + (show ? 'openfile' : 'dl') + '" data-id="' + f.id + '" title="' + esc(f.name) + (show ? ' — открыть' : ' — скачать') + '">' +
+      return '<div class="ft"' + (edit ? ' draggable="true" data-fid="' + f.id + '"' : '') + '><button class="ftb" data-act="' + (show ? 'openfile' : 'dl') + '" data-id="' + f.id + '" title="' + esc(f.name) + (show ? ' — открыть' : ' — скачать') + '">' +
         '<span class="fpv x-' + esc(String(f.ext).toLowerCase()) + '">' + (img ? '<img data-ff="' + f.id + '" alt="">' : /^pdf$/i.test(f.ext) ? '<img data-ff="' + f.id + '" data-pdf="1" alt=""><i>' + esc(f.ext) + '</i>' : '<i>' + esc(f.ext) + '</i>') + '</span>' +
         '<span class="fnm">' + esc(nm) + '</span><span class="fz">' + kb(f.size || 0) + (show ? '' : ' ↓') + '</span></button>' +
-        (edit ? '<button class="frm" data-act="rmfile" data-id="' + f.id + '" title="Удалить файл" aria-label="Удалить файл">✕</button>' : '') + '</div>';
+        (edit ? '<button class="frm" data-act="rmfile" data-id="' + f.id + '" title="Удалить файл" aria-label="Удалить файл">✕</button>' +
+          '<span class="fmv"><button data-act="fmove" data-id="' + f.id + '" data-d="-1" title="Левее" aria-label="Левее">◀</button><button data-act="fmove" data-id="' + f.id + '" data-d="1" title="Правее" aria-label="Правее">▶</button>' +
+          '<button data-act="fmove" data-id="' + f.id + '" data-d="w" title="' + (f.w === 'hw' ? 'Перенести к теме урока' : 'Перенести в домашку') + '">' + (f.w === 'hw' ? '↥ к теме' : '↧ в домашку') + '</button></span>' : '') + '</div>';
     }).join('') + '</div>';
+  }
+  // D двигает файл: patch — {ord} на другое место, {les, w} — в другой блок (тема ↔ домашка, другой урок дня)
+  function fileMove(fid, patch) {
+    var f = S.file[fid];
+    if (!f) return;
+    var body = { id: fid }; Object.keys(patch).forEach(function (k) { body[k] = patch[k]; });
+    // сначала доехать прежним правкам: иначе ответ идущей сверки вернёт плитку на старое место
+    new Promise(whenSaved).then(function () { return post('/zhurnal/filemove', body, { Authorization: 'Bearer ' + teacherKey }); }).then(function (r) {
+      if (r.status !== 200 || !r.data.ok) throw r.status;
+      var o = r.data.obj, d = o.d; d.id = o.id; d.ts = o.ts; S.file[o.id] = d; save(); render(); openLesson(d.les);
+    }).catch(function (e) {
+      if (typeof e !== 'number') nextApi();
+      alert(e === 409 ? 'Там уже 10 файлов — больше не помещается.' : e === 404 ? 'Файла или урока уже нет — обнови страницу.' : 'Не получилось переставить. Проверь интернет и попробуй ещё раз.');
+    });
+  }
+  // место между соседями: before — плитка, перед которой встаём (нет — в конец блока L)
+  function ordBefore(L, before) {
+    var i = before ? L.indexOf(before) : -1;
+    if (i < 0) return (L.length ? L[L.length - 1].ord || 0 : 0) + 1;
+    return i ? ((L[i - 1].ord || 0) + (before.ord || 0)) / 2 : (before.ord || 0) - 1;
+  }
+  function fileStep(fid, d) {   // ◀ ▶ и «в домашку / к теме»
+    var f = S.file[fid];
+    if (!f) return;
+    if (d === 'w') { fileMove(fid, { w: f.w === 'hw' ? '' : 'hw' }); return; }
+    var L = blockOf(f), i = L.indexOf(f), rest = L.filter(function (x) { return x !== f; });
+    if (i + +d < 0 || i + +d >= L.length) return;
+    fileMove(fid, { ord: ordBefore(rest, rest[i + +d] || null) });
   }
   // карточка урока — у всех; D из неё же идёт в правку (✎)
   function openLesson(id, editNow) {
@@ -1291,23 +1356,27 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         (feed() ? '' : '<div class="meta">' + esc(subj.name) + '</div>');
       DL.forEach(function (x, k) {
         var sj = ALLSUBJ.filter(function (q) { return q.id === x.l.subj; })[0], F = filesOf(x.l.id);
-        h += '<div class="dsec"><div class="dsec-h">' + (many ? '<span class="no">' + (k + 1) + '</span>' : '') +
+        var cv = coverOf(x.l.id);
+        h += '<div class="dsec"' + (edit ? ' data-zone="' + x.l.id + '|"' : '') + '><div class="dsec-h">' + (many ? '<span class="no">' + (k + 1) + '</span>' : '') +
           (feed() && sj ? '<span class="sjchip ' + sj.k + '">' + (sj.id === 'mat' ? 'М' : esc(sj.id === 'ver' ? 'Статистика' : sj.name)) + '</span>' : '') +
           '<b>' + (x.l.topic ? fmt(x.l.topic) : (topicOf(x.l).t ? esc(topicOf(x.l).t) : 'Тема не указана')) + '</b></div>' +
+          (cv ? '<div class="cov"><button class="covb" data-act="openfile" data-id="' + cv.id + '" title="Обложка темы — открыть"><img data-ff="' + cv.id + '" alt=""></button>' +
+            (edit ? '<button class="frm" data-act="rmfile" data-id="' + cv.id + '" title="Убрать обложку" aria-label="Убрать обложку">✕</button>' : '') + '</div>' : '') +
           (F.length ? tilesHtml(F, edit) : '<div class="note">' + (edit ? 'Файлов пока нет.' : 'К этому уроку файлов нет.') + '</div>') +
           (autoUrl(x.l.au) ? '<div class="autorow">' + autoBtn(x.l.au, '🎯 Срез: ввести ответы') + '<span class="note">Балл сам появится в журнале. Считается первая попытка.</span></div>' : '') +
-          (edit ? '<label class="btn upl sm">＋ Файлы<input type="file" class="upFile" data-lid="' + x.l.id + '" multiple accept="' + FILE_ACCEPT + '"></label>' : '') + '</div>';
+          (edit ? '<div class="uprow"><label class="btn upl sm">＋ Файлы<input type="file" class="upFile" data-lid="' + x.l.id + '" multiple accept="' + FILE_ACCEPT + '"></label>' +
+            '<label class="btn upl sm">🖼 ' + (cv ? 'Заменить обложку' : 'Обложка') + '<input type="file" class="upFile" data-lid="' + x.l.id + '" data-w="cover" accept="' + IMG_ACCEPT + '"></label></div>' : '') + '</div>';
         if (!x.joinedNext) {
           // домашка: текст и под ним фото или файлы (D, 07.10); есть фото без текста — «Не задано» не пишем
           var hw = hwOf(x.own).t, nsh = x.cols[x.cols.length - 1].n || 1, HF = hwFiles(x.own);
           var txt = hw ? fmt(hw) : (autoUrl(x.own.ad) || HF.length ? '' : 'Не задано');
-          h += '<div class="dhw"><div class="lbl">Домашка' + (nsh > 1 ? ' · общая на ' + nsh + ' урока' : '') + '</div>' +
+          h += '<div class="dhw"' + (edit ? ' data-zone="' + x.own.id + '|hw"' : '') + '><div class="lbl">Домашка' + (nsh > 1 ? ' · общая на ' + nsh + ' урока' : '') + '</div>' +
             (txt || !HF.length ? '<div class="txt">' + txt + '</div>' : '') + (HF.length ? tilesHtml(HF, edit) : '') +
             (autoUrl(x.own.ad) ? '<div class="autorow">' + autoBtn(x.own.ad, '🕹 Открыть домашку') + '<span class="note">Балл сам появится в журнале. Можно перерешать — считается лучший результат.</span></div>' : '') +
             (edit ? '<label class="btn upl sm">＋ Фото или файл<input type="file" class="upFile" data-lid="' + x.own.id + '" data-w="hw" multiple accept="' + FILE_ACCEPT + '"></label>' : '') + '</div>';
         }
       });
-      h += (edit ? '<div class="note" id="upSt">Файлы: PDF, картинки, PowerPoint, Word, Excel — до 25 МБ, до 10 на урок и до 10 в домашку. Нажми на плитку — картинка или PDF откроется на весь экран.</div>' : '') +
+      h += (edit ? '<div class="note" id="upSt">Файлы: PDF, картинки, PowerPoint, Word, Excel — до 25 МБ, до 10 на урок и до 10 в домашку. Файл можно перетащить мышкой в блок темы или домашки либо вставить из буфера (⌘V); плитку — перетащить на другое место.</div>' : '') +
         '<div class="row">' + (edit ? '<button class="btn" data-act="editlesson" data-id="' + id + '">✎ Изменить</button>' : '') +
         '<span class="sp"></span>' +
         (go ? '<a class="btn pri" href="' + go + '">Открыть урок на сайте ↗</a>' : '') +
@@ -1373,6 +1442,24 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   /* ── день целиком (D, 01.10): ＋ справа — новый день, ✎ в карточке — правка. Алгебра и геометрия —
      два урока: тема 1, тема 2, одна домашка (второй урок sh=1). Пустые поля — с сайта уроков ── */
   var daySubj = 'mat', daySubj2 = 'mat';   // предметы 1-го и 2-го урока дня, выбранные в окне «День» (лента)
+  // файлы, выбранные в окне «День»: [{slot, file}], slot — t1/t2 (к теме), c1/c2 (обложка), h1/h2 (домашка). Уходят по «Сохранить»
+  var dayQ = [], dayIds = [null, null], hot = null;
+  function slotHtml(slot) {
+    var n = slot.charAt(1) === '2' ? 1 : 0, kind = slot.charAt(0), w = kind === 'c' ? 'cover' : kind === 'h' ? 'hw' : '';
+    var have = dayIds[n] ? filesOf(dayIds[n], w || undefined) : [];
+    return have.map(function (f) { return '<span class="fchip" title="' + esc(f.name) + ' — уже в журнале">' + (kind === 'c' ? '🖼' : '📎') + ' <span>' + esc(f.name) + '</span></span>'; }).join('') +
+      dayQ.map(function (q, i) { return q.slot !== slot ? '' : '<span class="fchip new" title="Загрузится, когда нажмёшь «Сохранить»">' + (kind === 'c' ? '🖼' : '＋') + ' <span>' + esc(q.file.name) + '</span><button type="button" data-act="unq" data-i="' + i + '" aria-label="Не загружать">✕</button></span>'; }).join('') +
+      '<label class="btn upl sm">' + (kind === 'c' ? '🖼 Обложка' : kind === 'h' ? '＋ Фото или файл' : '＋ Файлы') +
+      '<input type="file" class="upSlot" data-slot="' + slot + '"' + (kind === 'c' ? '' : ' multiple') + ' accept="' + (kind === 'c' ? IMG_ACCEPT : FILE_ACCEPT) + '"></label>';
+  }
+  function drawSlots() {
+    document.querySelectorAll('.dlg .fslot').forEach(function (el) { el.innerHTML = slotHtml(el.dataset.slot) + (el.dataset.slot2 ? slotHtml(el.dataset.slot2) : ''); });
+  }
+  function slotAdd(slot, files) {
+    if (slot.charAt(0) === 'c') dayQ = dayQ.filter(function (q) { return q.slot !== slot; });   // обложка одна
+    Array.prototype.forEach.call(slot.charAt(0) === 'c' ? [files[0]] : files, function (f) { if (f) dayQ.push({ slot: slot, file: f }); });
+    drawSlots();
+  }
   var dayTab = '';   // вкладка, для которой открыто окно «День»; во «Все» у класса — предмет самого дня (sj)
   function dayLessons(subj, date) { return lessons(subj).filter(function (l) { return l.date === date; }); }
   // «＋ День» во «Все»: сначала — какой предмет, дальше обычное окно дня этого предмета
@@ -1387,6 +1474,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (!dayTab) { pickDaySubj(); return; }
     var subj = SUBJ.filter(function (s) { return s.id === dayTab; })[0], D = date ? dayLessons(dayTab, date) : [];
     var isNew = !D.length, two = isNew ? !feed() && (dayTab === 'alg' || dayTab === 'geo') : D.length > 1;   // сдвоенные — алгебра и геометрия Гагарина
+    dayQ = []; dayIds = [D[0] ? D[0].id : null, D[1] ? D[1].id : null];
     if (isNew) date = dayLessons(dayTab, todayStr()).length ? '' : todayStr();
     // лента: предмет — у дня. Новый день — тот же предмет, что в прошлый раз
     var all = lessons(dayTab);
@@ -1409,15 +1497,19 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       '<div class="lbl">Дата</div><input id="fDate" type="date" min="' + y0 + '-08-01" max="' + (y0 + 1) + '-07-31" value="' + (rd0 ? iso(rd0) : '') + '">' +
       '<label class="chk"><input type="checkbox" id="fTwo"' + (two ? ' checked' : '') + '> ' + (feed() ? 'Два урока в этот день (один предмет — домашка общая, разные — у каждого своя)' : 'Два урока в этот день: У1 · У2 · Д, домашка одна') + '</label>' +
       '<div class="lbl">Тема 1-го урока' + '<span class="fmtbar" data-for="fT1"><button type="button" data-fmt="b" title="Жирный"><b>Ж</b></button><button type="button" data-fmt="i" title="Курсив"><i>К</i></button><button type="button" data-fmt="u" title="Подчёркнутый"><u>Ч</u></button></span>' + '</div><input id="fT1" autocomplete="off" maxlength="400" value="' + esc(D[0] ? D[0].topic : '') + '">' +
+      '<div class="fslot" data-slot="t1" data-slot2="c1"></div>' +
       '<div id="fT2box"' + (two ? '' : ' hidden') + '>' + (feed() ? '<div class="lbl">Предмет 2-го урока</div>' + pick('sjPick2', daySubj2) : '') +
-      '<div class="lbl">Тема 2-го урока' + bar('fT2') + '</div><input id="fT2" autocomplete="off" maxlength="400" value="' + esc(D[1] ? D[1].topic : '') + '"></div>' +
+      '<div class="lbl">Тема 2-го урока' + bar('fT2') + '</div><input id="fT2" autocomplete="off" maxlength="400" value="' + esc(D[1] ? D[1].topic : '') + '"><div class="fslot" data-slot="t2" data-slot2="c2"></div></div>' +
       '<div class="lbl"><span id="fHwLbl">Домашка</span>' + bar('fHw', true) + '</div><textarea id="fHw" autocomplete="off" maxlength="1200">' + esc(split0 ? D[0].hw : [D[0] && D[0].hw, D[1] && !D[1].sh && D[1].hw].filter(Boolean).join('\n')) + '</textarea>' +
-      '<div id="fHw2box" hidden><div class="lbl"><span>Домашка 2-го урока</span>' + bar('fHw2', true) + '</div><textarea id="fHw2" autocomplete="off" maxlength="1200">' + esc(split0 ? D[1].hw : '') + '</textarea></div>' +
+      '<div class="fslot" data-slot="h1"></div>' +
+      '<div id="fHw2box" hidden><div class="lbl"><span>Домашка 2-го урока</span>' + bar('fHw2', true) + '</div><textarea id="fHw2" autocomplete="off" maxlength="1200">' + esc(split0 ? D[1].hw : '') + '</textarea><div class="fslot" data-slot="h2"></div></div>' +
       '<div class="fprev" id="fHwPrev" hidden></div>' +
+      '<div class="note">Файл можно перетащить мышкой в нужную строку или вставить из буфера (⌘V). Загрузится вместе с «Сохранить».</div>' +
       '<div class="row">' + (isNew ? '' : '<button class="btn danger" data-act="delday" data-date="' + esc(date) + '">Удалить день</button>') +
       '<span class="sp"></span><button class="btn" data-act="close">Отмена</button>' +
       '<button class="btn pri" data-act="saveday" data-date="' + esc(isNew ? '' : date) + '">Сохранить</button></div></div>';
     $('dlg').innerHTML = h;
+    drawSlots();
     // с сайта — серой подсказкой, а не копией: пустое поле журнал берёт с сайта живьём,
     // и правка Хирона на сайте сразу видна здесь
     var hint = function () {
@@ -1501,18 +1593,27 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var sj2 = feed() ? daySubj2 : dayTab, split = feed() && two && sj2 !== sj;   // разные предметы — домашки раздельные
     if (two && !split && l2 && !l2.sh && hasMarks(l2.id, 'd')) { alert('У 2-го урока свои оценки за ДЗ. Перенеси их в Д первого урока или сотри — тогда домашка станет общей.'); return; }
     if (!two && l2 && (hasMarks(l2.id) || filesOf(l2.id, '*').length)) { alert('У 2-го урока есть оценки или файлы — сначала сотри их, потом убирай урок.'); return; }
+    if (!two && dayQ.some(function (q) { return /^[tc]2$/.test(q.slot); })) { alert('Ты выбрал файлы для 2-го урока, а галочка «Два урока» снята. Верни галочку или убери эти файлы.'); return; }
     var id1 = l1 ? l1.id : newId('l');
     var hw1 = $('fHw').value.trim();
     if (two && !split && l2 && !l2.sh && $('fHw2').value.trim()) hw1 = [hw1, $('fHw2').value.trim()].filter(Boolean).join('\n');   // были раздельные, стала общая — вторую не теряем
     // галочки готовности и привязку автоматических заданий (au, ad) правка дня не стирает
     var keep = function (o, l) { if (l) { ['rt', 'rh'].forEach(function (f) { if (l[f]) o[f] = 1; }); ['au', 'ad'].forEach(function (f) { if (l[f]) o[f] = l[f]; }); } return o; };
     put('les', id1, keep({ subj: sj, date: date, topic: $('fT1').value.trim(), hw: hw1, ord: 1 }, l1));
-    if (two) put('les', l2 ? l2.id : newId('l'), keep(split ? { subj: sj2, date: date, topic: $('fT2').value.trim(), hw: $('fHw2').value.trim(), ord: 2 }
+    var id2 = two ? (l2 ? l2.id : newId('l')) : null;
+    if (two) put('les', id2, keep(split ? { subj: sj2, date: date, topic: $('fT2').value.trim(), hw: $('fHw2').value.trim(), ord: 2 }
       : { subj: sj, date: date, topic: $('fT2').value.trim(), hw: '', ord: 2, sh: 1 }, l2));
     else if (l2) del('les', l2.id);
     D.slice(2).forEach(function (x, i) { var o = {}; Object.keys(x).forEach(function (k) { if (k !== 'id' && k !== 'ts') o[k] = x[k]; }); o.date = date; o.ord = 3 + i; if (feed()) o.subj = sj; put('les', x.id, o); });
     goMonth({ subj: dayTab, date: date });
+    // файлы из окна: к теме, обложка, домашка (у разных предметов домашка 2-го урока — у него самого)
+    var jobs = [], Q = dayQ; dayQ = [];
+    [['t1', id1, ''], ['c1', id1, 'cover'], ['t2', id2, ''], ['c2', id2, 'cover'], ['h1', id1, 'hw'], ['h2', split ? id2 : id1, 'hw']].forEach(function (x) {
+      var fs = Q.filter(function (q) { return q.slot === x[0]; }).map(function (q) { return q.file; });
+      if (fs.length && x[1]) jobs.push({ lid: x[1], w: x[2], files: fs });
+    });
     closeDlg(); render();
+    if (jobs.length) uploadJobs(jobs, id1);
   }
   function delDay(date) {
     var D = dayLessons(dayTab, date), nm = 0;
@@ -1579,7 +1680,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         img.src = u;
         if (pdf) { var i = img.nextElementSibling; if (i) i.remove(); img.parentNode.classList.add('cover'); }
       }, function () {
-        if (pdf) { img.remove(); return; }   // не вышло — остаётся цветная плитка «PDF»; заново этот файл не качаем
+        if (img.classList.contains('tcov')) { delete fileUrls[id]; img.remove(); return; }   // обложки в таблице просто нет; в другой раз попробуем снова
+        if (pdf) { img.remove(); return; }   // не вышло — остаётся цветная плитка «PDF» (обложки в таблице просто нет); заново этот файл не качаем
         delete fileUrls[id];
         var i = document.createElement('i'); i.textContent = (S.file[id] || {}).ext || '?'; img.replaceWith(i);
       });
@@ -1607,32 +1709,66 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (!/\.jpe?g$/i.test(f.name) || f.size < 1.5 * 1048576) return Promise.resolve(f);
     return shrink(f, 2400).then(function (b) { return b.size < f.size ? b : f; });
   }
-  // w: 'hw' — в блок домашки урока lid, нет — к его теме
-  function uploadFiles(lid, list, w) {
-    var files = Array.prototype.slice.call(list), st = $('upSt'), done = 0, errs = [], hw = w === 'hw';
-    var why = { 413: 'больше 25 МБ', 415: 'такой тип нельзя', 409: hw ? 'в домашке уже 10 файлов' : 'у урока уже 10 файлов', 404: 'урок ещё не сохранился — подожди «сохранено» и повтори', 401: 'ключ учителя не подошёл' };
+  // w: 'hw' — в блок домашки урока lid, 'cover' — обложка темы, нет — к теме. then(errs) — что делать после (нет — открыть карточку дня).
+  // Урок мог ещё не доехать до сервера (новый день) — сначала ждём «сохранено»
+  function uploadFiles(lid, list, w, then) {
+    var files = Array.prototype.slice.call(list), done = 0, errs = [], hw = w === 'hw', cover = w === 'cover', j0 = J;
+    var say = function (t, cls) { var st = $('upSt'); if (st) st.textContent = t; else setSt(cls || 'wait', t); };
+    var why = { 413: 'больше 25 МБ', 415: cover ? 'обложка — только картинка' : 'такой тип нельзя', 409: hw ? 'в домашке уже 10 файлов' : 'у урока уже 10 файлов', 404: 'урок не сохранился — проверь интернет и повтори', 401: 'ключ учителя не подошёл' };
+    if (cover) files = files.slice(0, 1);
     function next() {
       if (!files.length) {
-        if (st) st.textContent = errs.length ? 'Не загрузились: ' + errs.join('; ') : 'Готово: ' + done + ' ' + (done === 1 ? 'файл' : 'файла') + '.';
+        say(errs.length ? 'Не загрузились: ' + errs.join('; ') : 'Готово: ' + done + ' ' + (done === 1 ? 'файл' : 'файла') + '.', errs.length ? 'bad' : 'ok');
+        if (then) { then(errs); return; }
         render(); if (!errs.length) openLesson(lid);
         return;
       }
       var f = files.shift();
-      if (st) st.textContent = 'Загружаю «' + f.name + '»…';
-      (hw ? hwPhoto(f) : Promise.resolve(f))
+      if (j0 !== J) { errs.push(f.name + ' — журнал переключён, файл не загружен'); next(); return; }
+      say('Загружаю «' + f.name + '»…');
+      // обложку ужимаем всегда: в таблице месяца их десятки, и телефон ученика качает каждую целиком
+      var nm = cover && f.size > 300 * 1024 ? f.name.replace(/\.[a-z0-9]+$/i, '') + '.jpg' : f.name;
+      (cover ? (nm !== f.name ? shrink(f, 1280) : Promise.resolve(f)) : hw ? hwPhoto(f) : Promise.resolve(f))
         .then(function (body) {
           var fd = new FormData();
-          fd.append('les', lid); fd.append('j', J); if (hw) fd.append('w', 'hw'); fd.append('file', body, f.name);
+          fd.append('les', lid); fd.append('j', j0); if (w) fd.append('w', w); fd.append('file', body, nm);
           return fetch(API + '/zhurnal/upload', { method: 'POST', headers: { Authorization: 'Bearer ' + teacherKey }, body: fd });
         })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, j: j }; }); })
         .then(function (r) {
           if (r.status !== 200 || !r.j.ok) { errs.push(f.name + ' — ' + (why[r.status] || 'ошибка ' + r.status)); return; }
+          (r.j.gone || []).forEach(function (id) { delete S.file[id]; delete fileUrls[id]; });   // прежняя обложка
           var o = r.j.obj, d = o.d; d.id = o.id; d.ts = o.ts; S.file[o.id] = d; save(); done++;
         }, function () { nextApi(); errs.push(f.name + ' — нет связи'); })
         .then(next);
     }
-    next();
+    if (outbox.length || busy) say('Жду, пока сохранится урок, — файлы загрузятся следом. Страницу не закрывай.');
+    whenSaved(next);
+  }
+  var uploading = false;   // идёт загрузка файлов нового дня — закрыть вкладку значит их потерять
+  window.addEventListener('beforeunload', function (ev) { if (uploading) { ev.preventDefault(); ev.returnValue = ''; } });
+  // несколько блоков подряд: jobs — [{lid, w, files}]; в конце — карточка дня (или список того, что не загрузилось)
+  function uploadJobs(jobs, openId) {
+    var bad = [];
+    (function go() {
+      var j = jobs.shift();
+      if (!j) {
+        uploading = false; render();
+        if (bad.length) alert('Не загрузились: ' + bad.join('; '));
+        else if (openId && S.les[openId] && !$('dlg').innerHTML && !cur) openLesson(openId);   // D уже открыл другое окно — не затираем
+        return;
+      }
+      uploading = true;
+      uploadFiles(j.lid, j.files, j.w, function (errs) { bad = bad.concat(errs); go(); });
+    })();
+  }
+  // картинка из буфера приходит без толкового имени — даём своё
+  function named(files) {
+    return Array.prototype.map.call(files, function (f, i) {
+      if (f.name && !/^image\.(png|jpe?g|webp)$/i.test(f.name)) return f;
+      var t = new Date(), ext = (/png|webp/.exec(f.type) || ['jpg'])[0];
+      try { return new File([f], 'вставка_' + ('0' + t.getHours()).slice(-2) + '-' + ('0' + t.getMinutes()).slice(-2) + (i ? '_' + (i + 1) : '') + '.' + ext, { type: f.type }); } catch (e) { return f; }
+    });
   }
 
   /* ── файл урока на весь экран (D, 07.10): картинка или PDF открываются прямо в журнале — у D и у учеников.
@@ -2215,7 +2351,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     else if (m && m.av) src = '<div class="pop-src">Ты исправил оценку автоматики. Она ставила <b>' + esc(m.av) + '</b>' + (m.an ? ' (' + esc(m.an) + ')' : '') + '.</div>';
     var sb = parts[2] === 'd' ? S.sub[parts[0] + '.' + parts[1]] : null;
     if (sb) src += '<div class="pop-sub">📷 ' + ({ sent: 'Сдал(а) — ждёт проверки. Оценка отправит ученику «проверено» в бот.', redo: 'На доработке — ждём новую сдачу.', checked: 'Проверено.' }[sb.st] || '') +
-      thumbsHtml(sb.ph, parts[0] + '.' + parts[1]) + (sb.st === 'sent' ? '<div class="pop-x"><button class="redo" data-act="subredo">↺ На доработку (с комментарием)</button></div>' : '') + '</div>';
+      thumbsHtml(sb.ph, parts[0] + '.' + parts[1]) + '<div class="pop-x">' + (sb.st === 'sent' ? '<button class="redo" data-act="subredo">↺ На доработку (с комментарием)</button>' : '') +
+      '<button data-act="submove" title="Ученик сдал не в тот день — перенести фото и разбор в другой">↪ В другой день</button></div><div id="popMove"></div></div>';
     var pop = $('pop');
     pop.innerHTML = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(l.date) + ' · ' +
       (parts[2] === 'd' ? (nSh > 1 ? 'ДЗ, общая на ' + nSh + ' урока' : 'ДЗ') : 'урок') + (l.topic ? '<br>' + esc(plain(l.topic).slice(0, 60)) : '') + '</span></div>' + src +
@@ -2231,6 +2368,30 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     fillThumbs(pop);
     $('popForm').onsubmit = function (ev) { ev.preventDefault(); setMark($('popIn').value); };
     $('popNext').onchange = function () { lsSet(LS.next, this.checked); };
+  }
+  // сдал не в тот день: показать дни этого предмета (ближние первыми), куда сдачу можно перенести
+  function subMoveList() {
+    var q = cur.split('.'), l = S.les[q[0]], box = $('popMove');
+    if (!l || !box) return;
+    var L = lessons(l.subj).filter(function (x) { return !x.sh && x.id !== l.id && !S.sub[x.id + '.' + q[1]]; })
+      .sort(function (a, b) { return Math.abs(dkey(a.date) - dkey(l.date)) - Math.abs(dkey(b.date) - dkey(l.date)); }).slice(0, 10)
+      .sort(function (a, b) { return dkey(a.date) - dkey(b.date) || (a.ord || 0) - (b.ord || 0); });
+    box.innerHTML = L.length ? '<div class="pop-move"><span>Куда перенести:</span>' + L.map(function (x) { return '<button data-act="submoveto" data-to="' + x.id + '">' + esc(x.date) + '</button>'; }).join('') + '</div>'
+      : '<div class="note">Переносить некуда: в других днях у ученика уже есть сдача.</div>';
+  }
+  function subMove(to) {
+    var q = cur.split('.'), from = q[0] + '.' + q[1];
+    new Promise(whenSaved).then(function () { return post('/zhurnal/submove', { id: from, to: to }, { Authorization: 'Bearer ' + teacherKey }); }).then(function (r) {
+      if (r.status !== 200 || !r.data.ok) throw r.status;
+      var o = r.data.obj, d = o.d; d.id = o.id; d.ts = o.ts; delete S.sub[from]; S.sub[o.id] = d;
+      if (r.data.mark) { var m = r.data.mark, md = m.d; md.id = m.id; md.ts = m.ts; delete S.mark[from + '.d']; S.mark[m.id] = md; }   // оценка переехала вместе с работой
+      save();
+      closeCell(); render(); openCell(o.id + '.d');
+      setSt('ok', 'сдача перенесена на ' + (S.les[o.id.split('.')[0]] || {}).date);
+    }).catch(function (e) {
+      if (typeof e !== 'number') nextApi();
+      alert(e === 409 ? 'В том дне у ученика уже есть сдача.' : e === 404 ? 'Сдачи или урока уже нет — обнови страницу.' : 'Не получилось перенести. Проверь интернет и попробуй ещё раз.');
+    });
   }
   function setMark(v) {
     var id = cur;
@@ -2317,7 +2478,11 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       else if (act === 'daysubj') openDay(null, a.dataset.sj);
       else if (act === 'dellesson') delLesson(a.dataset.id);
       else if (act === 'dl') downloadFile(a.dataset.id, a);
-      else if (act === 'openfile') openFile(a.dataset.id, Array.prototype.map.call(a.closest('.ftiles').querySelectorAll('[data-act="openfile"]'), function (x) { return x.dataset.id; }));
+      else if (act === 'openfile') openFile(a.dataset.id, a.closest('.ftiles') ? Array.prototype.map.call(a.closest('.ftiles').querySelectorAll('[data-act="openfile"]'), function (x) { return x.dataset.id; }) : null);
+      else if (act === 'fmove') fileStep(a.dataset.id, a.dataset.d);
+      else if (act === 'unq') { dayQ.splice(+a.dataset.i, 1); drawSlots(); }
+      else if (act === 'submove' && cur) subMoveList();
+      else if (act === 'submoveto' && cur) subMove(a.dataset.to);
       else if (act === 'login') openLogin('');
       else if (act === 'claim') claim(a.dataset.id, a.dataset.nm);
       else if (act === 'pickme') meLoad().then(function (res) {
@@ -2410,11 +2575,64 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (cur && !t.closest('#pop')) closeCell();
   });
 
+  /* ── файл мышкой и из буфера (D, 07.10). Куда: в карточке дня — блок темы или домашки (data-zone="урок|место"),
+     в окне «День» — строка файлов (.fslot). Плитку в карточке можно перетащить на другое место или в другой блок. ── */
+  function dropTarget(t) { return mode === 'teacher' && t.closest ? t.closest('.dlg [data-zone], .dlg .fslot') : null; }
+  function takeFiles(z, files) {
+    files = named(files);
+    if (!files.length) return;
+    if (z.classList.contains('fslot')) slotAdd(z.dataset.slot, files);
+    else { var q = z.dataset.zone.split('|'); uploadFiles(q[0], files, q[1]); }
+  }
+  var dragFid = '';
+  document.addEventListener('dragstart', function (ev) {
+    var ft = ev.target.closest && ev.target.closest('.ft[draggable="true"]');
+    if (!ft) return;
+    dragFid = ft.dataset.fid; ft.classList.add('drag');
+    try { ev.dataTransfer.setData('text/plain', dragFid); ev.dataTransfer.effectAllowed = 'move'; } catch (e) { /* старый браузер */ }
+  });
+  document.addEventListener('dragend', function () { dragFid = ''; document.querySelectorAll('.drag, .zone-on').forEach(function (x) { x.classList.remove('drag', 'zone-on'); }); });
+  document.addEventListener('dragover', function (ev) {
+    var z = dropTarget(ev.target), files = ev.dataTransfer && Array.prototype.indexOf.call(ev.dataTransfer.types || [], 'Files') >= 0;
+    document.querySelectorAll('.zone-on').forEach(function (x) { if (x !== z) x.classList.remove('zone-on'); });
+    if (files && mode === 'teacher' && !z) { ev.preventDefault(); try { ev.dataTransfer.dropEffect = 'none'; } catch (e) { /* не страшно */ } return; }   // мимо строки — не даём браузеру открыть файл вместо журнала
+    if (!z || !(files || (dragFid && z.dataset.zone))) return;
+    ev.preventDefault(); z.classList.add('zone-on');
+  });
+  document.addEventListener('drop', function (ev) {
+    var z = dropTarget(ev.target);
+    document.querySelectorAll('.zone-on').forEach(function (x) { x.classList.remove('zone-on'); });
+    if (!z) { if (mode === 'teacher' && ev.dataTransfer && Array.prototype.indexOf.call(ev.dataTransfer.types || [], 'Files') >= 0) ev.preventDefault(); return; }
+    ev.preventDefault();
+    if (dragFid && z.dataset.zone) {   // плитка: на другую плитку — встать перед ней, в блок — в его конец
+      var f = S.file[dragFid], q = z.dataset.zone.split('|'), over = ev.target.closest('.ft[data-fid]'), b = over && S.file[over.dataset.fid];
+      if (!f || f === b) return;
+      var les = b ? b.les : q[0], w = q[1], L = (b ? blockOf(b) : w === 'hw' && S.les[les] ? hwFiles(S.les[les]) : filesOf(les, w)).filter(function (x) { return x !== f; });
+      fileMove(dragFid, { les: les, w: w, ord: ordBefore(L, b && L.indexOf(b) >= 0 ? b : null) });
+      return;
+    }
+    if (ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files.length) takeFiles(z, ev.dataTransfer.files);
+  });
+  document.addEventListener('mouseover', function (ev) { hot = dropTarget(ev.target) || hot; });
+  // ⌘V: картинка из буфера — в строку, где стоит курсор (окно «День»), иначе в блок под мышкой, иначе в домашку
+  document.addEventListener('paste', function (ev) {
+    if (mode !== 'teacher' || !$('dlg').innerHTML || document.querySelector('.view')) return;
+    var files = Array.prototype.filter.call((ev.clipboardData && ev.clipboardData.files) || [], function (f) { return /^image\/(png|jpeg|webp)$/.test(f.type); });
+    if (!files.length || (ev.clipboardData.getData('text/plain') || '').trim()) return;   // скопировано из Word или Excel: там и текст, и его картинка — вставляем текст
+    var bySlot = { fT1: 't1', fT2: 't2', fHw: 'h1', fHw2: 'h2' }[(document.activeElement || {}).id];
+    var z = bySlot ? document.querySelector('.dlg .fslot[data-slot="' + bySlot + '"]') : null;
+    if (!z && hot && document.contains(hot)) z = hot;
+    if (!z) z = document.querySelector('.dlg .fslot[data-slot="h1"], .dlg .dhw[data-zone]');
+    if (!z) return;
+    ev.preventDefault(); takeFiles(z, files);
+  });
+
   // кнопка оформления не забирает фокус — выделение в поле остаётся
   document.addEventListener('mousedown', function (ev) { if (ev.target.closest && ev.target.closest('[data-fmt]')) ev.preventDefault(); });
 
   document.addEventListener('change', function (ev) {
     if (ev.target.classList && ev.target.classList.contains('upFile') && ev.target.files.length) { uploadFiles(ev.target.dataset.lid, ev.target.files, ev.target.dataset.w); return; }
+    if (ev.target.classList && ev.target.classList.contains('upSlot') && ev.target.files.length) { slotAdd(ev.target.dataset.slot, ev.target.files); return; }
     if (ev.target.id === 'subIn' && ev.target.files.length) { submitPhotos(ev.target); return; }
     var row = ev.target.closest('.srow');
     if (row) saveStudentRow(row);
