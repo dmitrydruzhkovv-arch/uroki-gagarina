@@ -46,7 +46,7 @@ const BOTY = { main: 'D_mathh_bot', test: 'Lemma_test1_bot' };
    Включить после ответа Нормы (ШТАБ_ДЕТАЛИ #norma-chat-sayt) вместе с SITE_CHAT=1
    у боевого бота. До того чат видят только вошедшие, тестер и пришедшие по
    кнопке бота «Открыть чат». */
-const CHAT_VSEM = false;
+const CHAT_VSEM = true;
 
 const PRICHINY = [
   ['ne-ponimayu',   '🤔', 'Не понимаю задание'],
