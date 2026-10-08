@@ -292,6 +292,37 @@ td.c.long{ font-size:11px; white-space:normal; line-height:1.1; font-weight:600;
 .srow-call[hidden]{ display:none; }
 .srow button{ border-radius:10px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); color:#dc2626; }
 
+.vyg-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px; font-size:13px; color:var(--muted); }
+/* выгрузка оценок (D, 08.10): окно с выбором вида и лист. Лист — чёрным по белому в любой теме: его печатают */
+.dlg.vyg{ width:min(1040px, calc(100vw - 16px)); }
+.vyg-opt{ display:flex; flex-wrap:wrap; gap:8px 22px; margin-top:12px; }
+.vyg-opt > div{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.vyg-opt b{ font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-right:2px; }
+.vyg-opt button{ padding:6px 12px; border-radius:999px; font-size:14px; font-weight:600; box-shadow:inset 0 0 0 1.5px var(--z-line2); }
+.vyg-opt button[aria-pressed="true"]{ background:var(--ink); color:var(--paper); box-shadow:none; }
+.vyg-pre{ margin-top:14px; max-height:min(52vh, 560px); overflow:auto; border-radius:12px; box-shadow:inset 0 0 0 1.5px var(--z-line2); background:#fff; padding:14px 16px; }
+.vl{ color:#000; font:12px/1.25 Arial, Helvetica, sans-serif; }
+.vl h1, .vl h2, .vl h3{ color:#000; letter-spacing:0; text-transform:none; }   /* у сайта заголовки в цвет темы: ночью были бы белыми на белом листе */
+.vl h1{ font:700 15px/1.2 Arial, sans-serif; margin:0 0 2px; } .vl .vl-kogda{ font-size:11px; color:#555; margin-bottom:10px; }
+.vl h2{ font:700 13.5px/1.2 Arial, sans-serif; margin:12px 0 4px; } .vl h2 small{ font-weight:400; color:#555; font-size:11.5px; margin-left:6px; }
+.vl table{ border-collapse:collapse; margin-bottom:6px; }
+.vl th, .vl td{ border:1px solid #777; padding:2px 4px; text-align:center; min-width:17px; height:18px; font-size:11.5px; white-space:nowrap; }
+.vl th{ background:#eee; font-weight:700; } .vl th.d{ font-size:10.5px; } .vl th.w{ font-weight:400; font-size:9.5px; color:#333; background:#f6f6f6; }
+.vl td.nm, .vl th.nm{ text-align:left; padding-right:8px; } .vl td.sr{ font-weight:700; background:#f6f6f6; }
+.vl .vl-s{ break-inside:avoid; page-break-inside:avoid; }
+.vl .vk{ break-inside:avoid; page-break-inside:avoid; padding:10px 2px 12px; border-bottom:1.5px dashed #555; }
+.vl .vk:first-of-type{ border-top:1.5px dashed #555; }
+.vl .vk h3{ font:700 15px/1.2 Arial, sans-serif; margin:0 0 6px; } .vl .vk h3 small{ font-weight:400; font-size:11px; color:#555; margin-left:8px; }
+.vl .vk-s{ display:flex; gap:8px 12px; align-items:flex-start; flex-wrap:wrap; margin-top:5px; }
+.vl .vk-s > b{ flex:0 0 112px; font-size:12px; padding-top:3px; } .vl .vk-s > b i{ display:block; font-style:normal; font-weight:400; font-size:11px; color:#333; }
+.vl .vk-t{ display:flex; flex-wrap:wrap; gap:4px 10px; flex:1; min-width:0; } .vl .vk-t table{ margin:0; }
+#vygList{ display:none; }
+@media print{
+  body.vyg-print{ background:#fff !important; }
+  body.vyg-print > *:not(#vygList){ display:none !important; }
+  body.vyg-print > #vygList{ display:block !important; }
+  body.vyg-print .vl th, body.vyg-print .vl td{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
 .zh-foot{ padding:22px 0 40px; font-size:13px; color:var(--muted); }
 
 /* ── живой журнал (ТЗ 17, шаги 1–3) ── */
@@ -1176,7 +1207,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     keepScroll();
     var L = lessons(tab), P = students(), edit = mode === 'teacher';
     if (!P.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Учеников пока нет — добавь их кнопкой «Ученики».' : 'Журнал пока пуст.') + '</div>'; return; }
-    if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый день кнопкой «＋ День».' : mix() ? 'Уроков пока нет.' : 'По этому предмету пока нет уроков.') + '</div>'; return; }
+    if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый день кнопкой «＋ День».' : mix() ? 'Уроков пока нет.' : 'По этому предмету пока нет уроков.') + '</div>' + (edit && vygSubj().length ? vygRow() : ''); return; }
 
     // месяц: журнал листается по месяцам, а не тянется вправо на весь год (D, 01.10)
     var MS = months(L), mo = monthSel[tab];
@@ -1258,6 +1289,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (edit) h += '<td></td>';
     h += '</tr></tfoot></table></div>';
     h += legend();
+    if (edit) h += vygRow();
     main.innerHTML = h;
     fillFileThumbs(main);   // обложки тем
 
@@ -1304,6 +1336,182 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         '<li>' + (mode === 'teacher' ? 'Наведи' : 'Нажми') + ' на клетку — вспомнишь, что было</li>' +
         (J === MAIN_J ? '<li>Дата с ↗ — урок на сайте</li>' : '') +
         '<li>Тема — карточка урока и файлы</li></ul></div></aside>';
+  }
+
+  /* ── выгрузка оценок (D, 08.10): все предметы одним листом — печать, PDF или файл для Excel.
+     Собирается здесь же, в браузере учителя, из того, что уже загружено: на сервер ничего не уходит. ── */
+  var vyg = { view: 'subj', mo: 'all', hw: true };
+  var VYG_COLS = 30;   // столько клеток оценок в ширину помещает лист A4 лёжа рядом с фамилией; больше — таблица продолжается ниже
+  function vygRow() { return '<div class="vyg-row"><button class="btn" data-act="vyg">⬇ Выгрузить оценки</button><span>все предметы одним листом — напечатать или отправить классному руководителю</span></div>'; }
+  function vygSubj() { return (feed() ? ALLSUBJ : SUBJ).filter(function (x) { return vals(S.les).some(function (l) { return l.subj === x.id; }); }); }
+  function vygLes(sid) { return lessons(sid).filter(function (l) { return l.subj === sid; }); }   // у индивидуала lessons() отдаёт все предметы лентой
+  function vygMo(m) { return m ? MONTHS[+m - 1] : 'Без даты'; }
+  function vygMonths() {
+    var out = [];
+    vygSubj().forEach(function (x) { months(vygLes(x.id)).forEach(function (m) { if (out.indexOf(m) < 0) out.push(m); }); });
+    return out.sort(function (a, b) { return dkey('01.' + a) - dkey('01.' + b); });
+  }
+  // предмет по месяцам: целый год в одну таблицу на лист не влезет. → [{m, LA, LY, days: [{date, cols: [{l, w, lab}]}]}]
+  function vygChunks(sid) {
+    var LA = vygLes(sid), ms = vyg.mo === 'all' ? months(LA) : [vyg.mo];
+    // урок без понятной даты в журнале виден — и в выгрузке за весь год не теряется: отдельным куском в конце
+    if (vyg.mo === 'all' && LA.some(function (l) { return !monthOf(l.date); })) ms = ms.concat(['']);
+    return ms.map(function (m) {
+      var L = LA.filter(function (l) { return monthOf(l.date) === m; }), days = [];
+      var LY = layout(L).map(function (x) { return { l: x.l, own: x.own, cols: x.cols.filter(function (c) { return c.w === 'u' || vyg.hw; }) }; });
+      LY.forEach(function (x) {
+        var g = days[days.length - 1];
+        if (!g || g.date !== x.l.date) days.push(g = { date: x.l.date, cols: [] });
+        x.cols.forEach(function (c) { g.cols.push(c); });
+      });
+      days.forEach(function (g) {   // сдвоенный урок — «1» и «2», обычный — «ур»
+        g.nu = g.cols.filter(function (c) { return c.w === 'u'; }).length;
+        var i = 0;
+        g.cols.forEach(function (c) { c.lab = c.w === 'd' ? 'дз' : g.nu > 1 ? String(++i) : 'ур'; });
+      });
+      // средний считаем как журнал: у класса «следующий урок» — того же предмета, в ленте индивидуала — любой следующий
+      return { m: m, LA: feed() ? lessons(sid) : LA, LY: LY, days: days };
+    }).filter(function (c) { return c.days.length; });
+  }
+  // все предметы разом: куски от ученика не зависят — собираем один раз на лист, а не на каждого ученика
+  function vygAll() { return vygSubj().map(function (sj) { return { sj: sj, ch: vygChunks(sj.id) }; }).filter(function (x) { return x.ch.length; }); }
+  // широкий месяц (много сдвоенных уроков) — на несколько таблиц, чтобы правые дни не обрезало при печати
+  function vygParts(days) {
+    var parts = [[]], n = 0;
+    days.forEach(function (g) {
+      if (n && n + g.cols.length > VYG_COLS) { parts.push([]); n = 0; }
+      parts[parts.length - 1].push(g); n += g.cols.length;
+    });
+    return parts;
+  }
+  function vygMark(c, sid) { return splitMark(S.mark[c.l.id + '.' + sid + '.' + c.w]).g || ''; }
+  // средний — тем же правилом, что в журнале (несданная вовремя домашка — как 2); без домашек — только уроки
+  function vygAvg(sid, chunks) {
+    if (!chunks.length) return '';
+    var LY = []; chunks.forEach(function (c) { LY = LY.concat(c.LY); });
+    var a = rowAvg(sid, LY, chunks[0].LA, todayStr());
+    return a ? a.v : '';
+  }
+  function vygPeriod() { return vyg.mo === 'all' ? 'весь год' : vygMo(vyg.mo).toLowerCase(); }
+  function vygFio(p) { return (String(p.fam || '') + ' ' + String(p.name || '')).trim(); }
+  function vygHtml() {
+    var P = students(), ALLCH = vygAll(), h = '<div class="vl"><h1>Оценки · ' + esc(META.title) + '</h1><div class="vl-kogda">' + esc(vygPeriod()) + ' · на ' + todayStr() + (vyg.hw ? '' : ' · без домашних') + '</div>';
+    if (vyg.view === 'subj') {
+      ALLCH.forEach(function (x) {
+        x.ch.forEach(function (c) {
+          var avg = {}; P.forEach(function (p) { avg[p.id] = vygAvg(p.id, [c]); });
+          vygParts(c.days).forEach(function (days, pi, all) {
+            h += '<section class="vl-s"><h2>' + esc(x.sj.name) + '<small>' + vygMo(c.m) + (pi ? ' — продолжение' : '') + '</small></h2><table><thead><tr><th class="nm" rowspan="2">Ученик</th>' +
+              days.map(function (g) { return '<th class="d" colspan="' + g.cols.length + '">' + esc(g.date || '—') + '</th>'; }).join('') + (pi === all.length - 1 ? '<th rowspan="2">Ср.</th>' : '') + '</tr><tr>' +
+              days.map(function (g) { return g.cols.map(function (y) { return '<th class="w">' + y.lab + '</th>'; }).join(''); }).join('') + '</tr></thead><tbody>' +
+              P.map(function (p) {
+                return '<tr><td class="nm">' + esc(vygFio(p)) + '</td>' + days.map(function (g) { return g.cols.map(function (y) { return '<td>' + esc(vygMark(y, p.id)) + '</td>'; }).join(''); }).join('') +
+                  (pi === all.length - 1 ? '<td class="sr">' + avg[p.id] + '</td>' : '') + '</tr>';
+              }).join('') + '</tbody></table></section>';
+          });
+        });
+      });
+    } else {
+      P.forEach(function (p) {
+        h += '<article class="vk"><h3>' + esc(vygFio(p)) + '<small>' + esc(META.title) + ' · ' + esc(vygPeriod()) + '</small></h3>';
+        ALLCH.forEach(function (x) {
+          var avg = vygAvg(p.id, x.ch);
+          h += '<div class="vk-s"><b>' + esc(x.sj.name) + (avg ? '<i>средний ' + avg + '</i>' : '') + '</b><div class="vk-t">' + x.ch.map(function (c) {
+            // сдвоенный урок — две клетки под одной датой; оценка за ДЗ — у того урока, которому задана (общая — на обе клетки)
+            var row = function (w, name) {
+              return '<tr><th class="w nm">' + name + '</th>' + c.days.map(function (g) {
+                var xs = g.cols.filter(function (y) { return y.w === w; });
+                if (w === 'u') return xs.map(function (y) { return '<td>' + esc(vygMark(y, p.id)) + '</td>'; }).join('');
+                if (xs.length === g.nu) return xs.map(function (y) { return '<td>' + esc(vygMark(y, p.id)) + '</td>'; }).join('');
+                return '<td colspan="' + g.nu + '">' + esc(xs.map(function (y) { return vygMark(y, p.id); }).filter(Boolean).join(' ')) + '</td>';
+              }).join('') + '</tr>';
+            };
+            return '<table><thead><tr><th class="nm">' + (c.m ? MONTHS[+c.m - 1].slice(0, 3).toLowerCase() : '—') + '</th>' + c.days.map(function (g) { return '<th class="d" colspan="' + g.nu + '">' + esc((g.date || '—').slice(0, 2)) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+              row('u', 'урок') + (vyg.hw ? row('d', 'дз') : '') + '</tbody></table>';
+          }).join('') + '</div></div>';
+        });
+        h += '</article>';
+      });
+    }
+    return h + '</div>';
+  }
+  function openVyg() {
+    var MS = vygMonths();
+    if (vyg.mo !== 'all' && MS.indexOf(vyg.mo) < 0) vyg.mo = 'all';
+    var b = function (k, v, t) { return '<button type="button" data-act="vygset" data-k="' + k + '" data-v="' + v + '" aria-pressed="' + (String(vyg[k]) === String(v)) + '">' + t + '</button>'; };
+    $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg vyg" role="dialog" aria-modal="true"><h3>Выгрузить оценки</h3>' +
+      '<div class="meta">Все предметы журнала одним листом. Ниже — как он будет выглядеть.</div>' +
+      '<div class="vyg-opt"><div><b>Вид</b>' + b('view', 'subj', 'По предметам') + b('view', 'stu', 'По ученикам — разрезать') + '</div>' +
+      '<div><b>Период</b>' + b('mo', 'all', 'Весь год') + MS.map(function (m) { return b('mo', m, MONTHS[+m - 1]); }).join('') + '</div>' +
+      '<div><b>Домашние</b>' + b('hw', true, 'С оценками за ДЗ') + b('hw', false, 'Только уроки') + '</div></div>' +
+      '<div class="vyg-pre">' + vygHtml() + '</div>' +
+      '<div class="row"><button class="btn" data-act="close">Закрыть</button><span class="sp"></span>' +
+      '<button class="btn" data-act="vygcsv">Файл для Excel</button><button class="btn pri" data-act="vygprint">🖨 Печать / PDF</button></div></div>';
+  }
+  var vygClean = null;
+  function vygPrint() {
+    var box = $('vygList'), st = $('vygPage');
+    if (vygClean) vygClean();   // прошлую печать не убрали (браузер не сообщил, что она кончилась) — убираем сейчас
+    if (!box) { box = document.createElement('div'); box.id = 'vygList'; document.body.appendChild(box); }
+    if (!st) { st = document.createElement('style'); st.id = 'vygPage'; document.head.appendChild(st); }
+    // таблицы по предметам широкие — лист лёжа; карточки учеников — стоя
+    st.textContent = '@media print{ @page{ size:A4 ' + (vyg.view === 'subj' ? 'landscape' : 'portrait') + '; margin:10mm; } }';
+    box.innerHTML = vygHtml();
+    document.body.classList.add('vyg-print');
+    // Убираем лист, когда печать точно позади. Одному «afterprint» верить нельзя: на телефоне он приходит до того,
+    // как браузер снял страницу (вышел бы пустой лист), а где-то не приходит вовсе (тогда следующая печать журнала
+    // печатала бы старые оценки). Поэтому: после «afterprint» ждём, а первое же нажатие на странице убирает сразу.
+    var timer = 0;
+    var clean = vygClean = function () {
+      clearTimeout(timer);
+      document.body.classList.remove('vyg-print'); box.innerHTML = ''; st.textContent = '';
+      window.removeEventListener('afterprint', later); document.removeEventListener('pointerdown', clean, true); document.removeEventListener('keydown', clean, true);
+      if (vygClean === clean) vygClean = null;
+    };
+    var later = function () { clearTimeout(timer); timer = setTimeout(clean, 4000); };
+    window.addEventListener('afterprint', later);
+    setTimeout(function () { document.addEventListener('pointerdown', clean, true); document.addEventListener('keydown', clean, true); }, 300);
+    window.print();
+  }
+  // файл для Excel: CSV с «;» и меткой UTF-8 — русский Excel открывает двойным щелчком
+  function vygCsv() {
+    var P = students(), ALLCH = vygAll(), rows = [['Оценки', META.title, vygPeriod(), 'на ' + todayStr()].concat(vyg.hw ? [] : ['без домашних']), []];
+    var cell = function (v) {
+      v = String(v == null ? '' : v);
+      // «4/5», «4.5» и дату «07.10» Excel превратил бы в «04.май» и «07.окт», а «-» в начале принял бы за формулу — отдаём такие как текст
+      if (/^\d+\s*[\/.]\s*\d+$/.test(v) || /^[=+@\-–]/.test(v)) return '="' + v.replace(/"/g, '""') + '"';
+      return /[;"\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    };
+    if (vyg.view === 'subj') {
+      ALLCH.forEach(function (x) {
+        var cols = [];
+        x.ch.forEach(function (c) { c.days.forEach(function (g) { g.cols.forEach(function (y) { cols.push({ y: y, t: (g.date || 'без даты') + ' ' + y.lab }); }); }); });
+        rows.push([x.sj.name]);
+        rows.push(['Ученик'].concat(cols.map(function (c) { return c.t; }), ['Средний']));
+        P.forEach(function (p) { rows.push([vygFio(p)].concat(cols.map(function (c) { return vygMark(c.y, p.id); }), [vygAvg(p.id, x.ch)])); });
+        rows.push([]);
+      });
+    } else {
+      // оценки за первый и второй урок дня — в своих столбцах: иначе «4» за второй не отличить от «4» за первый
+      var dvoe = ALLCH.some(function (x) { return x.ch.some(function (c) { return c.days.some(function (g) { return g.nu > 1; }); }); });
+      rows.push(['Ученик', 'Предмет', 'Дата'].concat(dvoe ? ['Урок 1', 'Урок 2'] : ['Урок'], vyg.hw ? ['ДЗ'] : []));
+      P.forEach(function (p) {
+        ALLCH.forEach(function (x) {
+          x.ch.forEach(function (c) { c.days.forEach(function (g) {
+            var u = g.cols.filter(function (y) { return y.w === 'u'; }).map(function (y) { return vygMark(y, p.id); });
+            var d = g.cols.filter(function (y) { return y.w === 'd'; }).map(function (y) { return vygMark(y, p.id); }).filter(Boolean).join(' ');
+            rows.push([vygFio(p), x.sj.name, g.date || 'без даты', u[0] || ''].concat(dvoe ? [u.slice(1).filter(Boolean).join(' ')] : [], vyg.hw ? [d] : []));
+          }); });
+          rows.push([vygFio(p), x.sj.name, 'средний', vygAvg(p.id, x.ch)]);
+        });
+      });
+    }
+    var txt = '﻿' + rows.map(function (r) { return r.map(cell).join(';'); }).join('\r\n');
+    var a = document.createElement('a'), d = new Date();
+    a.href = URL.createObjectURL(new Blob([txt], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'Оценки_' + String(META.title).replace(/[^\wА-Яа-яЁё]+/g, '-').replace(/^-|-$/g, '') + '_' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
   }
 
   function keepScroll() {
@@ -2532,6 +2740,10 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         var rf = S.file[a.dataset.id];
         if (rf && confirm('Удалить файл «' + rf.name + '»? Ученики больше не смогут его скачать.')) { var rl = rf.les; del('file', rf.id); render(); openLesson(rl); }
       }
+      else if (act === 'vyg') openVyg();
+      else if (act === 'vygset') { vyg[a.dataset.k] = a.dataset.v === 'true' ? true : a.dataset.v === 'false' ? false : a.dataset.v; openVyg(); }
+      else if (act === 'vygprint') vygPrint();
+      else if (act === 'vygcsv') vygCsv();
       else if (act === 'students') openStudents();
       else if (act === 'newjournal') openNewJournal();
       else if (act === 'mkjournal') makeJournal();
