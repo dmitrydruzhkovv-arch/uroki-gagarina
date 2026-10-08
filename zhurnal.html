@@ -300,6 +300,10 @@ td.c.long{ font-size:11px; white-space:normal; line-height:1.1; font-weight:600;
 .vyg-opt b{ font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-right:2px; }
 .vyg-opt button{ padding:6px 12px; border-radius:999px; font-size:14px; font-weight:600; box-shadow:inset 0 0 0 1.5px var(--z-line2); }
 .vyg-opt button[aria-pressed="true"]{ background:var(--ink); color:var(--paper); box-shadow:none; }
+.vyg-kr{ display:flex; align-items:center; gap:8px 10px; flex-wrap:wrap; margin-top:12px; padding:10px 12px; border-radius:12px; background:var(--z-head); font-size:13px; color:var(--sub); }
+.vyg-kr b{ font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.vyg-kr input{ flex:1 1 260px; min-width:0; height:36px; padding:0 10px; border-radius:10px; border:1.5px solid var(--z-line2); background:var(--card); color:var(--ink); font:inherit; font-size:13px; }
+.vyg-kr span{ flex:1 1 240px; }
 .vyg-pre{ margin-top:14px; max-height:min(52vh, 560px); overflow:auto; border-radius:12px; box-shadow:inset 0 0 0 1.5px var(--z-line2); background:#fff; padding:14px 16px; }
 .vl{ color:#000; font:12px/1.25 Arial, Helvetica, sans-serif; }
 .vl h1, .vl h2, .vl h3{ color:#000; letter-spacing:0; text-transform:none; }   /* у сайта заголовки в цвет темы: ночью были бы белыми на белом листе */
@@ -685,9 +689,14 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   var botEntry = /[#&][ts]=/.test(location.hash);   // пришёл по ссылке из бота или по личной ссылке
   var loaded = false, cur = null, pendingRender = false, scrollPos = {};
   var meId = null, sdachaOn = false;   // ученик, вошедший через бота (сдача ДЗ, шаг 4)
-  LS.ck = 'zh:ck'; LS.vhod = 'zh:vhod';
+  LS.ck = 'zh:ck'; LS.vhod = 'zh:vhod'; LS.kr = 'zh:kr';
   function ck() { return lsGet(LS.ck, ''); }
-  function sk() { return lsGet(LS.sk, ''); }   // личная ссылка ученика без Телеграма: <журнал>.<ключ>
+  function sk() { return lsGet(LS.sk, ''); }
+  // ссылка классного руководителя (D 08.10): <журнал>.<ключ> — смотреть и выгружать оценки, менять нельзя
+  function kr() { return lsGet(LS.kr, ''); }
+  var krMode = false;   // журнал открыт по ссылке классного руководителя
+  var krSrv = false;    // сервер умеет такие ссылки (говорит в ответе /sync): без этого учителю кнопку не показываем
+  //   // личная ссылка ученика без Телеграма: <журнал>.<ключ>
   function stuH() { return sk() ? { 'X-Stu-Key': sk() } : { 'X-Chat-Key': ck() }; }
   function chatBase() { return API.replace(/\/cabinet$/, ''); }
   var BOT = /[?&]test=chat\b/.test(location.search) ? 'Lemma_test1_bot' : 'D_mathh_bot';
@@ -1008,6 +1017,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         if (creating === J) { creating = ''; lsDel('zh:mk'); }
         if (r.data.meta) setMeta(r.data.meta);
         if (r.data.journals) { JOURNALS = r.data.journals; renderJournals(); }
+        if ('kr' in r.data) krSrv = !!r.data.kr;
         var next = fromObjects(r.data.objects);
         outbox.forEach(function (op) {   // правки, сделанные пока шёл запрос, — сверху
           if (op.t === 'put') { var o = JSON.parse(JSON.stringify(op.d)); o.id = op.id; o.ts = op.ts; next[op.k][op.id] = o; }
@@ -1068,6 +1078,41 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         $('main').innerHTML = '<div class="gate"><h2>Нет связи с журналом</h2><p>Проверь интернет. Если включён VPN — попробуй без него.</p>' +
           '<p style="margin-top:14px"><button class="btn pri" data-act="retry">Ещё раз</button></p></div>';
       });
+  }
+  /* ── классный руководитель: по своей ссылке, без кода класса ── */
+  function viewKr(tries) {
+    if (!loaded) $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
+    post('/zhurnal/view', { kr: kr() })
+      .then(function (r) {
+        var out = '<p style="margin-top:14px"><button class="btn pri" data-act="retrykr">Ещё раз</button> <button class="btn" data-act="krexit">Войти по коду класса</button></p></div>';
+        if (r.status === 403) {
+          // Ключ с устройства не стираем: сервер отвечает так же, пока ссылки на нём выключены, — включат, и та же
+          // закладка заработает. Журнал при этом убираем с экрана: отозвали — значит, больше не показываем
+          krMode = false; loaded = false; S = blank();
+          $('main').innerHTML = '<div class="gate"><h2>Ссылка не работает</h2><p>Учитель отозвал её или выдал новую. Попросите у него свежую ссылку.</p>' + out;
+          krFoot();
+          return;
+        }
+        if (r.status === 429) { $('main').innerHTML = '<div class="gate"><h2>Слишком много попыток</h2><p>Подождите 10 минут и откройте ссылку ещё раз.</p>' + out; return; }
+        if (r.status !== 200 || !r.data.ok) throw { http: r.status };
+        lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
+        krMode = true;
+        if (r.data.j) J = r.data.j;
+        if (r.data.meta) setMeta(r.data.meta);
+        S = fromObjects(r.data.objects); loaded = true; render();
+        krFoot();
+      })
+      .catch(function (e) {
+        if (!e || !e.http) nextApi();
+        if ((tries || 0) < 1) return viewKr(1);
+        $('main').innerHTML = '<div class="gate"><h2>Нет связи с журналом</h2><p>Проверьте интернет. Если включён VPN — попробуйте без него.</p>' +
+          '<p style="margin-top:14px"><button class="btn pri" data-act="retrykr">Ещё раз</button></p></div>';
+      });
+  }
+  // подвал в режиме классного руководителя: что это за режим и как из него выйти (иначе ссылка «прилипает» к устройству)
+  function krFoot() {
+    $('footLinks').innerHTML = (krMode ? 'Вы смотрите журнал по ссылке классного руководителя: оценки можно смотреть и выгружать, менять нельзя · ' : '') +
+      '<button class="link" data-act="krexit">Выйти из этого режима</button>';
   }
   function gate(err) {
     loaded = false;
@@ -1207,7 +1252,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     keepScroll();
     var L = lessons(tab), P = students(), edit = mode === 'teacher';
     if (!P.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Учеников пока нет — добавь их кнопкой «Ученики».' : 'Журнал пока пуст.') + '</div>'; return; }
-    if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый день кнопкой «＋ День».' : mix() ? 'Уроков пока нет.' : 'По этому предмету пока нет уроков.') + '</div>' + (edit && vygSubj().length ? vygRow() : ''); return; }
+    if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый день кнопкой «＋ День».' : mix() ? 'Уроков пока нет.' : 'По этому предмету пока нет уроков.') + '</div>' + ((edit || krMode) && vygSubj().length ? vygRow() : ''); return; }
 
     // месяц: журнал листается по месяцам, а не тянется вправо на весь год (D, 01.10)
     var MS = months(L), mo = monthSel[tab];
@@ -1289,7 +1334,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (edit) h += '<td></td>';
     h += '</tr></tfoot></table></div>';
     h += legend();
-    if (edit) h += vygRow();
+    if (edit || krMode) h += vygRow();
     main.innerHTML = h;
     fillFileThumbs(main);   // обложки тем
 
@@ -1446,9 +1491,19 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       '<div><b>Период</b>' + b('mo', 'all', 'Весь год') + MS.map(function (m) { return b('mo', m, MONTHS[+m - 1]); }).join('') + '</div>' +
       '<div><b>Домашние</b>' + b('hw', true, 'С оценками за ДЗ') + b('hw', false, 'Только уроки') + '</div>' +
       '<div><b>Средний балл</b>' + b('sr', true, 'Показывать') + b('sr', false, 'Скрыть') + '</div></div>' +
+      (mode === 'teacher' && krSrv ? vygKr() : '') +
       '<div class="vyg-pre">' + vygHtml() + '</div>' +
       '<div class="row"><button class="btn" data-act="close">Закрыть</button><span class="sp"></span>' +
       '<button class="btn" data-act="vygcsv">Файл для Excel</button><button class="btn pri" data-act="vygprint">🖨 Печать / PDF</button></div></div>';
+  }
+  // ссылка для классного руководителя: он сам смотрит журнал и выгружает оценки; ключ — в настройках журнала (cfg 'kr')
+  function vygKr() {
+    var k = S.cfg.kr && S.cfg.kr.v;
+    if (!k) return '<div class="vyg-kr"><b>Классному руководителю</b><span>Ссылка, по которой он сам смотрит журнал и выгружает оценки. Менять ничего не может, код класса ему не нужен.</span>' +
+      '<button class="btn" data-act="vygkr">Создать ссылку</button></div>';
+    return '<div class="vyg-kr"><b>Классному руководителю</b><input id="lnkIn" readonly value="' + esc(location.origin + location.pathname + '#kr=' + J + '.' + k) + '">' +
+      '<button class="btn pri" data-act="copylink">Скопировать</button><button class="btn danger" data-act="vygkrdel">Отозвать</button>' +
+      '<span>Только смотреть и выгружать. «Отозвать» — ссылка перестанет работать, детей это не коснётся.</span></div>';
   }
   var vygClean = null;
   function vygPrint() {
@@ -1864,6 +1919,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var h = { 'Content-Type': 'application/json' }, body = { id: fid, j: J };
     if (mode === 'teacher') h.Authorization = 'Bearer ' + teacherKey;
     else if (meId) { var sh4 = stuH(); Object.keys(sh4).forEach(function (k) { h[k] = sh4[k]; }); }
+    else if (krMode) body.kr = kr();
     else body.pass = lsGet(LS.pass, '');
     return fetch(API + '/zhurnal/file', { method: 'POST', headers: h, body: JSON.stringify(body) }).then(function (r) { if (!r.ok) throw r.status; return r.blob(); });
   }
@@ -2744,6 +2800,10 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       }
       else if (act === 'vyg') openVyg();
       else if (act === 'vygset') { vyg[a.dataset.k] = a.dataset.v === 'true' ? true : a.dataset.v === 'false' ? false : a.dataset.v; lsSet('zh:vyg-sr', vyg.sr); openVyg(); }
+      else if (act === 'vygkr') { put('cfg', 'kr', { v: newKey() }); openVyg(); }
+      else if (act === 'vygkrdel') { if (confirm('Отозвать ссылку классного руководителя? По ней журнал больше не откроется. Новую можно создать в любой момент.')) { del('cfg', 'kr'); openVyg(); } }
+      else if (act === 'retrykr') viewKr(0);
+      else if (act === 'krexit') { lsDel(LS.kr); location.reload(); }
       else if (act === 'vygprint') vygPrint();
       else if (act === 'vygcsv') vygCsv();
       else if (act === 'students') openStudents();
@@ -2893,6 +2953,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (document.visibilityState !== 'visible') return;
     if (mode === 'teacher') sync();
     else if (loaded && meId) meLoad().catch(function () { /* нет связи — покажем, что было */ });
+    else if (krMode) viewKr(0);   // свежие оценки; отозвали ссылку — журнал уходит с экрана
     else if (loaded && lsGet(LS.pass, '')) view('');
   });
 
@@ -2923,6 +2984,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   stEl.className = 'st'; stEl.id = 'st'; stEl.hidden = true; stEl.innerHTML = '<i></i><em id="stTxt"></em>';
   document.body.appendChild(stEl);
   renderTabs(); renderJournals();
+  // ссылку классного руководителя открыли на устройстве учителя: режим остаётся учительским, а ключ из адреса убираем
+  if (mode === 'teacher' && /[#&]kr=/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } }
   if (mode === 'teacher') {
     var cache = lsGet(lk(LS.cache), null);
     if (cache && cache.les) { KINDS.forEach(function (k) { S[k] = cache[k] || {}; }); loaded = true; }
@@ -2939,6 +3002,9 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     // личная ссылка ученика без Телеграма (#s=<журнал>.<ключ>) — запомнить и открыть свой журнал
     var ms = /[#&]s=([a-z0-9]{2,16}\.[0-9a-f]{32})\b/.exec(location.hash);
     if (ms) { lsSet(LS.sk, ms[1]); J = ms[1].split('.')[0]; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } }
+    // ссылка классного руководителя #kr=<журнал>.<ключ>: запоминаем на устройстве, из адреса убираем
+    var mkr = /[#&]kr=([a-z0-9]{2,16}\.[0-9a-f]{32})\b/.exec(location.hash);
+    if (mkr) { lsSet(LS.kr, mkr[1]); try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } }
     // кнопка «📒 Мой журнал» в боте: одноразовая ссылка #t=… → ключ входа, без 4 цифр
     var mt = /[#&]t=([0-9a-f]{32})\b/.exec(location.hash);
     var afterMe = function (res) { if (res === 'nolink') pickMe(); else if (res !== true) byCode(); };
@@ -2978,6 +3044,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
       magic(mt[1], 0);
     }
+    else if (kr() && !mk && (mkr || !(sk() || ck()))) viewKr(0);
     // вошёл через бота — журнал открывается без кода класса, со своей строкой и сдачей
     else if (sk() && !mk) {   // по личной ссылке
       $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
