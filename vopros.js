@@ -23,6 +23,13 @@
    Ссылки бота на сайт кода не несут — их можно пересылать.
    Пока чат не запущен для всех (CHAT_VSEM), без ключа — прежняя анкета.
 
+   Учитель (D 07.10, на сервере флаг SITE_CHAT_D): D входит тем же кодом, сервер узнаёт
+   его и вместо чата отдаёт учеников — лента имён над перепиской, цифра на «?» — сколько
+   чатов ждут ответа. У обеих сторон: нажал на сообщение — реакция (одна от человека)
+   или «Ответить» с цитатой. Сервер без флага про это молчит — окно остаётся прежним.
+   Журнал (zhurnal.html) подключает этот же файл: вошедшему в журнал через бота код
+   второй раз не нужен — берём его ключ (zh:ck).
+
    Сервер: сначала прямой адрес, не ответил за 5 с (у ребёнка VPN) —
    запасной через шлюз в Хельсинки. Та же схема и тот же ключ памяти,
    что в hw-core.js. Сам движок домашек сюда не подключаем: он вешает
@@ -31,7 +38,17 @@
 (() => {
 'use strict';
 
-const HOSTS = ['https://194-87-110-53.nip.io', 'https://hw.157-228-128-116.nip.io'];
+/* ?chatapi=http://127.0.0.1:порт — стенд на этом же компьютере (как ?api= у журнала); чужой адрес так не подставить */
+const HOSTS = (() => {
+  try {
+    const p = new URLSearchParams(location.search), q = p.get('chatapi') || '';
+    if (/^http:\/\/(127\.0\.0\.1|localhost)(:\d{2,5})?$/.test(q)) return [q];
+    /* журнал на стенде (?api=http://127.0.0.1…): чат тоже не ходит на боевой сервер */
+    const zh = /^(http:\/\/(127\.0\.0\.1|localhost)(:\d{2,5})?)(\/[\w\/-]*)?$/.exec(p.get('api') || '');
+    if (zh) return [zh[1]];
+  } catch (_) {}
+  return ['https://194-87-110-53.nip.io', 'https://hw.157-228-128-116.nip.io'];
+})();
 const HOST_KEY = 'hw-core-host';
 const PROBE_MS = 5000;
 const KLASS = 'g9';
@@ -41,12 +58,17 @@ const CHAT_KEY = 'vopros-chat-klyuch';      // ключ чата от серве
 const CHAT_SEEN = 'vopros-chat-videl';      // последний прочитанный ответ учителя
 const VHOD_KEY = 'vopros-vhod';             // начатый вход: токен ссылки в бота и когда начат
 const TEST_KEY = 'vopros-test';             // тестер (?test=chat): вход через тестового бота
+const VYSHEL_KEY = 'vopros-vyshel';         // ключ журнала, с которым из чата вышли кнопкой «Выйти»: в чат по нему больше не пускаем
+const UCH_KEY = 'vopros-uchitel';           // сервер сказал: это учитель — вместо чата список учеников
+const BYSTRYE = ['👍', '❤️', '🔥', '👏', '😂', '🤔'];
 const BOTY = { main: 'D_mathh_bot', test: 'Lemma_test1_bot' };
 /* Чат для всех: без ключа «?» зовёт войти через Телеграм, а не в анкету.
    Включить после ответа Нормы (ШТАБ_ДЕТАЛИ #norma-chat-sayt) вместе с SITE_CHAT=1
    у боевого бота. До того чат видят только вошедшие, тестер и пришедшие по
    кнопке бота «Открыть чат». */
 const CHAT_VSEM = true;
+/* Знак «?» в журнале и вход в чат по ключу журнала (D 07.10). false — в журнале знака нет, чат только по своему коду. */
+const V_ZHURNALE = true;
 
 const PRICHINY = [
   ['ne-ponimayu',   '🤔', 'Не понимаю задание'],
@@ -57,6 +79,7 @@ const PRICHINY = [
 
 const dock = document.getElementById('dock');
 if (!dock) return;
+if (!V_ZHURNALE && /zhurnal\.html$/.test(location.pathname)) return;
 
 /* Кнопка бота «Открыть чат»: #chat=1. Тестер: ?test=chat. Забираем и чистим
    адрес, чтобы это не осталось в закладке. Уроки сайта (#algebra-10) не трогаем. */
@@ -147,7 +170,9 @@ function ubratPodskazku(){
   h.classList.remove('on');
   setTimeout(() => h.remove(), 400);
 }
-if ((+mem.get(HINT_KEY) || 0) < 3) setTimeout(podskazka, 1800);
+/* учителю подсказка «позови учителя» ни к чему: ни вошедшему в чат, ни открывшему журнал своим ключом */
+const uchitelZhurnala = () => { try { return !!(localStorage.getItem('zh:key') || localStorage.getItem('kab:key')); } catch (_) { return false; } };
+if ((+mem.get(HINT_KEY) || 0) < 3 && !uchitel() && !uchitelZhurnala()) setTimeout(podskazka, 1800);
 
 /* ═════════════ ДОМАШКИ «про что» — из data.js ═════════════ */
 function dateOf(str){                                   /* как в app.js: «29.09» → дата учебного года */
@@ -186,7 +211,9 @@ function postroit(){
   fon.addEventListener('click', zakryt);
   okno.addEventListener('click', onKlik);
   okno.addEventListener('input', obnovit);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && otkryto) zakryt(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && otkryto){ if (mn) menuZakryt(); else zakryt(); } });
+  /* нажал мимо меню сообщения — закрыть */
+  document.addEventListener('pointerdown', e => { if (mn && !e.target.closest('.vq-menu') && !e.target.closest('.vq-msg[data-vq="menu"]')) menuZakryt(); }, true);
 }
 
 function imyaSejchas(){
@@ -260,8 +287,21 @@ function onKlik(e){
   else if (a.dataset.vq === 'snova'){ e.preventDefault(); vhodEkran(); }
   else if (a.dataset.vq === 'tg'){ if (!a.dataset.token) e.preventDefault(); }   // вход ещё готовится
   else if (a.dataset.vq === 'kod') vvestiKod();
+  else if (a.dataset.vq === 'chel') vybrat(+a.dataset.u);
+  else if (a.dataset.vq === 'menu') menu(a);
+  else if (a.dataset.vq === 'reak'){ if (a.dataset.kto === ya()) reagirovat(+a.dataset.id, ''); }   // своя — снять
+  else if (a.dataset.vq === 'otv-net'){ otvetNa = 0; risovatOtvet(); }
+  else if (a.dataset.vq === 'k-soobshcheniyu'){
+    const el = okno.querySelector(`.vq-msg[data-id="${+a.dataset.id}"]`);
+    if (el){ el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.classList.add('vq-mig'); setTimeout(() => el.classList.remove('vq-mig'), 1200); }
+  }
   else if (a.dataset.vq === 'vyjti'){                  // чужой или школьный компьютер
+    /* на устройстве остался вход в журнал — чат по его ключу тоже закрываем, иначе следующий за этим
+       компьютером откроет «?» и попадёт в чужую переписку. Сам журнал при этом остаётся открытым.
+       Запоминаем до того, как забыть свой ключ: потом ключ журнала уже не отличить от отвергнутого */
+    const zh = klyuchZhurnala(); if (zh) mem.set(VYSHEL_KEY, zh);
     zabytKlyuch(); zabytVhod(); clearInterval(chatTaimer); chatTaimer = null;
+    menuZakryt(); komu = 0; lyudi = []; znachok(0);
     knopka.classList.remove('est-otvet');
     vhodEkran('Ты вышел из чата на этом устройстве.');
   }
@@ -280,6 +320,7 @@ function otkryt(){
 
 function zakryt(){
   if (!otkryto) return;
+  menuZakryt();
   otkryto = false;
   fon.classList.remove('on'); okno.classList.remove('on');
   document.body.classList.remove('vq-otkryto');
@@ -372,24 +413,40 @@ function gotovo(uzhe){
   okno.focus({ preventScroll: true });
 }
 
-/* ═════════════ ЧАТ С УЧИТЕЛЕМ (ТЗ 11 A2) ═════════════ */
+/* ═════════════ ЧАТ (ТЗ 11 A2): ученик ↔ учитель ═════════════ */
 const SKREPKA = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg>';
 const STRELKA = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4l17.4-7.5a1 1 0 0 0 0-1.8L3.4 3.6a1 1 0 0 0-1.4 1.1L4 11l9 1-9 1-2 6.3a1 1 0 0 0 1.4 1.1z"/></svg>';
 
 let chatTaimer = null, chatBase = '', lenta = [], lastId = 0, tyanu = false;
+let rv = -1, reakcii = {}, estReakcii = false, otvetNa = 0;   // реакции чата и их счётчик на сервере; на какое сообщение отвечаю
+let komu = 0, lyudi = [], spisokKogda = 0, spisokVid = '';     // учитель: открытый ученик и лента имён
+let pokolenie = 0;     // растёт при каждом сбросе ленты: ответ на запрос прошлого поколения выбрасываем
 
 /* ключ вида bot.id.srok.podpis; просроченный не используем */
-function chatKey(){
-  const k = mem.get(CHAT_KEY);
-  const srok = +(k.split('.')[2] || 0);
-  return srok * 1000 > Date.now() ? k : '';
+const zhivoi = k => (+(String(k).split('.')[2] || 0)) * 1000 > Date.now() ? k : '';
+const svoiKlyuch = () => zhivoi(mem.get(CHAT_KEY));
+/* вошёл в журнал через бота — тот же ключ годится и чату (страницы на одном адресе) */
+let plohoiZh = '';
+function klyuchZhurnala(){
+  if (!V_ZHURNALE) return '';
+  try {
+    const k = zhivoi(JSON.parse(localStorage.getItem('zh:ck') || '""'));
+    return k && k !== plohoiZh && k !== mem.get(VYSHEL_KEY) ? k : '';
+  } catch (_) { return ''; }
 }
-function zabytKlyuch(){ try { localStorage.removeItem(CHAT_KEY); } catch (_) {} }
-const tester = () => mem.get(TEST_KEY) === '1';
+function chatKey(){ return svoiKlyuch() || klyuchZhurnala(); }
+function zabytKlyuch(){
+  if (!svoiKlyuch()) plohoiZh = klyuchZhurnala();      // сервер отверг ключ журнала — больше его не пробуем
+  try { localStorage.removeItem(CHAT_KEY); localStorage.removeItem(UCH_KEY); } catch (_) {}
+}
+function tester(){ return mem.get(TEST_KEY) === '1'; }
+function uchitel(){ return mem.get(UCH_KEY) === '1'; }
+const ya = () => (uchitel() ? 'd' : 's');
 function vzyatKlyuch(d){                               // ответ сервера с ключом → в память
   mem.set(CHAT_KEY, d.key);
   try {                                                // вошёл через боевого бота — больше не тестер
     if (d.bot === 'test') localStorage.setItem(TEST_KEY, '1'); else localStorage.removeItem(TEST_KEY);
+    if (d.uchitel) localStorage.setItem(UCH_KEY, '1'); else localStorage.removeItem(UCH_KEY);
   } catch (_) {}
 }
 
@@ -496,20 +553,23 @@ const zagolovki = t => ({ 'X-Chat-Key': chatKey(), ...(t ? { 'Content-Type': t }
 const fotoUrl = name => `${chatBase}/chat/photo/${encodeURIComponent(name)}?k=${encodeURIComponent(chatKey())}`;
 
 function chatNachat(){
+  const u = uchitel();
   okno.classList.add('vq-chat');
   okno.innerHTML = `
-    <div class="vq-head">${blok('vq-mini')}<h2 id="vq-h">Чат с учителем</h2>
+    <div class="vq-head">${blok('vq-mini')}<h2 id="vq-h">${u ? 'Чаты <span class="vq-zhdut" hidden></span>' : 'Чат с учителем'}</h2>
       <button type="button" class="vq-vyjti" data-vq="vyjti" title="Выйти из чата на этом устройстве">Выйти</button>
       <button type="button" class="vq-x" data-vq="zakryt" aria-label="Закрыть">✕</button></div>
+    ${u ? '<div class="vq-lyudi" role="tablist" aria-label="Ученики"></div>' : ''}
     <div class="vq-lenta" role="log" aria-live="polite"><div class="vq-pusto">Загружаю…</div></div>
     <p class="vq-err" hidden></p>
-    <div class="vq-pole">
+    <div class="vq-otv" hidden></div>
+    <div class="vq-pole"${u ? ' hidden' : ''}>
       <button type="button" class="vq-skrepka" data-vq="foto" aria-label="Прикрепить фото">${SKREPKA}</button>
       <input type="file" class="vq-file" accept="image/*" hidden>
-      <textarea class="vq-vvod" rows="1" maxlength="2000" placeholder="Напиши сообщение…" aria-label="Сообщение учителю"></textarea>
+      <textarea class="vq-vvod" rows="1" maxlength="2000" placeholder="${u ? 'Ответ ученику…' : 'Напиши сообщение…'}" aria-label="${u ? 'Ответ ученику' : 'Сообщение учителю'}"></textarea>
       <button type="button" class="vq-go" data-vq="poslat" aria-label="Отправить">${STRELKA}</button>
     </div>`;
-  lenta = []; lastId = 0;
+  lenta = []; lastId = 0; rv = -1; reakcii = {}; otvetNa = 0; spisokVid = ''; pokolenie++;
   const vvod = okno.querySelector('.vq-vvod');
   vvod.addEventListener('input', () => rost(vvod));
   /* Enter отправляет только на компьютере; на телефоне это перенос строки */
@@ -521,9 +581,24 @@ function chatNachat(){
     e.target.value = '';
     if (f) poslatFoto(f);
   });
-  tyanut(true);
+  if (!u) tyanut(true);
+  else {
+    spisokKogda = 0;                                   // список — как можно скорее (и повторить, если этот запрос не выйдет)
+    if (chelovek(komu)){                               // открываю снова: тот же ученик и поле ответа сразу
+      okno.querySelector('.vq-pole').hidden = false;
+      risovatLyudi(); tyanut(true);
+    }
+    spisokTyanut(true);
+  }
+  /* меню сообщения привязано к месту на экране: лента поехала — закрываем, иначе реакция уйдёт не тому сообщению */
+  okno.querySelector('.vq-lenta').addEventListener('scroll', menuZakryt, { passive: true });
   clearInterval(chatTaimer);
-  chatTaimer = setInterval(() => { if (!document.hidden) tyanut(false); }, 4000);
+  chatTaimer = setInterval(() => {
+    if (document.hidden) return;
+    if (!uchitel()){ tyanut(false); return; }
+    if (komu) tyanut(false);
+    if (Date.now() - spisokKogda > 12000) spisokTyanut(false);     // лента имён — реже переписки
+  }, 4000);
 }
 
 function rost(el){ el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight + 4, 120) + 'px'; }
@@ -534,6 +609,85 @@ function oshibka(text){
   e.textContent = text || ''; e.hidden = !text;
 }
 
+/* ═════════════ УЧИТЕЛЬ: лента имён над перепиской ═════════════ */
+const CVETA = ['#7c3aed', '#0ea5e9', '#f97316', '#10b981', '#e11d48', '#6366f1', '#0d9488', '#d97706'];
+const chelovek = u => lyudi.find(p => p.u === u);
+
+/* сервер больше не считает учителем (режим выключили) — обычный чат */
+function neUchitel(){
+  try { localStorage.removeItem(UCH_KEY); } catch (_) {}
+  komu = 0; lyudi = []; znachok(0);
+  if (otkryto) chatNachat();
+}
+
+/* цифра на «?»: сколько чатов ждут ответа */
+function znachok(n){
+  let z = knopka.querySelector('.vq-n');
+  if (!n){ if (z) z.remove(); return; }
+  if (!z){ z = document.createElement('span'); z.className = 'vq-n'; knopka.appendChild(z); }
+  z.textContent = n > 9 ? '9+' : n;
+}
+/* открытый чат учитель читает прямо сейчас — он не «ждёт» */
+const zhdut = () => lyudi.filter(p => p.novyh && !(otkryto && p.u === komu)).length;
+
+function risovatLyudi(){
+  znachok(zhdut());
+  const box = okno && okno.querySelector('.vq-lyudi');
+  if (!box) return;
+  const z = okno.querySelector('.vq-zhdut');
+  if (z){ z.hidden = !zhdut(); z.textContent = 'ждут: ' + zhdut(); }
+  const vid = JSON.stringify([komu, lyudi.map(p => [p.u, p.name, p.u === komu ? 0 : p.novyh])]);
+  if (vid === spisokVid) return;                       // то же самое не перерисовываем: палец может быть на кружке
+  spisokVid = vid;
+  const sdvig = box.scrollLeft;
+  box.innerHTML = lyudi.map(p => {
+    const slova = String(p.name).trim().split(/\s+/);
+    const novyh = p.u === komu ? 0 : p.novyh;
+    return `<button type="button" class="vq-chel${p.u === komu ? ' on' : ''}" role="tab" aria-selected="${p.u === komu}" data-vq="chel" data-u="${p.u}" title="${esc(p.name)}${p.groups ? ' · ' + esc(p.groups) : ''}">
+      <span class="vq-ava" style="background:${CVETA[Math.abs(p.u) % CVETA.length]}">${esc([...slova[0]][0] || '?')}</span>${novyh ? `<u>${novyh > 9 ? '9+' : novyh}</u>` : ''}
+      <span class="vq-kto2">${esc(slova[0])}${slova.length > 1 ? '<br>' + esc(slova.slice(1).join(' ')) : ''}</span></button>`;
+  }).join('');
+  box.scrollLeft = sdvig;
+}
+
+let spisokIdet = false;
+async function spisokTyanut(pervyi){
+  if (spisokIdet || !chatKey()) return;
+  spisokIdet = true;
+  try {
+    const base = await serverBase();
+    const r = await timedFetch(base + '/chat/d/list', { cache: 'no-store', headers: zagolovki() }, 15000);
+    if (r.status === 401){ zabytKlyuch(); znachok(0); if (otkryto) vhodEkran(); return; }
+    if (r.status === 403 || r.status === 404){ neUchitel(); return; }
+    const d = await r.json();
+    if (d.key) mem.set(CHAT_KEY, d.key);
+    lyudi = d.people || [];
+    spisokKogda = Date.now();
+    risovatLyudi();
+    if (!otkryto || !okno.querySelector('.vq-lyudi')) return;
+    if (!lyudi.length){
+      komu = 0;
+      okno.querySelector('.vq-pole').hidden = true;
+      okno.querySelector('.vq-lenta').innerHTML = '<div class="vq-pusto">Пока никто из учеников не входил в чат. Как только кто-то откроет «?» и войдёт, он появится здесь.</div>';
+    } else if (!chelovek(komu)) vybrat(lyudi[0].u);  // никого не открыто (или открытый ушёл из класса) — первого по списку
+    if (pervyi) oshibka('');
+  } catch (_) {
+    baseP = null;
+    if (pervyi) oshibka('Не получилось загрузить список. Проверь интернет.');
+  } finally { spisokIdet = false; }
+}
+
+function vybrat(u){
+  if (!chelovek(u)) return;
+  menuZakryt();
+  komu = u; lenta = []; lastId = 0; rv = -1; reakcii = {}; otvetNa = 0; pokolenie++;
+  okno.querySelector('.vq-pole').hidden = false;
+  okno.querySelector('.vq-lenta').innerHTML = '<div class="vq-pusto">Загружаю…</div>';
+  oshibka(''); risovatOtvet(); risovatLyudi();
+  tyanut(true);
+}
+
+/* ═════════════ ЛЕНТА СООБЩЕНИЙ ═════════════ */
 const DNI = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
 function denPodpis(d){
   const s = new Date(); s.setHours(0, 0, 0, 0);
@@ -545,12 +699,35 @@ function denPodpis(d){
 }
 const vremya = d => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
+const kratko = m => (m.text ? (m.text.length > 70 ? m.text.slice(0, 69) + '…' : m.text) : '📷 фото');
+/* чьё сообщение — подпись в цитате */
+function chyo(m){
+  if (m.who === ya()) return uchitel() ? 'Вы' : 'Ты';
+  if (!uchitel()) return 'Учитель';
+  const p = chelovek(komu);
+  return p ? String(p.name).trim().split(/\s+/)[0] : 'Ученик';
+}
+function citata(id){
+  const o = lenta.find(x => x.id === id);
+  return `<div class="vq-cit" data-vq="k-soobshcheniyu" data-id="${+id}">${o ? `<b>${esc(chyo(o))}</b>${esc(kratko(o))}` : '<b>↩</b>Сообщение выше'}</div>`;
+}
+function reakciiHtml(m){
+  const r = m.id && reakcii[m.id];
+  if (!r) return '';
+  const h = ['s', 'd'].filter(k => r[k]).map(k =>
+    `<button type="button" class="${k === ya() ? 'moya' : ''}" data-vq="reak" data-id="${m.id}" data-kto="${k}" title="${k === ya() ? 'Твоя реакция — нажми, чтобы убрать' : (k === 'd' ? 'Реакция учителя' : 'Реакция ученика')}">${esc(r[k])}</button>`).join('');
+  return h ? `<div class="vq-reak">${h}</div>` : '';
+}
+
 function risovat(vniz){
   const box = okno && okno.querySelector('.vq-lenta');
   if (!box) return;
+  menuZakryt();
   const bylVnizu = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
   if (!lenta.length){
-    box.innerHTML = `<div class="vq-pusto">
+    box.innerHTML = uchitel()
+      ? '<div class="vq-pusto">Переписки пока нет. Напиши первым — ученику придёт уведомление в Телеграм.</div>'
+      : `<div class="vq-pusto">
       <p>Застрял? Напиши, что не получается, или сфоткай решение <b>📎</b>. Учитель ответит здесь, а бот пришлёт уведомление.</p>
       <div class="vq-chips vq-prichiny">
         ${PRICHINY.filter(p => p[0] !== 'drugoe').map(([, e, t]) =>
@@ -564,10 +741,12 @@ function risovat(vniz){
     const dp = denPodpis(d);
     if (dp !== den){ den = dp; html += `<div class="vq-den">${dp}</div>`; }
     const src = m.preview || (m.photo ? fotoUrl(m.photo) : '');
-    html += `<div class="vq-msg ${m.who === 's' ? 'moe' : 'ego'}${m.zhdet ? ' zhdet' : ''}">
+    /* нажатие на сообщение — реакция или «Ответить»: только если сервер это умеет и сообщение уже на сервере */
+    html += `<div class="vq-msg ${m.who === ya() ? 'moe' : 'ego'}${m.zhdet ? ' zhdet' : ''}"${m.id && estReakcii ? ` data-vq="menu" data-id="${m.id}"` : ''}>
+      ${m.re ? citata(m.re) : ''}
       ${src ? `<img src="${esc(src)}" alt="Фото" data-vq="uvelichit">` : ''}
       ${m.text ? `<div class="t">${esc(m.text)}</div>` : ''}
-      <div class="vr">${m.zhdet ? 'отправляю…' : vremya(d)}</div></div>`;
+      <div class="vr">${m.zhdet ? 'отправляю…' : vremya(d)}</div>${reakciiHtml(m)}</div>`;
   });
   box.innerHTML = html;
   if (vniz || bylVnizu){
@@ -584,21 +763,44 @@ function videl(){
 }
 
 async function tyanut(pervyi){
-  if (tyanu || !chatKey()) return;
+  if ((tyanu && !pervyi) || !chatKey()) return;
+  const u = uchitel(), dlya = komu, pok = pokolenie;
+  if (u && !dlya) return;
+  const tot = () => pok === pokolenie && u === uchitel();   // лента та же, что при запросе (не сменили ученика, не сбросили)
   tyanu = true;
   try {
     chatBase = await serverBase();
-    /* open=1: чат открыт — сервер отмечает «видел» и не шлёт в бот «Д ответил», пока ребёнок тут */
-    const r = await timedFetch(`${chatBase}/chat/history?after=${lastId}&open=1`, { cache: 'no-store', headers: zagolovki() }, 15000);
-    if (r.status === 401){ zabytKlyuch(); vhodEkran(); return; }
+    /* open=1: чат открыт — сервер отмечает «видел» и не шлёт уведомление со звуком, пока человек тут.
+       rv — мой счётчик реакций: сервер пришлёт их заново, только если что-то поменялось */
+    const adres = u ? `/chat/d/history?u=${dlya}&` : '/chat/history?';
+    const r = await timedFetch(`${chatBase}${adres}after=${lastId}&open=1&rv=${rv}`, { cache: 'no-store', headers: zagolovki() }, 15000);
+    if (!tot()) return;                                // пока ждали ответ, открыли другого ученика
+    if (r.status === 401){ zabytKlyuch(); znachok(0); vhodEkran(); return; }
+    if (u && r.status === 403){ neUchitel(); return; }
+    if (u && r.status === 404){ komu = 0; spisokTyanut(true); return; }      // ученик ушёл из класса
     const d = await r.json();
+    if (!tot()) return;                                // и пока читали ответ — тоже: чужие сообщения в ленту не кладём
     if (d.key) mem.set(CHAT_KEY, d.key);             // сервер продлил ключ
-    if (d.msgs && d.msgs.length){
-      lastId = d.msgs[d.msgs.length - 1].id;
-      lenta = lenta.filter(m => !m.zhdet).concat(d.msgs, lenta.filter(m => m.zhdet));
+    if (!u && d.uchitel){ mem.set(UCH_KEY, '1'); chatNachat(); return; }     // это учитель: вместо чата — ученики
+    let novoe = false;
+    const msgs = (d.msgs || []).filter(m => m.id > lastId);
+    if (msgs.length){
+      lastId = msgs[msgs.length - 1].id;
+      lenta = lenta.filter(m => !m.zhdet).concat(msgs, lenta.filter(m => m.zhdet));
+      novoe = true;
     }
-    if (pervyi || (d.msgs && d.msgs.length)) risovat(pervyi);
-    if (otkryto) videl();
+    if ('rv' in d){
+      if (!estReakcii){ estReakcii = true; novoe = true; }
+      rv = d.rv;
+      if (d.reak){
+        reakcii = {};
+        d.reak.forEach(([id, kto, e]) => { (reakcii[id] = reakcii[id] || {})[kto] = e; });
+        novoe = true;
+      }
+    }
+    if (pervyi || novoe) risovat(pervyi);
+    if (otkryto && !u) videl();
+    if (u && novoe){ const p = chelovek(dlya); if (p) p.novyh = 0; risovatLyudi(); }
     if (pervyi) oshibka('');
   } catch (_) {
     baseP = null;
@@ -606,12 +808,85 @@ async function tyanut(pervyi){
   } finally { tyanu = false; }
 }
 
+/* ═════════════ РЕАКЦИИ И ОТВЕТ НА СООБЩЕНИЕ ═════════════ */
+/* первый «знак» строки целиком: смайлик из нескольких частей (семья, флаг, цвет кожи) не режем */
+function pervyiSmail(t){
+  t = String(t || '').trim();
+  if (!t) return '';
+  try { return [...new Intl.Segmenter('ru', { granularity: 'grapheme' }).segment(t)][0].segment; } catch (_) { return [...t][0]; }
+}
+let mn = null;
+function menuZakryt(){ if (mn){ mn.remove(); mn = null; } }
+function menu(el){
+  const id = +el.dataset.id;
+  const bylo = mn && +mn.dataset.id === id;
+  menuZakryt();
+  if (bylo) return;                                    // второе нажатие на то же сообщение — закрыть
+  const moya = (reakcii[id] || {})[ya()] || '';
+  mn = document.createElement('div');
+  mn.className = 'vq-menu'; mn.dataset.id = id;
+  mn.innerHTML = `<div class="vq-menu-r">${BYSTRYE.map(e => `<button type="button" data-e="${e}"${moya === e ? ' class="on"' : ''}>${e}</button>`).join('')}<button type="button" data-plus title="Любой смайлик с клавиатуры" aria-label="Другой смайлик">＋</button></div>
+    <button type="button" class="vq-menu-o" data-otv>↩ Ответить</button>`;
+  document.body.appendChild(mn);
+  const r = el.getBoundingClientRect(), w = mn.offsetWidth, h = mn.offsetHeight;
+  mn.style.left = Math.max(8, Math.min(el.classList.contains('moe') ? r.right - w : r.left, innerWidth - w - 8)) + 'px';
+  mn.style.top = (r.top - h - 6 > 8 ? r.top - h - 6 : Math.min(r.bottom + 6, innerHeight - h - 8)) + 'px';
+  mn.addEventListener('click', ev => {
+    const b = ev.target.closest('button');
+    if (!b) return;
+    if (b.dataset.e){ menuZakryt(); reagirovat(id, moya === b.dataset.e ? '' : b.dataset.e); }
+    else if ('otv' in b.dataset){
+      menuZakryt(); otvetNa = id; risovatOtvet();
+      okno.querySelector('.vq-vvod').focus({ preventScroll: true });
+    }
+    else if ('plus' in b.dataset){
+      mn.querySelector('.vq-menu-r').innerHTML = '<input class="vq-menu-in" placeholder="Смайлик с клавиатуры" maxlength="16" aria-label="Смайлик">';
+      const inp = mn.querySelector('.vq-menu-in');
+      inp.focus();
+      inp.addEventListener('input', () => {
+        const e = pervyiSmail(inp.value);
+        if (e && /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(e)){ menuZakryt(); reagirovat(id, e); }
+        else if (e) inp.value = '';                  // буква или цифра — не реакция
+      });
+    }
+  });
+}
+
+async function reagirovat(id, e){
+  const bylo = (reakcii[id] || {})[ya()] || '';
+  const postavit = v => { reakcii[id] = Object.assign({}, reakcii[id]); if (v) reakcii[id][ya()] = v; else delete reakcii[id][ya()]; risovat(); };
+  postavit(e);                                         // сразу на экране, сервер подтвердит
+  try {
+    const base = await serverBase();
+    const r = await timedFetch(base + '/chat/react', { method: 'POST', cache: 'no-store',
+      headers: zagolovki('application/json'), body: JSON.stringify({ id, e }) }, 15000);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    oshibka('');
+  } catch (_) {
+    postavit(bylo);
+    oshibka('Реакция не сохранилась. Попробуй ещё раз.');
+  }
+  rv = -1;                                             // следующий опрос сверит реакции с сервером
+}
+
+function risovatOtvet(){
+  const box = okno && okno.querySelector('.vq-otv');
+  if (!box) return;
+  const o = otvetNa && lenta.find(x => x.id === otvetNa);
+  box.hidden = !o;
+  box.innerHTML = o ? `<span><b>↩ ${esc(chyo(o))}</b>${esc(kratko(o))}</span><button type="button" data-vq="otv-net" aria-label="Не отвечать на сообщение">✕</button>` : '';
+}
+
+/* ═════════════ ОТПРАВКА В ЧАТ ═════════════ */
 function poslat(gotovyi){
   const vvod = okno.querySelector('.vq-vvod');
   const text = String(gotovyi || vvod.value).trim();
-  if (!text) return;
+  if (!text || (uchitel() && !komu)) return;
   if (!gotovyi){ vvod.value = ''; rost(vvod); }
-  otpravitVChat(JSON.stringify({ text, urok: urokSejchas() }), 'application/json', { text }, () => {
+  const re = otvetNa;
+  const telo = uchitel() ? { u: komu, text } : { text, urok: urokSejchas() };
+  if (re) telo.re = re;
+  otpravitVChat(JSON.stringify(telo), 'application/json', { text, re }, () => {
     if (!gotovyi && !vvod.value){ vvod.value = text; rost(vvod); }     // вернуть текст, чтобы не набирать заново
   });
 }
@@ -641,45 +916,60 @@ function szhat(file){
 
 async function poslatFoto(file){
   oshibka('');
+  const dlya = komu;
   const blob = await szhat(file);
   if (!blob){ oshibka('Это не фото или оно слишком большое. Попробуй другое.'); return; }
+  if (dlya !== komu || (uchitel() && !komu)) return;   // пока фото сжималось, открыли другого ученика
   const vvod = okno.querySelector('.vq-vvod');
   const text = vvod.value.trim();
   vvod.value = ''; rost(vvod);
+  const re = otvetNa;
   const fd = new FormData();
   fd.append('photo', blob, 'foto.jpg');
   if (text) fd.append('text', text);
-  if (urokSejchas()) fd.append('urok', urokSejchas());
-  otpravitVChat(fd, '', { text, preview: URL.createObjectURL(blob) }, () => {
+  if (re) fd.append('re', re);
+  if (uchitel()) fd.append('u', komu);
+  else if (urokSejchas()) fd.append('urok', urokSejchas());
+  otpravitVChat(fd, '', { text, re, preview: URL.createObjectURL(blob) }, () => {
     if (text && !vvod.value){ vvod.value = text; rost(vvod); }
   });
 }
 
 async function otpravitVChat(body, tip, vid, vernut){
   oshibka('');
-  const m = Object.assign({ who: 's', ts: new Date().toISOString(), zhdet: true }, vid);
+  const u = uchitel(), dlya = komu;
+  const m = Object.assign({ who: ya(), ts: new Date().toISOString(), zhdet: true }, vid);
+  otvetNa = 0; risovatOtvet();
   lenta.push(m); risovat(true);
-  const ubrat = () => { lenta = lenta.filter(x => x !== m); risovat(); if (m.preview) URL.revokeObjectURL(m.preview); };
+  const tot = () => dlya === komu;                     // всё ещё открыт тот же чат
+  const ubrat = () => { lenta = lenta.filter(x => x !== m); if (tot()) risovat(); if (m.preview) URL.revokeObjectURL(m.preview); };
+  const nazad = () => { ubrat(); if (tot()){ vernut(); if (vid.re){ otvetNa = vid.re; risovatOtvet(); } } };
   try {
     chatBase = await serverBase();
-    const r = await timedFetch(chatBase + '/chat/send',
+    const r = await timedFetch(chatBase + (u ? '/chat/d/send' : '/chat/send'),
       { method: 'POST', cache: 'no-store', headers: zagolovki(tip), body }, 45000);
-    if (r.status === 429){ ubrat(); vernut(); oshibka('Много сообщений подряд. Подожди пару минут.'); return; }
-    if (r.status === 401){ ubrat(); zabytKlyuch(); vhodEkran(); return; }
+    if (r.status === 429){ nazad(); oshibka('Много сообщений подряд. Подожди пару минут.'); return; }
+    if (r.status === 401){ ubrat(); zabytKlyuch(); znachok(0); vhodEkran(); return; }
+    if (u && r.status === 403){ ubrat(); neUchitel(); return; }
+    if (!u && r.status === 403){                       // сервер уже считает учителем, а окно ещё нет — открываем учеников
+      nazad(); mem.set(UCH_KEY, '1'); chatNachat(); return;
+    }
+    if (u && r.status === 404){ nazad(); oshibka('Этот ученик больше не в классе — сообщение не ушло.'); return; }
     if (!r.ok) throw new Error('HTTP ' + r.status);
     lenta = lenta.filter(x => x !== m);            // настоящее сообщение придёт с сервера
-    await tyanut(false);
-    risovat(true);
+    if (tot()){ await tyanut(true); risovat(true); }
+    if (u) spisokTyanut(false);
     if (m.preview) setTimeout(() => URL.revokeObjectURL(m.preview), 60000);
   } catch (_) {
     baseP = null;
-    ubrat(); vernut();
+    nazad();
     oshibka(vid.preview ? 'Фото не отправилось. Проверь интернет и прикрепи ещё раз.'
                         : 'Не отправилось. Проверь интернет и нажми ещё раз.');
   }
 }
 
 function uvelichit(src){
+  menuZakryt();
   const d = document.createElement('div');
   d.className = 'vq-bigfoto';
   d.innerHTML = `<img src="${esc(src)}" alt="Фото">`;
@@ -687,9 +977,10 @@ function uvelichit(src){
   document.body.appendChild(d);
 }
 
-/* красная точка на «?», если учитель ответил, а ребёнок ещё не видел */
+/* окно закрыто: ученику — красная точка «учитель ответил», учителю — цифра «ждут ответа» */
 async function estOtvet(){
   if (!chatKey() || otkryto || document.hidden) return;
+  if (uchitel()){ spisokTyanut(false); return; }
   try {
     const base = await serverBase();
     const r = await timedFetch(`${base}/chat/history?after=${+mem.get(CHAT_SEEN) || 0}`,
@@ -697,14 +988,15 @@ async function estOtvet(){
     if (r.status === 401){ zabytKlyuch(); return; }
     const d = await r.json();
     if (d.key) mem.set(CHAT_KEY, d.key);
+    if (d.uchitel){ mem.set(UCH_KEY, '1'); knopka.title = 'Чаты с учениками'; spisokTyanut(false); return; }
     knopka.classList.toggle('est-otvet', !!(d.msgs || []).some(m => m.who === 'd'));
   } catch (_) {}
 }
 
+if (uchitel()){ knopka.title = 'Чаты с учениками'; knopka.setAttribute('aria-label', 'Чаты с учениками'); }
 setInterval(estOtvet, 60000);
 /* вернулся кнопкой «Назад» из Телеграма посреди входа — сразу поле для кода */
 const nazad = ((performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {}).type === 'back_forward';
 if (zovutVChat || (nazad && !chatKey() && nachatyiVhod())) otkryt();   // «Открыть чат» из бота: чат или вход
 else estOtvet();
 })();
-

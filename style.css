@@ -813,3 +813,74 @@ a.vq-tg:not([aria-disabled="true"]):active{ transform:translateY(2px); box-shado
 .vq-kod-r .vq-go{ flex:0 0 52px; width:52px; height:52px; }
 .vq-vyjti{ padding:8px 10px; border-radius:10px; font-size:13.5px; font-weight:600; color:var(--sub); -webkit-tap-highlight-color:transparent; }
 .vq-vyjti:hover{ color:var(--ink); }
+
+/* ═══════════════ ЧАТ: УЧИТЕЛЬ, РЕАКЦИИ, ОТВЕТ НА СООБЩЕНИЕ (vopros.js, D 07.10.2026) ═══════════════
+   Учитель под «?» видит ленту имён над перепиской (вариант 3 из пробы), на знаке — сколько чатов ждут.
+   У обеих сторон: нажал на сообщение — меню с реакциями и «Ответить». */
+.vopros .vq-n{
+  position:absolute; top:-6px; right:-7px; min-width:20px; height:20px; padding:0 5px; border-radius:10px;
+  display:grid; place-items:center; background:#ef4444; color:#fff; font:800 12px/1 system-ui, sans-serif; box-shadow:0 0 0 2.5px #fff;
+}
+.vq-head h2{ display:flex; align-items:center; gap:8px; min-width:0; }
+.vq-zhdut{ padding:3px 9px; border-radius:999px; background:#f4a91f; color:#3b1a07; font-size:13px; font-weight:800; letter-spacing:0; }
+.vq-lyudi{
+  flex:0 0 auto; display:flex; gap:6px; margin:12px -18px 0; padding:2px 14px 10px; overflow-x:auto; overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch; border-bottom:1px solid var(--line); scrollbar-width:thin;
+}
+.vq-lyudi:empty{ display:none; }
+.vq-lyudi + .vq-lenta{ margin-top:0; padding-top:10px; }
+.vq-chel{
+  position:relative; flex:0 0 74px; display:flex; flex-direction:column; align-items:center; gap:5px; padding:8px 2px 6px; border-radius:14px;
+  font-size:12px; line-height:1.2; color:var(--sub); text-align:center; -webkit-tap-highlight-color:transparent;
+}
+.vq-chel.on{ background:#fff4d6; color:#3b1a07; box-shadow:inset 0 0 0 2px #f4a91f; font-weight:700; }
+[data-theme="night"] .vq-chel.on{ background:rgba(244,169,31,.18); color:#ffe6a8; }
+.vq-chel:focus-visible{ outline:3px solid #fbbf24; outline-offset:1px; }
+.vq-ava{ width:46px; height:46px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:800; font-size:19px; }
+.vq-kto2{ max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vq-chel u{
+  position:absolute; top:3px; right:8px; min-width:21px; height:21px; padding:0 6px; border-radius:11px; display:grid; place-items:center;
+  text-decoration:none; background:#ef4444; color:#fff; font-size:12.5px; font-weight:800; box-shadow:0 0 0 2px var(--paper);
+}
+.vq-pole[hidden], .vq-otv[hidden]{ display:none; }
+/* сообщение: нажатие открывает меню; цитата; реакции */
+.vq-msg[data-vq="menu"]{ cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.vq-msg.vq-mig{ animation:vq-mig 1.2s; }
+@keyframes vq-mig{ 30%{ box-shadow:inset 0 0 0 3px #f4a91f, 0 0 0 5px rgba(244,169,31,.35); } }
+.vq-cit{
+  margin:-2px -4px 6px; padding:5px 9px; border-left:3px solid #f4a91f; border-radius:6px; background:rgba(0,0,0,.055);
+  font-size:13.5px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; cursor:pointer;
+}
+.vq-cit b{ display:block; font-size:12.5px; color:#b45309; }
+[data-theme="night"] .vq-cit{ background:rgba(255,255,255,.08); }
+[data-theme="night"] .vq-cit b{ color:#fbbf24; }
+.vq-reak{ display:flex; gap:4px; flex-wrap:wrap; margin:4px -4px 2px; }
+.vq-reak button{ height:26px; min-width:34px; padding:0 7px; border-radius:13px; display:grid; place-items:center; background:rgba(0,0,0,.07); font-size:15px; line-height:1; cursor:default; }
+.vq-reak button.moya{ background:#ffe9b0; box-shadow:inset 0 0 0 1.5px #f4a91f; cursor:pointer; }
+[data-theme="night"] .vq-reak button{ background:rgba(255,255,255,.12); }
+[data-theme="night"] .vq-reak button.moya{ background:rgba(244,169,31,.3); }
+.vq-otv{
+  flex:0 0 auto; display:flex; align-items:center; gap:8px; margin-top:8px; padding:7px 6px 7px 10px; border-left:3px solid #f4a91f; border-radius:8px;
+  background:rgba(0,0,0,.05); font-size:13.5px;
+}
+[data-theme="night"] .vq-otv{ background:rgba(255,255,255,.08); }
+.vq-otv span{ flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.vq-otv b{ margin-right:6px; }
+.vq-otv button{ flex:0 0 auto; width:32px; height:32px; border-radius:9px; display:grid; place-items:center; text-align:center; }
+.vq-otv:not([hidden]) + .vq-pole{ border-top:0; padding-top:6px; }
+.vq-menu{
+  position:fixed; z-index:75; padding:6px; border-radius:18px; background:var(--card); color:var(--ink);
+  box-shadow:0 14px 40px -10px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.08);
+}
+[data-theme="night"] .vq-menu{ box-shadow:0 14px 40px -10px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.14); }
+.vq-menu-r{ display:flex; gap:2px; }
+.vq-menu-r button{ width:40px; height:40px; border-radius:12px; display:grid; place-items:center; text-align:center; font-size:22px; line-height:1; -webkit-tap-highlight-color:transparent; }
+.vq-menu-r button:hover{ background:rgba(0,0,0,.07); }
+.vq-menu-r button.on{ background:#ffe9b0; }
+.vq-menu-r button[data-plus]{ font-size:18px; color:var(--sub); }
+[data-theme="night"] .vq-menu-r button:hover{ background:rgba(255,255,255,.1); }
+[data-theme="night"] .vq-menu-r button.on{ background:rgba(244,169,31,.3); }
+.vq-menu-in{ width:250px; max-width:calc(100vw - 40px); height:40px; padding:0 12px; border-radius:12px; border:2px solid #f4a91f; background:transparent; color:inherit; font:inherit; font-size:18px; outline:none; }
+.vq-menu-o{ display:block; width:100%; margin-top:4px; padding:9px 12px; border-radius:12px; text-align:left; font-size:15px; font-weight:700; }
+.vq-menu-o:hover{ background:rgba(0,0,0,.07); }
+[data-theme="night"] .vq-menu-o:hover{ background:rgba(255,255,255,.1); }
