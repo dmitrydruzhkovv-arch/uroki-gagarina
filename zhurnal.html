@@ -1340,7 +1340,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 
   /* ── выгрузка оценок (D, 08.10): все предметы одним листом — печать, PDF или файл для Excel.
      Собирается здесь же, в браузере учителя, из того, что уже загружено: на сервер ничего не уходит. ── */
-  var vyg = { view: 'subj', mo: 'all', hw: true };
+  // sr — показывать ли средний балл (D, 08.10: «пока у них там плохие средние»); помнится на этом устройстве
+  var vyg = { view: 'subj', mo: 'all', hw: true, sr: lsGet('zh:vyg-sr', true) !== false };
   var VYG_COLS = 30;   // столько клеток оценок в ширину помещает лист A4 лёжа рядом с фамилией; больше — таблица продолжается ниже
   function vygRow() { return '<div class="vyg-row"><button class="btn" data-act="vyg">⬇ Выгрузить оценки</button><span>все предметы одним листом — напечатать или отправить классному руководителю</span></div>'; }
   function vygSubj() { return (feed() ? ALLSUBJ : SUBJ).filter(function (x) { return vals(S.les).some(function (l) { return l.subj === x.id; }); }); }
@@ -1399,14 +1400,14 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     if (vyg.view === 'subj') {
       ALLCH.forEach(function (x) {
         x.ch.forEach(function (c) {
-          var avg = {}; P.forEach(function (p) { avg[p.id] = vygAvg(p.id, [c]); });
+          var avg = {}; if (vyg.sr) P.forEach(function (p) { avg[p.id] = vygAvg(p.id, [c]); });
           vygParts(c.days).forEach(function (days, pi, all) {
             h += '<section class="vl-s"><h2>' + esc(x.sj.name) + '<small>' + vygMo(c.m) + (pi ? ' — продолжение' : '') + '</small></h2><table><thead><tr><th class="nm" rowspan="2">Ученик</th>' +
-              days.map(function (g) { return '<th class="d" colspan="' + g.cols.length + '">' + esc(g.date || '—') + '</th>'; }).join('') + (pi === all.length - 1 ? '<th rowspan="2">Ср.</th>' : '') + '</tr><tr>' +
+              days.map(function (g) { return '<th class="d" colspan="' + g.cols.length + '">' + esc(g.date || '—') + '</th>'; }).join('') + (vyg.sr && pi === all.length - 1 ? '<th rowspan="2">Ср.</th>' : '') + '</tr><tr>' +
               days.map(function (g) { return g.cols.map(function (y) { return '<th class="w">' + y.lab + '</th>'; }).join(''); }).join('') + '</tr></thead><tbody>' +
               P.map(function (p) {
                 return '<tr><td class="nm">' + esc(vygFio(p)) + '</td>' + days.map(function (g) { return g.cols.map(function (y) { return '<td>' + esc(vygMark(y, p.id)) + '</td>'; }).join(''); }).join('') +
-                  (pi === all.length - 1 ? '<td class="sr">' + avg[p.id] + '</td>' : '') + '</tr>';
+                  (vyg.sr && pi === all.length - 1 ? '<td class="sr">' + avg[p.id] + '</td>' : '') + '</tr>';
               }).join('') + '</tbody></table></section>';
           });
         });
@@ -1415,7 +1416,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       P.forEach(function (p) {
         h += '<article class="vk"><h3>' + esc(vygFio(p)) + '<small>' + esc(META.title) + ' · ' + esc(vygPeriod()) + '</small></h3>';
         ALLCH.forEach(function (x) {
-          var avg = vygAvg(p.id, x.ch);
+          var avg = vyg.sr ? vygAvg(p.id, x.ch) : '';
           h += '<div class="vk-s"><b>' + esc(x.sj.name) + (avg ? '<i>средний ' + avg + '</i>' : '') + '</b><div class="vk-t">' + x.ch.map(function (c) {
             // сдвоенный урок — две клетки под одной датой; оценка за ДЗ — у того урока, которому задана (общая — на обе клетки)
             var row = function (w, name) {
@@ -1443,7 +1444,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       '<div class="meta">Все предметы журнала одним листом. Ниже — как он будет выглядеть.</div>' +
       '<div class="vyg-opt"><div><b>Вид</b>' + b('view', 'subj', 'По предметам') + b('view', 'stu', 'По ученикам — разрезать') + '</div>' +
       '<div><b>Период</b>' + b('mo', 'all', 'Весь год') + MS.map(function (m) { return b('mo', m, MONTHS[+m - 1]); }).join('') + '</div>' +
-      '<div><b>Домашние</b>' + b('hw', true, 'С оценками за ДЗ') + b('hw', false, 'Только уроки') + '</div></div>' +
+      '<div><b>Домашние</b>' + b('hw', true, 'С оценками за ДЗ') + b('hw', false, 'Только уроки') + '</div>' +
+      '<div><b>Средний балл</b>' + b('sr', true, 'Показывать') + b('sr', false, 'Скрыть') + '</div></div>' +
       '<div class="vyg-pre">' + vygHtml() + '</div>' +
       '<div class="row"><button class="btn" data-act="close">Закрыть</button><span class="sp"></span>' +
       '<button class="btn" data-act="vygcsv">Файл для Excel</button><button class="btn pri" data-act="vygprint">🖨 Печать / PDF</button></div></div>';
@@ -1487,8 +1489,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         var cols = [];
         x.ch.forEach(function (c) { c.days.forEach(function (g) { g.cols.forEach(function (y) { cols.push({ y: y, t: (g.date || 'без даты') + ' ' + y.lab }); }); }); });
         rows.push([x.sj.name]);
-        rows.push(['Ученик'].concat(cols.map(function (c) { return c.t; }), ['Средний']));
-        P.forEach(function (p) { rows.push([vygFio(p)].concat(cols.map(function (c) { return vygMark(c.y, p.id); }), [vygAvg(p.id, x.ch)])); });
+        rows.push(['Ученик'].concat(cols.map(function (c) { return c.t; }), vyg.sr ? ['Средний'] : []));
+        P.forEach(function (p) { rows.push([vygFio(p)].concat(cols.map(function (c) { return vygMark(c.y, p.id); }), vyg.sr ? [vygAvg(p.id, x.ch)] : [])); });
         rows.push([]);
       });
     } else {
@@ -1502,7 +1504,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
             var d = g.cols.filter(function (y) { return y.w === 'd'; }).map(function (y) { return vygMark(y, p.id); }).filter(Boolean).join(' ');
             rows.push([vygFio(p), x.sj.name, g.date || 'без даты', u[0] || ''].concat(dvoe ? [u.slice(1).filter(Boolean).join(' ')] : [], vyg.hw ? [d] : []));
           }); });
-          rows.push([vygFio(p), x.sj.name, 'средний', vygAvg(p.id, x.ch)]);
+          if (vyg.sr) rows.push([vygFio(p), x.sj.name, 'средний', vygAvg(p.id, x.ch)]);
         });
       });
     }
@@ -2741,7 +2743,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         if (rf && confirm('Удалить файл «' + rf.name + '»? Ученики больше не смогут его скачать.')) { var rl = rf.les; del('file', rf.id); render(); openLesson(rl); }
       }
       else if (act === 'vyg') openVyg();
-      else if (act === 'vygset') { vyg[a.dataset.k] = a.dataset.v === 'true' ? true : a.dataset.v === 'false' ? false : a.dataset.v; openVyg(); }
+      else if (act === 'vygset') { vyg[a.dataset.k] = a.dataset.v === 'true' ? true : a.dataset.v === 'false' ? false : a.dataset.v; lsSet('zh:vyg-sr', vyg.sr); openVyg(); }
       else if (act === 'vygprint') vygPrint();
       else if (act === 'vygcsv') vygCsv();
       else if (act === 'students') openStudents();
