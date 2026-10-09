@@ -191,6 +191,21 @@ td.c.long{ font-size:11px; white-space:normal; line-height:1.1; font-weight:600;
 .jr{ padding:6px 12px; border-radius:999px; font-weight:700; font-size:13.5px; color:var(--h-soft); box-shadow:inset 0 0 0 1px var(--h-line); }
 .jr[aria-pressed="true"]{ background:var(--h-txt); color:var(--h-bg); box-shadow:none; }
 .jr.add{ color:var(--h-dim); border:1px dashed var(--h-line); box-shadow:none; }
+/* ссылки урока (D, 09.10): видеосвязь и доска — всегда в шапке, у D и у ученика одни и те же */
+.ssyl{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:14px; }
+.sl{ display:inline-flex; align-items:center; gap:10px; padding:7px 16px 7px 7px; border-radius:14px; font-weight:800; font-size:15px; text-decoration:none;
+  color:#fff; box-shadow:0 10px 22px -12px var(--sl-glow), inset 0 1px 0 rgba(255,255,255,.3); transition:transform .18s var(--ease), box-shadow .2s; }
+.sl i{ width:32px; height:32px; border-radius:10px; display:grid; place-items:center; background:rgba(255,255,255,.24); }
+.sl svg{ width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.sl em{ font-style:normal; font-weight:700; opacity:.7; }
+.sl:hover{ transform:translateY(-2px); box-shadow:0 16px 28px -12px var(--sl-glow), inset 0 1px 0 rgba(255,255,255,.3); }
+.sl:active{ transform:scale(.96); }
+.sl.tm{ background:linear-gradient(135deg,#22c55e 0%,#0d9488 100%); --sl-glow:rgba(13,148,136,.9); }
+.sl.bd{ background:linear-gradient(135deg,#f472b6 0%,#8b5cf6 100%); --sl-glow:rgba(139,92,246,.9); }
+[data-theme="night"] .sl{ box-shadow:0 0 22px -6px var(--sl-glow), inset 0 1px 0 rgba(255,255,255,.25); }
+.sl-ed{ width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-size:15px; color:var(--h-dim); box-shadow:inset 0 0 0 1px var(--h-line); }
+.sl-ed:hover{ color:var(--h-txt); }
+@media (max-width:560px){ .sl{ flex:1 1 0; justify-content:flex-start; } }
 /* оформление: точка в начале строки, кнопки Ж К Ч • */
 .li{ display:block; padding-left:1.05em; text-indent:-1.05em; }
 .li::before{ content:'•'; display:inline-block; width:1.05em; text-indent:0; color:var(--s); font-weight:900; }
@@ -545,6 +560,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   .zh-title{ display:none; }
   .tabs{ margin-top:0; margin-right:290px; }   /* справа — «?», часы и тема (fixed), не накрывать вкладки и «сохранено» */ .tab{ padding:5px 12px 5px 6px; font-size:14px; } .tab i{ width:24px; height:24px; font-size:14px; }
   .zh-main{ padding-top:8px; } .months{ margin-bottom:6px; } .mo{ padding:4px 10px; }
+  .ssyl{ margin:0 290px 0 0; } .sl{ padding:4px 12px 4px 4px; font-size:14px; } .sl i{ width:26px; height:26px; }
   .wrap{ max-height:calc(100dvh - 16px); }
   .dock{ transform:scale(.8); transform-origin:top right; }
 }
@@ -566,6 +582,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       <span class="kicker">Школа Гагарина · 9 класс · 2026/27</span>
     </div>
     <nav class="jsw" id="jsw" hidden></nav>
+    <nav class="ssyl" id="ssyl" hidden></nav>
     <nav class="tabs" id="tabs" role="tablist"></nav>
   </div>
 </header>
@@ -696,6 +713,9 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   function kr() { return lsGet(LS.kr, ''); }
   var krMode = false;   // журнал открыт по ссылке классного руководителя
   var krSrv = false;    // сервер умеет такие ссылки (говорит в ответе /sync): без этого учителю кнопку не показываем
+  // сервер отдаёт ученикам ссылки урока (тоже из /sync, помним между заходами): выключено — кнопок нет и у D,
+  // иначе он видел бы то, чего ученик не видит
+  var ssylSrv = lsGet('zh:ssyl', false) === true;
   //   // личная ссылка ученика без Телеграма: <журнал>.<ключ>
   function stuH() { return sk() ? { 'X-Stu-Key': sk() } : { 'X-Chat-Key': ck() }; }
   function chatBase() { return API.replace(/\/cabinet$/, ''); }
@@ -1018,6 +1038,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
         if (r.data.meta) setMeta(r.data.meta);
         if (r.data.journals) { JOURNALS = r.data.journals; renderJournals(); }
         if ('kr' in r.data) krSrv = !!r.data.kr;
+        if (ssylSrv !== !!r.data.ssyl) { ssylSrv = !!r.data.ssyl; lsSet('zh:ssyl', ssylSrv); }
         var next = fromObjects(r.data.objects);
         outbox.forEach(function (op) {   // правки, сделанные пока шёл запрос, — сверху
           if (op.t === 'put') { var o = JSON.parse(JSON.stringify(op.d)); o.id = op.id; o.ts = op.ts; next[op.k][op.id] = o; }
@@ -1224,7 +1245,51 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       '<div class="note">«Новая ссылка» — старая перестанет работать (если её переслали не тому).</div></div>';
   }
 
+  /* ── ссылки урока (D, 09.10): видеосвязь и доска в шапке журнала; лежат в описании журнала (cfg 'meta': tm, bd) ── */
+  var SSYL = [
+    { id: 'tm', name: 'Телемост', hint: 'видеоурок', ph: 'https://telemost.yandex.ru/j/…', svg: '<path d="M15 10l5-3v10l-5-3z"/><rect x="3" y="6" width="12" height="12" rx="3"/>' },
+    { id: 'bd', name: 'Доска', hint: 'пишем вместе', ph: 'https://app.holst.so/…', svg: '<path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/>' }
+  ];
+  // как _url на сервере: https, узел с точкой, порт цифрами, без пробелов и кавычек. Сервер проверяет сам — здесь только подсказка D
+  function okUrl(u) { return String(u || '').length <= 300 && /^https:\/\/[^\x00-\x20\x7f"'<>\\\/:?#@]+\.[^\x00-\x20\x7f"'<>\\\/:?#@.]{2,}(?::\d{1,5})?(?:[\/?#][^\x00-\x20\x7f"'<>\\]*)?$/.test(u || ''); }
+  // у D — из записи журнала: своя правка видна сразу, до ответа сервера; у ученика — из описания, что прислал сервер
+  function ssylNow() { return (mode === 'teacher' && S.cfg.meta) || META || {}; }
+  function renderSsyl() {
+    var edit = mode === 'teacher' && ssylSrv;
+    var el = $('ssyl'), m = krMode || (mode === 'teacher' ? !ssylSrv : !loaded) ? {} : ssylNow();
+    var h = SSYL.filter(function (x) { return okUrl(m[x.id]); }).map(function (x) {
+      return '<a class="sl ' + x.id + '" href="' + esc(m[x.id]) + '" target="_blank" rel="noopener"><i><svg viewBox="0 0 24 24" aria-hidden="true">' + x.svg + '</svg></i>' +
+        '<span>' + x.name + ' <em>↗</em></span></a>';
+    }).join('');
+    if (edit && h) h += '<button class="sl-ed" data-act="ssyl" title="Изменить ссылки урока" aria-label="Изменить ссылки урока">✎</button>';
+    else if (edit && feed()) h = '<button class="jr add" data-act="ssyl" title="Кнопки «Телемост» и «Доска» в шапке — у тебя и у ученика">＋ Ссылки урока</button>';
+    el.hidden = !h;
+    if (el.innerHTML !== h) el.innerHTML = h;
+  }
+  function openSsyl() {
+    var m = ssylNow();
+    $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true"><h3>Ссылки урока</h3>' +
+      '<div class="meta">Две кнопки в шапке журнала «' + esc(META.title) + '» — у тебя и у ученика. Пустое поле — кнопки нет.</div>' +
+      SSYL.map(function (x) {
+        return '<div class="lbl">' + x.name + ' · ' + x.hint + '</div><input id="ss-' + x.id + '" inputmode="url" maxlength="300" placeholder="' + x.ph + '" value="' + esc(m[x.id] || '') + '">';
+      }).join('') +
+      '<div class="row"><span class="sp"></span><button class="btn" data-act="close">Отмена</button><button class="btn pri" data-act="ssylsave">Сохранить</button></div></div>';
+  }
+  function saveSsyl() {
+    var d = { title: META.title, subj: META.subj, kind: META.kind }, bad = '';
+    SSYL.forEach(function (x) {
+      var u = $('ss-' + x.id).value.trim();
+      if (u && !/^[a-z]+:\/\//i.test(u)) u = 'https://' + u;
+      d[x.id] = u;   // пустая строка — убрать кнопку: без поля сервер оставил бы прежнюю ссылку
+      if (u && !okUrl(u)) bad = bad || x.name;
+    });
+    if (bad) { alert('«' + bad + '»: ссылка должна начинаться с https:// и быть без пробелов.'); return; }
+    put('cfg', 'meta', d);
+    closeDlg(); render();
+  }
+
   function renderTools() {
+    renderSsyl();
     var t = $('tools');
     if (mode !== 'teacher') {
       if (!loaded) { t.hidden = true; return; }
@@ -2807,6 +2872,8 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       else if (act === 'vygprint') vygPrint();
       else if (act === 'vygcsv') vygCsv();
       else if (act === 'students') openStudents();
+      else if (act === 'ssyl') openSsyl();
+      else if (act === 'ssylsave') saveSsyl();
       else if (act === 'newjournal') openNewJournal();
       else if (act === 'mkjournal') makeJournal();
       else if (act === 'stulink') stuLink(a.dataset.id);
