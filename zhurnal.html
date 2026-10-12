@@ -605,6 +605,15 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-st.no{ color:var(--v-red); } #vid .v-st.wait{ color:var(--v-wait); } #vid .v-st.ok{ color:var(--v-ok); }
 #vid .v-hw{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; }
 #vid .v-quiet .v-hw{ font-size:var(--t3); color:var(--v-sub); }
+/* «К следующим урокам» — отдельные плитки, как дни в календаре сайта (D 12.10, вариант 4 из строки_варианты.png).
+   Цветом предмета залита только та, по которой от ученика что-то нужно; сдал — плитка гаснет до белой и остаётся со статусом */
+#vid .v-tiles{ display:grid; gap:8px; }
+#vid .v-tiles .v-row{ border-radius:16px; background:var(--v-card); box-shadow:inset 0 0 0 1px var(--v-line); }
+#vid .v-tiles .v-row.fill{ background:var(--g); color:var(--on); box-shadow:0 10px 22px -14px var(--glow); }
+#vid .v-tiles .fill .v-dot{ display:none; }
+#vid .v-tiles .fill .v-go{ color:inherit; opacity:.7; }
+#vid .v-tiles .fill .v-st{ background:rgba(255,255,255,.92); padding:2px 8px; border-radius:8px; }
+[data-theme="night"] #vid .v-tiles .fill .v-st{ background:rgba(10,5,16,.78); }
 /* долг — строка с красной полосой слева; просроченный — на розовом и стоит первым */
 #vid .v-debt{ box-shadow:inset 3px 0 0 var(--v-red); }
 #vid .v-debt + .v-debt{ box-shadow:inset 3px 0 0 var(--v-red), inset 0 1px 0 var(--v-line); }
@@ -2973,7 +2982,7 @@ html.vid[data-theme="night"] body{ background:#000; }
      Включает сервер (ZHURNAL_VID → vid в ответе /me); ?vid=1 в адресе — посмотреть до включения.
      Таблица учителя, вход по коду класса и ссылка классного руководителя — как были. Данные те же, что у таблицы:
      уроки, оценки и сдачи своей строки. «Оценки» и «Уроки» собираются следующими шагами — пока ведут в прежний журнал. ── */
-  var vidSrv = false, vidUrl = /[?&]vid=1(?:&|$)/.test(location.search), vidOld = false;   // vidOld — ученик сам открыл прежний журнал
+  var vidSrv = false, vidUrl = /[?&#]vid=1(?:&|#|$)/.test(location.search + location.hash), vidOld = false;   // vidOld — ученик сам открыл прежний журнал
   var vTab = 'zadano', vLes = '', vMat = false, vY = 0;
   function vidOn() { return mode !== 'teacher' && loaded && !!meId && !!S.stu[meId] && (vidSrv || vidUrl) && !vidOld; }
   // показать или спрятать новый вид; живая стена шапки (fon.js) — одна на страницу, переезжает туда, где её видно
@@ -3074,10 +3083,10 @@ html.vid[data-theme="night"] body{ background:#000; }
       return '<a class="v-out" href="' + esc(m[x.id]) + '" target="_blank" rel="noopener">' + x.name + ' ↗</a>';
     }).join('');
     if (links) h += '<div class="v-links">' + links + '</div>';
-    h += '<div class="v-lbl">К следующим урокам</div><div class="v-card">' + (rows.length ? rows.map(function (r) {
+    h += '<div class="v-lbl">К следующим урокам</div><div class="' + (rows.length ? 'v-tiles' : 'v-card') + '">' + (rows.length ? rows.map(function (r) {
       var sj = vSj(r.subj);
       if (!r.own) return '<div class="v-row v-quiet"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><b>' + esc(sj.short) + '</b><span class="v-hw">нового пока не задано</span></span></div>';
-      return '<button class="v-row" data-va="urok" data-id="' + r.own.id + '"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><span class="v-rt"><b>' + esc(sj.short) + (r.due ? ', ' + esc(vDay(r.due.date)) : '') + '</b>' +
+      return '<button class="v-row ' + sj.k + (r.st.todo ? ' fill' : '') + '" data-va="urok" data-id="' + r.own.id + '"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><span class="v-rt"><b>' + esc(sj.short) + (r.due ? ', ' + esc(vDay(r.due.date)) : '') + '</b>' +
         '<span class="v-st ' + r.st.k + '">' + esc(r.st.t) + '</span></span><span class="v-hw">' + esc(vHwLine(r.own)) + '</span></span><span class="v-go">›</span></button>';
     }).join('') : '<div class="v-pad"><span class="v-cap">Пока ничего не задано.</span></div>') + '</div>';
     if (D.length) h += '<div class="v-lbl">Долги · ' + D.length + '</div><div class="v-card">' + D.map(function (x) {
