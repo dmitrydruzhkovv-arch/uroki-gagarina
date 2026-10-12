@@ -570,6 +570,107 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .zt tbody .nm{ position:sticky; }
 .zt tbody .nm i.avg{ position:absolute; top:3px; right:5px; font-style:normal; font-size:11px; font-weight:800; line-height:1;
   padding:2px 4px; border-radius:5px; background:var(--z-head); color:var(--ink); font-family:'JetBrains Mono',ui-monospace,monospace; }
+
+/* ══ вид ученика (ТЗ 19, шаг 2; сервер включает его флагом ZHURNAL_VID). Ученик своей строки видит не таблицу учителя,
+   а свои экраны: «Задано» и карточку урока с кнопкой «Сдать фото». Макет — _стенд_журнала/макет_вид-ученика/.
+   Одна колонка до 480 px на любом экране; цвета — те же переменные шапки (--h-…), ночь получается сама.
+   Все классы — с приставкой v-: у сайта свои .row, .card, .tabs. Размеров текста три: --t1, --t2, --t3 ══ */
+html.vid .zh-hero, html.vid .zh-main, html.vid .dock, html.vid .vq-hint{ display:none; }   /* подсказка «Жми ?» показывает на знак у часов — его тут нет, чат на вкладке */
+html.vid body{ background:#d9d3e6; }
+html.vid[data-theme="night"] body{ background:#000; }
+#vid{ --v-bg:var(--h-bg); --v-card:var(--h-panel); --v-ink:var(--h-txt); --v-sub:var(--h-soft); --v-line:var(--h-line); --v-dim:#8a8399;
+  --v-red:#b42318; --v-wait:#6d28d9; --v-ok:#35701a; --v-late:#fff5f4;
+  --v-pri:linear-gradient(135deg,#fb9a3c 0%,#f07a12 55%,#e0620a 100%); --v-glow:rgba(234,88,12,.42);
+  --t1:24px; --t2:16px; --t3:13px;
+  position:relative; max-width:480px; min-height:100vh; min-height:100dvh; margin:0 auto; background:var(--v-bg); color:var(--v-ink); font-size:var(--t2); line-height:1.4; }
+[data-theme="night"] #vid{ --v-dim:var(--h-dim); --v-red:#ff9aa8; --v-wait:#c4b5fd; --v-ok:#b9e69c; --v-late:rgba(255,90,90,.09); }
+#vid .v-scr{ padding:20px 16px 96px; }
+#vid .v-h1{ font-size:var(--t1); font-weight:800; letter-spacing:-.01em; line-height:1.15; margin:0; color:var(--v-ink); }
+#vid .v-h1 + .v-h1{ margin-top:6px; }
+#vid .v-cap{ display:block; font-size:var(--t3); color:var(--v-sub); }
+#vid .v-cap .v-dot{ display:inline-block; margin:0 6px 0 0; }
+#vid .v-lbl{ font-size:var(--t3); font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--v-sub); margin:22px 0 8px; }
+#vid .v-card{ background:var(--v-card); border-radius:16px; box-shadow:inset 0 0 0 1px var(--v-line); overflow:hidden; }
+#vid .v-card + .v-card{ margin-top:10px; }
+#vid .v-pad{ padding:14px; }
+/* строка, которая нажимается, — всегда со стрелкой «›» справа; без стрелки строка не кнопка */
+#vid .v-row{ display:flex; align-items:flex-start; gap:12px; width:100%; padding:14px 12px 14px 14px; color:inherit; }
+#vid .v-row + .v-row{ box-shadow:inset 0 1px 0 var(--v-line); }
+#vid .v-body{ flex:1; min-width:0; display:block; }
+#vid .v-body b{ font-weight:700; }
+#vid .v-go{ flex:none; align-self:center; font-size:22px; line-height:1; color:var(--v-dim); }
+#vid .v-dot{ flex:none; width:10px; height:10px; border-radius:50%; margin-top:6px; background:var(--s, var(--v-sub)); }
+#vid .v-rt{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:0 8px; align-items:baseline; }
+#vid .v-st{ font-size:var(--t3); font-weight:700; white-space:nowrap; }
+#vid .v-st.no{ color:var(--v-red); } #vid .v-st.wait{ color:var(--v-wait); } #vid .v-st.ok{ color:var(--v-ok); }
+#vid .v-hw{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; }
+#vid .v-quiet .v-hw{ font-size:var(--t3); color:var(--v-sub); }
+/* долг — строка с красной полосой слева; просроченный — на розовом и стоит первым */
+#vid .v-debt{ box-shadow:inset 3px 0 0 var(--v-red); }
+#vid .v-debt + .v-debt{ box-shadow:inset 3px 0 0 var(--v-red), inset 0 1px 0 var(--v-line); }
+#vid .v-debt.late{ background:var(--v-late); }
+#vid .v-debt .v-hw{ display:block; }
+/* ссылки урока (видеосвязь, доска) — контурные: залитая кнопка на экране одна */
+#vid .v-links{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+#vid .v-out{ display:inline-flex; align-items:center; gap:6px; padding:9px 14px; border-radius:12px; font-size:var(--t3); font-weight:700; color:var(--v-ink); text-decoration:none; box-shadow:inset 0 0 0 1px var(--v-line); background:var(--v-card); }
+/* живая шапка «Задано» — та же стена, что в журнале (fon.js); её узел переезжает сюда из прежней шапки */
+#vid .v-head{ position:relative; overflow:hidden; isolation:isolate; height:124px; margin:-20px -16px 6px; padding:0 16px 14px; display:flex; flex-direction:column; justify-content:flex-end;
+  background:radial-gradient(500px 240px at 85% -10%, rgba(168,85,247,.20), transparent 60%), radial-gradient(400px 220px at 0% 110%, rgba(79,70,229,.14), transparent 60%), var(--h-bg);
+  box-shadow:inset 0 -1px 0 var(--v-line); }
+#vid .v-head > *{ position:relative; z-index:1; }
+#vid .v-head .gif-wall{ position:absolute; z-index:0; display:flex; align-items:center; }
+#vid .v-head .gw-plane{ position:relative; flex:0 0 160%; left:-30%; top:auto; width:auto; height:auto; gap:10px; grid-template-columns:repeat(5,1fr); }
+#vid .v-head .gif-wall::after{ background:linear-gradient(90deg, var(--h-bg) 0%, color-mix(in srgb, var(--h-bg) 78%, transparent) 34%, color-mix(in srgb, var(--h-bg) 26%, transparent) 66%, color-mix(in srgb, var(--h-bg) 14%, transparent) 100%); }
+#vid .v-kick{ font-size:var(--t3); font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--v-sub); padding-right:48px; }
+#vid .v-gear{ position:absolute; z-index:2; top:calc(10px + env(safe-area-inset-top, 0px)); right:12px; width:40px; height:40px; border-radius:12px; display:grid; place-items:center;
+  color:var(--v-ink); background:color-mix(in srgb, var(--v-card) 82%, transparent); box-shadow:inset 0 0 0 1px var(--v-line); }
+#vid .v-gear svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+/* карточка урока */
+#vid .v-back{ display:inline-flex; align-items:center; gap:6px; font-size:var(--t3); font-weight:700; color:var(--v-sub); padding:8px 12px 8px 0; margin-bottom:6px; }
+#vid .v-cover{ display:block; width:100%; aspect-ratio:2/1; border-radius:16px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--v-line); margin-bottom:14px; }
+#vid .v-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
+#vid .v-tasks{ white-space:pre-line; line-height:1.6; overflow-wrap:anywhere; }
+#vid .v-files{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+#vid .v-file{ display:inline-flex; align-items:center; gap:8px; max-width:100%; padding:6px 12px 6px 6px; border-radius:12px; box-shadow:inset 0 0 0 1px var(--v-line); font-size:var(--t3); font-weight:700; color:var(--v-ink); }
+#vid .v-file u{ flex:none; width:34px; height:44px; border-radius:6px; overflow:hidden; text-decoration:none; display:grid; place-items:center; box-shadow:inset 0 0 0 1px var(--v-line); }
+#vid .v-file u img{ width:100%; height:100%; object-fit:cover; display:block; }
+#vid .v-file u i{ font-style:normal; font-size:10px; font-weight:800; text-transform:uppercase; color:var(--v-sub); }
+#vid .v-file .fz{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* пока картинка едет с сервера, в рамке видно движение, а не пустой серый блок */
+#vid .v-cover, #vid .v-file u{ background:linear-gradient(100deg, var(--v-line) 30%, var(--v-card) 50%, var(--v-line) 70%) 0 0/220% 100%; animation:v-shim 1.4s linear infinite; }
+@keyframes v-shim{ to{ background-position:-220% 0; } }
+@media (prefers-reduced-motion:reduce){ #vid .v-cover, #vid .v-file u{ animation:none; } }
+#vid .v-status{ margin-top:14px; padding-top:12px; box-shadow:inset 0 1px 0 var(--v-line); display:flex; flex-wrap:wrap; gap:0 8px; align-items:baseline; }
+#vid .v-status .v-cap{ display:inline; }
+#vid .v-status .v-st{ white-space:normal; }
+#vid .v-hist{ display:block; font-size:var(--t3); color:var(--v-sub); margin-top:4px; overflow-wrap:anywhere; }
+#vid .v-hist.bad{ color:var(--v-red); font-weight:700; }
+#vid .thumbs{ margin:10px 0 0; }
+#vid .v-mk{ display:flex; gap:12px; align-items:flex-start; padding:14px; }
+#vid .v-mk + .v-mk{ box-shadow:inset 0 1px 0 var(--v-line); }
+/* оценка — та же расцветка плиток, что в таблице (--m5b …): заливка цветом только у оценок и у главной кнопки */
+#vid .v-m{ flex:none; min-width:40px; height:40px; padding:0 6px; border-radius:11px; display:inline-flex; align-items:center; justify-content:center; font-weight:800; background:var(--m4b); color:var(--v-ink); }
+#vid .v-m.m5{ background:var(--m5b); color:var(--m5t); } #vid .v-m.m4{ color:var(--m4t); } #vid .v-m.m3{ background:var(--m3b); color:var(--m3t); }
+#vid .v-m.m2{ background:var(--m2b); color:var(--m2c); } #vid .v-m.mn{ background:var(--mnb); color:var(--mnt); }
+#vid .v-m.long{ font-size:var(--t3); }
+/* одна залитая кнопка на экране, прижата к низу */
+#vid .v-cta{ position:fixed; z-index:5; left:50%; transform:translateX(-50%); bottom:0; width:100%; max-width:480px; padding:18px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  background:linear-gradient(180deg, transparent, var(--v-bg) 18px); pointer-events:none; }
+#vid .v-cta .v-btn{ pointer-events:auto; display:block; width:100%; padding:16px; border-radius:16px; text-align:center; font-weight:800; color:#fff; text-decoration:none; background:var(--v-pri); box-shadow:0 12px 24px -12px var(--v-glow); cursor:pointer; }
+#vid .v-cta input{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+#vid .v-cta .v-cap{ text-align:center; margin-bottom:8px; }
+#vid .v-scr.cta{ padding-bottom:132px; }
+/* нижняя панель: четыре вкладки со значком и подписью */
+#vid .v-tabs{ position:fixed; z-index:5; left:50%; transform:translateX(-50%); bottom:0; width:100%; max-width:480px; display:grid; grid-template-columns:repeat(4,1fr);
+  background:var(--v-card); box-shadow:0 -1px 0 var(--v-line); padding:6px 8px calc(8px + env(safe-area-inset-bottom, 0px)); }
+#vid .v-tabs button{ position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 0; border-radius:12px; font-size:var(--t3); font-weight:700; color:var(--v-dim); }
+#vid .v-tabs svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+#vid .v-tabs .on{ color:var(--v-ink); }
+#vid .v-tabs .on svg{ stroke:#ea580c; }
+#vid .v-badge{ position:absolute; top:0; left:50%; margin-left:6px; min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:#dc2626; color:#fff; font-size:11px; font-weight:800; line-height:18px; text-align:center; }
+.dlg.v-set .v-setrow{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+.dlg.v-set .btn[aria-pressed="true"]{ box-shadow:inset 0 0 0 2px var(--ink); }
+.dlg.v-set .v-wide{ display:block; width:100%; margin-top:14px; padding:12px; }
 </style>
 </head>
 <body>
@@ -593,6 +694,22 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
   <footer class="zh-foot">
     <a class="link" href="pravila.html">Правила и конфиденциальность</a><span id="footLinks"></span>
   </footer>
+</div>
+
+<!-- вид ученика (ТЗ 19): свои экраны вместо таблицы учителя. Пуст и спрятан, пока сервер не включит его (ZHURNAL_VID) -->
+<div id="vid" hidden>
+  <section class="v-scr" id="vZ">
+    <div class="v-head" id="vTop">
+      <button class="v-gear" data-va="set" title="Настройки" aria-label="Настройки"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      <div class="v-kick" id="vKick"></div>
+      <h1 class="v-h1">Задано</h1>
+    </div>
+    <div id="vZb"></div>
+  </section>
+  <section class="v-scr" id="vX" hidden></section>
+  <section class="v-scr" id="vU" hidden></section>
+  <div class="v-cta" id="vCta" hidden></div>
+  <nav class="v-tabs" id="vTabs"></nav>
 </div>
 
 <!-- часы и тема — как на главной -->
@@ -718,8 +835,9 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
       var q = new URLSearchParams(location.search);
       if (v) q.set('s', v); else q.delete('s');
       var qs = q.toString();
-      history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+      history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + location.hash);   // шаг истории открытого окна (вид ученика) не затираем
     } catch (e) { /* адрес не поменять — значок выйдет без ключа, вход останется прежним */ }
+    if (!v) lsDel('zh:zn');   // ключ не годен — и его копию из памяти долой
   }
   LS.ck = 'zh:ck'; LS.vhod = 'zh:vhod'; LS.kr = 'zh:kr';
   function ck() { return lsGet(LS.ck, ''); }
@@ -1151,7 +1269,7 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
       '<button class="link" data-act="krexit">Выйти из этого режима</button>';
   }
   function gate(err) {
-    loaded = false;
+    loaded = false; vidShow();
     $('main').innerHTML =
       '<div class="gate"><h2>Код класса</h2><p>Журнал открывается по коду. Его говорит учитель на уроке.</p>' +
       '<form id="gateForm"><input id="gateIn" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="40" aria-label="Код класса" placeholder="код">' +
@@ -1320,7 +1438,11 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
     if (mode !== 'teacher') {
       if (!loaded) { t.hidden = true; return; }
       t.hidden = false;
-      if (meId && S.stu[meId]) { t.hidden = true; return; }   // своя строка подсвечена — подпись сверху не нужна (D, 01.10)
+      if (meId && S.stu[meId]) {   // своя строка подсвечена — подпись сверху не нужна (D, 01.10)
+        t.hidden = !vidOld;   // пришёл из нового вида за оценками — кнопка обратно
+        if (vidOld) t.innerHTML = '<div class="stbar"><button class="btn pri" data-va="new">← Задано и сдача домашки</button></div>';
+        return;
+      }
       t.innerHTML = '<div class="stbar">' + (ck() ? '<button class="btn pri" data-act="pickme">📷 Сдавать домашку — найди себя в списке</button>'
         : '<button class="btn pri" data-act="login">📷 Сдавать домашку — войти через Телеграм</button>') + '</div>';
       return;
@@ -1336,6 +1458,7 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
   }
 
   function render() {
+    if (vidShow()) { vRender(); return; }   // ученик своей строки — свои экраны, не таблица (ТЗ 19)
     if (cur) { pendingRender = true; return; }
     renderTabs(); renderTools();
     var main = $('main');
@@ -2315,8 +2438,9 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
   // ученик с ключом: журнал класса + свои сдачи. → true | 'nolink' | false (ключ не годен)
   function meLoad(want) {
     // at — когда ученик сам выбрал запомненный журнал: подключили к новому позже — сервер откроет новый (D, 01.10)
-    var body = want ? { j: want } : { j: lsGet('zh:sj', ''), at: lsGet('zh:sjt', 0) || 1 };
+    var body = want ? { j: want } : { j: lsGet('zh:sj', ''), at: lsGet('zh:sjt', 0) || 1 }, seq0 = subSeq;
     return post('/zhurnal/me', body, stuH()).then(function (r) {
+      if (seq0 !== subSeq && r.status === 200) return meLoad(want);   // пока шёл запрос, ученик сдал фото — этот снимок старше сдачи, берём свежий
       if (r.status === 401) { if (!znUrl()) lsDel(sk() ? LS.sk : LS.ck); return false; }   // ключ значка — в адресе, память не при чём
       if (r.status !== 200 || !r.data.ok) throw { http: r.status };
       lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
@@ -2324,15 +2448,16 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
       if (want && r.data.j === want) { lsSet('zh:sj', want); lsSet('zh:sjt', Date.now()); }   // выбрал в переключателе и он открылся — в следующий раз откроется он
       if (!r.data.stu) { meId = null; freeRows = r.data.free || []; return 'nolink'; }
       setMeta(r.data.meta);
-      meId = r.data.stu; sdachaOn = !!r.data.sdacha; znSrv = !!r.data.zn; znFoot();
+      meId = r.data.stu; sdachaOn = !!r.data.sdacha; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; znFoot();
+      if (znUrl()) lsSet('zh:zn', znUrl());   // отдельной записью: в деле только когда другого входа на устройстве нет (см. старт) // ключ значка — ещё и в память: ушёл на сайт уроков и вернулся по ссылке «Журнал» без ключа — кода класса не спросим (D 12.10)
       S = fromObjects(r.data.objects); loaded = true; render();
       return true;
     }, function (e) { nextApi(); throw e; });
   }
   // вошёл через бота, а строка ни с кем не связана — ученик сам жмёт свою фамилию, D приходит уведомление
-  var freeRows = [];
+  var freeRows = [], subSeq = 0;   // subSeq растёт при каждой сдаче фото
   function pickMe(err) {
-    loaded = false; renderTools();
+    loaded = false; vidShow(); renderTools();
     var h = '<div class="gate"><h2>Кто ты?</h2><p>Нажми свою фамилию. Это один раз: дальше журнал будет узнавать тебя сам.</p>';
     if (freeRows.length) h += '<div class="pick">' + freeRows.map(function (x) {
       return '<button class="btn" data-act="claim" data-id="' + esc(x.id) + '" data-nm="' + esc(x.fam + ' ' + x.name) + '"><b>' + esc(x.fam) + '</b> ' + esc(x.name) + '</button>';
@@ -2615,7 +2740,7 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
   function submitPhotos(input) {
     var files = Array.prototype.slice.call(input.files, 0, 12), st = $('subSt'), lid = input.dataset.lid, markId = input.dataset.mark;
     if (st) st.textContent = 'Готовлю ' + files.length + ' фото…';
-    input.disabled = true;
+    input.disabled = true; subSeq++;
     Promise.all(files.map(shrink)).then(function (blobs) {
       var fd = new FormData();
       fd.append('les', lid);
@@ -2627,7 +2752,8 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
     }).then(function (r) {
       if (r.status === 200 && r.j.ok) {
         var o = r.j.obj, d = o.d; d.id = o.id; d.ts = o.ts; S.sub[o.id] = d;
-        render(); openSubmit(markId);
+        subSeq++; input.disabled = false; input.value = '';   // в новом виде кнопка остаётся на экране — «Дослать фото» должна работать и второй раз
+        render(); if (!vidOn()) openSubmit(markId);   // в новом виде сдача — прямо в карточке урока
         var s2 = $('subSt'); if (s2) s2.textContent = '✅ Сдано! Учитель получил уведомление.';
         return;
       }
@@ -2843,6 +2969,294 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
     openCell(cc[0] + '.' + P[r].id + '.' + cc[1]);
   }
 
+  /* ── вид ученика (ТЗ 19, шаг 2): «Задано» и карточка урока со сдачей фото — вместо таблицы учителя.
+     Включает сервер (ZHURNAL_VID → vid в ответе /me); ?vid=1 в адресе — посмотреть до включения.
+     Таблица учителя, вход по коду класса и ссылка классного руководителя — как были. Данные те же, что у таблицы:
+     уроки, оценки и сдачи своей строки. «Оценки» и «Уроки» собираются следующими шагами — пока ведут в прежний журнал. ── */
+  var vidSrv = false, vidUrl = /[?&]vid=1(?:&|$)/.test(location.search), vidOld = false;   // vidOld — ученик сам открыл прежний журнал
+  var vTab = 'zadano', vLes = '', vMat = false, vY = 0;
+  function vidOn() { return mode !== 'teacher' && loaded && !!meId && !!S.stu[meId] && (vidSrv || vidUrl) && !vidOld; }
+  // показать или спрятать новый вид; живая стена шапки (fon.js) — одна на страницу, переезжает туда, где её видно
+  function vidShow() {
+    var on = vidOn(), root = document.documentElement;
+    if (on === root.classList.contains('vid')) return on;
+    root.classList.toggle('vid', on); $('vid').hidden = !on;
+    var w = $('gifWall'), to = on ? $('vTop') : document.querySelector('.zh-hero');
+    if (w && to) to.insertBefore(w, to.firstChild);
+    if (!on) vLes = '';
+    return on;
+  }
+  function vN(n, a, b, c) { var d = n % 10, h = n % 100; return n + ' ' + (d === 1 && h !== 11 ? a : d >= 2 && d <= 4 && (h < 12 || h > 14) ? b : c); }
+  function vSj(id) { return ALLSUBJ.filter(function (s) { return s.id === id; })[0] || ALLSUBJ[3]; }
+  function vDay(date) { var rd = realDate(date); return (rd ? WD[rd.getDay()].toLowerCase() + ' ' : '') + date; }
+  function vSay(c) { return /[0-9a-zа-яё]/i.test(c || ''); }   // в комментарии есть слова, а не одна точка
+  var V_NONE = /^(?:—|–|-|нет|не задано)\.?$/i;
+  function vHwText(own) { var t = String(hwOf(own).t || '').trim(); return V_NONE.test(t) ? '' : t; }
+  function vHwHas(own) { return !!(vHwText(own) || hwFiles(own).length || autoUrl(own.ad)); }
+  function vHwLine(own) {
+    var t = plain(vHwText(own)).split('\n').map(function (x) { return x.trim(); }).filter(Boolean).join('; '), n = hwFiles(own).length;
+    return t || (n ? 'Задание — в карточке урока: ' + vN(n, 'файл', 'файла', 'файлов') : 'Домашка на телефоне или ноутбуке');
+  }
+  // блок урока: сам урок, его сдвоенные соседи и урок, у которого клетка домашки (own); L — все уроки этого предмета
+  function vBlock(lid) {
+    var l = S.les[lid];
+    if (!l) return null;
+    var L = lessons(l.subj), LY = layout(L), x0 = LY.filter(function (x) { return x.l.id === lid; })[0];
+    if (!x0) return null;
+    return { own: x0.own, L: L, les: LY.filter(function (x) { return x.own === x0.own; }).map(function (x) { return x.l; }) };
+  }
+  // к какому дню домашка: следующий урок предмета. Его в журнале ещё нет (D заводит день в день урока) — ближайший день
+  // недели, в какие этот предмет идёт: «к вт 13.10» ученику нужнее, чем дата, когда задали
+  function vDue(L, own) {
+    var k = dkey(own.date), nx = L.filter(function (l) { return dkey(l.date) > k; })[0];
+    if (nx) return { date: nx.date, les: nx };
+    var d = realDate(own.date), wd = {}, t = new Date();
+    if (!d) return null;
+    L.slice(-8).forEach(function (l) { var x = realDate(l.date); if (x) wd[x.getDay()] = 1; });
+    t.setHours(0, 0, 0, 0); d.setDate(d.getDate() + 1);
+    if (d < t) d = t;
+    for (var i = 0; i < 14; i++, d.setDate(d.getDate() + 1)) if (wd[d.getDay()]) return { date: ddmm(d) };
+    return null;
+  }
+  // сдача словами: t — коротко в строке «Задано», full — в карточке урока; todo — от ученика ещё что-то нужно
+  function vStatus(own) {
+    var sub = S.sub[own.id + '.' + meId], m = S.mark[own.id + '.' + meId + '.d'], inf = markInfo(m && m.v), g = inf.cls === 'mn' ? '' : splitMark(m).g;
+    if (sub && sub.st === 'sent') return { k: 'wait', t: 'ждёт проверки', full: 'сдано, ждёт проверки' };
+    if (sub && sub.st === 'redo') return { k: 'no', t: 'вернули: исправь', full: 'вернули: исправь и сдай заново', todo: true };
+    if (g && inf.red) return { k: 'no', t: 'не сдано: ' + g, full: 'оценка ' + g + ' — не сдано: исправь и сдай заново', todo: true };
+    if (g) return { k: inf.cls === 'm2' ? 'no' : 'ok', t: 'проверено: ' + g, full: 'проверено: ' + g };
+    if (sub && sub.st === 'checked') return { k: 'ok', t: 'проверено', full: 'проверено' };
+    return { k: 'no', t: 'не сдано', full: 'не сдано', todo: true };
+  }
+  // «К следующим урокам»: по строке на предмет — последняя заданная домашка (у индивидуала лента одна, строка одна).
+  // Урок, к которому задавали, уже прошёл, а нового не задано — так и пишем: «не ту домашку» делают от неизвестности
+  function vZadano() {
+    var tk = dkey(todayStr()), rows = [];
+    (feed() ? [''] : SUBJ.map(function (s) { return s.id; })).forEach(function (g) {
+      var L = lessons(g), LY = layout(L), x = null;
+      if (!L.length) return;
+      for (var i = LY.length - 1; i >= 0 && !x; i--) if (!LY[i].joinedNext && dkey(LY[i].l.date) <= tk && vHwHas(LY[i].own)) x = LY[i];
+      var due = x ? vDue(L, x.own) : null;
+      if (!x || (due && due.les && dkey(due.date) < tk)) { if (!feed()) rows.push({ subj: g }); return; }
+      rows.push({ subj: x.own.subj, own: x.own, due: due, st: vStatus(x.own) });
+    });
+    return rows.sort(function (a, b) { return (a.own ? 0 : 1) - (b.own ? 0 : 1) || (a.due ? dkey(a.due.date) : 99999) - (b.due ? dkey(b.due.date) : 99999); });
+  }
+  // долги: свои плохие оценки со сроком пересдачи; просроченные — первыми
+  function vDebts() {
+    var out = [];
+    Object.keys(S.mark).forEach(function (id) {
+      var p = id.split('.'), l = S.les[p[0]], m = S.mark[id];
+      if (p[1] !== meId || !l || (!feed() && !SUBJ.some(function (s) { return s.id === l.subj; }))) return;
+      if (p[2] === 'd' && l.sh && prevSameDay(l, l.date, l.subj)) return;   // ДЗ сдвоенного урока не видна
+      var dbt = debtOf(l, m.v);
+      if (dbt) out.push({ l: l, w: p[2], m: m, dbt: dbt, sent: p[2] === 'd' && (S.sub[p[0] + '.' + meId] || {}).st === 'sent' });
+    });
+    return out.sort(function (a, b) { return a.dbt.left - b.dbt.left || dkey(a.l.date) - dkey(b.l.date); });
+  }
+  function vDebtLeft(d) { return d.left < 0 ? 'срок вышел' : d.left === 0 ? 'сегодня последний день' : 'осталось ' + vN(d.left, 'день', 'дня', 'дней'); }
+  // долг словами: за что оценка и что сделать (D: «сложно объяснять, за что долг»)
+  function vDebtText(x) {
+    var sm = splitMark(x.m), tp = plain(topicOf(x.l).t || '').split('\n')[0].trim().replace(/\.$/, '');
+    // сама оценка стоит плиткой слева (D 12.10) — словами её не повторяем
+    var t = (x.w === 'd' ? 'За домашку' : 'За работу на уроке') + (tp ? ' «' + tp + '»' : '') + '. ' + (vSay(sm.c) ? 'Учитель: ' + sm.c.replace(/[.\s]+$/, '') + '. ' : '');
+    if (x.sent) return t + 'Сдано заново — ждёт проверки.';
+    if (x.dbt.left < 0) return t + 'Срок был до ' + vDay(x.dbt.until) + '. Подойди к учителю — договоритесь о пересдаче.';
+    return t + (x.w === 'd' ? 'Исправь и сдай заново до ' : 'Пересдать до ') + vDay(x.dbt.until) + '.';
+  }
+  var V_DAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+  var V_MON = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+  // экран «Задано» — вопрос: «Что задано к следующему уроку?»
+  function vZadHtml(rows) {
+    var now = new Date(), m = ssylNow(), D = vDebts();
+    var h = '<span class="v-cap">' + V_DAYS[now.getDay()] + ', ' + now.getDate() + ' ' + V_MON[now.getMonth()] + '</span>';
+    var links = SSYL.filter(function (x) { return okUrl(m[x.id]); }).map(function (x) {
+      return '<a class="v-out" href="' + esc(m[x.id]) + '" target="_blank" rel="noopener">' + x.name + ' ↗</a>';
+    }).join('');
+    if (links) h += '<div class="v-links">' + links + '</div>';
+    h += '<div class="v-lbl">К следующим урокам</div><div class="v-card">' + (rows.length ? rows.map(function (r) {
+      var sj = vSj(r.subj);
+      if (!r.own) return '<div class="v-row v-quiet"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><b>' + esc(sj.short) + '</b><span class="v-hw">нового пока не задано</span></span></div>';
+      return '<button class="v-row" data-va="urok" data-id="' + r.own.id + '"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><span class="v-rt"><b>' + esc(sj.short) + (r.due ? ', ' + esc(vDay(r.due.date)) : '') + '</b>' +
+        '<span class="v-st ' + r.st.k + '">' + esc(r.st.t) + '</span></span><span class="v-hw">' + esc(vHwLine(r.own)) + '</span></span><span class="v-go">›</span></button>';
+    }).join('') : '<div class="v-pad"><span class="v-cap">Пока ничего не задано.</span></div>') + '</div>';
+    if (D.length) h += '<div class="v-lbl">Долги · ' + D.length + '</div><div class="v-card">' + D.map(function (x) {
+      var g = splitMark(x.m).g;
+      return '<button class="v-row v-debt' + (x.dbt.left < 0 && !x.sent ? ' late' : '') + '" data-va="urok" data-id="' + x.l.id + '"><span class="v-m ' + markCls(x.m.v) + (g.length > 2 ? ' long' : '') + '">' + esc(g) + '</span><span class="v-body"><span class="v-rt"><b>' + esc(vSj(x.l.subj).short) + ', ' + esc(x.l.date) + '</b>' +
+        '<span class="v-st ' + (x.sent ? 'wait' : 'no') + '">' + (x.sent ? 'ждёт проверки' : vDebtLeft(x.dbt)) + '</span></span><span class="v-hw">' + esc(vDebtText(x)) + '</span></span><span class="v-go">›</span></button>';
+    }).join('') + '</div>';
+    return h;
+  }
+  // подпись файла: та, что дал учитель; имя от телефона («IMG 1247») ученику ничего не говорит — «Фото 1», «Файл 2»
+  function vFileName(f, n) {
+    var nm = String(f.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/^\d+[_\s.-]+/, '').replace(/_/g, ' ').trim();
+    if (!nm || /^(?:img|dsc|dscn|pxl|photo|image|foto|scan|screenshot|вставка|снимок|фото|изображение|whatsapp image|telegram)[\s._-]*[\d\s._()-]*(?:at [\d\s.]+)?$/i.test(nm) || /^[\d\s._()-]+$/.test(nm) || /^[0-9a-f-]{16,}$/i.test(nm))
+      return (/^(png|jpe?g|webp)$/i.test(f.ext || '') ? 'Фото ' : 'Файл ') + n;
+    return nm.charAt(0).toUpperCase() + nm.slice(1);
+  }
+  function vFilesHtml(F) {
+    return '<div class="v-files">' + F.map(function (f, i) {
+      var show = canShow(f);
+      return '<button class="v-file" data-act="' + (show ? 'openfile' : 'dl') + '" data-id="' + f.id + '"><u>' + (/^(png|jpe?g|webp)$/i.test(f.ext || '') ? '<img data-ff="' + f.id + '" alt="">' : '<i>' + esc(f.ext) + '</i>') +
+        '</u><span class="fz">' + esc(vFileName(f, i + 1)) + '</span></button>';
+    }).join('') + '</div>';
+  }
+  function vMarkHtml(l, w, tail) {
+    var m = S.mark[l.id + '.' + meId + '.' + w], sm = splitMark(m);
+    if (!m || (w === 'd' ? !sm.g : !sm.g && !vSay(sm.c))) return '';   // слова учителя о домашке стоят под её статусом
+    var inf = markInfo(m.v), dbt = debtOf(l, m.v);
+    return '<div class="v-mk">' + (sm.g ? '<span class="v-m ' + inf.cls + (sm.g.length > 2 ? ' long' : '') + '">' + esc(sm.g) + '</span>' : '') +
+      '<span class="v-body"><b>' + (inf.cls === 'mn' && w === 'u' ? 'Не было на уроке' : w === 'd' ? 'Домашка' : 'Работа на уроке') + esc(tail) + '</b>' +
+      (m.by === 'auto' && m.an ? '<span class="v-hist">' + esc(m.an) + '</span>' : '') + (w !== 'd' && vSay(sm.c) ? '<span class="v-hist">Учитель: ' + esc(sm.c) + '</span>' : '') +
+      (dbt ? '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок пересдачи вышел ' + esc(dbt.until) : 'Пересдать до ' + esc(vDay(dbt.until)) + ', ' + vDebtLeft(dbt)) + '</span>' : '') + '</span></div>';
+  }
+  // карточка урока — одна на все вкладки. Вопрос экрана: «Что сделать и как сдать?» → {h — экран, cta — кнопка у низа}
+  function vCardHtml(B) {
+    var own = B.own, sj = vSj(own.subj), many = B.les.length > 1, due = vDue(B.L, own), cv = null, tops = [], MF = [];
+    B.les.forEach(function (l) {
+      cv = cv || coverOf(l.id); MF = MF.concat(filesOf(l.id));
+      var t = plain(topicOf(l).t || '').trim().replace(/\.$/, ''); if (t && tops.indexOf(t) < 0) tops.push(t);
+    });
+    var h = '<button class="v-back" data-va="back">← Назад</button>';
+    if (cv) h += '<button class="v-cover" data-act="openfile" data-id="' + cv.id + '" title="Открыть обложку урока" aria-label="Открыть обложку урока"><img data-ff="' + cv.id + '" alt=""></button>';
+    h += '<span class="v-cap"><span class="v-dot ' + sj.k + '"></span>' + esc(sj.short) + ', ' + esc(vDay(own.date)) + (many ? ' · ' + vN(B.les.length, 'урок', 'урока', 'уроков') : '') + '</span>' +
+      (tops.length ? tops : ['Урок']).map(function (t, i) { return (i ? '<h2' : '<h1') + ' class="v-h1"' + (i ? '' : ' style="margin-top:4px"') + '>' + esc(t) + (i ? '</h2>' : '</h1>'); }).join('');
+
+    var txt = vHwText(own), HF = hwFiles(own), web = autoUrl(own.ad), has = !!(txt || HF.length || web), webOnly = !!web && !txt && !HF.length;
+    var sub = S.sub[own.id + '.' + meId], m = S.mark[own.id + '.' + meId + '.d'], sm = splitMark(m), inf = markInfo(m && m.v), st = vStatus(own);
+    h += '<div class="v-lbl">Домашка' + (has && due ? ' к ' + esc(vDay(due.date)) : '') + '</div><div class="v-card v-pad">';
+    if (!has) h += '<span class="v-cap">К этому уроку ничего не задано.</span>';
+    else {
+      h += txt ? '<div class="v-tasks">' + fmt(txt) + '</div>' : webOnly ? '<div class="v-tasks">Домашка на телефоне или ноутбуке. Балл сам появится в журнале; можно перерешать — считается лучший результат.</div>' : '';
+      if (HF.length) h += vFilesHtml(HF);
+      if (web && !webOnly) h += '<div class="v-links"><a class="v-out" href="' + esc(web) + '" target="_blank" rel="noopener">🕹 Открыть веб-домашку ↗</a></div>';
+      h += '<div class="v-status"><span class="v-cap">Статус:</span><span class="v-st ' + st.k + '">' + esc(st.full) + '</span></div>';
+      if (vSay(sm.c)) h += '<span class="v-hist">Учитель: ' + esc(sm.c) + '</span>';   // слова учителя о домашке — здесь, один раз
+      if (sub && (sub.ph || []).length) h += thumbsHtml(sub.ph, own.id + '.' + meId) +
+        (sub.ink && Object.keys(sub.ink).length ? '<span class="v-hist">✏️ На фото — разбор учителя. Нажми, чтобы открыть крупно, и перепиши исправления в тетрадь.</span>' : '');
+    }
+    h += '</div>';
+
+    // материалы свёрнуты: ученик пришёл за домашкой, теория — по нажатию
+    var go = siteLink(B.les[0]), srez = B.les.map(function (l) { return autoUrl(l.au); }).filter(Boolean)[0], bits = [];
+    if (MF.length) bits.push(vN(MF.length, 'файл', 'файла', 'файлов'));
+    if (go) bits.push('урок на сайте');
+    if (srez) bits.push('срез');
+    if (bits.length) h += '<div class="v-card"><button class="v-row" data-va="mat" aria-expanded="' + vMat + '"><span class="v-body"><b>Материалы урока</b><span class="v-cap">' + bits.join(' · ') + '</span></span><span class="v-go">' + (vMat ? '⌄' : '›') + '</span></button>' +
+      (vMat ? '<div class="v-pad" style="padding-top:0">' + (MF.length ? vFilesHtml(MF) : '') + (go || srez ? '<div class="v-links">' + (go ? '<a class="v-out" href="' + go + '">Урок на сайте ↗</a>' : '') +
+        (srez ? '<a class="v-out" href="' + esc(srez) + '" target="_blank" rel="noopener">🎯 Срез: ввести ответы ↗</a>' : '') + '</div>' : '') + '</div>' : '') + '</div>';
+
+    var MK = B.les.map(function (l, i) { return vMarkHtml(l, 'u', many ? ' · ' + (i + 1) + '-й урок' : ''); }).join('') + vMarkHtml(own, 'd', '');
+    if (MK) h += '<div class="v-lbl">Мои оценки за урок</div><div class="v-card">' + MK + '</div>';
+
+    // сдавать можно, пока не проверено; 1 и 2 — «не сдано»: исправил и сдаёт заново. Хорошая оценка без фото (тетрадь на уроке) — сдавать нечего
+    var good = /^m[345]$/.test(inf.cls), can = has && (sub ? sub.st !== 'checked' || !!inf.red : !good), cta = '';
+    if (webOnly) cta = '<a class="v-btn" href="' + esc(web) + '" target="_blank" rel="noopener">Открыть домашку ↗</a>';
+    else if (can && sdachaOn) cta = '<span class="v-cap" id="subSt">Можно несколько страниц сразу, до 12 фото.</span><label class="v-btn">' + (sub && sub.st === 'sent' ? 'Дослать фото' : sub || inf.red ? 'Сдать заново' : 'Сдать фото') +
+      '<input type="file" id="subIn" data-lid="' + own.id + '" data-mark="' + own.id + '.' + meId + '.d" accept="image/*" multiple></label>';
+    else if (can) cta = '<span class="v-cap">Приём домашек через журнал пока выключен.</span>';
+    return { h: h, cta: cta };
+  }
+  function vSoonHtml() {
+    var o = vTab === 'ocenki';
+    return '<h1 class="v-h1">' + (o ? 'Оценки' : 'Уроки') + '</h1><div class="v-card v-pad" style="margin-top:14px"><b>Эта вкладка ещё собирается.</b>' +
+      '<span class="v-cap" style="margin-top:4px">' + (o ? 'Оценки' : 'Все уроки, темы и материалы') + ' пока — в прежнем журнале.</span>' +
+      '<div class="v-links"><button class="v-out" data-va="old">Открыть прежний журнал ›</button></div></div>';
+  }
+  var V_TABS = [
+    ['zadano', 'Задано', '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>'],
+    ['ocenki', 'Оценки', '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'],
+    ['uroki', 'Уроки', '<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'],
+    ['chat', 'Чат', '<path d="M4 5h16v11H10l-5 4v-4H4z"/>']
+  ];
+  // экран переписываем, только когда он изменился: ученик выбирает фото — страница уходит с экрана и возвращается
+  // (сверка с сервером, см. visibilitychange); перерисованная кнопка «Сдать фото» выбранные фото потеряла бы
+  function vPut(el, h) { if (el._h === h) return false; el._h = h; el.innerHTML = h; return true; }
+  function vRender() {
+    var B = vLes ? vBlock(vLes) : null, rows = vZadano(), todo = rows.filter(function (r) { return r.st && r.st.todo; }).length, cta = '';
+    if (!B) vLes = '';
+    $('vZ').hidden = !!B || vTab !== 'zadano'; $('vX').hidden = !!B || vTab === 'zadano'; $('vU').hidden = !B; $('vTabs').hidden = !!B;
+    $('vKick').textContent = META.title || '';
+    vPut($('vTabs'), V_TABS.map(function (t) {
+      return '<button data-va="tab" data-id="' + t[0] + '"' + (t[0] === vTab ? ' class="on" aria-current="page"' : '') + '>' +
+        (t[0] === 'zadano' && todo ? '<span class="v-badge" aria-label="не сдано: ' + todo + '">' + todo + '</span>' : '') +
+        (t[0] === 'chat' && document.querySelector('#dock .vopros.est-otvet') ? '<span class="v-badge" aria-label="новый ответ учителя">1</span>' : '') + '<svg viewBox="0 0 24 24" aria-hidden="true">' + t[2] + '</svg>' + t[1] + '</button>';
+    }).join(''));
+    if (B) { var c = vCardHtml(B); cta = c.cta; if (vPut($('vU'), c.h)) { fillFileThumbs($('vU')); fillThumbs($('vU')); } }
+    else if (vTab === 'zadano') vPut($('vZb'), vZadHtml(rows));
+    else vPut($('vX'), vSoonHtml());
+    $('vU').classList.toggle('cta', !!cta);
+    $('vCta').hidden = !cta; vPut($('vCta'), cta);
+  }
+  // настройки — за шестерёнкой в шапке: разовое и редкое (значок на экран, тема, другой журнал, другой код)
+  function vSettings() {
+    var p = S.stu[meId] || {};
+    $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg v-set" role="dialog" aria-modal="true"><h3>Настройки</h3>' +
+      '<div class="meta">' + esc(((p.fam || '') + ' ' + (p.name || '')).trim()) + ' · ' + esc(META.title || '') + '</div>' +
+      (JOURNALS.length > 1 ? '<div class="lbl">Журнал</div><div class="v-setrow">' + JOURNALS.map(function (x) {
+        return '<button class="btn" data-jr="' + esc(x.j) + '" aria-pressed="' + (x.j === J) + '">' + esc(x.title) + '</button>';
+      }).join('') + '</div>' : '') +
+      '<div class="lbl">Тема</div><div class="v-setrow"><button class="btn" data-tema="day">Светлая</button><button class="btn" data-tema="night">Тёмная</button></div>' +
+      (znSrv && (JOURNALS.length < 2 || znUrl()) ? '<button class="btn v-wide" data-act="znachok">📱 Значок на экран телефона</button>' : '') +
+      '<div class="row"><button class="btn danger" data-va="exit">Выйти на этом устройстве</button><span class="sp"></span><button class="btn pri" data-act="close">Готово</button></div>' +
+      '<div class="note"><a class="link" href="pravila.html">Правила и конфиденциальность</a> · <button class="link" data-act="teacher">Вход для учителя</button></div></div>';
+    markTheme();
+  }
+  function vClose() { if (!vLes) return; vLes = ''; if (vidOn()) { vRender(); window.scrollTo(0, vY); } }
+  // карточка урока и любое окно поверх (настройки, файл, фото, чат) — шаги в истории браузера: «Назад» на телефоне
+  // закрывает их, а не уводит со страницы (D 12.10: с телефона ученика «Назад» выбрасывало из журнала)
+  var vOv = false, vSkip = 0;
+  function vOvOpen() { return !!($('dlg').firstChild || document.querySelector('.view') || document.body.classList.contains('vq-otkryto')); }
+  function vOvWatch() {
+    if (!document.documentElement.classList.contains('vid')) { vOv = false; return; }
+    var on = vOvOpen();
+    if (on && !vOv && vSkip) { setTimeout(vOvWatch, 80); return; }   // прежний шаг истории ещё снимается — новый кладём после
+    if (on && !vOv) { vOv = true; try { history.pushState({ vov: 1, vles: vLes }, ''); } catch (e) { /* без истории — закроет кнопка окна */ } }
+    else if (!on && vOv) { vOv = false; if (history.state && history.state.vov) { vSkip++; history.back(); } }   // окно закрыли его кнопкой — свой шаг истории убираем
+  }
+  window.addEventListener('popstate', function () {
+    if (vSkip) { vSkip--; return; }
+    if (vOv) {   // «Назад» при открытом окне — закрыть окно
+      vOv = false;
+      var x = document.querySelector('.view [data-v="x"]'), q = document.querySelector('.vq-bg');
+      if (x) x.click();
+      if (document.body.classList.contains('vq-otkryto') && q) q.click();
+      closeDlg();
+      return;
+    }
+    if (!vidOn()) return;
+    var st = history.state, nl = st && st.vles && S.les[st.vles] ? st.vles : '';   // что на экране — решает шаг истории, на котором оказались
+    if (nl !== vLes) { vLes = nl; vMat = false; vRender(); window.scrollTo(0, nl ? 0 : vY); }
+  });
+  // страницу обновили на карточке урока или окне — шаг остался, а экран начался с «Задано»: метку шага снимаем
+  try { if (history.state && (history.state.vles || history.state.vov)) history.replaceState(null, ''); } catch (e) { /* не страшно */ }
+  if (window.MutationObserver) {
+    var vMo = new MutationObserver(vOvWatch);
+    vMo.observe(document.body, { childList: true, attributes: true, attributeFilter: ['class'] });
+    vMo.observe($('dlg'), { childList: true });
+    new MutationObserver(function () { if (vidOn()) vRender(); }).observe($('dock'), { subtree: true, attributes: true, attributeFilter: ['class'] });   // знак нового ответа в чате
+  }
+  function vAct(b) {
+    var a = b.dataset.va;
+    if (a === 'tab') {
+      if (b.dataset.id === 'chat') { var q = document.querySelector('#dock .vopros'); if (q) q.click(); else alert('Чат не загрузился. Обнови страницу.'); return; }   // чат — то же окно, что за знаком «?»
+      vTab = b.dataset.id; vRender(); window.scrollTo(0, 0);
+    }
+    else if (a === 'urok') {
+      vY = window.pageYOffset; vLes = b.dataset.id; vMat = false;
+      try { history.pushState({ vles: vLes }, ''); } catch (e) { /* без истории — закроет кнопка «Назад» на экране */ }
+      vRender(); window.scrollTo(0, 0);
+    }
+    else if (a === 'back') { if (history.state && history.state.vles) history.back(); else vClose(); }
+    else if (a === 'mat') { vMat = !vMat; vRender(); }
+    else if (a === 'set') vSettings();
+    else if (a === 'exit') {   // чужой телефон или общий компьютер: стереть все свои входы с устройства
+      if (!confirm('Выйти из журнала на этом устройстве? Войти снова — кнопкой «📒 Мой журнал» в боте или своим значком.')) return;
+      closeDlg(); lsDel(LS.ck); lsDel(LS.sk); znSet(''); meId = null; gate('');
+    }
+    else if (a === 'old' || a === 'new') { vidOld = a === 'old'; render(); window.scrollTo(0, 0); }
+  }
+
   /* ── нажатия ── */
   document.addEventListener('click', function (ev) {
     var t = ev.target;
@@ -2850,6 +3264,8 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
     // поле ввода — не клетка и не урок: нажатие на «Сдать фото» доходит сюда кликом по input,
     // и раньше открывало карточку урока поверх выбора фото (сдача терялась)
     if (t.closest('input, select, textarea')) return;
+    var va = t.closest('[data-va]');
+    if (va) { vAct(va); return; }
     var tm = t.closest('[data-tema]');
     if (tm) { setTheme(tm.dataset.tema); return; }
     var fb = t.closest('[data-fmt]');
@@ -2887,7 +3303,7 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
       else if (act === 'daysubj') openDay(null, a.dataset.sj);
       else if (act === 'dellesson') delLesson(a.dataset.id);
       else if (act === 'dl') downloadFile(a.dataset.id, a);
-      else if (act === 'openfile') openFile(a.dataset.id, a.closest('.ftiles') ? Array.prototype.map.call(a.closest('.ftiles').querySelectorAll('[data-act="openfile"]'), function (x) { return x.dataset.id; }) : null);
+      else if (act === 'openfile') openFile(a.dataset.id, a.closest('.ftiles, .v-files') ? Array.prototype.map.call(a.closest('.ftiles, .v-files').querySelectorAll('[data-act="openfile"]'), function (x) { return x.dataset.id; }) : null);
       else if (act === 'fmove') fileStep(a.dataset.id, a.dataset.d);
       else if (act === 'unq') { dayQ.splice(+a.dataset.i, 1); drawSlots(); }
       else if (act === 'submove' && cur) subMoveList();
@@ -3076,7 +3492,11 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState !== 'visible') return;
     if (mode === 'teacher') sync();
-    else if (loaded && meId) meLoad().catch(function () { /* нет связи — покажем, что было */ });
+    else if (loaded && meId) meLoad().then(function (res) {
+      if (!document.documentElement.classList.contains('vid')) return;   // прежний вид — как было
+      if (res === 'nolink') pickMe();
+      else if (res === false) { meId = null; closeDlg(); if (lsGet(LS.pass, '')) view(''); else gate(''); }
+    }, function () { /* нет связи — покажем, что было */ });
     else if (krMode) viewKr(0);   // свежие оценки; отозвали ссылку — журнал уходит с экрана
     else if (loaded && lsGet(LS.pass, '')) view('');
   });
@@ -3153,6 +3573,8 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
     // кнопка-ссылка в меню бота (#b=<ключ входа>, D 02.10): журнал одним нажатием. Ключ — тот же, что страница
     // получает после входа; из адреса убираем. Срок ключа в ссылке вышел, а свой вход ещё помнится — берём свой
     var mb = /[#&]b=((?:main|test)\.\d{1,20}\.(\d{9,12})\.[0-9a-f]{32})\b/.exec(location.hash);
+    // значок открывали раньше, а сейчас адрес без ключа (ссылка «Журнал» с сайта уроков) и другого входа нет — ключ из памяти обратно в адрес
+    if (!zn && !ms && !mk && !mkr && !mt && !mb && !sk() && !ck() && !kr() && ZN_RE.test(lsGet('zh:zn', ''))) { znSet(lsGet('zh:zn', '')); zn = znUrl(); if (zn) J = zn.split('.')[0]; }
     if (mb) {
       try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ }
       if (!(ck() && +mb[2] * 1000 < Date.now())) { lsSet(LS.ck, mb[1]); lsDel(LS.sk); }
