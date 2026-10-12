@@ -452,6 +452,7 @@ td.c .cmt{ position:absolute; top:4px; left:4px; width:6px; height:6px; border-r
 td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:normal; line-height:1; }
 .zt tbody tr.me th.nm{ background:color-mix(in srgb, #7c3aed 12%, var(--card)); box-shadow:inset 4px 0 0 #7c3aed, 1px 0 0 var(--z-rule); }
 .zt tbody tr.me td.c.d.mine{ cursor:pointer; }
+ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin-bottom:6px; }
 .stbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; font-size:14px; color:var(--sub); }
 .btn.queue{ background:#7c3aed; color:#fff; box-shadow:0 10px 22px -14px #7c3aed; }
 .thumbs{ display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
@@ -706,6 +707,20 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   var botEntry = /[#&][ts]=/.test(location.hash);   // пришёл по ссылке из бота или по личной ссылке
   var loaded = false, cur = null, pendingRender = false, scrollPos = {};
   var meId = null, sdachaOn = false;   // ученик, вошедший через бота (сдача ДЗ, шаг 4)
+  // личный значок (D 12.10): ключ своей строки лежит в адресе (?s=<журнал>.<ключ>) и из него не убирается — значок
+  // на экране «Домой» несёт его сам. Память браузера у значка не держится (Яндекс Браузер на Андроиде): без этого
+  // каждый запуск начинался с кода класса и входа через Телеграм
+  var znSrv = false;   // сервер умеет выдавать ключ для значка (говорит в ответе /me)
+  var ZN_RE = /^[a-z0-9]{2,16}\.[0-9a-f]{32}$/;
+  function znUrl() { try { var v = new URLSearchParams(location.search).get('s') || ''; return ZN_RE.test(v) ? v : ''; } catch (e) { return ''; } }
+  function znSet(v) {   // ключ в адрес или из адреса; остальное в адресе (?api=, #вкладка) — как было
+    try {
+      var q = new URLSearchParams(location.search);
+      if (v) q.set('s', v); else q.delete('s');
+      var qs = q.toString();
+      history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+    } catch (e) { /* адрес не поменять — значок выйдет без ключа, вход останется прежним */ }
+  }
   LS.ck = 'zh:ck'; LS.vhod = 'zh:vhod'; LS.kr = 'zh:kr';
   function ck() { return lsGet(LS.ck, ''); }
   function sk() { return lsGet(LS.sk, ''); }
@@ -717,7 +732,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
   // иначе он видел бы то, чего ученик не видит
   var ssylSrv = lsGet('zh:ssyl', false) === true;
   //   // личная ссылка ученика без Телеграма: <журнал>.<ключ>
-  function stuH() { return sk() ? { 'X-Stu-Key': sk() } : { 'X-Chat-Key': ck() }; }
+  function stuH() { var z = znUrl() || sk(); return z ? { 'X-Stu-Key': z } : { 'X-Chat-Key': ck() }; }   // ключ значка из адреса главнее памяти
   function chatBase() { return API.replace(/\/cabinet$/, ''); }
   var BOT = /[?&]test=chat\b/.test(location.search) ? 'Lemma_test1_bot' : 'D_mathh_bot';
 
@@ -1157,7 +1172,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     $('tabs').appendChild(st);   // статус сохранения — в строке предметов, справа
     // «← Уроки» ведёт на сайт 9 класса Гагарина: ученику индивидуального журнала там делать нечего (D, 01.10)
     // пока журнал грузится по входу из бота или личной ссылке, чей он — ещё неизвестно: тоже прячем
-    $('zhBack').hidden = mode !== 'teacher' && (feed() || (!loaded && (botEntry || !!ck() || !!sk())));
+    $('zhBack').hidden = mode !== 'teacher' && (feed() || (!loaded && (botEntry || !!ck() || !!sk() || !!znUrl())));
     document.body.className = (mix() ? 'k-mat' : SUBJ.filter(function (s) { return s.id === tab; })[0].k) + (mode === 'teacher' ? ' edit' : '');
   }
 
@@ -1228,17 +1243,28 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     var b = new Uint8Array(16); (window.crypto || window.msCrypto).getRandomValues(b);
     return Array.prototype.map.call(b, function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
   }
-  function stuLink(id, renew) {
+  function stuLink(id, renew, fresh) {
     var p = S.stu[id];
     if (!p) return;
+    // у связанного с Телеграмом ключ мог только что появиться на сервере (ученик сделал личный значок), а эта
+    // страница ещё не сверилась: сначала спрашиваем сервер, иначе новый ключ отсюда погасил бы значок ученика
+    if (!p.key && !renew && !fresh && p.tg) {
+      var go = function () { stuLink(id, false, true); };
+      post('/zhurnal/sync', { ops: [], j: J }, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
+        var o = ((r.data || {}).objects || []).filter(function (x) { return x.k === 'stu' && x.id === id; })[0];
+        if (o && o.d && o.d.key && S.stu[id]) S.stu[id].key = o.d.key;
+        go();
+      }, go);
+      return;
+    }
     if (!p.key || renew) {
       var d = {}; Object.keys(p).forEach(function (k) { if (k !== 'id' && k !== 'ts') d[k] = p[k]; });
       d.key = newKey(); put('stu', id, d); p = S.stu[id];
     }
-    var url = location.origin + location.pathname + '#s=' + J + '.' + p.key;
+    var url = location.origin + location.pathname + '?s=' + J + '.' + p.key;   // ключ в адресе остаётся: ссылку можно сразу добавить на экран или в закладки (D 12.10)
     $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
       '<h3>Личная ссылка · ' + esc(p.fam + ' ' + p.name) + '</h3>' +
-      '<div class="meta">Для тех, кого нет в Телеграме. Отправь её ученику один раз (ВК, WhatsApp). Он увидит только этот журнал и сможет сдавать фото домашки. Заработает, когда сверху загорится «сохранено».</div>' +
+      '<div class="meta">Личный вход ученика, Телеграм не нужен. Отправь её ученику лично (ВК, WhatsApp): он откроет ссылку и добавит страницу на экран телефона или в закладки. Он увидит только этот журнал и сможет сдавать фото домашки. Заработает, когда сверху загорится «сохранено».</div>' +
       '<input id="lnkIn" readonly value="' + esc(url) + '">' +
       '<div class="row"><button class="btn danger" data-act="stulinknew" data-id="' + esc(id) + '">Новая ссылка</button><span class="sp"></span>' +
       '<button class="btn" data-act="students">Назад</button><button class="btn pri" data-act="copylink">Скопировать</button></div>' +
@@ -2291,14 +2317,14 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     // at — когда ученик сам выбрал запомненный журнал: подключили к новому позже — сервер откроет новый (D, 01.10)
     var body = want ? { j: want } : { j: lsGet('zh:sj', ''), at: lsGet('zh:sjt', 0) || 1 };
     return post('/zhurnal/me', body, stuH()).then(function (r) {
-      if (r.status === 401) { lsDel(sk() ? LS.sk : LS.ck); return false; }
+      if (r.status === 401) { if (!znUrl()) lsDel(sk() ? LS.sk : LS.ck); return false; }   // ключ значка — в адресе, память не при чём
       if (r.status !== 200 || !r.data.ok) throw { http: r.status };
       lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
       JOURNALS = r.data.journals || []; J = r.data.j || MAIN_J; renderJournals();
       if (want && r.data.j === want) { lsSet('zh:sj', want); lsSet('zh:sjt', Date.now()); }   // выбрал в переключателе и он открылся — в следующий раз откроется он
       if (!r.data.stu) { meId = null; freeRows = r.data.free || []; return 'nolink'; }
       setMeta(r.data.meta);
-      meId = r.data.stu; sdachaOn = !!r.data.sdacha;
+      meId = r.data.stu; sdachaOn = !!r.data.sdacha; znSrv = !!r.data.zn; znFoot();
       S = fromObjects(r.data.objects); loaded = true; render();
       return true;
     }, function (e) { nextApi(); throw e; });
@@ -2321,11 +2347,41 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     $('main').innerHTML = '<div class="empty">Запоминаю…</div>';
     post('/zhurnal/claim', { stu: id }, stuH()).then(function (r) {
       if (r.status === 200 && r.data.ok) return meLoad().then(function (res) { if (res === 'nolink') pickMe(); });
-      if (r.status === 401) { lsDel(LS.ck); alert('Вход устарел. Нажми «📒 Мой журнал» в боте ещё раз.'); location.reload(); return; }
+      if (r.status === 401) { if (znUrl()) znSet(''); else lsDel(LS.ck); alert('Вход устарел. Нажми «📒 Мой журнал» в боте ещё раз.'); location.reload(); return; }
       if (r.status === 403) { pickMe('Выбрать себя может только ученик класса из бота. Напиши учителю.'); return; }
       if (r.status === 409) return meLoad().then(function (res) { if (res === 'nolink') pickMe('Эту фамилию уже кто-то выбрал. Если это ты — напиши учителю.'); });
       throw { http: r.status };
     }).catch(function () { pickMe('Не получилось. Проверь интернет и нажми ещё раз.'); });
+  }
+  // ссылка на значок — в подвале, под таблицей и легендой (D 12.10): действие разовое, наверху ему не место.
+  // Ключ значка открывает один журнал — ученику нескольких журналов её не показываем (он входит через бота)
+  function znFoot() {
+    var f = $('footLinks'), old = f.querySelector('[data-zn]');
+    if (old) old.parentNode.removeChild(old);
+    if (!(znSrv && meId && (JOURNALS.length < 2 || znUrl()))) return;
+    var sp = document.createElement('span');
+    sp.setAttribute('data-zn', '1');
+    sp.innerHTML = '<button class="link" data-act="znachok">📱 Значок на экран телефона</button> · ';
+    f.insertBefore(sp, f.firstChild);
+  }
+  // значок: ключ своей строки — в адрес, дальше ученик сам добавляет страницу на экран «Домой»
+  function znachok() {
+    var show = function () {
+      $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
+        '<h3>Значок журнала на экран</h3><div class="meta">Страница готова: теперь значок запомнит тебя сам — без кода класса и Телеграма.</div>' +
+        '<ol class="zn"><li>Если значок журнала на экране уже есть — удали его.</li>' +
+        '<li>Открой меню браузера: <b>⋮</b> или <b>≡</b> (на айфоне — «Поделиться»).</li>' +
+        '<li>Нажми <b>«Добавить ярлык»</b> или <b>«На экран Домой»</b>.</li>' +
+        '<li>Открой журнал новым значком — он сразу покажет твою строку.</li></ol>' +
+        '<div class="meta">На компьютере — добавь эту страницу в закладки.</div>' +
+        '<div class="note">Значок — твой личный вход. Никому не пересылай ссылку из него: по ней можно сдать домашку за тебя. Потерял телефон — скажи учителю, он её отключит.</div>' +
+        '<div class="row"><span class="sp"></span><button class="btn pri" data-act="close">Понятно</button></div></div>';
+    };
+    if (znUrl()) { show(); return; }
+    post('/zhurnal/znachok', {}, stuH()).then(function (r) {
+      if (r.status !== 200 || !r.data.ok || !ZN_RE.test(r.data.s || '')) throw { http: r.status };
+      znSet(r.data.s); show();
+    }).catch(function () { alert('Не получилось подготовить значок. Проверь интернет и нажми ещё раз.'); });
   }
   function openLogin(err) {
     $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
@@ -2577,7 +2633,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       }
       var why = { 503: 'Приём домашек пока выключен.', 409: r.j.error === 'checked' ? 'Эта домашка уже проверена.' : 'Слишком много фото — до 12 в одной сдаче.',
         415: 'Это не фото. Нужна картинка (JPG, PNG).', 403: 'Учитель ещё не отметил тебя в журнале.', 401: 'Вход устарел — войди через Телеграм заново.', 413: 'Фото слишком большие.' };
-      if (r.status === 401) lsDel(LS.ck);
+      if (r.status === 401) { if (znUrl()) znSet(''); else lsDel(LS.ck); }   // значок отключён — негодный ключ из адреса долой, свой вход через бота цел
       if (st) st.textContent = why[r.status] || 'Не получилось отправить. Попробуй ещё раз.';
       input.disabled = false;
     }, function () { nextApi(); if (st) st.textContent = 'Нет связи. Проверь интернет и попробуй ещё раз.'; input.disabled = false; });
@@ -2631,7 +2687,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     P.forEach(function (p) {
       h += '<div class="srow" data-sid="' + p.id + '"><input data-f="fam" placeholder="Фамилия" maxlength="40" value="' + esc(p.fam) + '">' +
         '<input data-f="name" placeholder="Имя" maxlength="40" value="' + esc(p.name) + '">' +
-        '<button data-act="stulink" data-id="' + p.id + '" class="lnk' + (p.key ? ' on' : '') + '" title="Личная ссылка — для тех, кого нет в Телеграме">🔗</button>' +
+        '<button data-act="stulink" data-id="' + p.id + '" class="lnk' + (p.key ? ' on' : '') + '" title="Личная ссылка ученика — вход без Телеграма">🔗</button>' +
         '<button data-act="delstu" data-id="' + p.id + '" title="Убрать из журнала">✕</button>' +
         '<select data-f="tg" class="srow-tg">' + opts(p.tg) + '</select>' +
         // телефон: вписал D — в поле; поделился в боте сам ученик — серым подсказкой. Видит только D (02.10)
@@ -2822,7 +2878,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       var act = a.dataset.act;
       if (act === 'close') closeDlg();
       else if (act === 'popclose') closeCell();
-      else if (act === 'retry') view('');
+      else if (act === 'retry') { if (znUrl()) location.reload(); else view(''); }
       else if (act === 'addles') openDay(null);
       else if (act === 'saveday') saveDay(a.dataset.date);
       else if (act === 'delday') delDay(a.dataset.date);
@@ -2837,6 +2893,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       else if (act === 'submove' && cur) subMoveList();
       else if (act === 'submoveto' && cur) subMove(a.dataset.to);
       else if (act === 'login') openLogin('');
+      else if (act === 'znachok') znachok();
       else if (act === 'claim') claim(a.dataset.id, a.dataset.nm);
       else if (act === 'pickme') meLoad().then(function (res) {
         if (res === 'nolink') pickMe();
@@ -2911,7 +2968,7 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       else if (act === 'asview') {
         clearTimeout(retryT); mode = 'view'; teacherKey = ''; $('st').hidden = true;
         renderTabs(); renderTools();
-        $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>';
+        $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>'; znFoot();
         if (lsGet(LS.pass, '')) view(''); else gate('');
       }
       return;
@@ -3069,6 +3126,9 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
     // личная ссылка ученика без Телеграма (#s=<журнал>.<ключ>) — запомнить и открыть свой журнал
     var ms = /[#&]s=([a-z0-9]{2,16}\.[0-9a-f]{32})\b/.exec(location.hash);
     if (ms) { lsSet(LS.sk, ms[1]); J = ms[1].split('.')[0]; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } }
+    // личный значок (?s=…): ключ в адресе остаётся — и работает, даже когда память браузера пуста или недоступна
+    var zn = znUrl();
+    if (zn) J = zn.split('.')[0];
     // ссылка классного руководителя #kr=<журнал>.<ключ>: запоминаем на устройстве, из адреса убираем
     var mkr = /[#&]kr=([a-z0-9]{2,16}\.[0-9a-f]{32})\b/.exec(location.hash);
     if (mkr) { lsSet(LS.kr, mkr[1]); try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } }
@@ -3111,15 +3171,32 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
       $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
       magic(mt[1], 0);
     }
-    else if (kr() && !mk && (mkr || !(sk() || ck()))) viewKr(0);
+    else if (kr() && !mk && (mkr || !(zn || sk() || ck()))) viewKr(0);
     // вошёл через бота — журнал открывается без кода класса, со своей строкой и сдачей
+    else if (zn && !mk) {   // по личному значку
+      $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
+      var znGo = function (tries) {
+        meLoad().then(function (res) {
+          if (res === true) return;
+          // ключ отключён учителем: из адреса убираем и входим, как умеет это устройство (вход через бота или код)
+          znSet('');
+          if (sk() || ck()) meLoad().then(afterMe, byCode); else byCode();
+          setTimeout(function () { alert('Этот значок больше не работает. Войди заново и сделай новый значок — или спроси учителя.'); }, 300);
+        }, function () {   // сеть подвела — один раз через запасной сервер; дальше «Нет связи», а не код класса: ключ-то годен
+          if (!tries) { znGo(1); return; }
+          $('main').innerHTML = '<div class="gate"><h2>Нет связи с журналом</h2><p>Проверь интернет. Если включён VPN — попробуй без него.</p>' +
+            '<p style="margin-top:14px"><button class="btn pri" data-act="retry">Ещё раз</button></p></div>';
+        });
+      };
+      znGo(0);
+    }
     else if (sk() && !mk) {   // по личной ссылке
       $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
       meLoad().then(function (res) { if (res !== true) { byCode(); setTimeout(function () { alert('Ссылка больше не работает — попроси у учителя новую.'); }, 300); } }, byCode);
     }
     else if (ck() && !mk) { $('main').innerHTML = '<div class="empty">Открываю журнал…</div>'; meLoad().then(afterMe, byCode); }
     else byCode();
-    $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>';
+    $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>'; znFoot();
   }
 })();
 </script>
