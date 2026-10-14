@@ -827,7 +827,8 @@ html.vid[data-theme="night"] body{ background:#000; }
   if (mode === 'teacher' && lsGet('zh:mk', '') === J) creating = J;   // журнал заведён, но сервер его ещё не видел
   var outbox = mode === 'teacher' ? lsGet(lk(LS.out), []) : [];
   var tab = lsGet(LS.tab, 'alg');
-  if (/^#(alg|geo|ver|mat|all)$/.test(location.hash)) tab = location.hash.slice(1);
+  var hashTab = /^#(alg|geo|ver|mat|all)(?=&|$)/.exec(location.hash);   // вкладка в якоре; за ней может идти ключ руководителя
+  if (hashTab) tab = hashTab[1];
   if (mode === 'teacher' && J !== MAIN_J) setMeta(lsGet(lk(LS.cache), {}).meta || { title: 'Журнал', subj: ['mat'], kind: 'ind' });
   if (!tabOk()) tab = SUBJ[0].id;
   var botEntry = /[#&][ts]=/.test(location.hash);   // пришёл по ссылке из бота или по личной ссылке
@@ -852,7 +853,17 @@ html.vid[data-theme="night"] body{ background:#000; }
   function ck() { return lsGet(LS.ck, ''); }
   function sk() { return lsGet(LS.sk, ''); }
   // ссылка классного руководителя (D 08.10): <журнал>.<ключ> — смотреть и выгружать оценки, менять нельзя
-  function kr() { return lsGet(LS.kr, ''); }
+  // ключ живёт в адресе (#kr=…, D 14.10): руководитель возвращается в журнал из закладки, истории или другого браузера,
+  // где память пуста, — без ключа в адресе журнал просил у неё код класса. Копия в памяти — для ссылки «Журнал» с сайта уроков
+  function krUrl() { var m = /[#&]kr=([a-z0-9]{2,16}\.[0-9a-f]{32})(?![0-9a-f])/.exec(location.hash); return m ? m[1] : ''; }
+  function kr() { return krUrl() || lsGet(LS.kr, ''); }
+  function krPut(v) {   // ключ в якорь адреса (рядом с вкладкой) или из якоря; остальной адрес — как был
+    try {
+      var h = location.hash.replace(/(^#|&)kr=[^&]*/g, function (x, a) { return a === '#' ? '#' : ''; }).replace(/^#&/, '#');
+      if (v) h = (h.length > 1 ? h + '&' : '#') + 'kr=' + v;
+      history.replaceState(history.state, '', location.pathname + location.search + (h === '#' ? '' : h));
+    } catch (e) { /* адрес не поменять — остаётся копия в памяти */ }
+  }
   var krMode = false;   // журнал открыт по ссылке классного руководителя
   var krSrv = false;    // сервер умеет такие ссылки (говорит в ответе /sync): без этого учителю кнопку не показываем
   // сервер отдаёт ученикам ссылки урока (тоже из /sync, помним между заходами): выключено — кнопок нет и у D,
@@ -1249,6 +1260,9 @@ html.vid[data-theme="night"] body{ background:#000; }
       .then(function (r) {
         var out = '<p style="margin-top:14px"><button class="btn pri" data-act="retrykr">Ещё раз</button> <button class="btn" data-act="krexit">Войти по коду класса</button></p></div>';
         if (r.status === 403) {
+          // в адресе старый ключ (закладка до «Отозвать»), а в памяти — другой, рабочий: пробуем его, адрес чиним
+          var mem = lsGet(LS.kr, '');
+          if (krUrl() && mem && mem !== krUrl()) { krPut(mem); viewKr(0); return; }
           // Ключ с устройства не стираем: сервер отвечает так же, пока ссылки на нём выключены, — включат, и та же
           // закладка заработает. Журнал при этом убираем с экрана: отозвали — значит, больше не показываем
           krMode = false; loaded = false; S = blank();
@@ -1260,6 +1274,8 @@ html.vid[data-theme="night"] body{ background:#000; }
         if (r.status !== 200 || !r.data.ok) throw { http: r.status };
         lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
         krMode = true;
+        lsSet(LS.kr, kr());          // сервер ключ принял — его и помним
+        if (!krUrl()) krPut(kr());   // пришла без ключа в адресе (ссылка «Журнал» с сайта уроков) — вернуть: закладка его запомнит
         if (r.data.j) J = r.data.j;
         if (r.data.meta) setMeta(r.data.meta);
         S = fromObjects(r.data.objects); loaded = true; render();
@@ -1446,6 +1462,7 @@ html.vid[data-theme="night"] body{ background:#000; }
     var t = $('tools');
     if (mode !== 'teacher') {
       if (!loaded) { t.hidden = true; return; }
+      if (krMode) { t.hidden = true; return; }   // классному руководителю кнопка детей «Сдавать домашку» ни к чему (D 14.10)
       t.hidden = false;
       if (meId && S.stu[meId]) {   // своя строка подсвечена — подпись сверху не нужна (D, 01.10)
         t.hidden = !vidOld;   // пришёл из нового вида за оценками — кнопка обратно
@@ -3292,7 +3309,9 @@ html.vid[data-theme="night"] body{ background:#000; }
     if (tb) {
       if (cur) closeCell();
       tab = tb.dataset.tab; lsSet(LS.tab, tab);
+      var keepKr = krUrl();   // ключ руководителя из якоря не теряем
       try { history.replaceState(null, '', '#' + tab); } catch (e) { /* не страшно */ }
+      if (keepKr) krPut(keepKr);
       render(); return;
     }
     var q = t.closest('[data-q]');
@@ -3350,7 +3369,7 @@ html.vid[data-theme="night"] body{ background:#000; }
       else if (act === 'vygkr') { put('cfg', 'kr', { v: newKey() }); openVyg(); }
       else if (act === 'vygkrdel') { if (confirm('Отозвать ссылку классного руководителя? По ней журнал больше не откроется. Новую можно создать в любой момент.')) { del('cfg', 'kr'); openVyg(); } }
       else if (act === 'retrykr') viewKr(0);
-      else if (act === 'krexit') { lsDel(LS.kr); location.reload(); }
+      else if (act === 'krexit') { lsDel(LS.kr); krPut(''); location.reload(); }
       else if (act === 'vygprint') vygPrint();
       else if (act === 'vygcsv') vygCsv();
       else if (act === 'students') openStudents();
@@ -3559,8 +3578,8 @@ html.vid[data-theme="night"] body{ background:#000; }
     var zn = znUrl();
     if (zn) J = zn.split('.')[0];
     // ссылка классного руководителя #kr=<журнал>.<ключ>: запоминаем на устройстве, из адреса убираем
-    var mkr = /[#&]kr=([a-z0-9]{2,16}\.[0-9a-f]{32})\b/.exec(location.hash);
-    if (mkr) { lsSet(LS.kr, mkr[1]); try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } }
+    // из адреса ключ не убираем: закладка и повторное открытие должны его помнить (D 14.10); в память — после ответа сервера
+    var mkr = krUrl();
     // кнопка «📒 Мой журнал» в боте: одноразовая ссылка #t=… → ключ входа, без 4 цифр
     var mt = /[#&]t=([0-9a-f]{32})\b/.exec(location.hash);
     var afterMe = function (res) { if (res === 'nolink') pickMe(); else if (res !== true) byCode(); };
