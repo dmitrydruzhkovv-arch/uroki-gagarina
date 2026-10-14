@@ -453,6 +453,19 @@ td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:
 .zt tbody tr.me th.nm{ background:color-mix(in srgb, #7c3aed 12%, var(--card)); box-shadow:inset 4px 0 0 #7c3aed, 1px 0 0 var(--z-rule); }
 .zt tbody tr.me td.c.d.mine{ cursor:pointer; }
 ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin-bottom:6px; }
+/* вход учителя по логину и паролю (D 12.10): устройства в окне «Логин и пароль», «Выйти» в панели — справа */
+.udev{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--z-line2); font-size:14px; }
+.udev span{ flex:1; min-width:0; }
+.udev .link{ color:#dc2626; white-space:nowrap; }
+[data-theme="night"] .udev .link{ color:#ff7aa8; }
+/* «Войти» (D 13.10: «как везде на сайтах»): кнопка под кодом класса и окно с выбором, кто входит */
+.gate .ili{ color:var(--muted); font-size:13px; margin:16px 0 8px; }
+.gate .btn.vh{ width:100%; padding:12px 14px; font-size:16px; }
+.dlg.vhod{ width:min(380px, calc(100vw - 16px)); }
+.btn.who{ display:block; width:100%; margin-top:10px; padding:14px 16px; font-size:17px; text-align:left; }
+.btn.who small{ display:block; font-size:13px; font-weight:500; opacity:.78; margin-top:2px; }
+.dlg .hint{ font-size:13px; color:var(--muted); margin-top:5px; }
+.tools .btn.uexit{ margin-left:auto; }
 .stbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; font-size:14px; color:var(--sub); }
 .btn.queue{ background:#7c3aed; color:#fff; box-shadow:0 10px 22px -14px #7c3aed; }
 .thumbs{ display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
@@ -795,8 +808,10 @@ html.vid[data-theme="night"] body{ background:#000; }
   /* ── адрес сервера: как у Кабинета — прямой RF и запасной через шлюз (с VPN) ── */
   var APIS = (function () {
     try {
-      var q = new URLSearchParams(location.search).get('api') || '';
-      if (/^http:\/\/(127\.0\.0\.1|localhost)(:\d{2,5})?(\/[\w\/-]*)?$/.test(q)) return [q.replace(/\/$/, '')];
+      var sp = new URLSearchParams(location.search), q = sp.get('api') || '', q2 = sp.get('api2') || '';
+      var LOCAL = /^http:\/\/(127\.0\.0\.1|localhost)(:\d{2,5})?(\/[\w\/-]*)?$/;
+      // api2 — запасной адрес стенда: проверить, как страница выбирает живой адрес
+      if (LOCAL.test(q)) return [q.replace(/\/$/, '')].concat(LOCAL.test(q2) ? [q2.replace(/\/$/, '')] : []);
     } catch (e) { /* старый браузер — боевой адрес */ }
     var list = ['https://194-87-110-53.nip.io/cabinet', 'https://hw.157-228-128-116.nip.io/cabinet'];
     var saved = lsGet(LS.api, '');
@@ -804,32 +819,95 @@ html.vid[data-theme="night"] body{ background:#000; }
   })();
   var API = APIS[0];
   function nextApi() { if (APIS.length > 1) API = APIS[(APIS.indexOf(API) + 1) % APIS.length]; }
+  // Какой адрес живой — узнаём до первого запроса. При VPN прямой адрес молчит, и страница ждала его 10 секунд, прежде
+  // чем пойти через запасной (D 13.10: «долговато загружается»). Стучимся в оба сразу: первый в списке ответил — он;
+  // молчит, а второй ответил — второй, на этот заход (запоминает выбор, как и раньше, только настоящий запрос — kab:api).
+  // Первый отвечал недавно — не стучимся. Страница рисуется сразу: выбора ждут только запросы (post)
+  function apiPick() {
+    return new Promise(function (go) {
+      var ok = lsGet('zh:apiok', null);
+      if (APIS.length < 2 || !window.AbortController || (ok && ok.a === APIS[0] && Date.now() - ok.t < 1800000)) { go(); return; }
+      // alt — второй адрес: false — ещё молчит, true — ответил, null — отказал; dead — первый отказал
+      var done = false, alt = false, dead = false, cap, late, ctl = [new AbortController(), new AbortController()];
+      var end = function (i) {
+        if (done) return;
+        done = true; clearTimeout(cap); clearTimeout(late);
+        ctl.forEach(function (c) { try { c.abort(); } catch (e) { /* уже ответил */ } });
+        if (i === 1) API = APIS[1]; else if (i === 0) lsSet('zh:apiok', { a: APIS[0], t: Date.now() });
+        go();
+      };
+      var ping = function (i) { return fetch(APIS[i] + '/health', { mode: 'no-cors', cache: 'no-store', signal: ctl[i].signal }); };
+      ping(0).then(function () { end(0); }, function () { dead = true; if (alt) end(1); else if (alt === null) end(-1); });
+      // второй ответил первым — первому ещё полторы секунды: медленная сеть не должна увести на запасной того, у кого прямой жив
+      ping(1).then(function () { alt = true; if (dead) end(1); else late = setTimeout(function () { end(1); }, 1500); },
+        function () { alt = null; if (dead) end(-1); });   // отказали оба (нет сети) — не ждём, идём как раньше
+      cap = setTimeout(function () { end(-1); }, 3000);
+    });
+  }
+  var apiReady = apiPick();
 
   function post(path, body, headers) {
-    var ctrl = window.AbortController ? new AbortController() : null;
-    var guard = setTimeout(function () { if (ctrl) ctrl.abort(); }, 10000);
-    var h = { 'Content-Type': 'application/json' };
-    Object.keys(headers || {}).forEach(function (k) { h[k] = headers[k]; });
-    if (body && typeof body === 'object' && !('j' in body) && path.indexOf('/zhurnal/') === 0 && path !== '/zhurnal/view') body.j = J;
-    return fetch(API + path, { method: 'POST', headers: h, body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
-      .then(function (r) {
-        clearTimeout(guard);
-        return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, data: j }; });
-      }, function (e) { clearTimeout(guard); throw e; });
+    return apiReady.then(function () {   // адрес сервера выбран — дальше как было
+      var ctrl = window.AbortController ? new AbortController() : null;
+      var guard = setTimeout(function () { if (ctrl) ctrl.abort(); }, 10000);
+      var h = { 'Content-Type': 'application/json' };
+      Object.keys(headers || {}).forEach(function (k) { h[k] = headers[k]; });
+      if (body && typeof body === 'object' && !('j' in body) && path.indexOf('/zhurnal/') === 0 && path !== '/zhurnal/view') body.j = J;
+      return fetch(API + path, { method: 'POST', headers: h, body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
+        .then(function (r) {
+          clearTimeout(guard);
+          return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, data: j }; });
+        }, function (e) { clearTimeout(guard); throw e; });
+    });
   }
 
   /* ── состояние ── */
   var S = blank();
   // ключ Кабинета на этом устройстве — D узнан сам
   var teacherKey = lsGet(LS.key, '') || lsGet(LS.kabKey, '');
+  // вход учителя по логину и паролю (D 12.10): сервер выдаёт ключ входа, он идёт тем же заголовком, что ключ Кабинета.
+  // Лежит в памяти (zh:us), а у значка на экране «Домой» — в якоре адреса (#u=…, вместе с вкладкой — #alg&u=…): память
+  // браузера у значка не держится. Якорь, в отличие от ?…, не уходит ни на сервер страницы, ни в Referer — ключ, которым
+  // ставят оценки, браузер не покидает. Ключ Кабинета главнее: где он есть, всё как раньше
+  var U_RE = /^[0-9a-f]{64}$/, U_HASH = /(^#|&)u=([0-9a-f]{64})(?=&|$)/;
+  function uUrl() { var m = U_HASH.exec(location.hash); return m ? m[2] : ''; }
+  function uPut(v) {   // ключ в якорь или из якоря; вкладка в нём и остальной адрес — как были
+    try {
+      var h = location.hash.replace(/(^#|&)u=[^&]*/g, function (x, a) { return a === '#' ? '#' : ''; }).replace(/^#&/, '#');
+      if (v) h = (h.length > 1 ? h + '&' : '#') + 'u=' + v;
+      history.replaceState(history.state, '', location.pathname + location.search + (h === '#' ? '' : h));
+    } catch (e) { /* адрес не поменять — значок выйдет без ключа, вход останется прежним */ }
+  }
+  function uMem() { var v = lsGet('zh:us', ''); return U_RE.test(v) ? v : ''; }
+  // адрес журнала для ссылок, которые учитель раздаёт (ученику, классному руководителю): всегда основная страница —
+  // и тогда, когда сам учитель открыл пробную (zhurnal-vhod.html, пока новое проверяется на настоящих телефонах)
+  function pageUrl() { return location.origin + location.pathname.replace(/zhurnal-[a-z0-9]+\.html$/, 'zhurnal.html'); }
+  // ключ Кабинета на этом устройстве не подошёл, и учитель вошёл по паролю (zh:kbad — тот самый ключ): негодный ключ вход
+  // не заслоняет. Введут другой ключ — он снова главнее
+  if (teacherKey && lsGet('zh:kbad', '') === teacherKey) teacherKey = '';
+  var uMode = false;    // вошёл по логину и паролю (или значком учителя), а не ключом Кабинета
+  var uchSrv = false;   // сервер умеет такой вход (говорит в ответе /sync)
+  var uDead = false;    // ключ входа больше не действует: устарел, отключён с другого устройства, сменили пароль
+  var uHold = 0;        // идёт смена пароля: сервер вот-вот выдаст новый ключ входа, отказ прежнему — не в счёт
+  var uOk = false;      // этим ключом входа сверка уже проходила: вход настоящий, правки под ним — учителя
+  if (!teacherKey) { teacherKey = uUrl() || uMem(); uMode = !!teacherKey; }
   var mode = teacherKey ? 'teacher' : 'view';
+  // неотправленные правки на устройстве. Вошёл по логину и паролю — устройство может быть чужим, и до учителя в памяти
+  // этого браузера мог побывать кто угодно: очередь помечена ключом входа (u — его начало), чужая или подложенная заранее
+  // на сервер от имени учителя не уйдёт. По ключу Кабинета — как раньше, просто список
+  function uTag() { return teacherKey.slice(0, 16); }
+  function outLoad() {
+    var v = lsGet(lk(LS.out), []);
+    if (!uMode) return Array.isArray(v) ? v : [];
+    return v && v.u === uTag() && Array.isArray(v.ops) ? v.ops : [];
+  }
   if (mode === 'teacher' && /^[a-z0-9]{2,16}$/.test(lsGet(LS.j, ''))) J = lsGet(LS.j, '');
   if (mode === 'teacher' && lsGet('zh:mk', '') === J) creating = J;   // журнал заведён, но сервер его ещё не видел
-  var outbox = mode === 'teacher' ? lsGet(lk(LS.out), []) : [];
+  var outbox = mode === 'teacher' ? outLoad() : [];
   var tab = lsGet(LS.tab, 'alg');
-  var hashTab = /^#(alg|geo|ver|mat|all)(?=&|$)/.exec(location.hash);   // вкладка в якоре; за ней может идти ключ руководителя
+  var hashTab = /^#(alg|geo|ver|mat|all)(?=&|$)/.exec(location.hash);   // вкладка в якоре; за ней может идти ключ значка учителя
   if (hashTab) tab = hashTab[1];
-  if (mode === 'teacher' && J !== MAIN_J) setMeta(lsGet(lk(LS.cache), {}).meta || { title: 'Журнал', subj: ['mat'], kind: 'ind' });
+  if (mode === 'teacher' && J !== MAIN_J) setMeta((uMode ? {} : lsGet(lk(LS.cache), {})).meta || { title: 'Журнал', subj: ['mat'], kind: 'ind' });
   if (!tabOk()) tab = SUBJ[0].id;
   var botEntry = /[#&][ts]=/.test(location.hash);   // пришёл по ссылке из бота или по личной ссылке
   var loaded = false, cur = null, pendingRender = false, scrollPos = {};
@@ -1167,16 +1245,22 @@ html.vid[data-theme="night"] body{ background:#000; }
     clearTimeout(queue.t);
     queue.t = setTimeout(sync, 500);
   }
-  function save() { lsSet(lk(LS.out), outbox); var c = {}; KINDS.forEach(function (k) { c[k] = S[k]; }); c.meta = META; lsSet(lk(LS.cache), c); }
+  // копию журнала на устройстве держит только вход ключом Кабинета. Вошёл по логину и паролю — устройство может быть
+  // чужим: фамилии и оценки на нём не остаются, даже если D забыл «Выйти» и отключил вход издалека. Правки ждут сети и там
+  function save() {
+    lsSet(lk(LS.out), uMode ? { u: uTag(), ops: outbox } : outbox);
+    if (uMode) return;
+    var c = {}; KINDS.forEach(function (k) { c[k] = S[k]; }); c.meta = META; lsSet(lk(LS.cache), c);
+  }
 
   var busy = false, again = false, retryT = null, stNote = '';   // stNote — «проверено, ушло в Телеграм»: не затирать «сохранено»
   function sync() {
-    if (mode !== 'teacher') return;
+    if (mode !== 'teacher' || uDead) return;
     if (busy) { again = true; return; }
     busy = true; setSt('wait', outbox.length ? 'сохраняю…' : 'сверяю…');
     var sending = outbox.slice(0, 1500);
-    var jSent = J;
-    post('/zhurnal/sync', { ops: sending, j: J, create: creating === J }, { Authorization: 'Bearer ' + teacherKey })
+    var jSent = J, keySent = teacherKey;
+    post('/zhurnal/sync', { ops: sending, j: J, create: creating === J }, { Authorization: 'Bearer ' + keySent })
       .then(function (r) {
         if (r.status === 401 || r.status === 403) throw { badKey: true };
         if (jSent !== J) throw { gone: true };   // пока шёл запрос, D переключил журнал — ответ уже не про него
@@ -1192,6 +1276,11 @@ html.vid[data-theme="night"] body{ background:#000; }
         if (r.data.journals) { JOURNALS = r.data.journals; renderJournals(); }
         if ('kr' in r.data) krSrv = !!r.data.kr;
         if (ssylSrv !== !!r.data.ssyl) { ssylSrv = !!r.data.ssyl; lsSet('zh:ssyl', ssylSrv); }
+        uchSrv = !!r.data.uch;
+        // значок открыли там, где память держится: ключ — ещё и в память, тогда ссылка «Журнал» с сайта уроков (адрес без ключа) тоже откроет журнал
+        if (uMode && !uMem()) lsSet('zh:us', teacherKey);
+        if (uMode) uOk = true;
+        uFoot();
         var next = fromObjects(r.data.objects);
         outbox.forEach(function (op) {   // правки, сделанные пока шёл запрос, — сверху
           if (op.t === 'put') { var o = JSON.parse(JSON.stringify(op.d)); o.id = op.id; o.ts = op.ts; next[op.k][op.id] = o; }
@@ -1206,6 +1295,17 @@ html.vid[data-theme="night"] body{ background:#000; }
       })
       .catch(function (e) {
         if (e && e.gone) return;
+        if (e && e.badKey && uMode) {
+          // пароль как раз меняют или уже сменили: сервер выдал новый ключ, а этот запрос ушёл с прежним — отказ не в счёт
+          if (uHold || keySent !== teacherKey) { clearTimeout(retryT); retryT = setTimeout(sync, 1500); return; }
+          // отказано ключу из адреса (старый значок или закладка), а в памяти лежит другой вход — открываем журнал им, а не
+          // стираем его. Правки переходят под него, только если ключ из адреса до этого работал: иначе они не учителя
+          if (uUrl() === keySent && uMem() && uMem() !== keySent) {
+            uPut('');
+            if (!uUrl()) { if (uOk) { teacherKey = uMem(); save(); } location.reload(); return; }
+          }
+          uGone(); return;
+        }
         if (e && e.badKey) {
           // неотправленные оценки не трогаем: сервер мог просто перезапускаться
           setSt('bad', 'ключ не подошёл — правки ждут на этом устройстве');
@@ -1245,6 +1345,7 @@ html.vid[data-theme="night"] body{ background:#000; }
         if (r.data.j) J = r.data.j;
         if (r.data.meta) setMeta(r.data.meta);
         S = fromObjects(r.data.objects); loaded = true; render();
+        viewFoot();
       })
       .catch(function (e) {
         if (!e || !e.http) nextApi();
@@ -1298,7 +1399,9 @@ html.vid[data-theme="night"] body{ background:#000; }
     $('main').innerHTML =
       '<div class="gate"><h2>Код класса</h2><p>Журнал открывается по коду. Его говорит учитель на уроке.</p>' +
       '<form id="gateForm"><input id="gateIn" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="40" aria-label="Код класса" placeholder="код">' +
-      '<button class="btn pri" type="submit">Открыть</button></form><div class="err">' + esc(err || '') + '</div></div>';
+      '<button class="btn pri" type="submit">Открыть</button></form><div class="err">' + esc(err || '') + '</div>' +
+      '<div class="ili">или</div><button class="btn vh" data-act="vhod">Войти</button></div>';
+    viewFoot();   // «Войти» уже на карточке — подвал при ней пуст
     var f = $('gateForm');
     f.onsubmit = function (ev) { ev.preventDefault(); var c = $('gateIn').value.trim(); if (c) view(c); };
     setTimeout(function () { var i = $('gateIn'); if (i) i.focus(); }, 50);
@@ -1345,8 +1448,8 @@ html.vid[data-theme="night"] body{ background:#000; }
     }
     save();
     J = j; lsSet(LS.j, j);
-    outbox = lsGet(lk(LS.out), []);
-    var c = lsGet(lk(LS.cache), null), info = JOURNALS.filter(function (x) { return x.j === j; })[0];
+    outbox = outLoad();
+    var c = uMode ? null : lsGet(lk(LS.cache), null), info = JOURNALS.filter(function (x) { return x.j === j; })[0];
     S = blank();
     if (c && c.les) KINDS.forEach(function (k) { S[k] = c[k] || {}; });
     loaded = !!(c && c.les);
@@ -1404,7 +1507,7 @@ html.vid[data-theme="night"] body{ background:#000; }
       var d = {}; Object.keys(p).forEach(function (k) { if (k !== 'id' && k !== 'ts') d[k] = p[k]; });
       d.key = newKey(); put('stu', id, d); p = S.stu[id];
     }
-    var url = location.origin + location.pathname + '?s=' + J + '.' + p.key;   // ключ в адресе остаётся: ссылку можно сразу добавить на экран или в закладки (D 12.10)
+    var url = pageUrl() + '?s=' + J + '.' + p.key;   // ключ в адресе остаётся: ссылку можно сразу добавить на экран или в закладки (D 12.10)
     $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
       '<h3>Личная ссылка · ' + esc(p.fam + ' ' + p.name) + '</h3>' +
       '<div class="meta">Личный вход ученика, Телеграм не нужен. Отправь её ученику лично (ВК, WhatsApp): он откроет ссылку и добавит страницу на экран телефона или в закладки. Он увидит только этот журнал и сможет сдавать фото домашки. Заработает, когда сверху загорится «сохранено».</div>' +
@@ -1473,6 +1576,7 @@ html.vid[data-theme="night"] body{ background:#000; }
         : '<button class="btn pri" data-act="login">📷 Сдавать домашку — войти через Телеграм</button>') + '</div>';
       return;
     }
+    if (uDead) { t.hidden = true; return; }   // вход отключён — журнала на экране нет, и править нечего
     t.hidden = false;
     var code = S.cfg.code && S.cfg.code.v, waiting = waitingSubs().length;
     t.innerHTML = (waiting ? '<button class="btn queue" data-act="queue">📥 Ждут проверки: ' + waiting + '</button>' : '') +
@@ -1480,7 +1584,9 @@ html.vid[data-theme="night"] body{ background:#000; }
       '<button class="btn" data-act="students">Ученики</button>' +
       (META.kind !== 'cls' ? '<span class="codebox">Ученикам — кнопка «📒 Мой журнал» в боте или личная ссылка (🔗 в «Учениках»)</span>'
         : code ? '<span class="codebox">Код для класса: <b class="mono">' + esc(code) + '</b></span> <button class="link" data-act="code">изменить</button>'
-            : '<span class="warn">Код класса не задан — ученики журнал не увидят.</span> <button class="btn" data-act="code">Задать код</button>');
+            : '<span class="warn">Код класса не задан — ученики журнал не увидят.</span> <button class="btn" data-act="code">Задать код</button>') +
+      // вошёл по логину и паролю — устройство может быть чужим: «Выйти» на виду, до подвала на телефоне не долистают
+      (uMode ? '<button class="btn uexit" data-act="uexit">Выйти</button>' : '');
   }
 
   function render() {
@@ -1741,7 +1847,7 @@ html.vid[data-theme="night"] body{ background:#000; }
     var k = S.cfg.kr && S.cfg.kr.v;
     if (!k) return '<div class="vyg-kr"><b>Классному руководителю</b><span>Ссылка, по которой он сам смотрит журнал и выгружает оценки. Менять ничего не может, код класса ему не нужен.</span>' +
       '<button class="btn" data-act="vygkr">Создать ссылку</button></div>';
-    return '<div class="vyg-kr"><b>Классному руководителю</b><input id="lnkIn" readonly value="' + esc(location.origin + location.pathname + '#kr=' + J + '.' + k) + '">' +
+    return '<div class="vyg-kr"><b>Классному руководителю</b><input id="lnkIn" readonly value="' + esc(pageUrl() + '#kr=' + J + '.' + k) + '">' +
       '<button class="btn pri" data-act="copylink">Скопировать</button><button class="btn danger" data-act="vygkrdel">Отозвать</button>' +
       '<span>Только смотреть и выгружать. «Отозвать» — ссылка перестанет работать, детей это не коснётся.</span></div>';
   }
@@ -2474,7 +2580,7 @@ html.vid[data-theme="night"] body{ background:#000; }
       if (want && r.data.j === want) { lsSet('zh:sj', want); lsSet('zh:sjt', Date.now()); }   // выбрал в переключателе и он открылся — в следующий раз откроется он
       if (!r.data.stu) { meId = null; freeRows = r.data.free || []; return 'nolink'; }
       setMeta(r.data.meta);
-      meId = r.data.stu; sdachaOn = !!r.data.sdacha; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; znFoot();
+      meId = r.data.stu; sdachaOn = !!r.data.sdacha; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; viewFoot();
       if (znUrl()) lsSet('zh:zn', znUrl());   // отдельной записью: в деле только когда другого входа на устройстве нет (см. старт) // ключ значка — ещё и в память: ушёл на сайт уроков и вернулся по ссылке «Журнал» без ключа — кода класса не спросим (D 12.10)
       S = fromObjects(r.data.objects); loaded = true; render();
       return true;
@@ -2492,6 +2598,7 @@ html.vid[data-theme="night"] body{ background:#000; }
     else h += '<p style="margin-top:14px"><b>Свободных фамилий нет.</b> Напиши учителю, он отметит тебя сам.</p>';
     h += '<div class="err">' + esc(err || '') + '</div><p style="margin-top:10px;font-size:13px">Себя не нашёл или нажал не ту — напиши учителю.</p></div>';
     $('main').innerHTML = h;
+    viewFoot();   // карточки кода класса больше нет — в подвале снова «Ввести другой код»
   }
   function claim(id, nm) {
     if (!confirm('Ты — ' + nm + '?\nПоменять потом сможет только учитель.')) return;
@@ -2504,6 +2611,16 @@ html.vid[data-theme="night"] body{ background:#000; }
       throw { http: r.status };
     }).catch(function () { pickMe('Не получилось. Проверь интернет и нажми ещё раз.'); });
   }
+  // подвал того, кто смотрит журнал: «Войти» — одна, как на любом сайте (D 13.10); кто входит, спросит окно
+  // На карточке кода класса подвал пуст: «Войти» там уже на карточке. Ученику, которого журнал узнал, «Войти» ни к чему —
+  // ему остаётся только тихая ссылка для учителя, взявшего его телефон
+  function viewFoot() {
+    if (mode === 'teacher' || krMode) return;
+    $('footLinks').innerHTML = document.querySelector('#main #gateIn') ? ''
+      : meId ? '<button class="link" data-act="teacher">Войти как учитель</button>'
+        : '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="vhod">Войти</button>';
+    znFoot();
+  }
   // ссылка на значок — в подвале, под таблицей и легендой (D 12.10): действие разовое, наверху ему не место.
   // Ключ значка открывает один журнал — ученику нескольких журналов её не показываем (он входит через бота)
   function znFoot() {
@@ -2512,20 +2629,17 @@ html.vid[data-theme="night"] body{ background:#000; }
     if (!(znSrv && meId && (JOURNALS.length < 2 || znUrl()))) return;
     var sp = document.createElement('span');
     sp.setAttribute('data-zn', '1');
-    sp.innerHTML = '<button class="link" data-act="znachok">📱 Значок на экран телефона</button> · ';
+    sp.innerHTML = '<button class="link" data-act="znachok">📱 Значок на экран телефона</button>' + (f.firstChild ? ' · ' : '');
     f.insertBefore(sp, f.firstChild);
   }
   // значок: ключ своей строки — в адрес, дальше ученик сам добавляет страницу на экран «Домой»
   function znachok() {
     var show = function () {
       $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
-        '<h3>Значок журнала на экран</h3><div class="meta">Страница готова: теперь значок запомнит тебя сам — без кода класса и Телеграма.</div>' +
-        '<ol class="zn"><li>Если значок журнала на экране уже есть — удали его.</li>' +
-        '<li>Открой меню браузера: <b>⋮</b> или <b>≡</b> (на айфоне — «Поделиться»).</li>' +
-        '<li>Нажми <b>«Добавить ярлык»</b> или <b>«На экран Домой»</b>.</li>' +
-        '<li>Открой журнал новым значком — он сразу покажет твою строку.</li></ol>' +
-        '<div class="meta">На компьютере — добавь эту страницу в закладки.</div>' +
-        '<div class="note">Значок — твой личный вход. Никому не пересылай ссылку из него: по ней можно сдать домашку за тебя. Потерял телефон — скажи учителю, он её отключит.</div>' +
+        '<h3>Страница запомнила тебя ✓</h3><div class="meta">Осталось добавить её на экран телефона:</div>' +
+        '<ol class="zn"><li>Открой меню браузера: <b>⋮</b> или <b>≡</b> (на айфоне — «Поделиться»).</li>' +
+        '<li>Нажми <b>«На экран Домой»</b> или <b>«Добавить ярлык»</b>.</li></ol>' +
+        '<div class="note">Старый значок журнала удали — он тебя не помнит. Ссылку из нового никому не пересылай: это твой личный вход.</div>' +
         '<div class="row"><span class="sp"></span><button class="btn pri" data-act="close">Понятно</button></div></div>';
     };
     if (znUrl()) { show(); return; }
@@ -2533,6 +2647,244 @@ html.vid[data-theme="night"] body{ background:#000; }
       if (r.status !== 200 || !r.data.ok || !ZN_RE.test(r.data.s || '')) throw { http: r.status };
       znSet(r.data.s); show();
     }).catch(function () { alert('Не получилось подготовить значок. Проверь интернет и нажми ещё раз.'); });
+  }
+  /* ── вход учителя по логину и паролю (D 12.10): с чужого устройства, с «Выйти» и значком на экран. Сервер — флаг ZHURNAL_UCH.
+     Ключ входа открывает только журнал; ключ Кабинета работает как раньше и главнее ── */
+  var U_NET = 'Нет связи с журналом. Проверь интернет; если включён VPN — попробуй без него.';
+  var U_ERR = { login: 'Логин — латинские буквы и цифры, от 3 знаков.', pwd: 'Пароль — не короче 8 знаков.',
+    weak: 'Слишком простой пароль: его подберут первым. Не одни цифры, не фамилия, не код класса и не расхожее слово.' };
+  function uH() { return { Authorization: 'Bearer ' + teacherKey }; }
+  // сеть подвела — дальше через запасной сервер (VPN). once — вход, смена пароля, значок: вслепую не повторяем,
+  // первый запрос мог дойти, а потерялся только ответ
+  function uPost(path, body, headers, once) {
+    return post('/zhurnal/uch/' + path, body || {}, headers).then(null, function (e) {
+      nextApi();
+      if (once) throw e;
+      return post('/zhurnal/uch/' + path, body || {}, headers);
+    });
+  }
+  // подвал учителя: значок, логин с паролем и устройства, выход. Действия редкие — наверху им не место (как значку ученика)
+  function uFoot() {
+    if (mode !== 'teacher' || uDead || !uchSrv) return;
+    $('footLinks').innerHTML = '<button class="link" data-act="uzn">📱 Значок на экран телефона</button> · ' +
+      '<button class="link" data-act="uset">Логин и пароль</button>' + (uMode ? ' · <button class="link" data-act="uexit">Выйти</button>' : '');
+  }
+  // с устройства долой всё учительское: ключ входа, копии журналов, выбранный журнал; dropOut — и несохранённые правки.
+  // Входы ученика (бот, значок, код класса) не трогаем: телефон может быть его
+  function uForget(dropOut) {
+    var kill = ['zh:us', 'zh:kbad', LS.j, 'zh:mk'];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k.indexOf(LS.cache) === 0 || (dropOut && k.indexOf(LS.out) === 0)) kill.push(k);
+      }
+    } catch (e) { /* память закрыта — чистить нечего */ }
+    kill.forEach(lsDel);
+    if (uUrl()) uPut('');
+  }
+  // ключ входа больше не действует: устарел, отключён с другого устройства или сменили пароль. Журнал уходит с экрана,
+  // с устройства — всё учительское. Несохранённые правки остаются только на этой открытой странице (в памяти браузера
+  // им на устройстве, которое может быть чужим, лежать незачем): учитель войдёт, не закрывая её, — они уйдут на сервер
+  function uGone() {
+    uDead = true; clearTimeout(retryT);
+    if (cur) closeCell();
+    closeDlg();
+    loaded = false; S = blank();
+    var wait = outbox.length;
+    uForget(true);
+    // ждать нечего — устройство входит так, как входило до учителя (ученик, код класса). Ключ из адреса не убрался
+    // (браузер не дал поменять адрес) — остаёмся без перезагрузки: она пошла бы по кругу
+    if (!wait && !uUrl()) {
+      alert('Вход учителя на этом устройстве больше не действует: он устарел или его отключили.');
+      location.reload();
+      return;
+    }
+    setSt('bad', wait ? 'вход устарел — правки ждут на этой странице' : 'вход устарел');
+    $('tools').hidden = true; $('footLinks').innerHTML = '';
+    $('main').innerHTML = '<div class="gate"><h2>Нужно войти заново</h2><p>Вход учителя на этом устройстве устарел или его отключили.' +
+      (wait ? ' Несохранённые правки (' + wait + ') ждут на этой странице: войди, не закрывая её, — и они уйдут на сервер.' : '') + '</p>' +
+      '<p style="margin-top:14px"><button class="btn pri" data-act="teacher">Войти</button></p></div>';
+  }
+  function uKey() {   // прежний вход: ключ Кабинета
+    var k = prompt('Ключ учителя (тот же, что у Кабинета):');
+    if (k && k.trim()) { lsSet(LS.key, k.trim()); lsDel('zh:kbad'); location.reload(); }
+  }
+  // «Войти»: кто входит. Ученик — через Телеграм, как и раньше (окно с кодом из бота); учитель — логин и пароль
+  function uVhod() {
+    $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg vhod" role="dialog" aria-modal="true"><h3>Войти</h3>' +
+      '<button class="btn pri who" data-act="login">Я ученик<small>через Телеграм</small></button>' +
+      '<button class="btn who" data-act="teacher">Я учитель<small>логин и пароль</small></button>' +
+      '<div class="row"><span class="sp"></span><button class="btn" data-act="close">Закрыть</button></div></div>';
+  }
+  // «Я учитель»: сервер умеет логин и пароль — окно входа; не умеет (флаг выключен) или молчит — ключ Кабинета, как раньше
+  function uAsk() {
+    var frame = function (inner) { return '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true"><h3>Вход учителя</h3>' + inner + '</div>'; };
+    $('dlg').innerHTML = frame('<div class="meta">Открываю…</div>');
+    uPost('login', {}).then(function (r) {
+      if (!$('dlg').innerHTML) return;   // окно закрыли, не дождавшись
+      if (r.status === 404) { closeDlg(); uKey(); } else uLogin('');
+    }, function () {
+      if ($('dlg').innerHTML) $('dlg').innerHTML = frame('<div class="meta">' + U_NET + '</div><div class="row"><button class="link" data-act="ukey">Войти ключом Кабинета</button><span class="sp"></span><button class="btn" data-act="close">Закрыть</button></div>');
+    });
+  }
+  function uLogin(msg) {
+    $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
+      '<h3>Вход учителя</h3>' +
+      '<form id="uForm"><div class="lbl">Логин</div><input id="uLg" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40">' +
+      '<div class="lbl">Пароль</div><input id="uPw" name="password" type="password" autocomplete="current-password" maxlength="200">' +
+      '<div class="err" id="uErr">' + esc(msg || '') + '</div>' +
+      '<div class="row"><span class="sp"></span><button class="btn" type="button" data-act="close">Закрыть</button><button class="btn pri" type="submit">Войти</button></div></form>' +
+      '<div class="note"><button class="link" type="button" data-act="ukey">Войти ключом Кабинета</button></div></div>';
+    $('uForm').onsubmit = function (ev) {
+      ev.preventDefault();
+      var lg = $('uLg').value.trim().toLowerCase(), pw = $('uPw').value, err = $('uErr');
+      if (!lg || !pw) { err.textContent = 'Введи логин и пароль.'; return; }
+      err.textContent = 'Проверяю…';
+      uPost('login', { login: lg, pwd: pw }, null, true).then(function (r) {
+        if (r.status === 200 && r.data.ok && U_RE.test(r.data.token || '')) { uEnter(r.data.token); return; }
+        if ($('uPw')) $('uPw').value = '';
+        if ($('uErr')) $('uErr').textContent = r.status === 429 ? 'Слишком много неверных попыток. Подожди 10 минут.' : r.status === 403 ? 'Логин или пароль не подошли.'
+          : r.status === 404 ? 'Вход по логину и паролю выключен. Войди ключом Кабинета.' : 'Сервер не ответил как надо. Попробуй ещё раз.';
+      }, function () { if ($('uErr')) $('uErr').textContent = U_NET; });
+    };
+    setTimeout(function () { var f = $('uLg'); if (f) f.focus(); }, 50);
+  }
+  // вошёл: ключ входа — в память; память закрыта (частный режим) — в якорь адреса, иначе вход не пережил бы перезагрузку.
+  // Прежний ключ в адресе (отключённый значок) убираем: адрес главнее памяти и заслонил бы новый вход. Ключ Кабинета
+  // на устройстве есть, а входить пришлось паролем — значит, он негоден: помечаем, чтобы и он вход не заслонял
+  function uEnter(tok) {
+    var k = lsGet(LS.key, '') || lsGet(LS.kabKey, '');
+    if (uDead && uMode && outbox.length) {
+      // вход отключили, пока правки ждали: продолжаем на этой же странице — правки в ней, а не в памяти браузера
+      teacherKey = tok; uDead = false; uOk = false;
+      lsSet('zh:us', tok); if (uMem() !== tok) uPut(tok);
+      if (k) lsSet('zh:kbad', k);
+      lsSet(LS.j, J); if (creating === J) lsSet('zh:mk', J);
+      closeDlg(); save();
+      $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
+      sync();
+      return;
+    }
+    // свежий вход: всё учительское, что лежало в памяти этого браузера до него (очередь правок, выбранный журнал), — долой.
+    // Оно либо от прежнего входа, либо подложено заранее, чтобы уйти на сервер от имени учителя
+    uForget(true);
+    if (k) lsSet('zh:kbad', k);
+    lsSet('zh:us', tok);
+    uPut(uMem() === tok ? '' : tok);
+    location.reload();
+  }
+
+  /* окно «Логин и пароль»: поля и одна залитая кнопка, без абзацев (D 13.10: «я даже не читаю текст»); что нельзя
+     в пароле — под полем заранее; где открыт журнал — ниже и только когда такие устройства есть */
+  var uSt = null;
+  function uWhen(ms) {
+    var d = new Date(ms), z = function (x) { return ('0' + x).slice(-2); };
+    return z(d.getDate()) + '.' + z(d.getMonth() + 1) + ' ' + z(d.getHours()) + ':' + z(d.getMinutes());
+  }
+  function uSetDlg() {
+    var frame = function (inner) { return '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true"><h3>Логин и пароль</h3>' + inner + '</div>'; };
+    $('dlg').innerHTML = frame('<div class="meta">Открываю…</div>');
+    uPost('state', {}, uH()).then(function (r) {
+      if (r.status === 401 && uMode) { uGone(); return; }
+      if (r.status !== 200 || !r.data.ok) throw { http: r.status };
+      uSt = r.data; uSetShow();
+    }).catch(function () {
+      $('dlg').innerHTML = frame('<div class="meta">' + U_NET + '</div><div class="row"><span class="sp"></span><button class="btn" data-act="close">Закрыть</button></div>');
+    });
+  }
+  function uSetShow() {
+    var st = uSt, has = !!st.login, ses = st.ses || [];
+    var others = ses.filter(function (x) { return !x.me; }).length;
+    var list = ses.map(function (x) {
+      return '<div class="udev"><span><b>' + esc(x.name) + '</b> · ' + (x.kind === 'zn' ? 'значок' : 'вход') + ' · ' + (x.me ? 'это устройство' : 'был ' + uWhen(x.seen)) + '</span>' +
+        (x.me ? '' : '<button class="link" data-act="uoff" data-id="' + esc(x.id) + '">Отключить</button>') + '</div>';
+    }).join('');
+    $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true"><h3>Логин и пароль</h3>' +
+      '<form id="usForm"><div class="lbl">Логин</div><input id="usLg" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32" placeholder="латинскими буквами" value="' + esc(st.login || '') + '">' +
+      (st.by === 'ses' ? '<div class="lbl">Нынешний пароль</div><input id="usOld" type="password" autocomplete="current-password" maxlength="200">' : '') +
+      '<div class="lbl">' + (has ? 'Новый пароль' : 'Пароль') + '</div><input id="usPw" type="password" autocomplete="new-password" maxlength="200">' +
+      '<div class="hint">Не короче 8 знаков. Имя, фамилия и одни цифры не подойдут.</div>' +
+      '<div class="lbl">Ещё раз</div><input id="usPw2" type="password" autocomplete="new-password" maxlength="200">' +
+      '<div class="err" id="usErr"></div>' +
+      (others ? '<div class="hint" id="usWarn">Сохранишь — остальные устройства и значки попросят войти заново.</div>' : '') +
+      '<div class="row"><span class="sp"></span><button class="btn" type="button" data-act="close">Закрыть</button><button class="btn pri" type="submit">Сохранить</button></div></form>' +
+      (list ? '<div class="lbl">Где открыт журнал</div>' + list +
+        (others ? '<div class="row"><button class="link" data-act="uoff">Отключить все' + (st.by === 'ses' ? ', кроме этого' : '') + '</button><span class="sp"></span></div>' : '') : '') +
+      '</div>';
+    $('usForm').onsubmit = function (ev) { ev.preventDefault(); uSave(); };
+  }
+  // сохранил — что вышло и что дальше, одной строкой и одним шагом (D 13.10: «что-то нажал и жду»)
+  function uDone(login, relogin) {
+    $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg udone" role="dialog" aria-modal="true"><h3>Готово ✓</h3>' +
+      '<div class="txt">Логин: <b>' + esc(login) + '</b>\nТеперь на любом телефоне: Журнал → «Войти» → «Я учитель».</div>' +
+      (relogin ? '<div class="note">На остальных устройствах нужно войти заново.</div>' : '') +
+      '<div class="row"><span class="sp"></span><button class="btn pri" data-act="close">Понятно</button></div></div>';
+  }
+  function uSave() {
+    var lg = $('usLg').value.trim().toLowerCase(), a = $('usPw').value, old = $('usOld') ? $('usOld').value : '', err = $('usErr');
+    var relogin = !!uSt && (uSt.ses || []).some(function (x) { return !x.me; });   // были другие устройства — им входить заново
+    if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(lg)) { err.textContent = U_ERR.login; return; }
+    if (a.length < 8) { err.textContent = U_ERR.pwd; return; }
+    if (a !== $('usPw2').value) { err.textContent = 'Пароли не совпали.'; return; }
+    err.textContent = 'Сохраняю…';
+    uHold++;   // пока идёт смена, фоновая сверка с прежним ключом журнал с экрана не убирает
+    uPost('set', { login: lg, pwd: a, old: old }, uH(), true).then(function (r) {
+      uHold--;
+      if (r.status === 401 && uMode) { uGone(); return; }
+      if (r.status === 200 && r.data.ok) {
+        if (uMode && U_RE.test(r.data.token || '')) {   // прежний ключ входа погас вместе с остальными — сервер выдал этому устройству новый
+          var inUrl = !!uUrl();
+          teacherKey = r.data.token; lsSet('zh:us', teacherKey);
+          if (inUrl || uMem() !== teacherKey) uPut(teacherKey);
+          save();   // очередь правок — под новый ключ
+        }
+        uDone(lg, relogin);
+        return;
+      }
+      if ($('usErr')) $('usErr').textContent = r.status === 403 ? 'Нынешний пароль не подошёл.' : r.status === 429 ? 'Слишком много попыток. Подожди 10 минут.'
+        : U_ERR[r.data.error] || 'Не получилось. Попробуй ещё раз.';
+    }, function () { uHold--; if ($('usErr')) $('usErr').textContent = U_NET; });
+  }
+  function uOff(body) {
+    if (body.all && !confirm('Отключить журнал на всех остальных устройствах? Там попросят логин и пароль заново, значки перестанут работать.')) return;
+    uPost('off', body, uH()).then(function (r) {
+      if (r.status === 401 && uMode) { uGone(); return; }
+      if (r.status !== 200 || !r.data.ok) throw { http: r.status };
+      uSt = r.data; uSetShow();
+    }).catch(function () { alert(U_NET); });
+  }
+  // значок учителя: ключ входа — в якорь адреса, дальше страницу добавляют на экран «Домой». Вошедшему по паролю сервер
+  // отдаёт его же ключ (он становится ключом значка и живёт дольше), по ключу Кабинета — новый
+  function uZnachok() {
+    var show = function () {
+      $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
+        '<h3>Страница запомнила тебя ✓</h3><div class="meta">Осталось добавить её на экран телефона:</div>' +
+        '<ol class="zn"><li>Открой меню браузера: <b>⋮</b> или <b>≡</b> (на айфоне — «Поделиться»).</li>' +
+        '<li>Нажми <b>«На экран Домой»</b> или <b>«Добавить ярлык»</b>.</li></ol>' +
+        '<div class="note">Ссылку из значка никому не пересылай: по ней можно ставить оценки. Потерял телефон — отключи его в «Логин и пароль».</div>' +
+        '<div class="row"><span class="sp"></span><button class="btn pri" data-act="close">Понятно</button></div></div>';
+    };
+    if (uUrl()) { show(); return; }
+    uPost('znachok', {}, uH(), true).then(function (r) {
+      if (r.status === 401 && uMode) { uGone(); return; }
+      if (r.status !== 200 || !r.data.ok || !U_RE.test(r.data.u || '')) throw { http: r.status };
+      uPut(r.data.u); show();
+    }).catch(function () { alert('Не получилось подготовить значок. Проверь интернет и нажми ещё раз.'); });
+  }
+  // «Выйти»: ключ входа гаснет на сервере, с устройства уходит всё учительское. Нет связи — с устройства выходим всё равно
+  function uExit() {
+    if (!uMode) return;
+    if (!confirm(outbox.length ? 'Есть несохранённые правки (' + outbox.length + '): до сервера они ещё не дошли. Выйти и потерять их?'
+      : 'Выйти из журнала на этом устройстве?' + (uUrl() ? ' Значок на экране тоже перестанет работать.' : ''))) return;
+    var toks = [teacherKey, uMem()].filter(function (t, i, a) { return U_RE.test(t) && a.indexOf(t) === i; });
+    uDead = true; clearTimeout(retryT);
+    Promise.all(toks.map(function (t) {
+      return uPost('logout', {}, { Authorization: 'Bearer ' + t }).then(function (r) { return r.status === 200; }, function () { return false; });
+    })).then(function (ok) {
+      uForget(true);
+      if (ok.indexOf(false) >= 0) alert('Нет связи: с этого устройства вход убран, но на сервере он ещё числится. Появится интернет — отключи это устройство в журнале: «Логин и пароль».');
+      location.reload();
+    });
   }
   function openLogin(err) {
     $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
@@ -2847,11 +3199,12 @@ html.vid[data-theme="night"] body{ background:#000; }
         '<a class="srow-call" title="Позвонить" hidden>📞</a></div>';
     });
     h += '<div class="note">Телеграм — кто этот ученик в боте. Связанный ученик входит в журнал через бота и сдаёт фото домашки в свою клетку.' +
-      '<span id="tgLoad">' + (tgPeople ? '' : ' Загружаю список из бота…') + '</span></div>';
+      '<span id="tgLoad">' + (uMode ? ' Список людей из бота — только на устройстве с ключом Кабинета.' : tgPeople ? '' : ' Загружаю список из бота…') + '</span></div>';
     h += '<div class="row"><button class="btn" data-act="addstu">＋ Ученик</button><span class="sp"></span><button class="btn pri" data-act="close">Готово</button></div></div>';
     $('dlg').innerHTML = h; phFill();
-    // список берём при каждом открытии: подпись «в каком журнале» меняется после привязки (D, 02.10)
-    post('/zhurnal/tgpeople', {}, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
+    // список берём при каждом открытии: подпись «в каком журнале» меняется после привязки (D, 02.10).
+    // Вошедшему по паролю сервер его не отдаёт: он шире журнала (все, кто дал согласие боту, с телефонами)
+    if (!uMode) post('/zhurnal/tgpeople', {}, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
       if (r.status !== 200 || !r.data.ok) return;
       tgPeople = r.data.people;
       $('dlg').querySelectorAll('.srow-tg').forEach(function (sel) { sel.innerHTML = opts(sel.value); });
@@ -3225,7 +3578,7 @@ html.vid[data-theme="night"] body{ background:#000; }
       '<div class="lbl">Тема</div><div class="v-setrow"><button class="btn" data-tema="day">Светлая</button><button class="btn" data-tema="night">Тёмная</button></div>' +
       (znSrv && (JOURNALS.length < 2 || znUrl()) ? '<button class="btn v-wide" data-act="znachok">📱 Значок на экран телефона</button>' : '') +
       '<div class="row"><button class="btn danger" data-va="exit">Выйти на этом устройстве</button><span class="sp"></span><button class="btn pri" data-act="close">Готово</button></div>' +
-      '<div class="note"><a class="link" href="pravila.html">Правила и конфиденциальность</a> · <button class="link" data-act="teacher">Вход для учителя</button></div></div>';
+      '<div class="note"><a class="link" href="pravila.html">Правила и конфиденциальность</a> · <button class="link" data-act="teacher">Войти как учитель</button></div></div>';
     markTheme();
   }
   function vClose() { if (!vLes) return; vLes = ''; if (vidOn()) { vRender(); window.scrollTo(0, vY); } }
@@ -3309,8 +3662,9 @@ html.vid[data-theme="night"] body{ background:#000; }
     if (tb) {
       if (cur) closeCell();
       tab = tb.dataset.tab; lsSet(LS.tab, tab);
-      var keepKr = krUrl();   // ключ руководителя из якоря не теряем
+      var keepU = uUrl(), keepKr = krUrl();   // ключи из якоря не теряем: значок учителя, ссылка руководителя
       try { history.replaceState(null, '', '#' + tab); } catch (e) { /* не страшно */ }
+      if (keepU) uPut(keepU);
       if (keepKr) krPut(keepKr);
       render(); return;
     }
@@ -3404,15 +3758,17 @@ html.vid[data-theme="night"] body{ background:#000; }
           else { put('cfg', 'code', { v: nc }); render(); }
         }
       }
-      else if (act === 'teacher') {
-        var k = prompt('Ключ учителя (тот же, что у Кабинета):');
-        if (k && k.trim()) { lsSet(LS.key, k.trim()); location.reload(); }
-      }
+      else if (act === 'vhod') uVhod();
+      else if (act === 'teacher') uAsk();
+      else if (act === 'ukey') { closeDlg(); uKey(); }
+      else if (act === 'uset') uSetDlg();
+      else if (act === 'uoff') uOff(a.dataset.id ? { id: a.dataset.id } : { all: true });
+      else if (act === 'uzn') uZnachok();
+      else if (act === 'uexit') uExit();
       else if (act === 'recode') { lsDel(LS.pass); gate(''); }
       else if (act === 'asview') {
         clearTimeout(retryT); mode = 'view'; teacherKey = ''; $('st').hidden = true;
         renderTabs(); renderTools();
-        $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>'; znFoot();
         if (lsGet(LS.pass, '')) view(''); else gate('');
       }
       return;
@@ -3557,14 +3913,16 @@ html.vid[data-theme="night"] body{ background:#000; }
   document.body.appendChild(stEl);
   renderTabs(); renderJournals();
   // ссылку классного руководителя открыли на устройстве учителя: режим остаётся учительским, а ключ из адреса убираем
-  if (mode === 'teacher' && /[#&]kr=/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } }
+  if (mode === 'teacher' && /[#&]kr=/.test(location.hash)) { var uKeep = uUrl(); try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ } if (uKeep) uPut(uKeep); }
+  function boot() {
   if (mode === 'teacher') {
-    var cache = lsGet(lk(LS.cache), null);
+    var cache = uMode ? null : lsGet(lk(LS.cache), null);
     if (cache && cache.les) { KINDS.forEach(function (k) { S[k] = cache[k] || {}; }); loaded = true; }
     else $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
     render(); sync();
     setInterval(function () { if (document.visibilityState === 'visible' && !cur) sync(); }, 30000);
   } else {
+    viewFoot();   // карточка кода класса свой подвал уберёт сама: «Войти» там уже на карточке
     // ссылка от учителя вида zhurnal.html#k=КОД — код сразу в дело, из адреса убираем
     var mk = /[#&]k=([^&]+)/.exec(location.hash);
     var byCode = function () {
@@ -3619,7 +3977,7 @@ html.vid[data-theme="night"] body{ background:#000; }
     else if (mt) {
       try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* не страшно */ }
       $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
-      magic(mt[1], 0);
+      apiReady.then(function () { magic(mt[1], 0); });   // одноразовая ссылка из бота — тоже по живому адресу
     }
     else if (kr() && !mk && (mkr || !(zn || sk() || ck()))) viewKr(0);
     // вошёл через бота — журнал открывается без кода класса, со своей строкой и сдачей
@@ -3646,8 +4004,9 @@ html.vid[data-theme="night"] body{ background:#000; }
     }
     else if (ck() && !mk) { $('main').innerHTML = '<div class="empty">Открываю журнал…</div>'; meLoad().then(afterMe, byCode); }
     else byCode();
-    $('footLinks').innerHTML = '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="teacher">Я учитель</button>'; znFoot();
   }
+  }
+  boot();
 })();
 </script>
 <!-- знак «?» у часов — чат с учителем, тот же, что на сайте класса (D 07.10); у учителя под ним ученики -->
