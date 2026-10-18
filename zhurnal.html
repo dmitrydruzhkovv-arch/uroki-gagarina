@@ -282,6 +282,7 @@ td.c.long{ font-size:11px; white-space:normal; line-height:1.1; font-weight:600;
 .pop-q button{ height:46px; border-radius:12px; font-weight:800; font-size:18px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); }
 .pop-t{ display:flex; gap:6px; margin-top:8px; }
 .pop-t input{ flex:1; min-width:0; padding:10px 12px; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); }
+.pop-l{ display:block; margin:12px 0 -4px; font-size:13px; font-weight:700; color:var(--muted); }   /* подписи полей: подсказку внутри поля браузер может подменить (у D 16.10 там стояло «null») */
 .pop-f{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:10px; font-size:14px; color:var(--sub); }
 .pop-f label{ display:flex; align-items:center; gap:6px; cursor:pointer; }
 
@@ -376,7 +377,7 @@ td.c .cmt{ position:absolute; top:4px; left:4px; width:6px; height:6px; border-r
 .ftb{ width:100%; padding:0; display:flex; flex-direction:column; gap:4px; text-align:left; }
 .fpv{ width:150px; height:196px; border-radius:14px; overflow:hidden; display:grid; place-items:center; background:var(--z-head); box-shadow:0 0 0 1px var(--z-line2), 0 8px 18px -14px rgba(40,24,70,.5); transition:transform .15s var(--ease); }
 .ftb:hover .fpv{ transform:translateY(-2px); box-shadow:0 0 0 2px var(--s), 0 12px 22px -14px rgba(40,24,70,.6); }
-.fpv img{ width:100%; height:100%; object-fit:cover; object-position:top; display:block; background:#fff; }
+.fpv img{ width:100%; height:100%; object-fit:cover; object-position:left top; display:block; background:#fff; }   /* видно начало страницы — левый верхний угол (D 17.10) */
 .fpv img:not([src]){ visibility:hidden; }
 @media (max-width:560px){ .ft{ width:calc(50% - 5px); } .fpv{ width:100%; height:auto; aspect-ratio:150/196; } }
 .fpv i{ font-style:normal; font-family:'JetBrains Mono',ui-monospace,monospace; font-weight:800; font-size:20px; text-transform:uppercase; letter-spacing:.04em; color:#fff; }
@@ -387,6 +388,14 @@ td.c .cmt{ position:absolute; top:4px; left:4px; width:6px; height:6px; border-r
 .fpv.x-docx{ background:linear-gradient(135deg,#60a5fa,#2563eb); } .fpv.x-xlsx{ background:linear-gradient(135deg,#4ade80,#16a34a); }
 .fnm{ font-size:13px; font-weight:600; line-height:1.2; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; word-break:break-word; }
 .ftb .fz{ font-size:11px; color:var(--muted); }
+.fnote{ margin-top:8px; } .fnote summary{ cursor:pointer; font-size:14px; font-weight:700; color:var(--sub); padding:6px 0; list-style:none; } .fnote summary::-webkit-details-marker{ display:none; }
+.fnote[open] summary{ color:var(--muted); } .fnote textarea{ min-height:56px; }
+#vid .v-note{ margin:6px 0 12px; white-space:pre-line; font-size:15px; line-height:1.45; }
+.dnote{ margin:0 0 10px; white-space:pre-line; font-size:15px; line-height:1.4; }
+.dnote.me{ padding:8px 10px; border-radius:10px; background:var(--z-head); color:var(--sub); font-size:14px; }
+.fnm-e{ display:block; width:100%; min-height:36px; margin-top:4px; padding:6px; border-radius:8px; text-align:left; color:inherit; }
+.fnm-e:hover{ background:var(--z-hover); } .fnm-e.none{ color:var(--muted); font-weight:600; }
+.fnm-in{ display:block; width:100%; margin-top:4px; padding:4px 6px; border-radius:8px; border:1px solid var(--z-line2); background:var(--store); font:600 13px/1.2 inherit; color:inherit; }
 .frm{ position:absolute; top:-6px; right:-6px; width:24px; height:24px; padding:0; border-radius:50%; display:grid; place-items:center; font-size:12px; color:#dc2626; background:var(--card); box-shadow:0 0 0 1px var(--z-line2), 0 4px 10px -6px rgba(0,0,0,.4); }
 .btn.sm{ padding:5px 10px; font-size:13px; }
 /* карточка дня колонками (D, 07.10): тема 1 · тема 2 · домашка — отдельные карточки с цветной шапкой; на телефоне встают друг под друга */
@@ -417,7 +426,7 @@ td.c .cmt{ position:absolute; top:4px; left:4px; width:6px; height:6px; border-r
 /* плитку можно подвинуть: ◀ ▶ и «в домашку / к теме»; мышкой — перетащить */
 .fmv{ display:flex; gap:3px; margin-top:4px; }
 .fmv button{ flex:1; height:24px; padding:0 4px; border-radius:7px; font-size:11px; font-weight:700; color:var(--sub); box-shadow:inset 0 0 0 1px var(--z-line2); white-space:nowrap; }
-.fmv button{ text-align:center; } .fmv button[disabled]{ opacity:.3; cursor:default; }
+.fmv button{ text-align:center; } .fmv .fcov{ flex:0 0 30px; font-size:13px; } .fmv button[disabled]{ opacity:.3; cursor:default; }
 .fmv button:not([disabled]):hover{ background:var(--z-hover); }
 .ft[draggable="true"]{ cursor:grab; } .ft.drag{ opacity:.4; }
 .zone-on{ outline:2px dashed var(--s); outline-offset:3px; border-radius:12px; }
@@ -470,7 +479,7 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .btn.queue{ background:#7c3aed; color:#fff; box-shadow:0 10px 22px -14px #7c3aed; }
 .thumbs{ display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
 .thumbs button{ width:84px; height:84px; border-radius:10px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--z-line2); background:var(--z-head); padding:0; }
-.thumbs img{ width:100%; height:100%; object-fit:cover; display:block; }
+.thumbs img{ width:100%; height:100%; object-fit:cover; object-position:left top; display:block; }
 .pop-sub{ background:var(--z-head); border-radius:12px; padding:8px 10px; margin-bottom:10px; font-size:13px; color:var(--sub); }
 .pop-sub .thumbs button{ width:64px; height:64px; }
 .pop-sub .pop-x button.ok{ background:#16a34a; color:#fff; box-shadow:none; }
@@ -504,6 +513,18 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .fview .vpage canvas{ width:100%; height:100%; display:block; border-radius:0; box-shadow:none; background:#fff; }
 .fview .vimg{ flex:none; margin:auto; display:block; border-radius:6px; background:#fff; box-shadow:0 10px 40px -10px rgba(0,0,0,.6); }
 .fview .vmsg{ margin:auto; max-width:340px; color:#d8cfe6; font-size:15px; text-align:center; }
+/* видно, что файл листается (D, 16.10: «подумал, что это картинка, а его нужно скроллить»): полоса прокрутки — всегда,
+   у нижнего края — тень, пока ниже есть ещё, у многолистового PDF — «Лист 1 из 3 ↓» (нажал — следующий лист) */
+.fview .vdoc::-webkit-scrollbar{ width:14px; height:14px; }
+.fview .vdoc::-webkit-scrollbar-track{ background:rgba(255,255,255,.07); }
+.fview .vdoc::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.5); border-radius:8px; border:3px solid transparent; background-clip:padding-box; }
+.fview .vdoc::-webkit-scrollbar-corner{ background:transparent; }
+@supports not selector(::-webkit-scrollbar){ .fview .vdoc{ scrollbar-color:rgba(255,255,255,.5) rgba(255,255,255,.07); } }
+.fview .vbot{ flex:none; height:0; position:relative; z-index:2; }
+.fview .vfade{ position:absolute; left:0; right:14px; bottom:0; height:56px; background:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.6)); pointer-events:none; opacity:0; transition:opacity .2s; }
+.fview .vfade.on{ opacity:1; }
+.fview .vpgn{ position:absolute; left:50%; bottom:12px; transform:translateX(-50%); padding:10px 16px; min-height:44px; border-radius:999px; background:#fff; color:#1a1720; font-weight:700; font-size:14px; white-space:nowrap; box-shadow:0 8px 24px -8px rgba(0,0,0,.6); }
+.fview .vpgn[hidden]{ display:none; }
 .view .vcount{ color:#fff; align-self:center; }
 /* телефон: сверху имя файла и «Свернуть», под ними размер и «Скачать»; рамки браузера убирать незачем */
 @media (max-width:560px){ .fview .vtools{ justify-content:center; } .fview .vtools button{ order:2; } .fview .vname{ flex:1 1 calc(100% - 136px); } .fview .vtools [data-v="x"]{ order:1; } .fview .vtools [data-v="fs"]{ display:none; } }
@@ -655,7 +676,7 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-files{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
 #vid .v-file{ display:inline-flex; align-items:center; gap:8px; max-width:100%; padding:6px 12px 6px 6px; border-radius:12px; box-shadow:inset 0 0 0 1px var(--v-line); font-size:var(--t3); font-weight:700; color:var(--v-ink); }
 #vid .v-file u{ flex:none; width:34px; height:44px; border-radius:6px; overflow:hidden; text-decoration:none; display:grid; place-items:center; box-shadow:inset 0 0 0 1px var(--v-line); }
-#vid .v-file u img{ width:100%; height:100%; object-fit:cover; display:block; }
+#vid .v-file u img{ width:100%; height:100%; object-fit:cover; object-position:left top; display:block; }
 #vid .v-file u i{ font-style:normal; font-size:10px; font-weight:800; text-transform:uppercase; color:var(--v-sub); }
 #vid .v-file .fz{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 /* пока картинка едет с сервера, в рамке видно движение, а не пустой серый блок */
@@ -693,6 +714,56 @@ html.vid[data-theme="night"] body{ background:#000; }
 .dlg.v-set .v-setrow{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
 .dlg.v-set .btn[aria-pressed="true"]{ box-shadow:inset 0 0 0 2px var(--ink); }
 .dlg.v-set .v-wide{ display:block; width:100%; margin-top:14px; padding:12px; }
+/* домашка блоками — вариант А (D 13.10): шапка цвета предмета со сроком, ниже чек-лист. Без #vid: тот же блок стоит
+   в окне дня у учителя — «так увидит ученик». Цвета — --h-… страницы и --g/--s/--on предмета */
+.v-hwb{ background:var(--h-panel); color:var(--h-txt); border-radius:16px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--h-line); text-align:left; white-space:normal; }
+.v-hwt{ background:var(--g); color:var(--on); padding:10px 14px; font-size:13px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+.v-hwi{ padding:6px 12px 12px; }
+.v-hwh{ font-size:13px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--h-soft); margin:14px 2px 2px; }
+.v-hwi > .v-hwh:first-child{ margin-top:8px; }
+.v-hi{ display:flex; gap:10px; align-items:flex-start; width:100%; margin-top:6px; padding:10px 12px; border-radius:12px; background:color-mix(in srgb, var(--s) 8%, var(--h-panel));
+  color:inherit; font:inherit; font-size:16px; line-height:1.45; text-align:left; overflow-wrap:anywhere; }
+.v-hi i{ flex:none; width:22px; height:22px; border-radius:50%; box-shadow:inset 0 0 0 2px var(--s); display:grid; place-items:center; font-style:normal; font-size:14px; font-weight:800; color:var(--h-panel); }
+.v-hi.on i{ background:var(--s); }
+.v-hi.on span{ opacity:.55; text-decoration:line-through; }
+.v-hi .no{ display:inline-block; padding:0 8px; border-radius:8px; background:var(--g); color:var(--on); font-weight:800; white-space:nowrap; }
+.v-hi .bu{ color:var(--s); font-weight:800; }
+.v-hwp{ margin:8px 2px 0; line-height:1.45; }
+.fprev.v-like{ white-space:normal; background:none; padding:0; }
+#vid .v-hwb{ margin-top:22px; }
+#vid .v-hwb .v-files, #vid .v-hwb .v-links{ margin-top:10px; }
+#vid .v-stc .v-status{ margin-top:0; padding-top:0; box-shadow:none; }
+/* одно фото домашки — картинкой во всю ширину, несколько — плитками по два */
+#vid .v-ph{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+#vid .v-ph.one{ grid-template-columns:1fr; }
+#vid .v-pht{ display:block; aspect-ratio:3/4; border-radius:12px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--v-line);
+  background:linear-gradient(100deg, var(--v-line) 30%, var(--v-card) 50%, var(--v-line) 70%) 0 0/220% 100%; animation:v-shim 1.4s linear infinite; }
+#vid .v-ph.one .v-pht{ aspect-ratio:auto; min-height:180px; }
+#vid .v-pht img{ width:100%; height:100%; object-fit:cover; object-position:left top; display:block; }
+#vid .v-ph.one .v-pht img{ height:auto; }
+#vid .v-ph.one .v-pht:has(img[src]){ min-height:0; animation:none; background:none; }
+@media (prefers-reduced-motion:reduce){ #vid .v-pht{ animation:none; } }
+/* «Оценки»: четверти, плитки среднего цветом предмета, лента своих оценок */
+#vid .v-seg{ display:flex; gap:4px; margin-top:14px; padding:4px; border-radius:14px; background:var(--v-card); box-shadow:inset 0 0 0 1px var(--v-line); }
+#vid .v-seg button{ flex:1; min-height:40px; text-align:center; padding:9px 4px; border-radius:10px; font-size:var(--t3); font-weight:700; color:var(--v-sub); }
+#vid .v-seg button[aria-pressed="true"]{ color:var(--v-ink); background:var(--v-bg); box-shadow:inset 0 0 0 1px var(--v-line); }
+#vid .v-avs{ display:grid; grid-template-columns:repeat(auto-fit, minmax(0, 1fr)); gap:8px; margin-top:10px; }
+#vid .v-av{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-width:0; padding:12px; border-radius:16px; background:var(--g); color:var(--on); box-shadow:0 10px 22px -14px var(--glow); text-align:left; transition:opacity .15s; }
+#vid .v-av b{ font-size:var(--t1); font-weight:800; line-height:1.1; }
+#vid .v-av span{ font-size:var(--t3); font-weight:700; opacity:.9; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#vid .v-av.off{ opacity:.38; box-shadow:none; }
+#vid .v-av[aria-pressed="true"]{ box-shadow:0 0 0 2px var(--v-bg), 0 0 0 4px var(--s); }
+#vid .v-gr{ align-items:center; }
+#vid .v-gc{ position:relative; flex:none; width:44px; height:44px; border-radius:10px; overflow:hidden; background:var(--g); color:var(--on); display:grid; place-items:center; font-size:var(--t2); font-weight:800; }
+#vid .v-gc img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+#vid .v-gc img:not([src]), #vid .v-gc i{ display:none; }
+#vid .v-mm{ flex:none; display:inline-flex; align-items:center; gap:5px; }
+#vid .v-pv{ font-size:var(--t2); font-weight:800; color:var(--v-sub); text-decoration-thickness:2px; }
+#vid .v-m.imp{ background:none; box-shadow:inset 0 0 0 2px var(--v-red); color:var(--v-red); }   /* двойки нет — в средний идёт как 2: только обводка */
+#vid .v-gr .v-body > b{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; }
+#vid .v-gr .v-hist{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; margin-top:2px; }
+#vid .v-hist.wait{ color:var(--v-wait); font-weight:700; }
+#vid .v-mk .v-mm{ align-self:flex-start; }
 </style>
 </head>
 <body>
@@ -1107,7 +1178,7 @@ html.vid[data-theme="night"] body{ background:#000; }
     var sm = splitMark(m);
     var sb1 = parts[2] === 'd' ? S.sub[parts[0] + '.' + parts[1]] : null;
     if (!m || (!m.v && !sm.c)) return t + (sb1 ? '\n📷 ' + ({ sent: 'Сдано, ждёт проверки', redo: 'На доработке', checked: 'Сдано и проверено' }[sb1.st] || '') : '\nОценки нет');
-    t += '\nОценка: ' + esc(sm.g || '—') + (sm.c ? '\nКомментарий: ' + esc(sm.c) : '');
+    t += '\nОценка: ' + esc(sm.g || '—') + (m.pv && (vidSrv || vidUrl) ? ' (исправлено' + (m.gt ? ' ' + ddmm(new Date(m.gt)) : '') + ', было ' + esc(splitMark({ v: m.pv }).g) + ')' : '') + (sm.c ? '\nКомментарий: ' + esc(sm.c) : '');
     if (m.by === 'auto') t += '\nПоставила автоматика' + (m.an ? ': ' + esc(m.an) : '');
     else if (m.av) t += '\nD исправил. Автоматика ставила ' + esc(m.av) + (m.an ? ' (' + esc(m.an) + ')' : '');
     var dbt = debtOf(l, m.v);
@@ -1153,16 +1224,19 @@ html.vid[data-theme="night"] body{ background:#000; }
   }
   // средний по строке за показанный период. Пустая клетка ДЗ, когда домашка была задана и следующий урок
   // предмета уже прошёл, а фото не сдано и ученик был на уроке, — как 2 («несданное — двойка», D 01.10)
+  // домашка без оценки, которую не сдали вовремя: задано, следующий урок того же предмета прошёл, сдачи нет, на уроке был.
+  // В средний идёт двойкой — и у учителя в таблице, и у ученика в «Оценках» (ТЗ 19): правило одно на оба места
+  function missedHw(l, xl, sid, LA, tk) {
+    var hw = String(hwOf(l).t || '').trim(), next = LA.filter(function (y) { return dkey(y.date) > dkey(l.date) && (feed() || y.subj === l.subj); })[0];   // во «Все» — следующий урок того же предмета
+    var absent = /^н/i.test(String((S.mark[xl.id + '.' + sid + '.u'] || {}).v || ''));
+    return !!(hw && hw !== '—' && next && dkey(next.date) < tk && !S.sub[l.id + '.' + sid] && !absent);
+  }
   function rowAvg(sid, LY, LA, today) {
     var sum = 0, n = 0, tk = dkey(today);
     LY.forEach(function (x) {
       x.cols.forEach(function (c) {
         var m = S.mark[c.l.id + '.' + sid + '.' + c.w], g = gradeVal(splitMark(m).g);
-        if (g == null && c.w === 'd' && !(m && m.v)) {
-          var hw = String(hwOf(c.l).t || '').trim(), next = LA.filter(function (l) { return dkey(l.date) > dkey(c.l.date) && (feed() || l.subj === c.l.subj); })[0];   // во «Все» — следующий урок того же предмета
-          var absent = /^н/i.test(String((S.mark[x.l.id + '.' + sid + '.u'] || {}).v || ''));
-          if (hw && hw !== '—' && next && dkey(next.date) < tk && !S.sub[c.l.id + '.' + sid] && !absent) g = 2;
-        }
+        if (g == null && c.w === 'd' && !(m && m.v) && missedHw(c.l, x.l, sid, LA, tk)) g = 2;
         if (g != null) { sum += g; n++; }
       });
     });
@@ -1217,7 +1291,6 @@ html.vid[data-theme="night"] body{ background:#000; }
     while (i > 0 && L[i].sh && L[i - 1].date === l.date) i--;
     return hwFiles(L[i]);
   }
-  function kb(n) { return n >= 1048576 ? (n / 1048576).toFixed(1).replace('.', ',') + ' МБ' : Math.max(1, Math.round(n / 1024)) + ' КБ'; }
 
   /* ── правки D: операция на сервер, побеждает более поздняя ── */
   function newCode() {   // без похожих знаков: 0/о, 1/l, 3/з
@@ -1277,6 +1350,7 @@ html.vid[data-theme="night"] body{ background:#000; }
         if ('kr' in r.data) krSrv = !!r.data.kr;
         if (ssylSrv !== !!r.data.ssyl) { ssylSrv = !!r.data.ssyl; lsSet('zh:ssyl', ssylSrv); }
         uchSrv = !!r.data.uch;
+        vidSrv = !!r.data.vid;   // вид ученика включён детям — в окне дня домашка показана так, как её увидят
         // значок открыли там, где память держится: ключ — ещё и в память, тогда ссылка «Журнал» с сайта уроков (адрес без ключа) тоже откроет журнал
         if (uMode && !uMem()) lsSet('zh:us', teacherKey);
         if (uMode) uOk = true;
@@ -1926,17 +2000,28 @@ html.vid[data-theme="night"] body{ background:#000; }
   // плитки файлов — у темы и в блоке домашки. Картинка и PDF открываются на весь экран, остальное скачивается
   var FILE_ACCEPT = '.pdf,.png,.jpg,.jpeg,.webp,.pptx,.docx,.xlsx', IMG_ACCEPT = '.png,.jpg,.jpeg,.webp';
   function canShow(f) { return /^(png|jpe?g|webp|pdf)$/i.test(f.ext || ''); }
+  // подпись файла (D 16.10): та, что дал учитель (t, может быть пустой); не давал — из имени, а имя от телефона
+  // или вставки («IMG 1247», «вставка 16-12») ничего не говорит — подписи нет
+  function fCap(f) {
+    if (typeof f.t === 'string') return f.t;
+    var nm = String(f.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/^\d+[_\s.-]+/, '').replace(/_/g, ' ').trim();
+    if (!nm || /^(?:img|dsc|dscn|pxl|photo|image|foto|scan|screenshot|вставка|снимок|снимок экрана|фото|изображение|whatsapp image|telegram)[\s._-]*[\d\s._()-]*(?:at [\d\s.]+)?$/i.test(nm) || /^[\d\s._()-]+$/.test(nm) || /^[0-9a-f-]{16,}$/i.test(nm)) return '';
+    return nm;
+  }
   function tilesHtml(F, edit) {
     return '<div class="ftiles">' + F.map(function (f, fi) {
-      var img = /^(png|jpe?g|webp)$/i.test(f.ext), nm = String(f.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/^\d+[_\s.-]+/, '').replace(/_/g, ' '), show = canShow(f);
+      var img = /^(png|jpe?g|webp)$/i.test(f.ext), nm = fCap(f), show = canShow(f);
       return '<div class="ft"' + (edit ? ' draggable="true" data-fid="' + f.id + '"' : '') + '><button class="ftb" data-act="' + (show ? 'openfile' : 'dl') + '" data-id="' + f.id + '" title="' + esc(f.name) + (show ? ' — открыть' : ' — скачать') + '">' +
         '<span class="fpv x-' + esc(String(f.ext).toLowerCase()) + '">' + (img ? '<img data-ff="' + f.id + '" alt="">' : /^pdf$/i.test(f.ext) ? '<img data-ff="' + f.id + '" data-pdf="1" alt=""><i>' + esc(f.ext) + '</i>' : '<i>' + esc(f.ext) + '</i>') + '</span>' +
-        '<span class="fnm">' + esc(nm) + '</span><span class="fz">' + kb(f.size || 0) + (show ? '' : ' ↓') + '</span></button>' +
+        (edit ? '' : (nm ? '<span class="fnm">' + esc(nm) + '</span>' : '') + (show ? '' : '<span class="fz">↓ скачать</span>')) + '</button>' +
+        // подпись учитель меняет на месте: нажал — поле, Enter или нажатие мимо — сохранено, пустая — подписи нет
+        (edit ? '<button class="fnm fnm-e' + (nm ? '' : ' none') + '" data-act="fname" data-id="' + f.id + '" title="Изменить подпись">' + (nm ? esc(nm) : '+ подпись') + '</button>' : '') +
         (edit ? '<button class="frm" data-act="rmfile" data-id="' + f.id + '" title="Удалить файл" aria-label="Удалить файл">✕</button>' +
           // ◀ ▶ — поменяться местами с соседом: файл в блоке один — стрелок нет, у крайнего одна погашена
           '<span class="fmv">' + (F.length > 1 ? '<button data-act="fmove" data-id="' + f.id + '" data-d="-1" title="Поменять местами с файлом слева" aria-label="Левее"' + (fi ? '' : ' disabled') + '>◀</button>' +
             '<button data-act="fmove" data-id="' + f.id + '" data-d="1" title="Поменять местами с файлом справа" aria-label="Правее"' + (fi < F.length - 1 ? '' : ' disabled') + '>▶</button>' : '') +
-          '<button data-act="fmove" data-id="' + f.id + '" data-d="w" title="' + (f.w === 'hw' ? 'Перенести к теме урока' : 'Перенести в домашку') + '">' + (f.w === 'hw' ? '↥ к теме' : '↧ в домашку') + '</button></span>' : '') + '</div>';
+          '<button data-act="fmove" data-id="' + f.id + '" data-d="w" title="' + (f.w === 'hw' ? 'Перенести к теме урока' : 'Перенести в домашку') + '">' + (f.w === 'hw' ? '↥ к теме' : '↧ в домашку') + '</button>' +
+            (show ? '<button class="fcov" data-act="fcover" data-id="' + f.id + '" title="Сделать обложкой урока' + (img ? '' : ' (первый лист)') + '" aria-label="Сделать обложкой урока">🖼</button>' : '') + '</span>' : '') + '</div>';
     }).join('') + '</div>';
   }
   // D двигает файл: patch — {ord} на другое место, {les, w} — в другой блок (тема ↔ домашка, другой урок дня)
@@ -1950,8 +2035,54 @@ html.vid[data-theme="night"] body{ background:#000; }
       var o = r.data.obj, d = o.d; d.id = o.id; d.ts = o.ts; S.file[o.id] = d; save(); render(); openLesson(d.les);
     }).catch(function (e) {
       if (typeof e !== 'number') nextApi();
-      alert(e === 409 ? 'Там уже 10 файлов — больше не помещается.' : e === 404 ? 'Файла или урока уже нет — обнови страницу.' : 'Не получилось переставить. Проверь интернет и попробуй ещё раз.');
+      alert(e === 409 ? 'Там уже 10 файлов — больше не помещается.' : e === 404 ? 'Файла или урока уже нет — обнови страницу.' : 'Не получилось сохранить. Проверь интернет и попробуй ещё раз.');
+      if (document.querySelector('#dlg .dlg.day')) openLesson(f.les);   // на плитке — снова прежняя подпись и место
     });
+  }
+  // обложка из уже загруженного файла (D 16.10: «обложки сами делаются только у наших листов»): картинка — как есть,
+  // у PDF — первый лист. Дальше — обычная загрузка обложки: ужмётся, прежняя обложка урока уйдёт
+  function fileToCover(fid, btn) {
+    var f = S.file[fid];
+    if (!f || (coverOf(f.les) && !confirm('Заменить обложку урока этой картинкой?'))) return;
+    var pdf = /^pdf$/i.test(f.ext || '');
+    if (btn) btn.disabled = true;
+    (pdf ? fileData(fid).then(function (b) { return Promise.all([loadPdfLib(), b.arrayBuffer()]); })
+      .then(function (r) { return r[0].getDocument({ data: r[1] }).promise; })
+      .then(function (d) {
+        return d.getPage(1).then(function (pg) {
+          var vp = pg.getViewport({ scale: 1280 / pg.getViewport({ scale: 1 }).width }), c = document.createElement('canvas'), x = c.getContext('2d');
+          c.width = Math.round(vp.width); c.height = Math.round(vp.height); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);   // прозрачное в JPEG стало бы чёрным
+          return pg.render({ canvasContext: x, viewport: vp }).promise.then(function () { d.destroy(); return new Promise(function (ok) { c.toBlob(ok, 'image/jpeg', 0.85); }); });
+        });
+      }) : fileData(fid))
+      .then(function (b) {
+        if (!b) throw new Error('blob');
+        var nm = 'обложка_' + (fCap(f) || 'урока').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 40) + '.' + (pdf ? 'jpg' : String(f.ext).toLowerCase());
+        uploadFiles(f.les, [new File([b], nm, { type: b.type || (pdf ? 'image/jpeg' : 'image/' + String(f.ext).toLowerCase().replace('jpg', 'jpeg')) })], 'cover');
+      })
+      .catch(function () { if (btn) btn.disabled = false; alert('Не получилось сделать обложку из этого файла. Проверь интернет и попробуй ещё раз.'); });
+  }
+  function fileCapEdit(btn) {
+    var f = S.file[btn.dataset.id];
+    if (!f) return;
+    var inp = document.createElement('input'), done = false, ft = btn.closest('.ft');
+    if (ft) ft.draggable = false;   // в перетаскиваемой плитке мышью текст в поле не выделить
+    inp.className = 'fnm-in'; inp.maxLength = 80; inp.value = fCap(f); inp.setAttribute('aria-label', 'Подпись файла'); inp.autocomplete = 'off';
+    btn.replaceWith(inp); inp.focus(); inp.select();
+    function end(keep) {
+      if (done) return;
+      done = true;
+      if (ft) ft.draggable = true;
+      var t = inp.value.replace(/\s+/g, ' ').trim();
+      if (!keep || t === fCap(f)) { inp.replaceWith(btn); return; }
+      btn.textContent = t || '+ подпись'; btn.classList.toggle('none', !t); inp.replaceWith(btn);
+      fileMove(f.id, { t: t });
+    }
+    inp.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); end(true); }
+      else if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); end(false); }
+    });
+    inp.addEventListener('blur', function () { end(true); });
   }
   // место между соседями: before — плитка, перед которой встаём (нет — в конец блока L)
   function ordBefore(L, before) {
@@ -1987,6 +2118,8 @@ html.vid[data-theme="night"] body{ background:#000; }
         h += '<div class="dsec' + (sj ? ' ' + sj.k : '') + '"' + (edit ? ' data-zone="' + x.l.id + '|"' : '') + '><div class="dsec-h">' + (many ? '<span class="no">' + (k + 1) + '</span>' : '') +
           (feed() && sj ? '<span class="sjchip ' + sj.k + '">' + (sj.id === 'mat' ? 'М' : esc(sj.id === 'ver' ? 'Статистика' : sj.name)) + '</span>' : '') +
           '<b>' + (x.l.topic ? fmt(x.l.topic) : (topicOf(x.l).t ? esc(topicOf(x.l).t) : 'Тема не указана')) + '</b></div>' +
+          (x.l.nt ? '<div class="dnote">' + fmt(x.l.nt) + '</div>' : '') +
+          (edit && x.l.np ? '<div class="dnote me" title="Видишь только ты">🔒 ' + fmt(x.l.np) + '</div>' : '') +
           (cv ? '<div class="cov"><button class="covb" data-act="openfile" data-id="' + cv.id + '" title="Обложка темы — открыть"><img data-ff="' + cv.id + '" alt=""></button>' +
             (edit ? '<button class="frm" data-act="rmfile" data-id="' + cv.id + '" title="Убрать обложку" aria-label="Убрать обложку">✕</button>' : '') + '</div>' : '') +
           (F.length ? tilesHtml(F, edit) : '<div class="note">' + (edit ? 'Файлов пока нет.' : 'К этому уроку файлов нет.') + '</div>') +
@@ -2046,6 +2179,7 @@ html.vid[data-theme="night"] body{ background:#000; }
     }
     var d = { subj: subj, date: date, topic: $('fTopic').value.trim(), hw: $('fHw').value.trim(), ord: ord };
     if (sh) d.sh = 1;
+    if (old) ['nt', 'np', 'rt', 'rh', 'au', 'ad'].forEach(function (f) { if (old[f]) d[f] = old[f]; });   // заметки, галочки готовности и автоматические задания этим окном не правятся — не теряем
     put('les', lid, d);
     goMonth(d);   // урок другого месяца — показать его, а не прятать
     closeDlg(); render();
@@ -2079,7 +2213,7 @@ html.vid[data-theme="night"] body{ background:#000; }
   function slotHtml(slot) {
     var n = slot.charAt(1) === '2' ? 1 : 0, kind = slot.charAt(0), w = kind === 'c' ? 'cover' : kind === 'h' ? 'hw' : '';
     var have = dayIds[n] ? filesOf(dayIds[n], w || undefined) : [];
-    return have.map(function (f) { return '<span class="fchip" title="' + esc(f.name) + ' — уже в журнале">' + (kind === 'c' ? '🖼' : '📎') + ' <span>' + esc(f.name) + '</span></span>'; }).join('') +
+    return have.map(function (f) { return '<span class="fchip" title="' + esc(f.name) + ' — уже в журнале">' + (kind === 'c' ? '🖼' : '📎') + ' <span>' + esc(fCap(f) || (/^(png|jpe?g|webp)$/i.test(f.ext || '') ? 'Картинка' : 'Файл') + ' ' + String(f.ext || '').toUpperCase()) + '</span></span>'; }).join('') +
       dayQ.map(function (q, i) { return q.slot !== slot ? '' : '<span class="fchip new" title="Загрузится, когда нажмёшь «Сохранить»">' + (kind === 'c' ? '🖼' : '＋') + ' <span>' + esc(q.file.name) + '</span><button type="button" data-act="unq" data-i="' + i + '" aria-label="Не загружать">✕</button></span>'; }).join('') +
       '<label class="btn upl sm">' + (kind === 'c' ? '🖼 Обложка' : kind === 'h' ? '＋ Фото или файл' : '＋ Файлы') +
       '<input type="file" class="upSlot" data-slot="' + slot + '"' + (kind === 'c' ? '' : ' multiple') + ' accept="' + (kind === 'c' ? IMG_ACCEPT : FILE_ACCEPT) + '"></label>';
@@ -2120,6 +2254,13 @@ html.vid[data-theme="night"] body{ background:#000; }
       }).join('') + '</div>';
     };
     var bar = function (id, li) { return '<span class="fmtbar" data-for="' + id + '"><button type="button" data-fmt="b" title="Жирный"><b>Ж</b></button><button type="button" data-fmt="i" title="Курсив"><i>К</i></button><button type="button" data-fmt="u" title="Подчёркнутый"><u>Ч</u></button>' + (li ? '<button type="button" data-fmt="li" title="Точка в начале строки">•</button>' : '') + '</span>'; };
+    // заметка к уроку (D 16.10): ученикам — в карточке под темой; «только мне» ученики не получают вовсе (сервер не отдаёт)
+    var notes = function (n, l) {
+      var nt = l && l.nt || '', np = l && l.np || '';
+      return '<details class="fnote"' + (nt || np ? ' open' : '') + '><summary>＋ Заметка к уроку</summary>' +
+        '<div class="lbl">Заметка ученикам · видна и на сайте уроков</div><textarea id="fN' + n + '" autocomplete="off" maxlength="1200" rows="2" placeholder="без фамилий — сайт открыт всем, у кого есть ссылка">' + esc(nt) + '</textarea>' +
+        '<div class="lbl">🔒 Только мне</div><textarea id="fP' + n + '" autocomplete="off" maxlength="1200" rows="2" placeholder="ученики не видят">' + esc(np) + '</textarea></details>';
+    };
     var rd0 = date ? realDate(date) : null, y0 = (function () { var n = new Date(); return n.getMonth() >= 7 ? n.getFullYear() : n.getFullYear() - 1; })();
     var iso = function (d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); };
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
@@ -2129,9 +2270,9 @@ html.vid[data-theme="night"] body{ background:#000; }
       '<div class="lbl">Дата</div><input id="fDate" type="date" min="' + y0 + '-08-01" max="' + (y0 + 1) + '-07-31" value="' + (rd0 ? iso(rd0) : '') + '">' +
       '<label class="chk"><input type="checkbox" id="fTwo"' + (two ? ' checked' : '') + '> ' + (feed() ? 'Два урока в этот день (один предмет — домашка общая, разные — у каждого своя)' : 'Два урока в этот день: У1 · У2 · Д, домашка одна') + '</label>' +
       '<div class="lbl">Тема 1-го урока' + '<span class="fmtbar" data-for="fT1"><button type="button" data-fmt="b" title="Жирный"><b>Ж</b></button><button type="button" data-fmt="i" title="Курсив"><i>К</i></button><button type="button" data-fmt="u" title="Подчёркнутый"><u>Ч</u></button></span>' + '</div><input id="fT1" autocomplete="off" maxlength="400" value="' + esc(D[0] ? D[0].topic : '') + '">' +
-      '<div class="fslot" data-slot="t1" data-slot2="c1"></div>' +
+      '<div class="fslot" data-slot="t1" data-slot2="c1"></div>' + notes(1, D[0]) +
       '<div id="fT2box"' + (two ? '' : ' hidden') + '>' + (feed() ? '<div class="lbl">Предмет 2-го урока</div>' + pick('sjPick2', daySubj2) : '') +
-      '<div class="lbl">Тема 2-го урока' + bar('fT2') + '</div><input id="fT2" autocomplete="off" maxlength="400" value="' + esc(D[1] ? D[1].topic : '') + '"><div class="fslot" data-slot="t2" data-slot2="c2"></div></div>' +
+      '<div class="lbl">Тема 2-го урока' + bar('fT2') + '</div><input id="fT2" autocomplete="off" maxlength="400" value="' + esc(D[1] ? D[1].topic : '') + '"><div class="fslot" data-slot="t2" data-slot2="c2"></div>' + notes(2, D[1]) + '</div>' +
       '<div class="lbl"><span id="fHwLbl">Домашка</span>' + bar('fHw', true) + '</div><textarea id="fHw" autocomplete="off" maxlength="1200">' + esc(split0 ? D[0].hw : [D[0] && D[0].hw, D[1] && !D[1].sh && D[1].hw].filter(Boolean).join('\n')) + '</textarea>' +
       '<div class="fslot" data-slot="h1"></div>' +
       '<div id="fHw2box" hidden><div class="lbl"><span>Домашка 2-го урока</span>' + bar('fHw2', true) + '</div><textarea id="fHw2" autocomplete="off" maxlength="1200">' + esc(split0 ? D[1].hw : '') + '</textarea><div class="fslot" data-slot="h2"></div></div>' +
@@ -2166,11 +2307,20 @@ html.vid[data-theme="night"] body{ background:#000; }
         ['sjPick', 'sjPick2'].forEach(function (q) {
           if ($(q)) Array.prototype.forEach.call($(q).children, function (x) { x.setAttribute('aria-pressed', String(x.dataset.sj === (q === 'sjPick' ? daySubj : daySubj2))); });
         });
-        upd();
+        upd(); prev();   // цвет предмета в показе «так увидит ученик»
       });
     });
-    var prev = function () { var v = $('fHw').value, pv = $('fHwPrev'); pv.hidden = fmt(v) === esc(v).replace(/\n/g, '\n') && !/^\s*[•\-–]\s/m.test(v); pv.innerHTML = '<span class="fprev-h">Так увидят:</span>' + fmt(v); };
-    $('fHw').addEventListener('input', prev); prev();
+    var prev = function () {
+      var v = $('fHw').value, pv = $('fHwPrev');
+      if (vidSrv || vidUrl) {   // у детей вид ученика: домашка — блоками, ровно как в карточке урока (ТЗ 19, вариант А)
+        var sj = feed() ? daySubj : dayTab, d0 = normDate($('fDate').value), du = d0 ? vDue(lessons(sj), { date: d0 }) : null;
+        pv.hidden = !v.trim(); pv.className = 'fprev v-like';
+        pv.innerHTML = '<span class="fprev-h">Так увидит ученик:</span>' + vHwBox(sj, v, du ? vDueWords(du.date) : '', '', '');
+        return;
+      }
+      pv.hidden = fmt(v) === esc(v).replace(/\n/g, '\n') && !/^\s*[•\-–]\s/m.test(v); pv.innerHTML = '<span class="fprev-h">Так увидят:</span>' + fmt(v);
+    };
+    $('fHw').addEventListener('input', prev); $('fDate').addEventListener('input', prev); prev();
     $('fTwo').addEventListener('change', upd);
     upd(); hint();
     setTimeout(function () { var f = $(date ? 'fT1' : 'fDate'); if (f) f.focus(); }, 30);
@@ -2231,10 +2381,11 @@ html.vid[data-theme="night"] body{ background:#000; }
     if (two && !split && l2 && !l2.sh && $('fHw2').value.trim()) hw1 = [hw1, $('fHw2').value.trim()].filter(Boolean).join('\n');   // были раздельные, стала общая — вторую не теряем
     // галочки готовности и привязку автоматических заданий (au, ad) правка дня не стирает
     var keep = function (o, l) { if (l) { ['rt', 'rh'].forEach(function (f) { if (l[f]) o[f] = 1; }); ['au', 'ad'].forEach(function (f) { if (l[f]) o[f] = l[f]; }); } return o; };
-    put('les', id1, keep({ subj: sj, date: date, topic: $('fT1').value.trim(), hw: hw1, ord: 1 }, l1));
+    var noted = function (o, n) { o.nt = $('fN' + n).value.trim(); o.np = $('fP' + n).value.trim(); return o; };   // пустая — стереть
+    put('les', id1, noted(keep({ subj: sj, date: date, topic: $('fT1').value.trim(), hw: hw1, ord: 1 }, l1), 1));
     var id2 = two ? (l2 ? l2.id : newId('l')) : null;
-    if (two) put('les', id2, keep(split ? { subj: sj2, date: date, topic: $('fT2').value.trim(), hw: $('fHw2').value.trim(), ord: 2 }
-      : { subj: sj, date: date, topic: $('fT2').value.trim(), hw: '', ord: 2, sh: 1 }, l2));
+    if (two) put('les', id2, noted(keep(split ? { subj: sj2, date: date, topic: $('fT2').value.trim(), hw: $('fHw2').value.trim(), ord: 2 }
+      : { subj: sj, date: date, topic: $('fT2').value.trim(), hw: '', ord: 2, sh: 1 }, l2), 2));
     else if (l2) del('les', l2.id);
     D.slice(2).forEach(function (x, i) { var o = {}; Object.keys(x).forEach(function (k) { if (k !== 'id' && k !== 'ts') o[k] = x[k]; }); o.date = date; o.ord = 3 + i; if (feed()) o.subj = sj; put('les', x.id, o); });
     goMonth({ subj: dayTab, date: date });
@@ -2418,6 +2569,7 @@ html.vid[data-theme="night"] body{ background:#000; }
       '<button data-v="out" title="Мельче" aria-label="Мельче">−</button><button data-v="z1" title="Вернуть обычный размер">100%</button><button data-v="in" title="Крупнее" aria-label="Крупнее">＋</button>' +
       (fsOk ? '<button data-v="fs" title="Убрать рамки браузера — удобно для проектора" aria-label="Убрать рамки браузера"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>' : '') +
       '<button data-v="dl">↓ Скачать</button><button data-v="x">✕ Свернуть</button></div><div class="vdoc"></div>' +
+      '<div class="vbot"><div class="vfade"></div><button class="vpgn" data-v="pg" hidden></button></div>' +
       (list.length > 1 ? '<div class="vbar"><button data-v="-1" aria-label="Предыдущий файл">←</button><span class="vcount"></span><button data-v="1" aria-label="Следующий файл">→</button></div>' : '');
     document.body.appendChild(v);
     var box = v.querySelector('.vdoc');
@@ -2455,11 +2607,28 @@ html.vid[data-theme="night"] body{ background:#000; }
       if (P.task) { P.task.cancel(); P.task = null; P.want = 0; }
       if (P.done) { P.cv.width = P.cv.height = 0; P.done = 0; }
     }
+    // ниже есть ещё — тень у края; у PDF из нескольких листов — какой лист сейчас на экране
+    var fade = v.querySelector('.vfade'), pgn = v.querySelector('.vpgn'), et = 0, curK = 0, atEnd = false;
+    function edge() {
+      var more = box.scrollHeight - box.scrollTop - box.clientHeight > 4;
+      fade.classList.toggle('on', more);
+      if (pages.length < 2) { pgn.hidden = true; return; }
+      var mid = box.scrollTop + box.clientHeight / 3, k = 0;
+      pages.forEach(function (P, n) { if (P.el.offsetTop <= mid) k = n; });
+      if (!more) k = pages.length - 1;
+      var last = k === pages.length - 1 && (!doc || pages.length === doc.numPages);   // на последнем листе — «↑» в начало
+      curK = k; atEnd = last;
+      pgn.hidden = false;
+      pgn.textContent = 'Лист ' + (k + 1) + ' из ' + (doc ? doc.numPages : pages.length) + (last ? ' ↑' : ' ↓');
+      pgn.setAttribute('aria-label', last ? 'В начало файла' : 'Следующий лист');
+    }
+    box.addEventListener('scroll', function () { if (!et) et = requestAnimationFrame(function () { et = 0; edge(); }); }, { passive: true });
     function relayout() {
       if (im) sizeImg();
       pages.forEach(size);
       clearTimeout(zt); zt = setTimeout(function () { pages.forEach(function (P) { if (P.on) draw(P); }); }, 160);   // чётко — когда размер устоялся
       v.querySelector('[data-v="z1"]').textContent = Math.round(zoom * 100) + '%';
+      edge();
     }
     function setZoom(z) {
       var c = (box.scrollTop + box.clientHeight / 2) / (box.scrollHeight || 1);   // что было в середине экрана — там и останется
@@ -2480,7 +2649,7 @@ html.vid[data-theme="night"] body{ background:#000; }
         var u = URL.createObjectURL(b), x = new Image();
         x.onload = function () {
           if (my !== seq) { URL.revokeObjectURL(u); ok(); return; }
-          url = u; im = x; x.className = 'vimg'; x.alt = ''; box.innerHTML = ''; box.appendChild(x); sizeImg(); ok();
+          url = u; im = x; x.className = 'vimg'; x.alt = ''; box.innerHTML = ''; box.appendChild(x); sizeImg(); edge(); ok();
         };
         x.onerror = function () { URL.revokeObjectURL(u); bad(new Error('img')); };
         x.src = u;
@@ -2507,7 +2676,7 @@ html.vid[data-theme="night"] body{ background:#000; }
             var vp = pg.getViewport({ scale: 1 }), el = document.createElement('div');
             el.className = 'vpage'; el.appendChild(document.createElement('canvas'));
             var P = { pg: pg, el: el, cv: el.firstChild, w: vp.width, h: vp.height, done: 0, want: 0, task: null, on: false };
-            pages.push(P); wrap.appendChild(el); size(P); io.observe(el);
+            pages.push(P); wrap.appendChild(el); size(P); io.observe(el); edge();
           });
         })(n);
         return chain;
@@ -2517,9 +2686,10 @@ html.vid[data-theme="night"] body{ background:#000; }
       reset();
       var f = S.file[list[i]], my = seq, c = v.querySelector('.vcount');
       zoom = 1; msg('Открываю…'); box.scrollTop = box.scrollLeft = 0;
-      v.querySelector('.vname').textContent = f ? f.name : '';
+      v.querySelector('.vname').textContent = f ? fCap(f) || f.name : '';
       v.querySelector('[data-v="z1"]').textContent = '100%';
-      if (c) c.textContent = (i + 1) + ' из ' + list.length;
+      if (c) c.textContent = 'файл ' + (i + 1) + ' из ' + list.length;
+      edge();
       if (!f) { msg('Файла больше нет — возможно, учитель его убрал.'); return; }
       fileData(f.id).then(function (b) {
         if (my === seq) return /^pdf$/i.test(f.ext) ? showPdf(b, my) : showImg(b, my);
@@ -2554,6 +2724,11 @@ html.vid[data-theme="night"] body{ background:#000; }
       var b = ev.target.closest('[data-v]'), a = b && b.dataset.v;
       if (!b) return;
       if (a === 'x') close();
+      else if (a === 'pg') {   // следующий за тем листом, что написан на кнопке; ещё не догрузился — просто ниже на экран
+        if (atEnd) box.scrollTop = 0;
+        else if (pages[curK + 1]) box.scrollTop = pages[curK + 1].el.offsetTop - 8;
+        else box.scrollTop += box.clientHeight * 0.9;
+      }
       else if (a === 'dl') downloadFile(list[i], b);
       else if (a === 'in' || a === 'out') setZoom(zoom * (a === 'in' ? 1.25 : 0.8));
       else if (a === 'z1') setZoom(1);
@@ -3271,9 +3446,9 @@ html.vid[data-theme="night"] body{ background:#000; }
       (parts[2] === 'd' ? (nSh > 1 ? 'ДЗ, общая на ' + nSh + ' урока' : 'ДЗ') : 'урок') + (l.topic ? '<br>' + esc(plain(l.topic).slice(0, 60)) : '') + '</span></div>' + src +
       '<div class="pop-q">' + QUICK.map(function (q) { return '<button class="' + markCls(q) + '" data-q="' + q + '">' + q + '</button>'; }).join('') + '</div>' +
       '<div class="pop-x"><button class="m4" data-q="зачёт">зачёт</button><button class="m2" data-q="незачёт">незачёт</button></div>' +
-      '<form class="pop-t" id="popForm"><input id="popIn" maxlength="20" placeholder="Своё: 85, 4/5" value="' + esc(splitMark(m).g) + '">' +
+      '<label class="pop-l" for="popIn">Своя оценка</label><form class="pop-t" id="popForm" autocomplete="off"><input id="popIn" maxlength="20" autocomplete="off" placeholder="например 85 или 4/5" value="' + esc(splitMark(m).g) + '">' +
       '<button class="btn pri" type="submit">OK</button></form>' +
-      '<textarea id="popCm" class="pop-cm" maxlength="300" rows="2" placeholder="Комментарий ученику: «переписать №3»">' + esc(splitMark(m).c) + '</textarea>' +
+      '<label class="pop-l" for="popCm">Комментарий ученику</label><textarea id="popCm" class="pop-cm" maxlength="300" rows="2" autocomplete="off" placeholder="например: перепиши №3">' + esc(splitMark(m).c) + '</textarea>' +
       '<div class="pop-f"><button class="btn danger" data-q="" data-wipe="1">Стереть</button>' +
       '<label><input type="checkbox" id="popNext"' + (nextOn ? ' checked' : '') + '> дальше вниз</label>' +
       '<button class="btn" data-act="popclose">Закрыть</button></div>';
@@ -3351,7 +3526,7 @@ html.vid[data-theme="night"] body{ background:#000; }
   /* ── вид ученика (ТЗ 19, шаг 2): «Задано» и карточка урока со сдачей фото — вместо таблицы учителя.
      Включает сервер (ZHURNAL_VID → vid в ответе /me); ?vid=1 в адресе — посмотреть до включения.
      Таблица учителя, вход по коду класса и ссылка классного руководителя — как были. Данные те же, что у таблицы:
-     уроки, оценки и сдачи своей строки. «Оценки» и «Уроки» собираются следующими шагами — пока ведут в прежний журнал. ── */
+     уроки, оценки и сдачи своей строки. «Оценки» — шаг 3; «Уроки» собираются следующим шагом — пока ведут в прежний журнал. ── */
   var vidSrv = false, vidUrl = /[?&#]vid=1(?:&|#|$)/.test(location.search + location.hash), vidOld = false;   // vidOld — ученик сам открыл прежний журнал
   var vTab = 'zadano', vLes = '', vMat = false, vY = 0;
   function vidOn() { return mode !== 'teacher' && loaded && !!meId && !!S.stu[meId] && (vidSrv || vidUrl) && !vidOld; }
@@ -3466,12 +3641,10 @@ html.vid[data-theme="night"] body{ background:#000; }
     }).join('') + '</div>';
     return h;
   }
-  // подпись файла: та, что дал учитель; имя от телефона («IMG 1247») ученику ничего не говорит — «Фото 1», «Файл 2»
+  // подпись ученику: пустая — «Фото 1», «Файл 2»
   function vFileName(f, n) {
-    var nm = String(f.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/^\d+[_\s.-]+/, '').replace(/_/g, ' ').trim();
-    if (!nm || /^(?:img|dsc|dscn|pxl|photo|image|foto|scan|screenshot|вставка|снимок|фото|изображение|whatsapp image|telegram)[\s._-]*[\d\s._()-]*(?:at [\d\s.]+)?$/i.test(nm) || /^[\d\s._()-]+$/.test(nm) || /^[0-9a-f-]{16,}$/i.test(nm))
-      return (/^(png|jpe?g|webp)$/i.test(f.ext || '') ? 'Фото ' : 'Файл ') + n;
-    return nm.charAt(0).toUpperCase() + nm.slice(1);
+    var nm = fCap(f);
+    return nm ? nm.charAt(0).toUpperCase() + nm.slice(1) : (/^(png|jpe?g|webp)$/i.test(f.ext || '') ? 'Фото ' : 'Файл ') + n;
   }
   function vFilesHtml(F) {
     return '<div class="v-files">' + F.map(function (f, i) {
@@ -3480,14 +3653,80 @@ html.vid[data-theme="night"] body{ background:#000; }
         '</u><span class="fz">' + esc(vFileName(f, i + 1)) + '</span></button>';
     }).join('') + '</div>';
   }
+  // плитка оценки; исправленная — перед ней прежняя, серая и зачёркнутая: видна, но в средний не идёт (D 12.10)
+  function vMkTile(g, cls, pv, imp) {
+    return '<span class="v-mm">' + (pv ? '<s class="v-pv" title="прежняя оценка">' + esc(pv) + '</s>' : '') +
+      '<span class="v-m ' + cls + (imp ? ' imp' : '') + (g.length > 2 ? ' long' : '') + '">' + esc(g) + '</span></span>';
+  }
+  function vFixed(m) { return m && m.pv ? 'Исправлено' + (m.gt ? ' ' + ddmm(new Date(m.gt)) : '') + ': было ' + splitMark({ v: m.pv }).g + ', стало ' + splitMark(m).g + '.' : ''; }
   function vMarkHtml(l, w, tail) {
     var m = S.mark[l.id + '.' + meId + '.' + w], sm = splitMark(m);
     if (!m || (w === 'd' ? !sm.g : !sm.g && !vSay(sm.c))) return '';   // слова учителя о домашке стоят под её статусом
     var inf = markInfo(m.v), dbt = debtOf(l, m.v);
-    return '<div class="v-mk">' + (sm.g ? '<span class="v-m ' + inf.cls + (sm.g.length > 2 ? ' long' : '') + '">' + esc(sm.g) + '</span>' : '') +
+    return '<div class="v-mk">' + (sm.g ? vMkTile(sm.g, inf.cls, m.pv && splitMark({ v: m.pv }).g) : '') +
       '<span class="v-body"><b>' + (inf.cls === 'mn' && w === 'u' ? 'Не было на уроке' : w === 'd' ? 'Домашка' : 'Работа на уроке') + esc(tail) + '</b>' +
+      (m.pv ? '<span class="v-hist">' + esc(vFixed(m)) + '</span>' : '') +
       (m.by === 'auto' && m.an ? '<span class="v-hist">' + esc(m.an) + '</span>' : '') + (w !== 'd' && vSay(sm.c) ? '<span class="v-hist">Учитель: ' + esc(sm.c) + '</span>' : '') +
       (dbt ? '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок пересдачи вышел ' + esc(dbt.until) : 'Пересдать до ' + esc(vDay(dbt.until)) + ', ' + vDebtLeft(dbt)) + '</span>' : '') + '</span></div>';
+  }
+  /* домашка блоками (ТЗ 19, вариант А — D 13.10). Учитель пишет текстом, как привык, правил не помнит — страница
+     разбирает сама: строка — пункт чек-листа; «№ 214 а, в» — номер плашкой, буквы цветом предмета; короткая строка
+     с двоеточием на конце («В тетради:») — заголовок блока; «к среде, 14 октября» — срок в шапку.
+     Чего разобрать не вышло — остаётся обычным пунктом: сломать вид текстом нельзя */
+  var V_HICON = [[/тетрад|письменн/, '✍️'], [/распечат|листе|листок/, '📄'], [/учебник/, '📘'], [/мало|дополнит|желани|звёздоч|сложн/, '⭐'],
+    [/выучи|повтор|запомн|теори|правил/, '🧠'], [/устно/, '🗣'], [/телефон|ноутбук|онлайн|сайте/, '🕹']];
+  var V_WD_DAT = ['воскресенью', 'понедельнику', 'вторнику', 'среде', 'четвергу', 'пятнице', 'субботе'];
+  var V_DATE = '\\d{1,2}(?:\\.\\d{1,2}|\\s+(?:января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря))';
+  var V_DUE = new RegExp('^(?:к|до)\\s+(?:(?:понедельник[ау]?|вторник[ау]?|сред[аеуы]|четверг[ау]?|пятниц[аеуы]|суббот[аеуы]|воскресень[юея]|пн|вт|ср|чт|пт|сб|вс)(?:,?\\s+' + V_DATE + ')?|' +
+    V_DATE + '|следующ(?:ему|его)\\s+урок[ау])\\s*[.!]?$', 'i');   // срок — вся строка целиком: «До 5 задач из тренажёра» — пункт, а не срок
+  function vHwParse(t) {
+    var due = '', out = [];
+    String(t || '').split('\n').forEach(function (ln) {
+      var s = ln.replace(/^\s*(?:•|-|–|—)\s+/, '').trim(), p = plain(s).trim(), h;
+      if (!p) return;
+      if (!due && V_DUE.test(p)) { due = p.replace(/[.!]+$/, ''); return; }
+      if ((h = /^(.{2,30}):$/.exec(p)) && h[1].indexOf('№') < 0) { out.push({ h: h[1] }); return; }
+      out.push({ t: s, k: p });
+    });
+    return { due: due, items: out };
+  }
+  // пункт: номер — плашкой, буквы при нём — цветом. Буквы берём, только если за ними конец, знак или «№»: «№ 12 в тетради» — не буква «в»
+  var V_NO = /№\s*(\d+(?:\.\d+)*)((?:\s*\(?\s*[а-яё](?:\s*[,–-]\s*[а-яё])*\s*\)?)(?=$|\s*[,;.:)—–]|\s+-\s|\s*№))?/gi;
+  function vHwItem(s) {
+    return esc(s).replace(V_NO, function (x, n, bu) { return '<b class="no">№ ' + n + '</b>' + (bu ? ' <b class="bu">' + bu.trim() + '</b>' : ''); })
+      .replace(FMT_B, '$1<b>$2</b>').replace(FMT_U, '$1<u>$2</u>').replace(FMT_I, '$1<i>$2</i>');
+  }
+  // «сделал» — отметка на этом устройстве, учителю не видна; помним последние 60 уроков
+  // у каждого ученика каждого журнала свои (телефон бывает общий у брата и сестры); «Выйти на этом устройстве» их стирает
+  function vHwKey(lid) { return J + '.' + meId + '.' + lid; }
+  function vHwOk(lid) { var o = lsGet('zh:hwok', {}); return (o && o[vHwKey(lid)]) || []; }
+  function vHwToggle(lid, k) {
+    var o = lsGet('zh:hwok', {}) || {}, id = vHwKey(lid), a = o[id] || [], i = a.indexOf(k);
+    if (i < 0) a.push(k); else a.splice(i, 1);
+    delete o[id]; if (a.length) o[id] = a;
+    var ks = Object.keys(o); ks.slice(0, Math.max(0, ks.length - 60)).forEach(function (x) { delete o[x]; });
+    lsSet('zh:hwok', o);
+    return i < 0;
+  }
+  function vDueWords(date) { var d = realDate(date); return d ? 'к ' + V_WD_DAT[d.getDay()] + ', ' + d.getDate() + ' ' + V_MON[d.getMonth()] : ''; }
+  // блок домашки: lid — у ученика (пункты отмечаются); '' — показ в окне дня у учителя, пункты не нажимаются
+  function vHwBox(subj, txt, due, lid, extra) {
+    var P = vHwParse(txt), ok = lid ? vHwOk(lid) : [];
+    var h = '<div class="v-hwb ' + vSj(subj).k + '"><div class="v-hwt">' + (P.due || due ? '📌 ' + esc(P.due || due) : 'Домашка') + '</div><div class="v-hwi">';
+    P.items.forEach(function (x) {
+      if (x.h) { var ic = V_HICON.filter(function (r) { return r[0].test(x.h.toLowerCase()); })[0]; h += '<div class="v-hwh">' + (ic ? ic[1] + ' ' : '') + esc(x.h) + '</div>'; return; }
+      var on = ok.indexOf(x.k) >= 0;
+      h += lid ? '<button class="v-hi' + (on ? ' on' : '') + '" data-va="hwok" data-id="' + lid + '" data-k="' + esc(x.k) + '" aria-pressed="' + on + '"><i aria-hidden="true">' + (on ? '✓' : '') + '</i><span>' + vHwItem(x.t) + '</span></button>'
+        : '<div class="v-hi"><i aria-hidden="true"></i><span>' + vHwItem(x.t) + '</span></div>';
+    });
+    return h + (extra || '') + '</div></div>';
+  }
+  // файлы домашки: одно фото — во всю ширину, несколько — плитками; остальные файлы — строками, как в материалах
+  function vHwFiles(F) {
+    var im = F.filter(function (f) { return /^(png|jpe?g|webp)$/i.test(f.ext || ''); }), rest = F.filter(function (f) { return im.indexOf(f) < 0; });
+    return (im.length ? '<div class="v-files v-ph' + (im.length === 1 ? ' one' : '') + '">' + im.map(function (f, i) {
+      return '<button class="v-pht" data-act="openfile" data-id="' + f.id + '" aria-label="' + esc(vFileName(f, i + 1)) + '"><img data-ff="' + f.id + '" alt=""></button>';
+    }).join('') + '</div>' : '') + (rest.length ? vFilesHtml(rest) : '');
   }
   // карточка урока — одна на все вкладки. Вопрос экрана: «Что сделать и как сдать?» → {h — экран, cta — кнопка у низа}
   function vCardHtml(B) {
@@ -3500,16 +3739,17 @@ html.vid[data-theme="night"] body{ background:#000; }
     if (cv) h += '<button class="v-cover" data-act="openfile" data-id="' + cv.id + '" title="Открыть обложку урока" aria-label="Открыть обложку урока"><img data-ff="' + cv.id + '" alt=""></button>';
     h += '<span class="v-cap"><span class="v-dot ' + sj.k + '"></span>' + esc(sj.short) + ', ' + esc(vDay(own.date)) + (many ? ' · ' + vN(B.les.length, 'урок', 'урока', 'уроков') : '') + '</span>' +
       (tops.length ? tops : ['Урок']).map(function (t, i) { return (i ? '<h2' : '<h1') + ' class="v-h1"' + (i ? '' : ' style="margin-top:4px"') + '>' + esc(t) + (i ? '</h2>' : '</h1>'); }).join('');
+    B.les.forEach(function (l) { if (l.nt) h += '<p class="v-note">' + fmt(l.nt) + '</p>'; });   // заметка учителя к уроку (D 16.10)
 
     var txt = vHwText(own), HF = hwFiles(own), web = autoUrl(own.ad), has = !!(txt || HF.length || web), webOnly = !!web && !txt && !HF.length;
     var sub = S.sub[own.id + '.' + meId], m = S.mark[own.id + '.' + meId + '.d'], sm = splitMark(m), inf = markInfo(m && m.v), st = vStatus(own);
-    h += '<div class="v-lbl">Домашка' + (has && due ? ' к ' + esc(vDay(due.date)) : '') + '</div><div class="v-card v-pad">';
-    if (!has) h += '<span class="v-cap">К этому уроку ничего не задано.</span>';
+    if (!has) h += '<div class="v-lbl">Домашка</div><div class="v-card v-pad"><span class="v-cap">К этому уроку ничего не задано.</span>';
     else {
-      h += txt ? '<div class="v-tasks">' + fmt(txt) + '</div>' : webOnly ? '<div class="v-tasks">Домашка на телефоне или ноутбуке. Балл сам появится в журнале; можно перерешать — считается лучший результат.</div>' : '';
-      if (HF.length) h += vFilesHtml(HF);
-      if (web && !webOnly) h += '<div class="v-links"><a class="v-out" href="' + esc(web) + '" target="_blank" rel="noopener">🕹 Открыть веб-домашку ↗</a></div>';
-      h += '<div class="v-status"><span class="v-cap">Статус:</span><span class="v-st ' + st.k + '">' + esc(st.full) + '</span></div>';
+      h += vHwBox(own.subj, txt, due ? vDueWords(due.date) : '', own.id,
+        (webOnly ? '<p class="v-hwp">Домашка на телефоне или ноутбуке. Балл сам появится в журнале; можно перерешать — считается лучший результат.</p>' : '') +
+        (HF.length ? vHwFiles(HF) : '') +
+        (web && !webOnly ? '<div class="v-links"><a class="v-out" href="' + esc(web) + '" target="_blank" rel="noopener">🕹 Открыть веб-домашку ↗</a></div>' : ''));
+      h += '<div class="v-card v-pad v-stc" style="margin-top:10px"><div class="v-status"><span class="v-cap">Статус:</span><span class="v-st ' + st.k + '">' + esc(st.full) + '</span></div>';
       if (vSay(sm.c)) h += '<span class="v-hist">Учитель: ' + esc(sm.c) + '</span>';   // слова учителя о домашке — здесь, один раз
       if (sub && (sub.ph || []).length) h += thumbsHtml(sub.ph, own.id + '.' + meId) +
         (sub.ink && Object.keys(sub.ink).length ? '<span class="v-hist">✏️ На фото — разбор учителя. Нажми, чтобы открыть крупно, и перепиши исправления в тетрадь.</span>' : '');
@@ -3536,10 +3776,78 @@ html.vid[data-theme="night"] body{ background:#000; }
     else if (can) cta = '<span class="v-cap">Приём домашек через журнал пока выключен.</span>';
     return { h: h, cta: cta };
   }
+  /* ── «Оценки» (ТЗ 19, шаг 3). Вопрос экрана: «Какие у меня оценки и за что?» Над всем — четверти; плитки среднего
+     цветом предмета (нажатие — в ленте один предмет); ниже лента своих оценок, новые сверху: обложка урока, оценка, тема,
+     за что, день. Средний — тот же, что у учителя в таблице (rowAvg): несданная вовремя домашка идёт в него двойкой,
+     поэтому и в ленте она есть — иначе средний ученику не объяснить ── */
+  // начала четвертей — из КТП (plan.js сайта); уроки в каникулы считаются к прошедшей четверти
+  var V_Q = [['1 четверть', '01.09'], ['2 четверть', '05.11'], ['3 четверть', '11.01'], ['4 четверть', '29.03']];
+  var vQ = -1, vF = '';
+  function vQOf(date) { var k = dkey(date), q = 0; V_Q.forEach(function (x, i) { if (k >= dkey(x[1])) q = i; }); return q; }
+  // все свои оценки журнала: та же раскладка, что у таблицы учителя (клетка ДЗ сдвоенного урока — одна)
+  function vGrades() {
+    var tk = dkey(todayStr()), out = [], n = 0;
+    (feed() ? [''] : SUBJ.map(function (s) { return s.id; })).forEach(function (grp) {
+      var LA = lessons(grp);
+      layout(LA).forEach(function (x) {
+        x.cols.forEach(function (c) {
+          var m = S.mark[c.l.id + '.' + meId + '.' + c.w], sm = splitMark(m), gv = gradeVal(sm.g), imp = false;
+          if (gv == null && c.w === 'd' && !(m && m.v) && missedHw(c.l, x.l, meId, LA, tk)) { gv = 2; imp = true; }
+          if (sm.g || imp) out.push({ l: c.l, x: x, w: c.w, m: m || {}, g: imp ? '2' : sm.g, gv: gv, imp: imp, n: n++ });
+        });
+      });
+    });
+    return out.sort(function (a, b) { return dkey(b.l.date) - dkey(a.l.date) || b.n - a.n; });
+  }
+  function vAvg(R) {
+    var s = 0, k = 0;
+    R.forEach(function (r) { if (r.gv != null) { s += r.gv; k++; } });
+    return k ? (s / k).toFixed(1).replace('.', ',') : '';
+  }
+  function vGrRow(r) {
+    var sj = vSj(r.l.subj), cv = coverOf(r.l.id) || coverOf(r.x.l.id), sm = splitMark(r.m), inf = markInfo(r.m.v);
+    var tp = plain(topicOf(r.l).t || '').split('\n')[0].trim().replace(/\.$/, '') || sj.short;
+    var what = r.w === 'd' ? 'домашка' : inf.cls === 'mn' ? 'не было на уроке' : 'работа на уроке';
+    var sub = r.w === 'd' ? S.sub[r.l.id + '.' + meId] : null, dbt = r.imp ? null : debtOf(r.l, r.m.v), tail = '';
+    if (r.imp) tail = '<span class="v-hist bad">Не сдана — в средний идёт как 2</span>';
+    else if (dbt && sub && sub.st === 'sent') tail = '<span class="v-hist wait">Сдано заново — ждёт проверки</span>';
+    else if (dbt) tail = '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок пересдачи вышел' : 'Пересдать: ' + vDebtLeft(dbt)) + '</span>';
+    return '<button class="v-row v-gr" data-va="urok" data-id="' + r.l.id + '"><span class="v-gc ' + sj.k + '">' + esc(sj.short.charAt(0)) + (cv ? '<img data-ff="' + cv.id + '" alt="">' : '') + '</span>' +
+      vMkTile(r.g, r.imp ? 'm2' : inf.cls, r.m.pv && splitMark({ v: r.m.pv }).g, r.imp) +
+      '<span class="v-body"><b>' + esc(tp) + '</b><span class="v-cap">' + esc(what + ', ' + vDay(r.l.date)) + (r.m.pv && r.m.gt ? ' · исправлено ' + ddmm(new Date(r.m.gt)) : '') + '</span>' +
+      (vSay(sm.c) ? '<span class="v-hist">Учитель: ' + esc(sm.c) + '</span>' : '') + tail + '</span><span class="v-go">›</span></button>';
+  }
+  function vOcHtml() {
+    var cur = vQOf(todayStr()), q = vQ < 0 ? cur : vQ, all = vGrades(), R = q > 3 ? all : all.filter(function (r) { return vQOf(r.l.date) === q; });
+    var subs = feed() ? ALLSUBJ.filter(function (s) { return all.some(function (r) { return r.l.subj === s.id; }); }) : SUBJ;
+    if (vF && !subs.some(function (s) { return s.id === vF; })) vF = '';
+    var h = '<h1 class="v-h1">Оценки</h1><div class="v-seg">' + V_Q.slice(0, cur + 1).map(function (x, i) {
+      return '<button data-va="vq" data-id="' + i + '" aria-pressed="' + (q === i) + '">' + x[0] + '</button>';
+    }).join('') + '<button data-va="vq" data-id="9" aria-pressed="' + (q > 3) + '">Год</button></div>';
+    if (subs.length) h += '<div class="v-avs">' + subs.map(function (s) {
+      var a = vAvg(R.filter(function (r) { return r.l.subj === s.id; }));
+      return '<button class="v-av ' + s.k + (vF && vF !== s.id ? ' off' : '') + '" data-va="vf" data-id="' + s.id + '" aria-pressed="' + (vF === s.id) + '" aria-label="' + esc(s.short) + ', средний ' + (a || 'нет') + '"><b>' + (a || '—') + '</b><span>' + esc(s.short) + '</span></button>';
+    }).join('') + '</div>';
+    var F = vF ? R.filter(function (r) { return r.l.subj === vF; }) : R;
+    h += '<div class="v-lbl">' + (vF ? esc(vSj(vF).short) + ' · ' : '') + (q > 3 ? 'За год' : V_Q[q][0]) + '</div>';
+    h += F.length ? '<div class="v-card">' + F.map(vGrRow).join('') + '</div>' : '<div class="v-card v-pad"><span class="v-cap">' + (q > 3 ? 'Оценок пока нет.' : 'В этой четверти оценок пока нет.') + '</span></div>';
+    if (F.some(function (r) { return r.m.pv; })) h += '<span class="v-cap" style="margin-top:10px">Зачёркнутая — прежняя оценка. В средний идёт только новая.</span>';
+    return h;
+  }
+  // обложки в ленте оценок — по мере прокрутки: за год их десятки, все сразу телефону ни к чему
+  var vIo = null;
+  function vLazy(root) {
+    var im = root.querySelectorAll('img[data-ff]:not([src])');
+    if (!window.IntersectionObserver) { fillFileThumbs(root); return; }
+    if (vIo) vIo.disconnect();   // прежняя лента заменена — её картинки больше не ждём
+    else vIo = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { vIo.unobserve(e.target); if (e.target.parentNode) fillFileThumbs(e.target.parentNode); } });
+    }, { rootMargin: '300px' });
+    im.forEach(function (i) { vIo.observe(i); });
+  }
   function vSoonHtml() {
-    var o = vTab === 'ocenki';
-    return '<h1 class="v-h1">' + (o ? 'Оценки' : 'Уроки') + '</h1><div class="v-card v-pad" style="margin-top:14px"><b>Эта вкладка ещё собирается.</b>' +
-      '<span class="v-cap" style="margin-top:4px">' + (o ? 'Оценки' : 'Все уроки, темы и материалы') + ' пока — в прежнем журнале.</span>' +
+    return '<h1 class="v-h1">Уроки</h1><div class="v-card v-pad" style="margin-top:14px"><b>Эта вкладка ещё собирается.</b>' +
+      '<span class="v-cap" style="margin-top:4px">Все уроки, темы и материалы пока — в прежнем журнале.</span>' +
       '<div class="v-links"><button class="v-out" data-va="old">Открыть прежний журнал ›</button></div></div>';
   }
   var V_TABS = [
@@ -3563,6 +3871,7 @@ html.vid[data-theme="night"] body{ background:#000; }
     }).join(''));
     if (B) { var c = vCardHtml(B); cta = c.cta; if (vPut($('vU'), c.h)) { fillFileThumbs($('vU')); fillThumbs($('vU')); } }
     else if (vTab === 'zadano') vPut($('vZb'), vZadHtml(rows));
+    else if (vTab === 'ocenki') { if (vPut($('vX'), vOcHtml())) vLazy($('vX')); }
     else vPut($('vX'), vSoonHtml());
     $('vU').classList.toggle('cta', !!cta);
     $('vCta').hidden = !cta; vPut($('vCta'), cta);
@@ -3628,10 +3937,18 @@ html.vid[data-theme="night"] body{ background:#000; }
     }
     else if (a === 'back') { if (history.state && history.state.vles) history.back(); else vClose(); }
     else if (a === 'mat') { vMat = !vMat; vRender(); }
+    else if (a === 'hwok') {   // отметку ставим прямо в строке: перерисовка карточки заново грузила бы её картинки
+      var on = vHwToggle(b.dataset.id, b.dataset.k);
+      b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); b.firstChild.textContent = on ? '✓' : '';
+      var B1 = vLes ? vBlock(vLes) : null;
+      if (B1) $('vU')._h = vCardHtml(B1).h;   // вид карточки уже такой — следующая сверка её не перерисует
+    }
+    else if (a === 'vq') { vQ = +b.dataset.id; vRender(); }
+    else if (a === 'vf') { vF = vF === b.dataset.id ? '' : b.dataset.id; vRender(); }
     else if (a === 'set') vSettings();
     else if (a === 'exit') {   // чужой телефон или общий компьютер: стереть все свои входы с устройства
       if (!confirm('Выйти из журнала на этом устройстве? Войти снова — кнопкой «📒 Мой журнал» в боте или своим значком.')) return;
-      closeDlg(); lsDel(LS.ck); lsDel(LS.sk); znSet(''); meId = null; gate('');
+      closeDlg(); lsDel(LS.ck); lsDel(LS.sk); lsDel('zh:hwok'); znSet(''); meId = null; gate('');
     }
     else if (a === 'old' || a === 'new') { vidOld = a === 'old'; render(); window.scrollTo(0, 0); }
   }
@@ -3687,6 +4004,8 @@ html.vid[data-theme="night"] body{ background:#000; }
       else if (act === 'dl') downloadFile(a.dataset.id, a);
       else if (act === 'openfile') openFile(a.dataset.id, a.closest('.ftiles, .v-files') ? Array.prototype.map.call(a.closest('.ftiles, .v-files').querySelectorAll('[data-act="openfile"]'), function (x) { return x.dataset.id; }) : null);
       else if (act === 'fmove') fileStep(a.dataset.id, a.dataset.d);
+      else if (act === 'fname') fileCapEdit(a);
+      else if (act === 'fcover') fileToCover(a.dataset.id, a);
       else if (act === 'unq') { dayQ.splice(+a.dataset.i, 1); drawSlots(); }
       else if (act === 'submove' && cur) subMoveList();
       else if (act === 'submoveto' && cur) subMove(a.dataset.to);

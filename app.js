@@ -755,7 +755,14 @@ const zhAuto = id => {   // веб-домашка и срез — те же ад
 };
 /* разметка журнала (**жирный**, __подчёркнутый__, *курсив*, точка в начале строки) — на сайте простым текстом */
 const zhText = t => String(t || '').replace(/\*\*|__/g, '').replace(/(^|[\s(«"])\*(?=\S)/g, '$1').replace(/(\S)\*(?=[\s.,;:!?)»"]|$)/g, '$1').replace(/^[ \t]*[•\-–][ \t]+/gm, '').trim();
-const zhImya = f => String(f.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/^[a-zа-я]?\d+[_\s.-]+/i, '').replace(/[_-]+/g, ' ').trim() || 'Файл';
+// подпись файла — как в журнале (fCap в zhurnal.html): та, что дал учитель; имя от телефона или вставки ничего не говорит — «Фото» / «Файл»
+const zhImya = f => {
+  const pusto = /^(png|jpe?g|webp)$/i.test(f.ext || '') ? 'Фото' : 'Файл';
+  if (typeof f.t === 'string') return f.t || pusto;
+  const nm = String(f.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/^[a-zа-я]?\d+[_\s.-]+/i, '').replace(/[_-]+/g, ' ').trim();
+  if (!nm || /^(?:img|dsc|dscn|pxl|photo|image|foto|scan|screenshot|вставка|снимок|снимок экрана|фото|изображение|whatsapp image|telegram)[\s._-]*[\d\s._()-]*(?:at [\d\s.]+)?$/i.test(nm) || /^[\d\s._()-]+$/.test(nm) || /^[0-9a-f-]{16,}$/i.test(nm)) return pusto;
+  return nm;
+};
 function sleduyushchiy(kid, d){   // следующий день после d, когда этот предмет стоит в расписании
   for (let i = 1; i <= 45; i++){
     const x = new Date(d.getTime() + i * DAY);
@@ -787,8 +794,12 @@ function izZhurnala(lenta, api){
         // подпись файла — с расширением и без повторов: ссылка ищется в тексте по подписи, одна не должна быть началом другой
         hf.forEach(f => { let s = `📎 ${zhImya(f)}.${f.ext}`, k = 2; while (dz.ssylki[s]) s = `📎 ${zhImya(f)} (${k++}).${f.ext}`; dz.tetrad.push(s); dz.ssylki[s] = adres(f); });
       }
+      const zam = D.map(l => zhText(l.nt)).filter(Boolean).join('\n');   // заметка учителя к уроку (D 16.10) — строкой под заголовком
       if (svoi.length){                               // день уже собран в data.js — только домашка, если её там нет
         if (dz && !svoi.some(u => u.dz)) { svoi[0].dz = dz; svoi[0].dzZh = true; novoe++; }
+        if (!('lead0' in svoi[0])) svoi[0].lead0 = svoi[0].lead || '';   // своя строка из data.js — заметка встаёт за ней, повторный вызов не копит
+        const lead = [svoi[0].lead0, zam].filter(Boolean).join(' · ');
+        if (lead !== (svoi[0].lead || '')) { svoi[0].lead = lead; novoe++; }
         return;
       }
       D.forEach((l, i) => {
@@ -796,9 +807,9 @@ function izZhurnala(lenta, api){
           label: zhImya(f), hint: '', out: adres(f), zh: true }));
         const cov = fajly(l.id, 'cover')[0], title = zhText(l.topic).replace(/\n+/g, ' ');
         const moyaDz = dz && i === 0 ? dz : null;
-        if (!title && !mat.length && !cov && !moyaDz) return;   // пустая строка журнала — блока нет
+        if (!title && !mat.length && !cov && !moyaDz && !zhText(l.nt)) return;   // пустая строка журнала — блока нет
         k.uroki.push({ zh: true, n: (dt.getMonth() + 1) * 1000 + dt.getDate() * 10 + i + 90000, date, title: title || 'Урок ' + date,
-          mat, cover: cov ? adres(cov) : '', ...(moyaDz ? { dz: moyaDz } : {}) });
+          mat, cover: cov ? adres(cov) : '', ...(zhText(l.nt) ? { lead: zhText(l.nt) } : {}), ...(moyaDz ? { dz: moyaDz } : {}) });
         novoe++;
       });
     });
