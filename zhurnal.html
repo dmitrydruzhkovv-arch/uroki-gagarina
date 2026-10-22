@@ -605,6 +605,40 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .zt tbody .nm i.avg{ position:absolute; top:3px; right:5px; font-style:normal; font-size:11px; font-weight:800; line-height:1;
   padding:2px 4px; border-radius:5px; background:var(--z-head); color:var(--ink); font-family:'JetBrains Mono',ui-monospace,monospace; }
 
+/* ══ итоги четверти (D 22.10; сервер включает их флагом ZHURNAL_ITOG). Переключатель четвертей — справа над таблицей.
+   Графы итогов — в конце таблицы предмета; на широком экране стоят справа всегда, дни уезжают под них.
+   Клетки глухие (под ними едут дни), плитка — внутри: как у шапки дня ══ */
+.qbar{ justify-content:flex-end; align-items:center; }
+.qbar-l{ font-size:13px; font-weight:700; color:var(--muted); margin-right:2px; }
+.qbar .mo[data-qtr]:not([data-qtr="all"]){ min-width:44px; padding-left:0; padding-right:0; text-align:center; }   /* цель для пальца — не уже 44 */
+.zt th.it-s, .zt td.it{ box-sizing:border-box; width:54px; min-width:54px; max-width:54px; background:var(--card); }
+.zt th.it-s.it1, .zt td.it.it1{ width:66px; min-width:66px; max-width:66px; padding-left:14px; }   /* отступ от последнего дня */
+.zt td.it{ height:44px; padding:2px; text-align:center; }
+.zt td.it .itb{ position:relative; display:grid; place-items:center; height:40px; border-radius:11px; background:var(--z-tile); font-weight:800; font-size:15px; }
+.zt td.it .itb.long{ font-size:11px; font-weight:700; }
+.zt td.it .itb.m5{ background:var(--m5b); box-shadow:var(--m5s); } .zt td.it .itb.m2{ background:var(--m2b); box-shadow:var(--m2s); }
+.zt td.it .itb.m4{ background:var(--m4b); } .zt td.it .itb.m3{ background:var(--m3b); } .zt td.it .itb.mn{ background:var(--mnb); }
+.zt td.it .itb.gh{ background:transparent; border:1.5px dashed var(--z-line2); color:var(--muted); font-size:12.5px; font-weight:700; }   /* подсказка — только учителю */
+.zt td.it .itb .cmt{ position:absolute; top:4px; left:4px; width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.8; }
+.zt td.it-a b{ display:grid; place-items:center; height:40px; font-size:14px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
+.zt thead th.it-h{ padding:4px 2px 4px 14px; }
+.zt thead th.it-h b{ display:block; padding:8px 6px; border-radius:11px; background:var(--g); color:var(--on); font-size:13px; font-weight:800; white-space:nowrap; box-shadow:0 0 16px -8px var(--glow); }
+.zt tfoot td.it-f, .zt tfoot td.it-f:hover{ background:var(--card); cursor:default; padding:0; }
+.edit .zt td.it3, .edit .zt td.it4{ cursor:pointer; }
+.edit .zt td.it3:not(.cur):hover .itb, .edit .zt td.it4:not(.cur):hover .itb{ box-shadow:inset 0 0 0 1.5px var(--z-ring), inset 0 0 0 3px var(--s); }
+.zt td.it.cur .itb{ box-shadow:inset 0 0 0 2px var(--z-ring), inset 0 0 0 4.5px var(--z-focus); }
+@media (min-width:900px){
+  .zt .it-st{ position:sticky; }
+  .zt .it4, .zt th.it-h, .zt td.it-f{ right:0; } .zt .it3{ right:54px; } .zt .it2{ right:108px; } .zt .it1{ right:162px; }
+  .zt tbody td.it-st, .zt tfoot td.it-st{ z-index:2; }
+  .zt thead th.it-st{ z-index:3; }
+  .zt .it1, .zt th.it-h, .zt td.it-f{ box-shadow:-12px 0 14px -14px rgba(40,24,70,.45); }
+}
+.pop-q.q5{ grid-template-columns:repeat(5,1fr); }
+.pop-q button.sug{ box-shadow:inset 0 0 0 2.5px var(--s); }   /* выходит по среднему */
+.lgd .ch i.it-lg{ background:none; color:var(--ink); font-variant-numeric:tabular-nums; }
+.lgd .ch i.it-lg.gh{ color:var(--muted); box-shadow:inset 0 0 0 1.5px var(--z-line2); }
+
 /* ══ вид ученика (ТЗ 19, шаг 2; сервер включает его флагом ZHURNAL_VID). Ученик своей строки видит не таблицу учителя,
    а свои экраны: «Задано» и карточку урока с кнопкой «Сдать фото». Макет — _стенд_журнала/макет_вид-ученика/.
    Одна колонка до 480 px на любом экране; цвета — те же переменные шапки (--h-…), ночь получается сама.
@@ -916,7 +950,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   var LS = { kabKey: 'kab:key', key: 'zh:key', pass: 'zh:pass', tab: 'zh:tab', api: 'kab:api', cache: 'zh:cache', out: 'zh:out', next: 'zh:next', j: 'zh:j', sk: 'zh:sk' };
   // кэш и неотправленные правки — у каждого журнала свои (у Гагарина — прежние ключи)
   function lk(base) { return J === MAIN_J ? base : base + ':' + J; }
-  var KINDS = ['stu', 'les', 'mark', 'cfg', 'file', 'sub'];
+  var KINDS = ['stu', 'les', 'mark', 'cfg', 'file', 'sub', 'itog'];
   var DEBT_DAYS = 14;   // двойку пересдать за две недели (D, 30.09)
 
   function lsGet(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
@@ -1081,6 +1115,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
   var krMode = false;   // журнал открыт по ссылке классного руководителя
   var krSrv = false;    // сервер умеет такие ссылки (говорит в ответе /sync): без этого учителю кнопку не показываем
+  // сервер ведёт итоги четверти (ZHURNAL_ITOG, D 22.10; говорит в /sync, /view, /me): у класса журнал листается четвертями, в конце таблицы —
+  // итоги. Помним между заходами: журнал учителя рисуется из памяти устройства раньше ответа сервера — без этого мелькали бы месяцы
+  var itogSrv = lsGet('zh:itog', false) === true;
   // сервер отдаёт ученикам ссылки урока (тоже из /sync, помним между заходами): выключено — кнопок нет и у D,
   // иначе он видел бы то, чего ученик не видит
   var ssylSrv = lsGet('zh:ssyl', false) === true;
@@ -1089,7 +1126,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function chatBase() { return API.replace(/\/cabinet$/, ''); }
   var BOT = /[?&]test=chat\b/.test(location.search) ? 'Lemma_test1_bot' : 'D_mathh_bot';
 
-  function blank() { return { stu: {}, les: {}, mark: {}, cfg: {}, file: {}, sub: {} }; }
+  function blank() { return { stu: {}, les: {}, mark: {}, cfg: {}, file: {}, sub: {}, itog: {} }; }
   function fromObjects(list) {
     var n = blank();
     (list || []).forEach(function (o) {
@@ -1264,8 +1301,22 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     L.forEach(function (l) { var m = monthOf(l.date); if (m && out.indexOf(m) < 0) out.push(m); });   // L уже по порядку учебного года
     return out;
   }
-  // показать месяц урока l, если сейчас открыт другой (не «Весь год»). → true, если переключили
+  /* ── четверти (D 22.10): у класса журнал листается четвертями — переключатель справа над таблицей, в конце таблицы
+     итоги открытой четверти. Включает сервер (ZHURNAL_ITOG → itog в ответе); без него и у индивидуалов — месяцы, как было ── */
+  // начала четвертей — из КТП (plan.js сайта); уроки в каникулы считаются к прошедшей четверти
+  var V_Q = [['1 четверть', '01.09'], ['2 четверть', '05.11'], ['3 четверть', '11.01'], ['4 четверть', '29.03']];
+  function vQOf(date) { var k = dkey(date), q = 0; V_Q.forEach(function (x, i) { if (k >= dkey(x[1])) q = i; }); return q; }
+  var qSel = null;   // открытая четверть: 0–3 или 'all' («Весь год»); null — та, что идёт сейчас (в каникулы — прошедшая)
+  function qMode() { return itogSrv && !feed(); }
+  function qOpen() { return qSel === null ? vQOf(todayStr()) : qSel; }
+  // показать месяц (у класса с итогами — четверть) урока l, если сейчас открыт другой (не «Весь год»). → true, если переключили
   function goMonth(l) {
+    if (qMode()) {
+      var oq = qOpen(), lq = monthOf(l.date) ? vQOf(l.date) : 'all';   // урок без даты виден только за весь год
+      if (oq === 'all' || lq === oq) return false;
+      qSel = lq; scrollPos = {}; resetScroll(tab);
+      return true;
+    }
     var key = mix() ? tab : l.subj, sel = monthSel[key], m = monthOf(l.date);
     if (!sel || sel === 'all' || !m || m === sel) return false;
     monthSel[key] = m; resetScroll(key);
@@ -1417,6 +1468,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (ssylSrv !== !!r.data.ssyl) { ssylSrv = !!r.data.ssyl; lsSet('zh:ssyl', ssylSrv); }
         uchSrv = !!r.data.uch;
         vidSrv = !!r.data.vid; provSrv = !!r.data.prov;   // вид ученика включён детям — в окне дня домашка показана так, как её увидят
+        var itogNew = itogSrv !== !!r.data.itog;   // итоги включили или выключили — перерисовать, даже если записи те же
+        if (itogNew) { itogSrv = !!r.data.itog; lsSet('zh:itog', itogSrv); }
         // значок открыли там, где память держится: ключ — ещё и в память, тогда ссылка «Журнал» с сайта уроков (адрес без ключа) тоже откроет журнал
         if (uMode && !uMem()) lsSet('zh:us', teacherKey);
         if (uMode) uOk = true;
@@ -1429,7 +1482,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         var changed = JSON.stringify(next) !== JSON.stringify(S);
         S = next; loaded = true; save();
         setSt('ok', stNote || 'сохранено'); stNote = '';
-        if (changed || !sync.once) render();
+        if (changed || !sync.once || itogNew) render();
         sync.once = true;
         if (pendingSwitch && !outbox.length) setTimeout(function () { switchJournal(pendingSwitch); }, 0);
       })
@@ -1484,7 +1537,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (r.data.pass) lsSet(LS.pass, r.data.pass);
         if (r.data.j) J = r.data.j;
         if (r.data.meta) setMeta(r.data.meta);
-        S = fromObjects(r.data.objects); loaded = true; render();
+        itogSrv = !!r.data.itog; S = fromObjects(r.data.objects); loaded = true; render();
         viewFoot();
       })
       .catch(function (e) {
@@ -1519,7 +1572,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (!krUrl()) krPut(kr());   // пришла без ключа в адресе (ссылка «Журнал» с сайта уроков) — вернуть: закладка его запомнит
         if (r.data.j) J = r.data.j;
         if (r.data.meta) setMeta(r.data.meta);
-        S = fromObjects(r.data.objects); loaded = true; render();
+        itogSrv = !!r.data.itog; S = fromObjects(r.data.objects); loaded = true; render();
         krFoot();
       })
       .catch(function (e) {
@@ -1594,7 +1647,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (c && c.les) KINDS.forEach(function (k) { S[k] = c[k] || {}; });
     loaded = !!(c && c.les);
     setMeta((c && c.meta) || info || { title: 'Журнал', subj: ['mat'], kind: 'ind' });
-    monthSel = {}; scrollPos = {}; sync.once = false;
+    monthSel = {}; qSel = null; scrollPos = {}; sync.once = false;
     renderJournals(); render();
     if (!loaded) $('main').innerHTML = '<div class="empty">Открываю журнал…</div>';
     sync();
@@ -1620,7 +1673,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     J = id; lsSet(LS.j, id); outbox = []; S = blank(); loaded = true; creating = id; lsSet('zh:mk', id);
     setMeta({ title: title, subj: subj, kind: kind });
     JOURNALS = JOURNALS.concat([{ j: id, title: title, subj: subj, kind: kind }]);
-    monthSel = {}; scrollPos = {};
+    monthSel = {}; qSel = null; scrollPos = {};
     put('cfg', 'meta', { title: title, subj: subj, kind: kind });
     renderJournals(); render();
   }
@@ -1740,12 +1793,16 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (!P.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Учеников пока нет — добавь их кнопкой «Ученики».' : 'Журнал пока пуст.') + '</div>'; return; }
     if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый день кнопкой «＋ День».' : mix() ? 'Уроков пока нет.' : 'По этому предмету пока нет уроков.') + '</div>' + ((edit || krMode) && vygSubj().length ? vygRow() : ''); return; }
 
-    // месяц: журнал листается по месяцам, а не тянется вправо на весь год (D, 01.10)
-    var MS = months(L), mo = monthSel[tab];
+    // месяц: журнал листается по месяцам, а не тянется вправо на весь год (D, 01.10); у класса с итогами — четвертями (D, 22.10)
+    var QM = qMode(), qo = QM ? qOpen() : null;
+    var MS = QM ? [] : months(L), mo = QM ? 'all' : monthSel[tab];
     if (mo !== 'all' && MS.indexOf(mo) < 0) mo = monthSel[tab] = 'all';   // журнал открывается сразу за весь год (D, 07.10); месяц — по кнопке
     var LA = L;   // весь предмет: для «срок ДЗ прошёл» нужен следующий урок, даже в другом месяце
-    if (mo !== 'all') L = L.filter(function (l) { return monthOf(l.date) === mo; });
+    if (QM && qo !== 'all') L = L.filter(function (l) { return monthOf(l.date) && vQOf(l.date) === qo; });
+    else if (mo !== 'all') L = L.filter(function (l) { return monthOf(l.date) === mo; });
     var today = todayStr(), LY = layout(L), DAYS = [];
+    var IT = QM && qo !== 'all' && !mix();   // итоги — у предмета, в открытой четверти; во «Все» и за весь год их нет
+    itogCtx = IT ? { LY: LY, LA: LA, today: today, subj: tab, q: qo } : null; itogCache = {};
     LY.forEach(function (x) {   // день = все уроки одной даты: одна дата в шапке, под ней 1 урок · 2 урок · ДЗ
       var g = DAYS[DAYS.length - 1];
       if (!g || g.date !== x.l.date || (mix() && g.subj !== x.l.subj && !(feed() && x.l.sh))) DAYS.push(g = { date: x.l.date, subj: x.l.subj, xs: [] });   // лента: алгебра и геометрия в один день — две шапки, каждая своего цвета (у класса другой предмет — всегда своя шапка)
@@ -1753,7 +1810,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     });
     DAYS.forEach(function (g) { g.xs[g.xs.length - 1].last = true; });
 
-    var h = '<div class="months" role="tablist">' + MS.map(function (m) {
+    var h = QM ? qBar(qo) : '<div class="months" role="tablist">' + MS.map(function (m) {
       return '<button class="mo" data-month="' + m + '" aria-selected="' + (m === mo) + '">' + MONTHS[+m - 1] + '</button>';
     }).join('') + '<button class="mo" data-month="all" aria-selected="' + (mo === 'all') + '">Весь год</button></div>';
     h += '<div class="wrap" id="wrap"><table class="zt"><thead><tr><th class="nm" rowspan="2">Ученик</th>';
@@ -1765,6 +1822,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         (go ? '<a href="' + go + '" title="Открыть урок на сайте"><b class="mono">' + lbl + '<i>↗</i></b></a>' : '<b class="mono">' + lbl + '</b>') + '</th>';
     });
     if (edit) h += '<th class="addc" rowspan="2"><button class="btn" data-act="addles" title="Добавить день">＋</button></th>';
+    if (IT) h += '<th class="it-h it-st" colspan="4"><b>Итоги ' + (qo + 1) + ' четверти</b></th>';
     h += '</tr><tr>';
     DAYS.forEach(function (g) {
       g.xs.forEach(function (x, k) {
@@ -1775,12 +1833,15 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         });
       });
     });
+    if (IT) h += '<th class="sub it-s it-st it1" title="Средняя за уроки: все оценки за работу на уроках, с контрольными">Уроки</th>' +
+      '<th class="sub it-s it-st it2" title="Средняя за домашку: несданная вовремя — как 2">ДЗ</th>' +
+      '<th class="sub it-s it-st it3" title="Четвертная контрольная">КР</th><th class="sub it-s it-st it4" title="Оценка за четверть">Итог</th>';
     h += '</tr></thead><tbody>';
     P.forEach(function (p) {
       var dn = edit ? debtCount(p.id) : 0;   // счётчик долгов — только учителю; дети видят красные клетки (D, 30.09)
       var av = avgOn[p.id] ? rowAvg(p.id, LY, LA, today) : null;
       h += '<tr' + (p.id === meId ? ' class="me"' : '') + '><th class="nm" data-sid="' + p.id + '" title="Нажми — средний балл">' +
-        (av ? '<i class="avg" title="Средний балл ' + (mo === 'all' ? 'за год' : 'за месяц') + ': ' + av.n + ' оц. Несданная вовремя ДЗ — как 2">' + av.v + '</i>' : '') +
+        (av ? '<i class="avg" title="Средний балл ' + (QM ? (qo === 'all' ? 'за год' : 'за четверть') : mo === 'all' ? 'за год' : 'за месяц') + ': ' + av.n + ' оц. Несданная вовремя ДЗ — как 2">' + av.v + '</i>' : '') +
         '<b>' + esc(p.name || p.fam) + '</b><span><i class="fm">' + esc(p.name ? p.fam : '') + '</i>' + (p.id === meId ? '\u00a0·\u00a0это ты' : '') +   // пробелы неразрывные: в строке-ряду обычный пробел у края пропал бы
         (dn ? '\u00a0·\u00a0<em>' + dn + ' ' + (dn === 1 ? 'долг' : dn < 5 ? 'долга' : 'долгов') + '</em>' : '') + '</span></th>';
       LY.forEach(function (x) {
@@ -1790,9 +1851,10 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         });
       });
       if (edit) h += '<td></td>';
+      if (IT) h += itogCells(p.id);
       h += '</tr>';
     });
-    if (!L.length) h += '<tr><td class="empty" colspan="2">В этом месяце уроков нет.</td></tr>';
+    if (!L.length) h += '<tr><td class="empty" colspan="2">' + (QM ? 'В этой четверти уроков пока нет.' : 'В этом месяце уроков нет.') + '</td></tr>';
     h += '</tbody><tfoot><tr class="tp"><th class="nm">Тема</th>';
     // день — одна клетка: у каждого урока по две строки («1.», «2.»), длинное — многоточием (D, 01.10)
     var dayCell = function (g, items, flag) {
@@ -1810,6 +1872,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       h += dayCell(g, g.xs.map(function (x) { var tp = topicOf(x.l); return { l: x.l, t: (tp.t || (autoUrl(x.l.au) ? 'Срез' : '')) + (autoUrl(x.l.au) ? ' 🎯' : ''), site: tp.site, nf: filesOf(x.l.id).length, cov: (coverOf(x.l.id) || {}).id }; }), 'rt');
     });
     if (edit) h += '<td></td>';
+    if (IT) h += '<td class="it-f it-st" colspan="4"></td>';
     h += '</tr><tr class="hw"><th class="nm">Домашка</th>';
     var hwN = {};   // урок → сколько файлов в его домашке: один проход на всю таблицу
     vals(S.file).forEach(function (f) { if (f.w === 'hw') hwN[f.les] = (hwN[f.les] || 0) + 1; });
@@ -1818,8 +1881,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         nf: g.xs.reduce(function (a, y) { return a + (y.own === x.own ? hwN[y.l.id] || 0 : 0); }, 0) }; }), 'rh');
     });
     if (edit) h += '<td></td>';
+    if (IT) h += '<td class="it-f it-st" colspan="4"></td>';
     h += '</tr></tfoot></table></div>';
-    h += legend();
+    h += legend(IT);
     if (edit || krMode) h += vygRow();
     main.innerHTML = h;
     fillFileThumbs(main);   // обложки тем
@@ -1843,7 +1907,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
 
   // легенда: значок и пара слов. «Цвет дня» — только в ленте («Все» и индивидуал), там предмет виден цветом даты
-  function legend() {
+  function legend(it) {
     var li = function (ch, t) { return '<li><span class="ch">' + ch + '</span>' + t + '</li>'; };
     var sj = !mix() ? [] : (feed() ? ALLSUBJ : SUBJ).filter(function (x) {   // у индивидуала — только предметы, что были
       return !feed() || vals(S.les).some(function (l) { return l.subj === x.id; });
@@ -1858,6 +1922,11 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         li('<i class="m2">2<small>9д</small></i>', 'пересдать за ' + DEBT_DAYS + ' дней; в углу — сколько осталось') +
         li('<i class="m2">2<small class="late">!</small></i>', 'срок пересдачи вышел') +
         li('<i class="m2">1</i><i class="m2">2</i>', 'за домашку — не сдано: исправь и сдай заново') + '</ul></div>' +
+      (it ? '<div><h4>Итоги четверти</h4><ul>' +
+        li('<i class="it-lg">4,50</i>', 'Уроки и ДЗ — средняя за четверть, считается сама') +
+        li('<i class="m4">4</i>', 'КР — четвертная контрольная') +
+        li('<i class="m5">5</i>', 'Итог — оценка за четверть, ставит учитель') +
+        (mode === 'teacher' ? li('<i class="it-lg gh">4,17</i>', 'серым — средний трёх слева, видишь только ты') : '') + '</ul></div>' : '') +
       (sj.length ? '<div><h4>Цвет дня — предмет</h4><ul>' + sj.map(function (x) {
         return '<li><span class="ch sjc ' + x.k + '"><i></i></span>' + esc(x.name) + '</li>';
       }).join('') + '</ul></div>' : '') +
@@ -2821,7 +2890,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (want && r.data.j === want) { lsSet('zh:sj', want); lsSet('zh:sjt', Date.now()); }   // выбрал в переключателе и он открылся — в следующий раз откроется он
       if (!r.data.stu) { meId = null; freeRows = r.data.free || []; return 'nolink'; }
       setMeta(r.data.meta);
-      meId = r.data.stu; sdachaOn = !!r.data.sdacha; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; viewFoot();
+      meId = r.data.stu; sdachaOn = !!r.data.sdacha; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; viewFoot();
       if (znUrl()) lsSet('zh:zn', znUrl());   // отдельной записью: в деле только когда другого входа на устройстве нет (см. старт) // ключ значка — ещё и в память: ушёл на сайт уроков и вернулся по ссылке «Журнал» без ключа — кода класса не спросим (D 12.10)
       S = fromObjects(r.data.objects); loaded = true; render();
       return true;
@@ -3691,9 +3760,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function hideTip() { tipEl.hidden = true; clearTimeout(tipT); }
   if (window.matchMedia && window.matchMedia('(hover:hover)').matches) {
     document.addEventListener('mouseover', function (ev) {
-      var td = ev.target.closest && ev.target.closest('td.c[data-c]');
+      var td = ev.target.closest && ev.target.closest('td.c[data-c], td.it[data-i]');
       if (!td || cur || $('dlg').innerHTML) { hideTip(); return; }
-      showTip(td, cellTip(td.dataset.c));
+      showTip(td, td.dataset.i ? itogTip(td.dataset.i) : cellTip(td.dataset.c));
     });
   }
   window.addEventListener('scroll', hideTip, true);
@@ -3773,10 +3842,10 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var parts = id.split('.'), l = S.les[parts[0]], p = S.stu[parts[1]];
     if (!l || !p) return;
     if (inTab(l) && goMonth(l)) {   // «Ждут проверки» и стрелки ходят по всему году — показываем месяц клетки
-      if (cur) { var oc = document.querySelector('td.c.cur'); if (oc) oc.classList.remove('cur'); cur = null; }
+      if (cur) { var oc = document.querySelector('td.c.cur, td.it.cur'); if (oc) oc.classList.remove('cur'); cur = null; }
       render();
     }
-    if (cur) { var old = document.querySelector('td.c.cur'); if (old) old.classList.remove('cur'); }
+    if (cur) { var old = document.querySelector('td.c.cur, td.it.cur'); if (old) old.classList.remove('cur'); }
     cur = id;
     var td = document.querySelector('td.c[data-c="' + id + '"]');
     if (td) { td.classList.add('cur'); td.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
@@ -3832,6 +3901,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function setMark(v) {
     var id = cur;
     if (!id) return;
+    if (isItog(id)) { setItog(v); return; }   // открыта клетка итогов четверти
     v = String(v || '').trim().slice(0, 20);
     var cmEl = $('popCm'), c = v === '' && cmEl && cmEl.dataset.wipe ? '' : cmEl ? cmEl.value.trim().slice(0, 300) : '';
     var old = S.mark[id], was = splitMark(old), had = old ? old.v + '|' + (old.c || '') : '';
@@ -3850,6 +3920,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (v && sb && sb.st === 'sent') review(q2[0] + '.' + q2[1], 'checked', splitMark({ v: v }).g, c);
     var td = document.querySelector('td.c[data-c="' + id + '"]');
     if (td) { var cv = cellView(id); td.className = cv.cls + (td.classList.contains('dend') ? ' dend' : '') + ' cur'; td.innerHTML = cv.inner; }
+    itogFill(q2[1]);   // средние строки в итогах четверти — сразу, не дожидаясь закрытия листа
     if (lsGet(LS.next, true)) {   // следующий ученик в том же столбце
       var P = students(), parts = id.split('.'), i = P.findIndex(function (p) { return p.id === parts[1]; });
       if (i >= 0 && i < P.length - 1) { openCell(parts[0] + '.' + P[i + 1].id + '.' + parts[2]); return; }
@@ -3858,16 +3929,162 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
   function closeCell() {
     cur = null; $('pop').hidden = true; $('pop').innerHTML = '';
-    var td = document.querySelector('td.c.cur'); if (td) td.classList.remove('cur');
+    var td = document.querySelector('td.c.cur, td.it.cur'); if (td) td.classList.remove('cur');
     if (pendingRender) { pendingRender = false; render(); }
   }
   function moveCell(dr, dc) {
+    if (isItog(cur)) { moveItog(dr, dc); return; }
     var parts = cur.split('.'), P = students(), L = lessons(tab);
     var cols = []; layout(L).forEach(function (x) { x.cols.forEach(function (c) { cols.push(c.l.id + '.' + c.w); }); });
     var r = P.findIndex(function (p) { return p.id === parts[1]; }), c = cols.indexOf(parts[0] + '.' + parts[2]);
     r = Math.min(P.length - 1, Math.max(0, r + dr)); c = Math.min(cols.length - 1, Math.max(0, c + dc));
     var cc = cols[c].split('.');
     openCell(cc[0] + '.' + P[r].id + '.' + cc[1]);
+  }
+
+  /* ── итоги четверти (D 22.10): в конце таблицы предмета — «Уроки · ДЗ · КР · Итог» открытой четверти.
+     Уроки и ДЗ — средние, считаются сами по правилу среднего у фамилии (несданная вовремя ДЗ — 2); контрольные — среди уроков.
+     КР — оценка за четвертную контрольную: своя (ставит D) или из урока, в теме которого «К.Р. четвертная».
+     Итог — оценку за четверть ставит только D. Пока её нет, у него серым — средний трёх слева, ученикам — пусто.
+     Записи — k=itog, <предмет>.<четверть 1–4>.<ученик>.k|i ── */
+  var itogCtx = null, itogCache = {};   // открытая четверть (её уроки и предмет) и посчитанные итоги каждой строки
+  function isItog(id) { return String(id || '').split('.').length === 4; }   // клетка оценки — <урок>.<ученик>.u|d, итога — из четырёх частей
+  function qBar(qo) {   // переключатель четвертей — справа над таблицей (D: «в правом верхнем углу 1, 2, 3, 4»)
+    return '<div class="months qbar" role="tablist" aria-label="Четверть"><span class="qbar-l">Четверть</span>' + V_Q.map(function (x, i) {
+      return '<button class="mo" data-qtr="' + i + '" aria-selected="' + (qo === i) + '" title="' + x[0] + '">' + (i + 1) + '</button>';
+    }).join('') + '<button class="mo" data-qtr="all" aria-selected="' + (qo === 'all') + '">Весь год</button></div>';
+  }
+  // урок четвертной контрольной: в теме «К.Р. четвертная», «Контрольная работа за 1 четверть». Подготовка и разбор — не она,
+  // «корень четвертой степени» — тоже: без «контрольная» или «К.Р.» рядом с «четверт…» урок не берём
+  function isQkr(l) {
+    var t = plain(topicOf(l).t);
+    return /четверт/i.test(t) && /контрольн|(^|[^а-яё])к\s*[.\/]?\s*р(?![а-яё])/i.test(t) && !/подготов|разбор|анализ|ошибк/i.test(t);
+  }
+  // среднее до сотых: у границы 3,46 при десятых показалось бы «3,5» и глазом округлилось бы в четвёрку.
+  // Считаем в целых сотых: (4,00 + 3,13) / 2 = 3,565 должно дать 3,57, а не 3,56 из-за дробей в памяти компьютера
+  function avg2(a) {
+    if (!a.length) return null;
+    var c = a.reduce(function (s, g) { return s + Math.round(g * 100); }, 0) / a.length, x = Math.floor(c + 0.5 + 1e-9) / 100;
+    return { x: x, t: x.toFixed(2).replace('.', ','), n: a.length };
+  }
+  function itogRow(sid) {
+    var C = itogCtx, u = [], d = [], miss = 0, tk = dkey(C.today), kl = null, kv = '';
+    C.LY.forEach(function (x) {
+      x.cols.forEach(function (c) {
+        var m = S.mark[c.l.id + '.' + sid + '.' + c.w], g = gradeVal(splitMark(m).g);
+        if (g == null && c.w === 'd' && !(m && m.v) && missedHw(c.l, x.l, sid, C.LA, tk)) { g = 2; miss++; }
+        if (g != null) (c.w === 'u' ? u : d).push(g);
+      });
+      if (isQkr(x.l)) {   // контрольную переписывали (два урока) — берём последнюю оценку; оценок нет — последнюю отметку («н»)
+        var kg = splitMark(S.mark[x.l.id + '.' + sid + '.u']).g;
+        if (kg && (gradeVal(kg) != null || gradeVal(kv) == null)) { kl = x.l; kv = kg; }
+      }
+    });
+    var base = C.subj + '.' + (C.q + 1) + '.' + sid + '.', km = S.itog[base + 'k'], im = S.itog[base + 'i'];
+    var R = { u: avg2(u), d: avg2(d), miss: miss, kl: kl, kv: kv, km: km && km.v ? km : null, im: im && (im.v || im.c) ? im : null };
+    R.k = R.km ? R.km.v : kv;   // в графе КР своя оценка D главнее оценки урока
+    // подсказка — средний трёх слева (что есть): каждая графа — один голос, ДЗ — одной оценкой, как просили в школе
+    R.s = avg2([R.u && R.u.x, R.d && R.d.x, gradeVal(R.k)].filter(function (x) { return x != null; }));
+    if (R.s) R.s.g = Math.floor(R.s.x + 0.5 + 1e-9);   // по правилам математики: 3,50 — уже 4
+    return R;
+  }
+  function itogCells(sid) {
+    var R = itogCache[sid] = itogRow(sid);
+    return ['u', 'd', 'k', 'i'].map(function (w) { return itogTd(w, sid, R); }).join('');
+  }
+  function itogTd(w, sid, R) {
+    var cls = 'it it-st it' + { u: 1, d: 2, k: 3, i: 4 }[w], inner;
+    if (w === 'u' || w === 'd') { cls += ' it-a'; inner = R[w] ? '<b>' + R[w].t + '</b>' : ''; }
+    else {
+      var v = w === 'k' ? R.k : R.im ? R.im.v : '', c = w === 'k' ? R.km && R.km.c : R.im && R.im.c;
+      var dot = c && /[0-9a-zа-яё]/i.test(c) ? '<i class="cmt" aria-label="есть комментарий"></i>' : '';
+      if (v) inner = '<b class="itb ' + markCls(v) + (String(v).length > 3 ? ' long' : '') + '">' + esc(v) + dot + '</b>';
+      else if (w === 'i' && mode === 'teacher' && R.s) inner = '<b class="itb gh">' + R.s.t + '</b>';   // серым — только учителю (D)
+      else inner = '<b class="itb">' + dot + '</b>';
+    }
+    return '<td class="' + cls + '" data-i="' + w + '.' + sid + '">' + inner + '</td>';
+  }
+  // поставили оценку в строке — её итоги пересчитываются сразу, таблица не перерисовывается
+  function itogFill(sid) {
+    if (!itogCtx || !S.stu[sid] || !document.querySelector('td.it[data-i="u.' + sid + '"]')) return;
+    var R = itogCache[sid] = itogRow(sid);
+    ['u', 'd', 'k', 'i'].forEach(function (w) {
+      var sel = 'td.it[data-i="' + w + '.' + sid + '"]', td = document.querySelector(sel), on = td && td.classList.contains('cur');
+      if (!td) return;
+      td.outerHTML = itogTd(w, sid, R);
+      if (on) document.querySelector(sel).classList.add('cur');
+    });
+  }
+  function itogTip(di) {
+    var q = di.split('.'), w = q[0], p = S.stu[q[1]], R = itogCache[q[1]], C = itogCtx;
+    if (!p || !R || !C) return '';
+    var t = '<b>' + esc(p.fam + ' ' + p.name) + '</b>' + V_Q[C.q][0] + ' · ';
+    if (w === 'u') return t + 'средняя за уроки\n' + (R.u ? R.u.t + ' — оценок: ' + R.u.n + ', контрольные среди них' : 'Оценок за уроки пока нет');
+    if (w === 'd') return t + 'средняя за домашку\n' + (R.d ? R.d.t + ' — оценок: ' + R.d.n + (R.miss ? ', из них не сдано вовремя: ' + R.miss + ' (каждая как 2)' : '') : 'Оценок за домашку пока нет');
+    if (w === 'k') {
+      t += 'четвертная контрольная';
+      if (R.km) return t + '\nОценка: ' + esc(R.km.v) + (R.km.c ? '\nКомментарий: ' + esc(R.km.c) : '') + (R.kl && mode === 'teacher' ? '\nВ уроке ' + esc(R.kl.date) + ' — ' + esc(R.kv) : '');
+      if (R.kv) return t + '\nОценка: ' + esc(R.kv) + '\nиз урока ' + esc(R.kl.date) + ' «' + esc(plain(topicOf(R.kl).t).slice(0, 50)) + '»';
+      return t + '\nОценки нет';
+    }
+    t += 'оценка за четверть';
+    if (R.im && R.im.v) return t + '\nОценка: ' + esc(R.im.v) + (R.im.c ? '\nКомментарий: ' + esc(R.im.c) : '');
+    if (mode !== 'teacher') return t + '\nЕщё не выставлена';
+    return t + '\nЕщё не выставлена' + (R.s ? '\nСредний трёх слева: ' + R.s.t + ' → ' + R.s.g + '\nСерую цифру видишь только ты' : '');
+  }
+  // окно оценки итогов — тот же нижний лист, что у клетки: кнопки, своя оценка, комментарий, «дальше вниз»
+  function openItog(id) {
+    var q = id.split('.'), p = S.stu[q[2]], R = itogCache[q[2]], isI = q[3] === 'i';
+    if (!p || !R) return;
+    if (cur) { var old = document.querySelector('td.c.cur, td.it.cur'); if (old) old.classList.remove('cur'); }
+    cur = id;
+    var td = document.querySelector('td.it[data-i="' + q[3] + '.' + q[2] + '"]');
+    if (td) { td.classList.add('cur'); td.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+    var m = S.itog[id], sj = ALLSUBJ.filter(function (x) { return x.id === q[0]; })[0] || { name: '' }, nextOn = lsGet(LS.next, true);
+    var info = isI ? 'Уроки <b>' + (R.u ? R.u.t : '—') + '</b> · ДЗ <b>' + (R.d ? R.d.t : '—') + '</b> · КР <b>' + esc(R.k || '—') + '</b><br>' +
+        (R.s ? 'Средний трёх: <b>' + R.s.t + '</b> — выходит ' + R.s.g : 'Оценок за четверть пока нет')
+      : R.kl ? 'В уроке ' + esc(R.kl.date) + ' «' + esc(plain(topicOf(R.kl).t).slice(0, 40)) + '»: <b>' + esc(R.kv) + '</b>' +
+        (R.km ? '. Сотрёшь свою — в графе снова будет эта' : '. Поставишь свою — в графе будет твоя') : '';
+    var quick = isI ? ['5', '4', '3', '2', 'н/а'] : QUICK, sug = isI && R.s ? String(R.s.g) : '';
+    var pop = $('pop');
+    pop.innerHTML = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(sj.name) + ' · ' + V_Q[+q[1] - 1][0] + '<br>' +
+      (isI ? 'оценка за четверть' : 'четвертная контрольная') + '</span></div>' + (info ? '<div class="pop-src">' + info + '</div>' : '') +
+      '<div class="pop-q' + (isI ? ' q5' : '') + '">' + quick.map(function (x) {
+        return '<button class="' + markCls(x) + (x === sug ? ' sug' : '') + '" data-q="' + x + '"' + (x === sug ? ' title="По среднему"' : '') + '>' + x + '</button>';
+      }).join('') + '</div>' +
+      '<label class="pop-l" for="popIn">Своя оценка</label><form class="pop-t" id="popForm" autocomplete="off"><input id="popIn" maxlength="20" autocomplete="off" value="' + esc(m ? m.v : '') + '">' +
+      '<button class="btn pri" type="submit">OK</button></form>' +
+      '<label class="pop-l" for="popCm">Комментарий ученику</label><textarea id="popCm" class="pop-cm" maxlength="300" rows="2" autocomplete="off">' + esc(m && m.c || '') + '</textarea>' +
+      '<div class="pop-f"><button class="btn danger" data-q="" data-wipe="1">Стереть</button>' +
+      '<label><input type="checkbox" id="popNext"' + (nextOn ? ' checked' : '') + '> дальше вниз</label>' +
+      '<button class="btn" data-act="popclose">Закрыть</button></div>';
+    pop.hidden = false;
+    $('popForm').onsubmit = function (ev) { ev.preventDefault(); setItog($('popIn').value); };
+    $('popNext').onchange = function () { lsSet(LS.next, this.checked); };
+  }
+  function setItog(v) {
+    var id = cur;
+    if (!isItog(id)) return;
+    var q = id.split('.');
+    v = String(v || '').trim().slice(0, 20);
+    if (q[3] === 'i' && /^н$/i.test(v)) v = 'н/а';   // за четверть «н» не ставят — «не аттестован»
+    var cmEl = $('popCm'), c = v === '' && cmEl && cmEl.dataset.wipe ? '' : cmEl ? cmEl.value.trim().slice(0, 300) : '';
+    var old = S.itog[id], had = old ? old.v + '|' + (old.c || '') : '';
+    if (v + '|' + c !== had) {
+      if (v || c) { var d = { v: v }; if (c) d.c = c; put('itog', id, d); }
+      else if (had) del('itog', id);
+    }
+    itogFill(q[2]);
+    if (lsGet(LS.next, true)) {   // следующий ученик в той же графе
+      var P = students(), i = P.findIndex(function (p) { return p.id === q[2]; });
+      if (i >= 0 && i < P.length - 1) { openItog(q[0] + '.' + q[1] + '.' + P[i + 1].id + '.' + q[3]); return; }
+    }
+    closeCell();
+  }
+  function moveItog(dr, dc) {   // стрелки: вверх и вниз — по ученикам, вбок — между КР и итогом
+    var q = cur.split('.'), P = students(), i = P.findIndex(function (p) { return p.id === q[2]; });
+    var r = P[Math.min(P.length - 1, Math.max(0, i + dr))], w = dc ? (dc > 0 ? 'i' : 'k') : q[3];
+    if (r) openItog(q[0] + '.' + q[1] + '.' + r.id + '.' + w);
   }
 
   /* ── вид ученика (ТЗ 19, шаг 2): «Задано» и карточка урока со сдачей фото — вместо таблицы учителя.
@@ -4127,10 +4344,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
      цветом предмета (нажатие — в ленте один предмет); ниже лента своих оценок, новые сверху: обложка урока, оценка, тема,
      за что, день. Средний — тот же, что у учителя в таблице (rowAvg): несданная вовремя домашка идёт в него двойкой,
      поэтому и в ленте она есть — иначе средний ученику не объяснить ── */
-  // начала четвертей — из КТП (plan.js сайта); уроки в каникулы считаются к прошедшей четверти
-  var V_Q = [['1 четверть', '01.09'], ['2 четверть', '05.11'], ['3 четверть', '11.01'], ['4 четверть', '29.03']];
+  // четверти (V_Q, vQOf) — общие с таблицей учителя, заданы рядом с месяцами
   var vQ = -1, vF = '';
-  function vQOf(date) { var k = dkey(date), q = 0; V_Q.forEach(function (x, i) { if (k >= dkey(x[1])) q = i; }); return q; }
   // все свои оценки журнала: та же раскладка, что у таблицы учителя (клетка ДЗ сдвоенного урока — одна)
   function vGrades() {
     var tk = dkey(todayStr()), out = [], n = 0;
@@ -4315,6 +4530,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (fb) { applyFmt(fb.closest('.fmtbar').dataset.for, fb.dataset.fmt); return; }
     var jb = t.closest('[data-jr]');
     if (jb) { switchJournal(jb.dataset.jr); return; }
+    var qb = t.closest('[data-qtr]');
+    if (qb) { if (cur) closeCell(); qSel = qb.dataset.qtr === 'all' ? 'all' : +qb.dataset.qtr; scrollPos = {}; resetScroll(tab); render(); return; }
     var mb = t.closest('[data-month]');
     if (mb) { if (cur) closeCell(); monthSel[tab] = mb.dataset.month; resetScroll(tab); render(); return; }
     var nmc = t.closest('tbody th.nm[data-sid]');
@@ -4438,6 +4655,12 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (lsGet(LS.pass, '')) view(''); else gate('');
       }
       return;
+    }
+    var itc = t.closest('td.it[data-i]');
+    if (itc) {   // итоги четверти: КР и итог ставит учитель, средние — только подсказка
+      var iq = itc.dataset.i.split('.');
+      if (mode === 'teacher' && itogCtx && (iq[0] === 'k' || iq[0] === 'i')) { hideTip(); openItog(itogCtx.subj + '.' + (itogCtx.q + 1) + '.' + iq[1] + '.' + iq[0]); return; }
+      showTip(itc, itogTip(itc.dataset.i)); clearTimeout(tipT); tipT = setTimeout(hideTip, 4000); return;
     }
     var cell = t.closest('td.c[data-c]');
     if (cell && mode === 'teacher') { hideTip(); openCell(cell.dataset.c); return; }
