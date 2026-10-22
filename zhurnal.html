@@ -788,6 +788,8 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-av.off{ opacity:.38; box-shadow:none; }
 #vid .v-av[aria-pressed="true"]{ box-shadow:0 0 0 2px var(--v-bg), 0 0 0 4px var(--s); }
 #vid .v-gr{ align-items:center; }
+#vid .v-itr .v-itno{ flex:none; max-width:84px; text-align:right; }   /* итог ещё не выставлен */
+.vw-seg{ display:flex; gap:6px; } .vw-seg .mo{ min-height:40px; }
 #vid .v-gc{ position:relative; flex:none; width:44px; height:44px; border-radius:10px; overflow:hidden; background:var(--g); color:var(--on); display:grid; place-items:center; font-size:var(--t2); font-weight:800; }
 #vid .v-gc img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 #vid .v-gc img:not([src]), #vid .v-gc i{ display:none; }
@@ -1762,7 +1764,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       t.hidden = false;
       if (meId && S.stu[meId]) {   // своя строка подсвечена — подпись сверху не нужна (D, 01.10)
         t.hidden = !vidOld;   // пришёл из нового вида за оценками — кнопка обратно
-        if (vidOld) t.innerHTML = '<div class="stbar"><button class="btn pri" data-va="new">← Задано и сдача домашки</button></div>';
+        if (vidOld) t.innerHTML = '<div class="stbar">' + (vTab === 'ocenki' ? '<span class="vw-seg"><button class="mo" data-va="new">Списком</button><button class="mo" aria-selected="true">Таблицей</button></span>'   // из «Оценок» — тот же переключатель
+          : '<button class="btn pri" data-va="new">← Задано и сдача домашки</button>') + '</div>';
         return;
       }
       t.innerHTML = '<div class="stbar">' + (ck() ? '<button class="btn pri" data-act="pickme">📷 Сдавать домашку — найди себя в списке</button>'
@@ -1790,6 +1793,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (!loaded) return;
     keepScroll();
     var L = lessons(tab), P = students(), edit = mode === 'teacher';
+    if (vidOld && meId && S.stu[meId]) P = [S.stu[meId]];   // таблица из «Оценок» нового вида — только своя строка (ТЗ 20, сессия 5)
     if (!P.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Учеников пока нет — добавь их кнопкой «Ученики».' : 'Журнал пока пуст.') + '</div>'; return; }
     if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый день кнопкой «＋ День».' : mix() ? 'Уроков пока нет.' : 'По этому предмету пока нет уроков.') + '</div>' + ((edit || krMode) && vygSubj().length ? vygRow() : ''); return; }
 
@@ -3967,8 +3971,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var c = a.reduce(function (s, g) { return s + Math.round(g * 100); }, 0) / a.length, x = Math.floor(c + 0.5 + 1e-9) / 100;
     return { x: x, t: x.toFixed(2).replace('.', ','), n: a.length };
   }
-  function itogRow(sid) {
-    var C = itogCtx, u = [], d = [], miss = 0, tk = dkey(C.today), kl = null, kv = '';
+  function itogRow(sid, C) {
+    C = C || itogCtx;
+    var u = [], d = [], miss = 0, tk = dkey(C.today), kl = null, kv = '';
     C.LY.forEach(function (x) {
       x.cols.forEach(function (c) {
         var m = S.mark[c.l.id + '.' + sid + '.' + c.w], g = gradeVal(splitMark(m).g);
@@ -3987,6 +3992,12 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     R.s = avg2([R.u && R.u.x, R.d && R.d.x, gradeVal(R.k)].filter(function (x) { return x != null; }));
     if (R.s) R.s.g = Math.floor(R.s.x + 0.5 + 1e-9);   // по правилам математики: 3,50 — уже 4
     return R;
+  }
+  // итоги ученика по предмету за четверть вне таблицы («Оценки» вида ученика) — тем же счётом, что у учителя
+  function itogOf(subj, q, sid) {
+    var LA = lessons(subj).filter(function (l) { return l.subj === subj; });
+    var LY = layout(LA.filter(function (l) { return monthOf(l.date) && vQOf(l.date) === q; }));
+    return LY.length ? itogRow(sid, { LY: LY, LA: LA, today: todayStr(), subj: subj, q: q }) : null;
   }
   function itogCells(sid) {
     var R = itogCache[sid] = itogRow(sid);
@@ -4383,18 +4394,39 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var cur = vQOf(todayStr()), q = vQ < 0 ? cur : vQ, all = vGrades(), R = q > 3 ? all : all.filter(function (r) { return vQOf(r.l.date) === q; });
     var subs = feed() ? ALLSUBJ.filter(function (s) { return all.some(function (r) { return r.l.subj === s.id; }); }) : SUBJ;
     if (vF && !subs.some(function (s) { return s.id === vF; })) vF = '';
-    var h = '<h1 class="v-h1">Оценки</h1><div class="v-seg">' + V_Q.slice(0, cur + 1).map(function (x, i) {
+    var h = '<h1 class="v-h1">Оценки</h1><div class="v-seg"><button aria-pressed="true">Списком</button><button data-va="old">Таблицей</button></div><div class="v-seg">' + V_Q.slice(0, cur + 1).map(function (x, i) {
       return '<button data-va="vq" data-id="' + i + '" aria-pressed="' + (q === i) + '">' + x[0] + '</button>';
     }).join('') + '<button data-va="vq" data-id="9" aria-pressed="' + (q > 3) + '">Год</button></div>';
     if (subs.length) h += '<div class="v-avs">' + subs.map(function (s) {
       var a = vAvg(R.filter(function (r) { return r.l.subj === s.id; }));
       return '<button class="v-av ' + s.k + (vF && vF !== s.id ? ' off' : '') + '" data-va="vf" data-id="' + s.id + '" aria-pressed="' + (vF === s.id) + '" aria-label="' + esc(s.short) + ', средний ' + (a || 'нет') + '"><b>' + (a || '—') + '</b><span>' + esc(s.short) + '</span></button>';
     }).join('') + '</div>';
+    if (itogSrv && !feed()) h += vItogHtml(subs.filter(function (s) { return !vF || s.id === vF; }), q, cur);
     var F = vF ? R.filter(function (r) { return r.l.subj === vF; }) : R;
     h += '<div class="v-lbl">' + (vF ? esc(vSj(vF).short) + ' · ' : '') + (q > 3 ? 'За год' : V_Q[q][0]) + '</div>';
     h += F.length ? '<div class="v-card">' + F.map(vGrRow).join('') + '</div>' : '<div class="v-card v-pad"><span class="v-cap">' + (q > 3 ? 'Оценок пока нет.' : 'В этой четверти оценок пока нет.') + '</span></div>';
     if (F.some(function (r) { return r.m.pv; })) h += '<span class="v-cap" style="margin-top:10px">Зачёркнутая — прежняя оценка. В средний идёт только новая.</span>';
     return h;
+  }
+  // итоги четверти (D 22.10): по предмету — средние за уроки и ДЗ, КР и оценка за четверть; её ставит учитель.
+  // «Год» — четвертные по предметам. Серой подсказки учителя здесь нет
+  function vItogHtml(subs, q, cur) {
+    var rows = subs.map(function (s) {
+      var g = s.k ? s : vSj(s.id), t, tile;
+      if (q > 3) {
+        var RQ = V_Q.slice(0, cur + 1).map(function (x, i) { return itogOf(s.id, i, meId); });
+        if (!RQ.some(Boolean)) return '';   // предмета ещё не было — строки нет
+        t = RQ.map(function (R, i) { return (i + 1) + ' четв. — ' + (R && R.im && R.im.v ? R.im.v : '…'); }).join(' · '); tile = '';
+      } else {
+        var R = itogOf(s.id, q, meId);
+        if (!R) return '';
+        t = 'уроки ' + (R.u ? R.u.t : '—') + ' · ДЗ ' + (R.d ? R.d.t : '—') + (R.k ? ' · КР ' + R.k : '');
+        tile = R.im && R.im.v ? vMkTile(R.im.v, markCls(R.im.v)) : '<span class="v-cap v-itno">ещё не выставлена</span>';
+      }
+      return '<div class="v-row v-gr v-itr"><span class="v-gc ' + g.k + '">' + esc(g.short.charAt(0)) + '</span><span class="v-body"><b>' + esc(g.short) + '</b>' +
+        '<span class="v-cap">' + esc(t) + '</span></span>' + tile + '</div>';
+    }).join('');
+    return rows ? '<div class="v-lbl">' + (q > 3 ? 'Четвертные' : 'Итоги ' + (q + 1) + ' четверти') + '</div><div class="v-card">' + rows + '</div>' : '';
   }
   // обложки в ленте оценок — по мере прокрутки: за год их десятки, все сразу телефону ни к чему
   var vIo = null;
@@ -4452,7 +4484,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       '<div class="note"><a class="link" href="pravila.html">Правила и конфиденциальность</a> · <button class="link" data-act="teacher">Войти как учитель</button></div></div>';
     markTheme();
   }
-  function vClose() { if (!vLes) return; vLes = ''; if (vidOn()) { vRender(); window.scrollTo(0, vY); } }
+  var vFromOld = false;   // карточку открыли из таблицы («Таблицей») — закрыли, и снова таблица
+  function vClose() { if (!vLes) return; vLes = ''; if (vFromOld) { vFromOld = false; vidOld = true; render(); window.scrollTo(0, vY); return; } if (vidOn()) { vRender(); window.scrollTo(0, vY); } }
   // карточка урока и любое окно поверх (настройки, файл, фото, чат) — шаги в истории браузера: «Назад» на телефоне
   // закрывает их, а не уводит со страницы (D 12.10: с телефона ученика «Назад» выбрасывало из журнала)
   var vOv = false, vSkip = 0;
@@ -4476,6 +4509,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     }
     if (!vidOn()) return;
     var st = history.state, nl = st && st.vles && S.les[st.vles] ? st.vles : '';   // что на экране — решает шаг истории, на котором оказались
+    if (!nl && vLes && vFromOld) { vFromOld = false; vLes = ''; vidOld = true; render(); window.scrollTo(0, vY); return; }
     if (nl !== vLes) { vLes = nl; vMat = false; vRender(); window.scrollTo(0, nl ? 0 : vY); }
   });
   // страницу обновили на карточке урока или окне — шаг остался, а экран начался с «Задано»: метку шага снимаем
@@ -4512,7 +4546,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (!confirm('Выйти из журнала на этом устройстве? Войти снова — кнопкой «📒 Мой журнал» в боте или своим значком.')) return;
       closeDlg(); lsDel(LS.ck); lsDel(LS.sk); lsDel('zh:hwok'); znSet(''); meId = null; gate('');
     }
-    else if (a === 'old' || a === 'new') { vidOld = a === 'old'; render(); window.scrollTo(0, 0); }
+    else if (a === 'old' || a === 'new') { vidOld = a === 'old'; vFromOld = false; render(); window.scrollTo(0, 0); }
   }
 
   /* ── нажатия ── */
@@ -4664,6 +4698,11 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     }
     var cell = t.closest('td.c[data-c]');
     if (cell && mode === 'teacher') { hideTip(); openCell(cell.dataset.c); return; }
+    if (cell && vidOld && meId && cell.dataset.c.split('.')[1] === meId) {   // из таблицы нового вида — карточка урока со «Сдать фото»
+      hideTip(); vFromOld = true; vidOld = false; vY = window.pageYOffset; vLes = cell.dataset.c.split('.')[0]; vMat = false;
+      try { history.pushState({ vles: vLes }, ''); } catch (e) { /* без истории — закроет кнопка «Назад» на экране */ }
+      render(); window.scrollTo(0, 0); return;
+    }
     if (cell && meId && cell.classList.contains('mine')) { hideTip(); openSubmit(cell.dataset.c); return; }
     if (cell) {   // ученик: нажал — подсказка, через 4 секунды прячется
       showTip(cell, cellTip(cell.dataset.c)); clearTimeout(tipT); tipT = setTimeout(hideTip, 4000); return;
