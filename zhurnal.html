@@ -1793,7 +1793,6 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (!loaded) return;
     keepScroll();
     var L = lessons(tab), P = students(), edit = mode === 'teacher';
-    if (vidOld && meId && S.stu[meId]) P = [S.stu[meId]];   // таблица из «Оценок» нового вида — только своя строка (ТЗ 20, сессия 5)
     if (!P.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Учеников пока нет — добавь их кнопкой «Ученики».' : 'Журнал пока пуст.') + '</div>'; return; }
     if (!L.length) { main.innerHTML = '<div class="empty">' + (edit ? 'Уроков пока нет — добавь первый день кнопкой «＋ День».' : mix() ? 'Уроков пока нет.' : 'По этому предмету пока нет уроков.') + '</div>' + ((edit || krMode) && vygSubj().length ? vygRow() : ''); return; }
 
