@@ -176,6 +176,10 @@ let vybran = TODAY;
 
 const sdatVDen = d => UROKI.filter(u => u.dz && u.dz.due && +dateOf(u.dz.due) === +polnoch(d));
 const faktDnya = d => UROKI.filter(u => +u.dt === +polnoch(d)).sort((a, b) => a.n - b.n);
+/* темы будущих уроков — только те, что D сам вписал в журнал (D 16.10: темы из КТП детям не показываем,
+   они расходятся с тем, что идёт на уроке). Заполняет izZhurnala, ключ — iso-дата. */
+let BUD = {};
+const budDnya = d => BUD[iso(d)] || [];
 
 function risovatKalendar(){
   const pervoe = new Date(mesyac.getFullYear(), mesyac.getMonth(), 1);
@@ -190,6 +194,7 @@ function risovatKalendar(){
     const cls = ['den'];
     if (!svoy) cls.push('chuzhoy');
     if (kurs) cls.push('math', 'k-' + kurs);
+    if (kurs && d > TODAY) cls.push('bud');           // будущий урок — без заливки, даже если тема уже есть
     if (p.off && svoy) cls.push('off');
     if (+d === +TODAY) cls.push('today');
     if (+d === +vybran) cls.push('sel');
@@ -221,8 +226,7 @@ function risovatDen(){
   if (!den.length){ $('#day').innerHTML = zag + `<div class="empty-day">Уроков нет — отдыхаем 🌿</div>`; return; }
 
   const seychas = +d === +TODAY ? new Date().getHours() * 60 + new Date().getMinutes() : -1;
-  const fakt = faktDnya(d);
-  const plan = PLANA ? (PLANA.dni || []).filter(x => x.d === iso(d)) : [];
+  const fakt = faktDnya(d), bud = budDnya(d);
 
   const bloki = [];
   den.forEach(x => {
@@ -242,11 +246,11 @@ function risovatDen(){
     /* блоку достаются «свои» уроки по порядку: урок до завтрака и после — разные темы */
     const s0 = sdvig[b.kurs] || 0; sdvig[b.kurs] = s0 + b.n;
     const f = fakt.filter(u => u.kurs.id === b.kurs).slice(s0, s0 + b.n);
-    const pl = f.length ? [] : plan.filter(x => x.kurs === b.kurs).slice(s0, s0 + b.n);
-    const prodolzhenie = !f.length && s0 && fakt.some(u => u.kurs.id === b.kurs);
+    const bt = f.length ? [] : bud.filter(x => x.kurs === b.kurs).slice(s0, s0 + b.n);
+    const prodolzhenie = !f.length && !bt.length && s0 && (fakt.some(u => u.kurs.id === b.kurs) || bud.some(x => x.kurs === b.kurs));
     const temy = prodolzhenie ? `<div class="topic plan">продолжение урока</div>`
       : f.length ? f.map(u => `<button class="topic" data-open="${u.kurs.id}|${u.n}">${esc(u.title)} <b>→</b></button>`).join('')
-      : pl.length ? pl.map(x => `<div class="topic plan">${esc(x.tema)} <em>по плану</em></div>`).join('')
+      : bt.length ? bt.map(x => `<div class="topic">${esc(x.tema)}</div>`).join('')
       : `<div class="topic plan"><em>тема появится после урока</em></div>`;
     return `<div class="row math k-${b.kurs}${idet ? ' now' : ''}${proshlo ? ' past' : ''}">
       <div class="m-top"><span class="nm">${esc(KURS[b.kurs].name)}</span>
@@ -257,8 +261,8 @@ function risovatDen(){
   const sdat = sdatVDen(d);
   const blokSdat = sdat.length ? `<div class="hand">
       <div class="hand-h">${+d >= +TODAY ? '📌 Сдать в этот день' : 'Сдавали в этот день'}</div>
-      ${sdat.map(u => { const c = schet(u); return `<button class="hand-i k-${u.kurs.id}" data-open="${u.kurs.id}|${u.n}">
-        <i></i><span>${esc(u.title)}</span><b class="mono">${c.sdelano}/${c.vsego}</b></button>`; }).join('')}
+      ${sdat.map(u => `<button class="hand-i k-${u.kurs.id}" data-open="${u.kurs.id}|${u.n}">
+        <i></i><span>${esc(u.title)}</span></button>`).join('')}
     </div>` : '';
 
   $('#day').innerHTML = zag + blokSdat +
@@ -293,12 +297,11 @@ function podskazka(){
 }
 function tipHTML(d){
   if (pro(d).off) return '';
-  const f = faktDnya(d), sd = sdatVDen(d);
-  const plan = PLANA ? (PLANA.dni || []).filter(x => x.d === iso(d)) : [];
-  if (!f.length && !sd.length && !plan.length) return '';
+  const f = faktDnya(d), sd = sdatVDen(d), bud = budDnya(d);
+  if (!f.length && !sd.length && !bud.length) return '';
   let h = `<div class="tip-h">${DNI[d.getDay()]}, ${d.getDate()} ${MES[d.getMonth()]}</div>`;
   if (f.length) h += f.map(u => `<div class="tip-u k-${u.kurs.id}"><i></i>${esc(u.title)}</div>`).join('');
-  else h += plan.map(x => `<div class="tip-u plan k-${x.kurs}"><i></i>${esc(x.tema)} <em>по плану</em></div>`).join('');
+  else h += bud.map(x => `<div class="tip-u k-${x.kurs}"><i></i>${esc(x.tema)}</div>`).join('');
   f.filter(u => u.dz).forEach(u => {
     h += `<div class="tip-dz"><div class="tip-s">Задали · ${esc(kDatu(dateOf(u.dz.due)))}</div>` +
       zadaniya(u).map(g => g.items.map(it => `<div class="tip-li${galki[kg(u, it.s)] ? ' done' : ''}">${esc(it.s)}</div>`).join('')).join('') + `</div>`;
@@ -775,6 +778,7 @@ function izZhurnala(lenta, api){
   const adres = f => `${api}/zhurnal/pub/${f.id}/${encodeURIComponent(String(f.name || 'file.' + f.ext).replace(/[\/?#%]/g, '_'))}`;
   const fajly = (lid, w) => (lenta.file || []).filter(f => f.les === lid && (f.w || '') === w).sort((a, b) => (a.ord || 0) - (b.ord || 0));
   let novoe = 0;
+  BUD = {};
   DATA.kursy.forEach(k => {
     k.uroki = (k.uroki || []).filter(u => !u.zh);   // повторный вызов не копит блоки
     k.uroki.forEach(u => { if (u.dzZh) { delete u.dz; delete u.dzZh; } });
@@ -783,8 +787,15 @@ function izZhurnala(lenta, api){
     const dni = [...new Set(L.map(l => l.date))];
     dni.forEach(date => {
       const dt = dateOf(date);
-      if (dt > TODAY) return;                         // будущий день в журнале — заготовка D, ученикам рано
-      const D = L.filter(l => l.date === date), svoi = k.uroki.filter(u => u.dt ? +u.dt === +dt : +dateOf(u.date) === +dt);
+      const D = L.filter(l => l.date === date);
+      if (dt > TODAY || D.some(l => l.bud)){          // будущий день: ученикам — только тема, которую D вписал сам (D 16.10);
+        D.forEach(l => {                              // домашка, файлы и заметка появятся, когда день наступит
+          const tema = zhText(l.topic).replace(/\n+/g, ' ');
+          if (tema) { const x = iso(dt); (BUD[x] = BUD[x] || []).push({ kurs: k.id, tema }); novoe++; }
+        });
+        return;
+      }
+      const svoi = k.uroki.filter(u => u.dt ? +u.dt === +dt : +dateOf(u.date) === +dt);
       // домашка дня: текст и файлы домашки со всех уроков дня (у сдвоенного она одна)
       const tekst = D.map(l => zhText(l.hw)).filter(Boolean).join('\n'), hf = D.flatMap(l => fajly(l.id, 'hw')), web = D.map(l => zhAuto(l.ad)).filter(Boolean);
       let dz = null;
