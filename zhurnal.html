@@ -619,6 +619,26 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .zt td.it .itb.m5{ background:var(--m5b); box-shadow:var(--m5s); } .zt td.it .itb.m2{ background:var(--m2b); box-shadow:var(--m2s); }
 .zt td.it .itb.m4{ background:var(--m4b); } .zt td.it .itb.m3{ background:var(--m3b); } .zt td.it .itb.mn{ background:var(--mnb); }
 .zt td.it .itb.gh{ background:transparent; border:1.5px dashed var(--z-line2); color:var(--muted); font-size:12.5px; font-weight:700; }   /* подсказка — только учителю */
+/* блок итогов — отдельный (D 23.10, вариант 3 «Цвет предмета»): под всеми графами одна подложка бледного цвета предмета,
+   ДЗ и КР спокойные, итог — одинаковые плитки цвета предмета с белой цифрой (оценку видно по цифре, не по цвету).
+   Подложка — ::before у каждой клетки (клетки липкие, под ними едут дни); -1px — прозрачные рамки клеток тоже под ней */
+.zt{ --itP:color-mix(in srgb, var(--s) 11%, var(--card)); --it5:#15803d; --it4:#4d7c0f; --it3:#a8730a; --it2:#dc2626; --itn:#6b6480; }
+[data-theme="night"] .zt{ --itP:color-mix(in srgb, var(--s) 15%, var(--card)); --it5:#c6f26b; --it4:#b9e69c; --it3:#ecca78; --it2:#ff7a7a; --itn:#bdb3cf; }
+.zt .it-st{ isolation:isolate; }   /* шапка и так липкая сверху, на широком экране клетки липкие справа (ниже) */
+@media (max-width:899px){ .zt td.it-st{ position:relative; } }
+.zt td.it::before, .zt th.it-s::before, .zt th.it-h::before{ content:''; position:absolute; inset:0 -1px -1px 0; background:var(--itP); z-index:-1; pointer-events:none; }
+.zt td.it2::before, .zt th.it-s.it2::before, .zt th.it-h::before{ left:10px; }
+.zt th.it-h::before{ border-radius:18px 18px 0 0; }
+.zt tbody tr:last-child td.it::before{ bottom:-6px; }
+.zt tbody tr:last-child td.it2::before{ border-bottom-left-radius:18px; } .zt tbody tr:last-child td.it4::before{ border-bottom-right-radius:18px; }
+.zt th.it-s{ color:var(--s); }
+.zt td.it-a b{ color:color-mix(in srgb, var(--s) 70%, var(--ink)); }
+.zt td.it3 .itb, .zt td.it3 .itb.m5, .zt td.it3 .itb.m4, .zt td.it3 .itb.m3, .zt td.it3 .itb.m2, .zt td.it3 .itb.mn{ background:color-mix(in srgb, var(--card) 70%, transparent); box-shadow:none; }
+.zt td.it3 .itb.m5{ color:var(--it5); } .zt td.it3 .itb.m4{ color:var(--it4); } .zt td.it3 .itb.m3{ color:var(--it3); } .zt td.it3 .itb.m2{ color:var(--it2); } .zt td.it3 .itb.mn{ color:var(--itn); }
+.zt td.it4 .itb, .zt td.it4 .itb.m5, .zt td.it4 .itb.m4, .zt td.it4 .itb.m3, .zt td.it4 .itb.m2, .zt td.it4 .itb.mn{ background:var(--g); color:var(--on); box-shadow:0 6px 18px -6px var(--glow), 0 0 22px -8px var(--glow); font-size:18px; }
+.zt td.it4 .itb.gh{ background:transparent; box-shadow:none; color:var(--s); border-color:color-mix(in srgb, var(--s) 45%, var(--card)); font-size:12.5px; }
+.zt td.it4 .itb:where(:not(.m5):not(.m4):not(.m3):not(.m2):not(.mn):not(.gh)){ background:transparent; box-shadow:none; }   /* итога нет — пустое место на подложке; :where — рамка выбора (.cur) сильнее */
+.zt td.it4 .itb.long, .zt td.it3 .itb.long{ font-size:11px; }
 .zt td.it .itb .cmt{ position:absolute; top:4px; left:4px; width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.8; }
 .zt td.it-a b{ display:grid; place-items:center; height:40px; font-size:14px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
 .zt thead th.it-h{ padding:4px 2px 4px 14px; }
