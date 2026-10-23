@@ -691,7 +691,7 @@ html.vid[data-theme="night"] body{ background:#000; }
   --t1:24px; --t2:16px; --t3:13px;
   position:relative; max-width:480px; min-height:100vh; min-height:100dvh; margin:0 auto; background:var(--v-bg); color:var(--v-ink); font-size:var(--t2); line-height:1.4; }
 [data-theme="night"] #vid{ --v-dim:var(--h-dim); --v-red:#ff9aa8; --v-wait:#c4b5fd; --v-ok:#b9e69c; --v-late:rgba(255,90,90,.09); }
-#vid .v-scr{ padding:20px 16px 96px; }
+#vid .v-scr{ padding:20px 16px calc(112px + env(safe-area-inset-bottom, 0px)); }
 #vid .v-h1{ font-size:var(--t1); font-weight:800; letter-spacing:-.01em; line-height:1.15; margin:0; color:var(--v-ink); }
 #vid .v-h1 + .v-h1{ margin-top:6px; }
 #vid .v-cap{ display:block; font-size:var(--t3); color:var(--v-sub); }
@@ -742,7 +742,11 @@ html.vid[data-theme="night"] body{ background:#000; }
   color:var(--v-ink); background:color-mix(in srgb, var(--v-card) 82%, transparent); box-shadow:inset 0 0 0 1px var(--v-line); }
 #vid .v-gear svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 /* карточка урока */
-#vid .v-back{ display:inline-flex; align-items:center; gap:6px; font-size:var(--t3); font-weight:700; color:var(--v-sub); padding:8px 12px 8px 0; margin-bottom:6px; }
+/* своя «Назад» (D 23.10): всегда видна вверху карточки, и когда листаешь вниз */
+#vid .v-back{ position:sticky; z-index:4; top:calc(10px + env(safe-area-inset-top, 0px)); display:inline-flex; align-items:center; gap:2px; height:44px; padding:0 16px 0 8px; margin-bottom:12px;
+  border-radius:22px; font-size:var(--t2); font-weight:800; color:var(--v-ink); background:var(--v-card); box-shadow:0 0 0 1px var(--v-line), 0 8px 20px -10px rgba(40,24,70,.4); }
+[data-theme="night"] #vid .v-back{ box-shadow:0 0 0 1px var(--v-line), 0 8px 20px -8px rgba(0,0,0,.9); }
+#vid .v-back svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
 #vid .v-cover{ display:block; width:100%; aspect-ratio:2/1; border-radius:16px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--v-line); margin-bottom:14px; }
 #vid .v-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
 #vid .v-tasks{ white-space:pre-line; line-height:1.6; overflow-wrap:anywhere; }
@@ -775,10 +779,12 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-cta .v-btn{ pointer-events:auto; display:block; width:100%; padding:16px; border-radius:16px; text-align:center; font-weight:800; color:#fff; text-decoration:none; background:var(--v-pri); box-shadow:0 12px 24px -12px var(--v-glow); cursor:pointer; }
 #vid .v-cta input{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
 #vid .v-cta .v-cap{ text-align:center; margin-bottom:8px; }
-#vid .v-scr.cta{ padding-bottom:132px; }
+#vid .v-scr.cta{ padding-bottom:calc(132px + env(safe-area-inset-bottom, 0px)); }
 /* нижняя панель: четыре вкладки со значком и подписью */
-#vid .v-tabs{ position:fixed; z-index:5; left:50%; transform:translateX(-50%); bottom:0; width:100%; max-width:480px; display:grid; grid-template-columns:repeat(4,1fr);
-  background:var(--v-card); box-shadow:0 -1px 0 var(--v-line); padding:6px 8px calc(8px + env(safe-area-inset-bottom, 0px)); }
+/* плашка над низом экрана, по бокам видна страница (D 23.10) */
+#vid .v-tabs{ position:fixed; z-index:5; left:50%; transform:translateX(-50%); bottom:calc(8px + env(safe-area-inset-bottom, 0px)); width:calc(100% - 16px); max-width:464px; display:grid; grid-template-columns:repeat(4,1fr);
+  background:var(--v-card); border-radius:22px; box-shadow:0 0 0 1px var(--v-line), 0 14px 34px -10px rgba(40,24,70,.38); padding:6px; }
+[data-theme="night"] #vid .v-tabs{ box-shadow:0 0 0 1px var(--v-line), 0 14px 34px -8px rgba(0,0,0,.85); }
 #vid .v-tabs button{ position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 0; border-radius:12px; font-size:var(--t3); font-weight:700; color:var(--v-dim); }
 #vid .v-tabs svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 #vid .v-tabs .on{ color:var(--v-ink); }
@@ -838,6 +844,48 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-gr .v-hist{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; margin-top:2px; }
 #vid .v-hist.wait{ color:var(--v-wait); font-weight:700; }
 #vid .v-mk .v-mm{ align-self:flex-start; }
+/* «Уроки» (ТЗ 19, шаг 4): неделя полосой, на экране шире 600 px — месяц. Клетки — как календарь сайта уроков
+   (сессия 3, вариант 2): был урок — заливка цветом предмета, будущий — рамка его цвета, каникулы — пунктир */
+#vid .v-cal{ margin-top:14px; overscroll-behavior-x:none; touch-action:pan-y; }
+#vid .v-calh{ display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+#vid .v-calh b{ flex:1; min-width:0; font-size:var(--t2); font-weight:800; }
+#vid .v-arr, #vid .v-tdy{ flex:none; min-width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-weight:700; color:var(--v-ink); background:var(--v-card); box-shadow:inset 0 0 0 1px var(--v-line); }
+#vid .v-arr{ font-size:24px; line-height:1; }
+#vid .v-tdy{ padding:0 12px; font-size:var(--t3); }
+#vid .v-wd, #vid .v-grid{ display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); gap:3px; }   /* на 360 px клетка — 44 px */
+#vid .v-wd{ margin-bottom:4px; }
+#vid .v-wd span{ text-align:center; font-size:var(--t3); font-weight:700; color:var(--v-sub); }
+#vid .v-dc{ position:relative; min-width:0; min-height:58px; padding:16px 0 8px; border:1px solid transparent; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:5px;
+  background:var(--v-card); color:var(--v-ink); }
+#vid .v-dn{ font-size:17px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; }
+#vid .v-dots{ display:flex; gap:3px; height:7px; }
+#vid .v-dots i{ width:7px; height:7px; border-radius:50%; background:var(--s); }
+#vid .v-dc.was{ background:var(--g); color:var(--on); }
+#vid .v-dc.was .v-dots i{ box-shadow:0 0 0 1.5px #fff; }
+#vid .v-dc.bud{ box-shadow:inset 0 0 0 2px var(--s); }
+#vid .v-dc.off, #vid .v-dc.oth{ background:transparent; color:var(--h-ghost); }
+#vid .v-dc.off{ border:1px dashed var(--v-line); }
+#vid .v-dt{ position:absolute; top:3px; left:0; right:0; overflow:hidden; text-align:center; font-size:9px; font-weight:800; line-height:12px; color:var(--v-ink); }
+#vid .v-dc.now:not(.was){ box-shadow:inset 0 0 0 2px var(--h-ring); }
+#vid .v-dc.was .v-dt{ color:inherit; }
+#vid .v-dc[aria-pressed="true"]{ box-shadow:0 0 0 2px var(--v-bg), 0 0 0 4px var(--h-ring); z-index:1; }
+#vid .v-dc.bud[aria-pressed="true"]{ box-shadow:inset 0 0 0 2px var(--s), 0 0 0 2px var(--v-bg), 0 0 0 4px var(--h-ring); }
+[data-theme="night"] #vid .v-dc.was{ box-shadow:0 0 16px -6px var(--glow); }
+[data-theme="night"] #vid .v-dc[aria-pressed="true"]{ box-shadow:0 0 0 2px var(--v-bg), 0 0 0 4px #ff5cc8, 0 0 18px #ff5cc8; }
+[data-theme="night"] #vid .v-dc.bud[aria-pressed="true"]{ box-shadow:inset 0 0 0 2px var(--s), 0 0 0 2px var(--v-bg), 0 0 0 4px #ff5cc8, 0 0 18px #ff5cc8; }
+#vid .v-ut{ display:block; overflow-wrap:anywhere; }
+#vid .v-chip{ flex:none; align-self:center; padding:3px 6px; border-radius:6px; font-size:11px; font-weight:800; line-height:1; letter-spacing:.04em; background:var(--h-ring); color:var(--h-panel); }
+#vid .v-unx{ margin-top:8px; }
+#vid .v-fd{ display:grid; gap:10px; }
+#vid .v-fc{ display:block; width:100%; text-align:left; border-radius:16px; overflow:hidden; color:inherit; background:var(--v-card); box-shadow:inset 0 0 0 1px var(--v-line); }
+#vid .v-fcv{ display:block; aspect-ratio:2/1; background:linear-gradient(100deg, var(--v-line) 30%, var(--v-card) 50%, var(--v-line) 70%) 0 0/220% 100%; animation:v-shim 1.4s linear infinite; }
+#vid .v-fcv:has(img[src]), #vid .v-fcv:has(i){ animation:none; }
+#vid .v-fcv img{ width:100%; height:100%; object-fit:cover; display:block; }
+#vid .v-fcv i{ display:none; }
+#vid .v-fb{ display:block; padding:12px 14px 14px; }
+#vid .v-fb .v-cap .v-dot{ display:inline-block; margin:0 6px 1px 0; vertical-align:middle; }
+#vid .v-fb b{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; margin-top:2px; font-weight:700; overflow-wrap:anywhere; }
+@media (prefers-reduced-motion:reduce){ #vid .v-fcv{ animation:none; } }
 
 /* ── экран проверки работы (ТЗ 20, сессия 6) ── */
 html.rv-on, html.rv-on body{ overflow:hidden; }
@@ -1346,7 +1394,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   // начала четвертей — из КТП (plan.js сайта); уроки в каникулы считаются к прошедшей четверти
   var V_Q = [['1 четверть', '01.09'], ['2 четверть', '05.11'], ['3 четверть', '11.01'], ['4 четверть', '29.03']];
   function vQOf(date) { var k = dkey(date), q = 0; V_Q.forEach(function (x, i) { if (k >= dkey(x[1])) q = i; }); return q; }
-  // дней без уроков — каникулы, праздники и лето — тоже из КТП (plan.js): бледный «следующий урок» на них не ставим
+  // дней без уроков — каникулы, праздники и лето — тоже из КТП (plan.js): бледный «следующий урок» на них не ставим.
+  // V_Q и V_OFF — ручная копия КТП 2026/27: к новому учебному году пересобрать из plan.js
   var V_OFF = [['26.10', '04.11'], ['30.12', '10.01'], ['22.02', '23.02'], ['08.03', '08.03'], ['22.03', '28.03'], ['03.05', '03.05'], ['10.05', '10.05'], ['29.05', '31.07'], ['01.08', '31.08']];
   function offDay(date) { var k = dkey(date); return V_OFF.some(function (x) { return k >= dkey(x[0]) && k <= dkey(x[1]); }); }
   /* ── «где мы сейчас» (D 16.10: «сегодня 16-е, а урок 14-го — это сегодня было или позавчера?») ── */
@@ -1358,13 +1407,18 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var n = Math.round((t - d) / 864e5);
     return n === 0 ? 'сегодня' : n === 1 ? 'вчера' : n === 2 ? 'позавчера' : n > 2 && n < 7 ? n + (n < 5 ? ' дня' : ' дней') + ' назад' : '';
   }
-  // следующий урок по расписанию: дни недели — из последних уроков предмета (как срок домашки у ученика), без каникул и праздников
-  function nextSched(L) {
-    var cnt = {}, wd = {}, has = {}, d = new Date();
-    L.forEach(function (l) { has[dkey(l.date)] = 1; });
+  // дни недели, в какие идёт предмет: из последних уроков. Одно расписание на всех — бледный «следующий» у учителя,
+  // срок домашки и вкладка «Уроки» у ученика
+  function schedWd(L) {
+    var cnt = {}, wd = {};
     L.filter(function (l) { return realDate(l.date); }).slice(-8).forEach(function (l) { var w = realDate(l.date).getDay(); cnt[w] = (cnt[w] || 0) + 1; });
     Object.keys(cnt).forEach(function (w) { if (cnt[w] > 1) wd[w] = 1; });   // урок, перенесённый один раз, — ещё не расписание
-    if (!Object.keys(wd).length) wd = cnt;   // журнал только начат — что есть
+    return Object.keys(wd).length ? wd : cnt;   // журнал только начат — что есть
+  }
+  // следующий урок по расписанию — без каникул и праздников
+  function nextSched(L) {
+    var wd = schedWd(L), has = {}, d = new Date();
+    L.forEach(function (l) { has[dkey(l.date)] = 1; });
     d.setHours(0, 0, 0, 0);
     // с сегодняшнего: урок сегодня, а в журнале его ещё нет, — он и есть следующий
     for (var i = 0; i < 21; i++, d.setDate(d.getDate() + 1)) if (wd[d.getDay()] && !offDay(ddmm(d)) && !has[dkey(ddmm(d))]) return ddmm(d);
@@ -4290,7 +4344,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   /* ── вид ученика (ТЗ 19, шаг 2): «Задано» и карточка урока со сдачей фото — вместо таблицы учителя.
      Включает сервер (ZHURNAL_VID → vid в ответе /me); ?vid=1 в адресе — посмотреть до включения.
      Таблица учителя, вход по коду класса и ссылка классного руководителя — как были. Данные те же, что у таблицы:
-     уроки, оценки и сдачи своей строки. «Оценки» — шаг 3; «Уроки» собираются следующим шагом — пока ведут в прежний журнал. ── */
+     уроки, оценки и сдачи своей строки. «Оценки» — шаг 3, «Уроки» — шаг 4. ── */
   var vidSrv = false, vidUrl = /[?&#]vid=1(?:&|#|$)/.test(location.search + location.hash), vidOld = false;   // vidOld — ученик сам открыл прежний журнал
   var vTab = 'zadano', vLes = '', vMat = false, vY = 0;
   function vidOn() { return mode !== 'teacher' && loaded && !!meId && !!S.stu[meId] && (vidSrv || vidUrl) && !vidOld; }
@@ -4324,16 +4378,15 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     return { own: x0.own, L: L, les: LY.filter(function (x) { return x.own === x0.own; }).map(function (x) { return x.l; }) };
   }
   // к какому дню домашка: следующий урок предмета. Его в журнале ещё нет (D заводит день в день урока) — ближайший день
-  // недели, в какие этот предмет идёт: «к вт 13.10» ученику нужнее, чем дата, когда задали
+  // по расписанию мимо каникул, как «следующий» у учителя: «к вт 13.10» ученику нужнее, чем дата, когда задали
   function vDue(L, own) {
     var k = dkey(own.date), nx = L.filter(function (l) { return dkey(l.date) > k; })[0];
     if (nx) return { date: nx.date, les: nx };
-    var d = realDate(own.date), wd = {}, t = new Date();
+    var d = realDate(own.date), wd = schedWd(L), t = new Date();
     if (!d) return null;
-    L.slice(-8).forEach(function (l) { var x = realDate(l.date); if (x) wd[x.getDay()] = 1; });
     t.setHours(0, 0, 0, 0); d.setDate(d.getDate() + 1);
     if (d < t) d = t;
-    for (var i = 0; i < 14; i++, d.setDate(d.getDate() + 1)) if (wd[d.getDay()]) return { date: ddmm(d) };
+    for (var i = 0; i < 21; i++, d.setDate(d.getDate() + 1)) if (wd[d.getDay()] && !offDay(ddmm(d))) return { date: ddmm(d) };
     return null;
   }
   // сдача словами: t — коротко в строке «Задано», full — в карточке урока; todo — от ученика ещё что-то нужно
@@ -4499,7 +4552,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       cv = cv || coverOf(l.id); MF = MF.concat(filesOf(l.id));
       var t = plain(topicOf(l).t || '').trim().replace(/\.$/, ''); if (t && tops.indexOf(t) < 0) tops.push(t);
     });
-    var h = '<button class="v-back" data-va="back">← Назад</button>';
+    var h = '<button class="v-back" data-va="back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Назад</button>';
     if (cv) h += '<button class="v-cover" data-act="openfile" data-id="' + cv.id + '" title="Открыть обложку урока" aria-label="Открыть обложку урока"><img data-ff="' + cv.id + '" alt=""></button>';
     h += '<span class="v-cap"><span class="v-dot ' + sj.k + '"></span>' + esc(sj.short) + ', ' + esc(vDay(own.date)) + (many ? ' · ' + vN(B.les.length, 'урок', 'урока', 'уроков') : '') + '</span>' +
       (tops.length ? tops : ['Урок']).map(function (t, i) { return (i ? '<h2' : '<h1') + ' class="v-h1"' + (i ? '' : ' style="margin-top:4px"') + '>' + esc(t) + (i ? '</h2>' : '</h1>'); }).join('');
@@ -4625,11 +4678,184 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     }, { rootMargin: '300px' });
     im.forEach(function (i) { vIo.observe(i); });
   }
-  function vSoonHtml() {
-    return '<h1 class="v-h1">Уроки</h1><div class="v-card v-pad" style="margin-top:14px"><b>Эта вкладка ещё собирается.</b>' +
-      '<span class="v-cap" style="margin-top:4px">Все уроки, темы и материалы пока — в прежнем журнале.</span>' +
-      '<div class="v-links"><button class="v-out" data-va="old">Открыть прежний журнал ›</button></div></div>';
+  /* ── «Уроки» (ТЗ 19, шаг 4; ТЗ 20, сессия 5). Вопрос экрана: «Какой урок был последним, какой следующий и что на них?»
+     Сверху неделя полосой (на экране шире 600 px — месяц), под ней уроки выбранного дня, ниже лента прошедших уроков.
+     Данные — только журнал, тем из КТП нет. Будущий день — только тема, если D вписал её сам; домашка, файлы и заметка —
+     когда день наступит, как в ленте сайта уроков (сессия 3). Сервер отдаёт ученику будущие дни целиком — прячет страница ── */
+  var vSel = null, vWide = window.matchMedia ? matchMedia('(min-width: 601px)') : { matches: false };
+  function vMid(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+  function vShift(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function vIso(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  // журнал знает даты без года: день другого учебного года пустой, а не с уроками этого
+  function vInYear(d) { var r = realDate(ddmm(d)); return !!r && +r === +d; }
+  // уроки и расписание: у класса — по предметам, у индивидуала одна лента (предмет у каждого урока свой).
+  // Урок со сдвоенным соседом — один блок, как одна карточка
+  function vUrData() {
+    var G = feed() ? [{ sj: null, L: lessons('') }] : SUBJ.map(function (s) { return { sj: s, L: lessons(s.id) }; }), by = {}, all = [];
+    G.forEach(function (g) {
+      g.wd = schedWd(g.L); g.has = {};
+      var seen = {};
+      layout(g.L).forEach(function (x) {
+        if (!realDate(x.l.date)) return;
+        var k = dkey(x.l.date), b = seen[x.own.id];
+        g.has[k] = 1;
+        if (b) { b.les.push(x.l); return; }
+        b = seen[x.own.id] = { own: x.own, les: [x.l], k: k };
+        (by[k] = by[k] || []).push(b); all.push(b);
+      });
+    });
+    return { G: G, by: by, all: all };
   }
+  // предмет урока по расписанию; у индивидуала — тот, что был в этот день недели последним
+  function vSchedSj(g, d) {
+    if (g.sj) return g.sj;
+    var L = g.L.filter(function (l) { var r = realDate(l.date); return r && r.getDay() === d.getDay(); });
+    return vSj((L[L.length - 1] || g.L[g.L.length - 1]).subj);
+  }
+  // день: B — уроки журнала, S — уроки по расписанию, которых в журнале ещё нет (только сегодня и дальше)
+  function vDayOf(d, U) {
+    var t = vMid(new Date()), inY = vInYear(d), k = dkey(ddmm(d)), off = inY && offDay(ddmm(d)), B = inY ? U.by[k] || [] : [], S2 = [];
+    if (inY && !off && d >= t) U.G.forEach(function (g) { if (g.wd[d.getDay()] && !g.has[k]) S2.push(vSchedSj(g, d)); });
+    return { d: d, B: B, S: S2, off: off && !B.length, fut: d > t, now: +d === +t };
+  }
+  function vSubsOf(x) {
+    var out = [];
+    x.B.forEach(function (b) { if (out.indexOf(b.own.subj) < 0) out.push(b.own.subj); });
+    x.S.forEach(function (s) { if (out.indexOf(s.id) < 0) out.push(s.id); });
+    return out.map(vSj);
+  }
+  // ближайший день с уроками после d — для «Уроков нет. Следующий — …»
+  function vNextAfter(d, U) {
+    for (var i = 1; i <= 60; i++) { var y = vDayOf(vShift(d, i), U); if (y.B.length || y.S.length) return y; }
+    return null;
+  }
+  // клетка — как календарь сайта уроков (сессия 3, вариант 2): был урок — залита цветом предмета, будущий — рамка
+  // цвета предмета, сегодня — слово «сегодня», каникулы бледные
+  function vCellHtml(x, other) {
+    var subs = vSubsOf(x), s0 = subs[0], cls = 'v-dc';
+    if (other) cls += ' oth';
+    else if (x.off) cls += ' off';
+    else if (s0) cls += ' ' + s0.k + (x.B.length && !x.fut ? ' was' : ' bud');   // сегодня только «по расписанию» — урока ещё не было
+    if (x.now) cls += ' now';
+    var on = +x.d === +vSel, lab = V_DAYS[x.d.getDay()] + ', ' + x.d.getDate() + ' ' + V_MON[x.d.getMonth()] + (x.now ? ', сегодня' : '') +
+      (x.off ? ', уроков нет' : subs.length ? ': ' + subs.map(function (s) { return s.short.toLowerCase(); }).join(', ') : '');
+    return '<button class="' + cls + '" data-va="uday" data-id="' + vIso(x.d) + '" aria-pressed="' + on + '" aria-label="' + esc(lab) + '">' +
+      (x.now ? '<span class="v-dt">сегодня</span>' : '') + '<span class="v-dn">' + x.d.getDate() + '</span><span class="v-dots">' +
+      (x.off || other ? '' : subs.slice(0, 4).map(function (s) { return '<i class="' + s.k + '"></i>'; }).join('')) + '</span></button>';
+  }
+  function vCalHtml(U) {
+    var t = vMid(new Date()), wide = vWide.matches, days = [], cap, cur, m = vSel.getMonth(), i;
+    if (wide) {
+      var st = vShift(new Date(vSel.getFullYear(), m, 1), -((new Date(vSel.getFullYear(), m, 1).getDay() + 6) % 7));
+      for (i = 0; i < 42; i++) { var d = vShift(st, i); if (i >= 28 && i % 7 === 0 && d.getMonth() !== m) break; days.push(d); }
+      cap = MONTHS[m] + ' ' + vSel.getFullYear(); cur = t.getMonth() === m && t.getFullYear() === vSel.getFullYear();
+    } else {
+      var w0 = vShift(vSel, -((vSel.getDay() + 6) % 7)), w6 = vShift(w0, 6);
+      for (i = 0; i < 7; i++) days.push(vShift(w0, i));
+      // неделя на стыке месяцев — месяцы коротко, чтобы подпись с кнопкой «Сегодня» не переносилась
+      cap = w0.getMonth() === w6.getMonth() ? w0.getDate() + ' – ' + w6.getDate() + ' ' + V_MON[w6.getMonth()]
+        : w0.getDate() + ' ' + V_MON[w0.getMonth()].slice(0, 3) + ' – ' + w6.getDate() + ' ' + V_MON[w6.getMonth()].slice(0, 3);
+      cur = t >= w0 && t <= w6;
+    }
+    return '<div class="v-cal' + (wide ? ' wide' : '') + '"><div class="v-calh"><b>' + cap + '</b>' + (cur ? '' : '<button class="v-tdy" data-va="ucal" data-id="0">Сегодня</button>') +
+      '<button class="v-arr" data-va="ucal" data-id="-1" aria-label="' + (wide ? 'Прошлый месяц' : 'Прошлая неделя') + '">‹</button>' +
+      '<button class="v-arr" data-va="ucal" data-id="1" aria-label="' + (wide ? 'Следующий месяц' : 'Следующая неделя') + '">›</button></div>' +
+      '<div class="v-wd" aria-hidden="true"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>' +
+      '<div class="v-grid">' + days.map(function (d) { return vCellHtml(vDayOf(d, U), wide && d.getMonth() !== m); }).join('') + '</div></div>';
+  }
+  function vTopics(les) {
+    var tops = [];
+    les.forEach(function (l) { var t = plain(topicOf(l).t || '').split('\n')[0].trim().replace(/\.$/, ''); if (t && tops.indexOf(t) < 0) tops.push(t); });
+    return tops;
+  }
+  // уроки выбранного дня. Наступивший урок открывает карточку; будущий — только тема, которую D вписал сам (не с сайта)
+  function vDayHtml(x, U) {
+    var h = '<div class="v-lbl">' + (x.now ? 'Сегодня, ' : '') + V_DAYS[x.d.getDay()] + ', ' + x.d.getDate() + ' ' + V_MON[x.d.getMonth()] + '</div>';
+    var rows = x.B.map(function (b) {
+      var sj = vSj(b.own.subj), n = b.les.length > 1 ? ' · ' + vN(b.les.length, 'урок', 'урока', 'уроков') : '';
+      if (x.fut) {
+        var ft = b.les.map(function (l) { return plain(l.topic || '').split('\n')[0].trim().replace(/\.$/, ''); }).filter(Boolean);
+        return '<div class="v-row v-quiet"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><b>' + esc(sj.short) + n + '</b>' +
+          '<span class="v-hw">' + (ft.length ? esc(ft.join(' · ')) : 'тема появится после урока') + '</span></span></div>';
+      }
+      var tp = vTopics(b.les), hw = vHwHas(b.own);
+      return '<button class="v-row" data-va="urok" data-id="' + b.les[0].id + '"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><b>' + esc(sj.short) + n + '</b>' +
+        (tp.length ? '<span class="v-ut">' + esc(tp.join(' · ')) + '</span>' : x.now ? '<span class="v-hw">тема появится после урока</span>' : '') + '</span>' +
+        (hw ? '<span class="v-chip">ДЗ</span>' : '') + '<span class="v-go">›</span></button>';
+    }).concat(x.S.map(function (s) {
+      return '<div class="v-row v-quiet"><span class="v-dot ' + s.k + '"></span><span class="v-body"><b>' + esc(s.short) + '</b><span class="v-hw">по расписанию</span></span></div>';
+    }));
+    var nx = x.now || (!rows.length && x.d > vMid(new Date())) ? vNextAfter(x.d, U) : null;   // «следующий» — только вперёд от сегодня
+    var nxt = nx ? 'Следующий — ' + vDay(ddmm(nx.d)) + ', ' + vSubsOf(nx).map(function (s) { return s.short.toLowerCase(); }).join(', ') : '';
+    if (rows.length) return h + '<div class="v-card">' + rows.join('') + '</div>' + (nxt ? '<span class="v-cap v-unx">' + esc(nxt) + '</span>' : '');
+    // каникулы — неделя и дольше; праздник и перенесённый выходной — «Выходной»
+    var why = x.off ? (V_OFF.some(function (r) { var a = realDate(r[0]), z = realDate(r[1]); return x.d >= a && x.d <= z && z - a >= 5 * 864e5; }) ? 'Каникулы — уроков нет.' : 'Выходной — уроков нет.') : 'Уроков нет.';
+    return h + '<div class="v-card v-pad"><b>' + why + '</b>' + (nxt ? '<span class="v-cap">' + esc(nxt) + '</span>' : '') + '</div>';
+  }
+  // лента прошедших уроков, новые сверху, как на сайте уроков. Пустая строка журнала — карточки нет
+  function vFeedHtml(U) {
+    var tk = dkey(todayStr());
+    var F = U.all.filter(function (b) {
+      if (b.k > tk) return false;
+      b.tp = vTopics(b.les);
+      return b.tp.length || vHwHas(b.own) || b.les.some(function (l) { return filesOf(l.id, '*').length || l.nt; });
+    }).sort(function (a, b) { return b.k - a.k || (b.les[0].ord || 0) - (a.les[0].ord || 0); });
+    if (!F.length) return '';
+    return '<div class="v-lbl">Прошедшие уроки</div><div class="v-fd">' + F.map(function (b) {
+      var sj = vSj(b.own.subj), cv = null, tp = b.tp;
+      b.les.forEach(function (l) { cv = cv || coverOf(l.id); });
+      return '<button class="v-fc" data-va="urok" data-id="' + b.les[0].id + '">' + (cv ? '<span class="v-fcv"><img data-ff="' + cv.id + '" alt=""></span>' : '') +
+        '<span class="v-fb"><span class="v-cap"><span class="v-dot ' + sj.k + '"></span>' + esc(vDay(b.own.date) + ' · ' + sj.short) + '</span>' +
+        '<b>' + esc(tp.length ? tp.join(' · ') : sj.short) + '</b></span></button>';
+    }).join('') + '</div>';
+  }
+  // календарь с днём и лента — отдельно: нажатие на день не перерисовывает ленту и не перегружает её обложки
+  function vUrRender() {
+    var U = vUrData();
+    if (!vSel) vSel = vMid(new Date());
+    vPut($('vX'), '<h1 class="v-h1">Уроки</h1><div id="vUa"></div><div id="vUf"></div>');
+    vPut($('vUa'), vCalHtml(U) + vDayHtml(vDayOf(vSel, U), U));
+    if (vPut($('vUf'), vFeedHtml(U))) vLazy($('vUf'));
+  }
+  // листать: неделю — на ту же клетку недели; месяц — на сегодня, если он в этом месяце, иначе на первый день с уроками
+  function vCalGo(n) {
+    var t = vMid(new Date());
+    if (!n) vSel = t;
+    else if (!vWide.matches) vSel = vShift(vSel, 7 * n);
+    else {
+      var m = new Date(vSel.getFullYear(), vSel.getMonth() + n, 1), U = vUrData(), d = m;
+      if (t.getMonth() === m.getMonth() && t.getFullYear() === m.getFullYear()) d = t;
+      else for (var i = 0; i < 31 && vShift(m, i).getMonth() === m.getMonth(); i++) { var y = vDayOf(vShift(m, i), U); if (y.B.length || y.S.length) { d = y.d; break; } }
+      vSel = d;
+    }
+    vRender();
+  }
+  // свайп по календарю — та же стрелка; жест двумя пальцами на Маке листает календарь, а не уводит «назад» (D 23.10)
+  (function () {
+    var box = $('vX'), x0 = null, y0 = 0, acc = 0, last = 0, done = false;
+    box.addEventListener('touchstart', function (e) {
+      x0 = e.touches.length === 1 && e.target.closest('.v-cal') ? e.touches[0].clientX : null; y0 = x0 === null ? 0 : e.touches[0].clientY;
+    }, { passive: true });
+    box.addEventListener('touchend', function (e) {
+      if (x0 === null) return;
+      var p = e.changedTouches[0], dx = p.clientX - x0, dy = p.clientY - y0;
+      x0 = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > 1.5 * Math.abs(dy)) vCalGo(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    // один жест — один шаг: после шага инерция трекпада идёт ещё секунду-две, новый жест — после паузы
+    box.addEventListener('wheel', function (e) {
+      if (!e.target.closest('.v-cal') || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      var now = Date.now();
+      if (now - last > 250) { acc = 0; done = false; }
+      last = now;
+      if (done) return;
+      acc += e.deltaX;
+      if (Math.abs(acc) > 60) { done = true; vCalGo(acc > 0 ? 1 : -1); }
+    }, { passive: false });
+    var re = function () { if (vidOn() && vTab === 'uroki' && !vLes) vRender(); };
+    if (vWide.addEventListener) vWide.addEventListener('change', re); else if (vWide.addListener) vWide.addListener(re);
+  })();
   var V_TABS = [
     ['zadano', 'Задано', '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>'],
     ['ocenki', 'Оценки', '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'],
@@ -4652,7 +4878,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (B) { var c = vCardHtml(B); cta = c.cta; if (vPut($('vU'), c.h)) { fillFileThumbs($('vU')); fillThumbs($('vU')); } }
     else if (vTab === 'zadano') vPut($('vZb'), vZadHtml(rows));
     else if (vTab === 'ocenki') { if (vPut($('vX'), vOcHtml())) vLazy($('vX')); }
-    else vPut($('vX'), vSoonHtml());
+    else vUrRender();
     $('vU').classList.toggle('cta', !!cta);
     $('vCta').hidden = !cta; vPut($('vCta'), cta);
   }
@@ -4674,13 +4900,35 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function vClose() { if (!vLes) return; vLes = ''; if (vFromOld) { vFromOld = false; vidOld = true; render(); window.scrollTo(0, vY); return; } if (vidOn()) { vRender(); window.scrollTo(0, vY); } }
   // карточка урока и любое окно поверх (настройки, файл, фото, чат) — шаги в истории браузера: «Назад» на телефоне
   // закрывает их, а не уводит со страницы (D 12.10: с телефона ученика «Назад» выбрасывало из журнала)
+  // вкладка и прежняя таблица — тоже шаги (D 23.10): «Назад» телефона с «Оценок» и «Уроков» ведёт в «Задано», из таблицы —
+  // в новый вид. Шаг хранит экран целиком, по нему экран и восстанавливается (vApply); d — сколько своих шагов от входа
+  function vStep(x) {
+    var s = { vtab: vTab, vles: vLes, vold: vidOld || vFromOld ? 1 : 0, d: ((history.state || {}).d || 0) + 1 };
+    for (var k in x) s[k] = x[k];
+    return s;
+  }
+  function vPush(x) { try { history.pushState(vStep(x), ''); } catch (e) { /* без истории — закроет кнопка на экране */ } }
+  function vApply(st) {
+    st = st || {};
+    var les = st.vles && S.les[st.vles] ? st.vles : '', old = !!st.vold && !les, wasLes = vLes;
+    if (vidOld && !old) {   // уходим из таблицы — её клетка, подсказка и окна не остаются поверх нового вида
+      if (cur) closeCell();
+      hideTip(); closeDlg();
+      var x = document.querySelector('.view [data-v="x"]'), q = document.querySelector('.vq-bg');
+      if (x) x.click();
+      if (document.body.classList.contains('vq-otkryto') && q) q.click();
+    }
+    if (les !== vLes) vMat = false;
+    vTab = st.vtab || 'zadano'; vLes = les; vFromOld = !!st.vold && !!les; vidOld = old;
+    render(); window.scrollTo(0, les ? 0 : wasLes ? vY : 0);   // из карточки — туда, где был в списке или таблице
+  }
   var vOv = false, vSkip = 0;
   function vOvOpen() { return !!($('dlg').firstChild || document.querySelector('.view') || document.body.classList.contains('vq-otkryto')); }
   function vOvWatch() {
     if (!document.documentElement.classList.contains('vid')) { vOv = false; return; }
     var on = vOvOpen();
     if (on && !vOv && vSkip) { setTimeout(vOvWatch, 80); return; }   // прежний шаг истории ещё снимается — новый кладём после
-    if (on && !vOv) { vOv = true; try { history.pushState({ vov: 1, vles: vLes }, ''); } catch (e) { /* без истории — закроет кнопка окна */ } }
+    if (on && !vOv) { vOv = true; vPush({ vov: 1 }); }
     else if (!on && vOv) { vOv = false; if (history.state && history.state.vov) { vSkip++; history.back(); } }   // окно закрыли его кнопкой — свой шаг истории убираем
   }
   window.addEventListener('popstate', function () {
@@ -4693,13 +4941,12 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       closeDlg();
       return;
     }
-    if (!vidOn()) return;
-    var st = history.state, nl = st && st.vles && S.les[st.vles] ? st.vles : '';   // что на экране — решает шаг истории, на котором оказались
-    if (!nl && vLes && vFromOld) { vFromOld = false; vLes = ''; vidOld = true; render(); window.scrollTo(0, vY); return; }
-    if (nl !== vLes) { vLes = nl; vMat = false; vRender(); window.scrollTo(0, nl ? 0 : vY); }
+    var st = history.state;
+    if (st && st.vov) { history.back(); return; }   // «Вперёд» на шаг окна, которое уже закрыли, — проходим его насквозь
+    if (vidOn() || (vidOld && mode !== 'teacher' && meId)) vApply(st);   // что на экране — решает шаг истории, на котором оказались
   });
-  // страницу обновили на карточке урока или окне — шаг остался, а экран начался с «Задано»: метку шага снимаем
-  try { if (history.state && (history.state.vles || history.state.vov)) history.replaceState(null, ''); } catch (e) { /* не страшно */ }
+  // страницу обновили на своём шаге — шаг остался, а экран начался с «Задано»: метку шага снимаем
+  try { if (history.state && (history.state.d || history.state.vles || history.state.vov)) history.replaceState(null, ''); } catch (e) { /* не страшно */ }
   if (window.MutationObserver) {
     var vMo = new MutationObserver(vOvWatch);
     vMo.observe(document.body, { childList: true, attributes: true, attributeFilter: ['class'] });
@@ -4710,12 +4957,18 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var a = b.dataset.va;
     if (a === 'tab') {
       if (b.dataset.id === 'chat') { var q = document.querySelector('#dock .vopros'); if (q) q.click(); else alert('Чат не загрузился. Обнови страницу.'); return; }   // чат — то же окно, что за знаком «?»
-      vTab = b.dataset.id; vRender(); window.scrollTo(0, 0);
+      if (vSkip) { setTimeout(function () { vAct(b); }, 80); return; }   // шаг закрытого окна ещё снимается — счёт шагов после него
+      var to = b.dataset.id, st = history.state || {};
+      if (to === vTab) { window.scrollTo(0, 0); return; }
+      if (to === 'zadano' && st.d > 0) { history.go(-st.d); return; }   // домой — все свои шаги разом, «Задано» покажет popstate
+      vTab = to;   // между «Оценками» и «Уроками» — один шаг на месте прежнего: вкладки не копятся
+      if (st.d && st.vtab && st.vtab !== 'zadano' && !st.vles && !st.vold && !st.vov) { try { history.replaceState(vStep({ d: st.d }), ''); } catch (e) { /* не страшно */ } }
+      else if (to !== 'zadano') vPush();
+      vRender(); window.scrollTo(0, 0);
     }
     else if (a === 'urok') {
       vY = window.pageYOffset; vLes = b.dataset.id; vMat = false;
-      try { history.pushState({ vles: vLes }, ''); } catch (e) { /* без истории — закроет кнопка «Назад» на экране */ }
-      vRender(); window.scrollTo(0, 0);
+      vPush(); vRender(); window.scrollTo(0, 0);
     }
     else if (a === 'back') { if (history.state && history.state.vles) history.back(); else vClose(); }
     else if (a === 'mat') { vMat = !vMat; vRender(); }
@@ -4725,6 +4978,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       var B1 = vLes ? vBlock(vLes) : null;
       if (B1) $('vU')._h = vCardHtml(B1).h;   // вид карточки уже такой — следующая сверка её не перерисует
     }
+    else if (a === 'uday') { vSel = vMid(new Date(b.dataset.id + 'T00:00')); vRender(); }
+    else if (a === 'ucal') vCalGo(+b.dataset.id);
     else if (a === 'vq') { vQ = +b.dataset.id; vRender(); }
     else if (a === 'vf') { vF = vF === b.dataset.id ? '' : b.dataset.id; vRender(); }
     else if (a === 'set') vSettings();
@@ -4732,7 +4987,12 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (!confirm('Выйти из журнала на этом устройстве? Войти снова — кнопкой «📒 Мой журнал» в боте или своим значком.')) return;
       closeDlg(); lsDel(LS.ck); lsDel(LS.sk); lsDel('zh:hwok'); znSet(''); meId = null; gate('');
     }
-    else if (a === 'old' || a === 'new') { vidOld = a === 'old'; vFromOld = false; render(); window.scrollTo(0, 0); }
+    else if (a === 'new' && history.state && history.state.vold && !history.state.vles) history.back();   // из таблицы — тем же шагом, что «Назад» телефона
+    else if (a === 'old' || a === 'new') {
+      vidOld = a === 'old'; vFromOld = false;
+      if (vidOld) vPush();
+      render(); window.scrollTo(0, 0);
+    }
   }
 
   /* ── нажатия ── */
@@ -4766,7 +5026,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (cur) closeCell();
       tab = tb.dataset.tab; lsSet(LS.tab, tab);
       var keepU = uUrl(), keepKr = krUrl();   // ключи из якоря не теряем: значок учителя, ссылка руководителя
-      try { history.replaceState(null, '', '#' + tab); } catch (e) { /* не страшно */ }
+      try { history.replaceState(history.state, '', '#' + tab); } catch (e) { /* не страшно */ }   // шаг «прежняя таблица» не затираем
       if (keepU) uPut(keepU);
       if (keepKr) krPut(keepKr);
       render(); return;
@@ -4890,8 +5150,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (cell && mode === 'teacher') { hideTip(); openCell(cell.dataset.c); return; }
     if (cell && vidOld && meId && cell.dataset.c.split('.')[1] === meId) {   // из таблицы нового вида — карточка урока со «Сдать фото»
       hideTip(); vFromOld = true; vidOld = false; vY = window.pageYOffset; vLes = cell.dataset.c.split('.')[0]; vMat = false;
-      try { history.pushState({ vles: vLes }, ''); } catch (e) { /* без истории — закроет кнопка «Назад» на экране */ }
-      render(); window.scrollTo(0, 0); return;
+      vPush(); render(); window.scrollTo(0, 0); return;
     }
     if (cell && meId && cell.classList.contains('mine')) { hideTip(); openSubmit(cell.dataset.c); return; }
     if (cell) {   // ученик: нажал — подсказка, через 4 секунды прячется
