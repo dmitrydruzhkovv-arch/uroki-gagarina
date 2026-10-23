@@ -502,6 +502,8 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .thumbs .inked{ position:absolute; right:3px; bottom:3px; font-style:normal; font-size:13px; background:#fff; border-radius:6px; padding:0 2px; }
 .view .vbar{ display:flex; gap:8px; justify-content:center; padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px)); }
 .view .vbar button{ padding:10px 16px; border-radius:12px; background:#fff; color:#1a1720; font-weight:700; }
+.view .vbar .vdel{ display:inline-flex; align-items:center; gap:6px; color:#b42318; }
+.view .vbar .vdel svg{ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
 .view .vtools button.vrot{ display:flex; gap:5px; margin-left:8px; } .view .vtools button.vrot + .vrot{ margin-left:0; }
 /* файл урока на весь экран (D, 07.10): картинка или листы PDF листаются внутри журнала */
 .fview .vtools{ justify-content:flex-end; }
@@ -812,6 +814,7 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-hwb{ margin-top:22px; }
 #vid .v-hwb .v-files, #vid .v-hwb .v-links{ margin-top:10px; }
 #vid .v-stc .v-status{ margin-top:0; padding-top:0; box-shadow:none; }
+#vid .v-ask{ display:flex; align-items:center; gap:8px; width:100%; min-height:44px; margin-top:12px; padding-top:10px; box-shadow:inset 0 1px 0 var(--v-line); font-size:var(--t3); font-weight:700; color:var(--v-ink); text-align:left; }
 /* одно фото домашки — картинкой во всю ширину, несколько — плитками по два */
 #vid .v-ph{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 #vid .v-ph.one{ grid-template-columns:1fr; }
@@ -1170,7 +1173,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   if (!tabOk()) tab = SUBJ[0].id;
   var botEntry = /[#&][ts]=/.test(location.hash);   // пришёл по ссылке из бота или по личной ссылке
   var loaded = false, cur = null, pendingRender = false, scrollPos = {};
-  var meId = null, sdachaOn = false;   // ученик, вошедший через бота (сдача ДЗ, шаг 4)
+  var meId = null, sdachaOn = false, sdelSrv = false;   // ученик, вошедший через бота (сдача ДЗ, шаг 4); sdelSrv — можно убрать своё фото (ZHURNAL_SUBDEL)
   // личный значок (D 12.10): ключ своей строки лежит в адресе (?s=<журнал>.<ключ>) и из него не убирается — значок
   // на экране «Домой» несёт его сам. Память браузера у значка не держится (Яндекс Браузер на Андроиде): без этого
   // каждый запуск начинался с кода класса и входа через Телеграм
@@ -3063,7 +3066,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (want && r.data.j === want) { lsSet('zh:sj', want); lsSet('zh:sjt', Date.now()); }   // выбрал в переключателе и он открылся — в следующий раз откроется он
       if (!r.data.stu) { meId = null; freeRows = r.data.free || []; return 'nolink'; }
       setMeta(r.data.meta);
-      meId = r.data.stu; sdachaOn = !!r.data.sdacha; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; viewFoot();
+      meId = r.data.stu; sdachaOn = !!r.data.sdacha; sdelSrv = !!r.data.sdel; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; viewFoot();
       if (znUrl()) lsSet('zh:zn', znUrl());   // отдельной записью: в деле только когда другого входа на устройстве нет (см. старт) // ключ значка — ещё и в память: ушёл на сайт уроков и вернулся по ссылке «Журнал» без ключа — кода класса не спросим (D 12.10)
       S = fromObjects(r.data.objects); loaded = true; render();
       return true;
@@ -3450,6 +3453,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var sb = S.sub[subId];
     if (!sb || !sb.ph || !sb.ph.length) return;
     var list = sb.ph, edit = mode === 'teacher', v = document.createElement('div');
+    // своя сдача ученика: пока не проверена, фото можно убрать (D 23.10) — в новом виде, за флагом сервера
+    var mine = !edit && !!meId && subId.split('.')[1] === meId && sdachaOn && sdelSrv && (vidSrv || vidUrl), seq = 0;
     var color = PEN_COLORS[0], width = PEN_W.m, strokes = [], stk = null, img = null, W = 0, H = 0, dirty = false, raf = 0, rot = 0;
     v.className = 'view';
     v.innerHTML = (edit ? '<div class="vtools">' + PEN_COLORS.map(function (c, k) { return '<button data-pc="' + c + '" aria-pressed="' + (k === 0) + '" title="Цвет"><span style="background:' + c + '"></span></button>'; }).join('') +
@@ -3458,7 +3463,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         '<button class="vrot" data-v="rl" title="Повернуть фото влево на 90°" aria-label="Повернуть фото влево">' + TURN_SVG + '<path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>90°</button>' +
         '<button class="vrot" data-v="rr" title="Повернуть фото вправо на 90°" aria-label="Повернуть фото вправо">90°' + TURN_SVG + '<path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button><span class="vst" id="vSt">Рисуй пером, мышкой или пальцем · Shift — прямая</span></div>' : '') +
       '<div class="vstage"><canvas></canvas></div><div class="vnotes" hidden></div>' +
-      '<div class="vbar"><button data-v="-1">←</button><span id="vN"></span><button data-v="1">→</button><button data-v="x">' + (edit ? 'Сохранить и закрыть' : 'Закрыть') + '</button></div>';
+      '<div class="vbar"><button data-v="-1">←</button><span id="vN"></span><button data-v="1">→</button>' +
+      (mine ? '<button class="vdel" data-v="del" aria-label="Удалить фото"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Удалить</button>' : '') +
+      '<button data-v="x">' + (edit ? 'Сохранить и закрыть' : 'Закрыть') + '</button></div>';
     document.body.appendChild(v);
     var cv = v.querySelector('canvas'), stage = v.querySelector('.vstage');
     function redraw() {
@@ -3507,11 +3514,15 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     }
     function show() {
       img = null; v.querySelector('#vN').textContent = (i + 1) + ' из ' + list.length;
+      var one = list.length < 2, dl = v.querySelector('[data-v="del"]');   // одно фото — листать нечего, «1 из 1» и стрелки прячем
+      v.querySelectorAll('.vbar [data-v="-1"], .vbar [data-v="1"], #vN').forEach(function (e) { e.hidden = one; });
+      if (dl) dl.hidden = !canDel();
       strokes = JSON.parse(JSON.stringify(((S.sub[subId] || {}).ink || {})[list[i]] || []));
       rot = (+((S.sub[subId] || {}).rot || {})[list[i]] || 0) % 4;
       var vn = v.querySelector('.vnotes'), NN = vNotes();
       vn.hidden = !NN.length; vn.innerHTML = NN.map(function (n, k) { return '<div><b>' + (k + 1) + '</b><span>' + esc(n.t) + '</span></div>'; }).join('');
-      photoUrl(list[i]).then(function (u) { var im = new Image(); im.onload = function () { img = im; fit(); }; im.src = u; });
+      var my = ++seq;   // фото сменили (листнули, удалили), пока грузилось, — прежнее на экран не ставим
+      photoUrl(list[i]).then(function (u) { var im = new Image(); im.onload = function () { if (my === seq) { img = im; fit(); } }; im.src = u; });
     }
     function r4(x) { return Math.round(Math.min(1, Math.max(0, x)) * 1e4) / 1e4; }
     // поворот на четверть: d = 1 — вправо (по часовой), −1 — влево. Штрихи не трогаем — меняется только показ
@@ -3569,8 +3580,33 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (b.dataset.v === 'undo') { strokes.pop(); dirty = true; soon(); return; }
       if (b.dataset.v === 'clear') { if (strokes.length && confirm('Стереть весь разбор на этом фото?')) { strokes = []; dirty = true; soon(); } return; }
       if (b.dataset.v === 'rl' || b.dataset.v === 'rr') { turn(b.dataset.v === 'rr' ? 1 : -1); return; }
+      if (b.dataset.v === 'del') { delPhoto(b); return; }
       leave().then(function (ok) { if (ok) { i = (i + +b.dataset.v + list.length) % list.length; show(); } });
     });
+    // убрать можно, пока учитель не начал: работа не проверена, оценки нет (или долг), на фото нет его разбора и пометок
+    function canDel() {
+      var sb = S.sub[subId] || {}, m = S.mark[subId + '.d'], f = list[i];
+      return mine && sb.st === 'sent' && !(m && String(m.v || '').trim() && !markInfo(m.v).red) && !(sb.ink || {})[f] && !((sb.cm || {})[f] || []).length;
+    }
+    // ученик убирает своё фото; убрал последнее — сдачи нет, домашка снова «не сдано»
+    function delPhoto(b) {
+      if (!confirm('Удалить это фото из сдачи? Учитель его не увидит.')) return;
+      var lab = b.lastChild;
+      b.disabled = true; lab.textContent = 'Удаляю…';
+      post('/zhurnal/subdel', { les: subId.split('.')[0], f: list[i] }, stuH()).then(function (r) {
+        b.disabled = false; lab.textContent = 'Удалить';
+        if (r.status !== 200 || !r.data.ok) {
+          alert(r.status === 409 ? (r.data.error === 'marked' ? 'Учитель уже начал проверять это фото — удалить нельзя. Если что-то не так, напиши ему в чат.' : 'Работу уже проверили — фото удалить нельзя.')
+            : r.status === 404 ? 'Этого фото уже нет — обнови страницу.' : r.status === 503 ? 'Удаление фото пока выключено.' : 'Не получилось удалить. Попробуй ещё раз.');
+          return;
+        }
+        var o = r.data.obj, sheet = $('dlg').querySelector('#subIn');   // прежний вид: лист сдачи под просмотром — обновить его же
+        if (o.d) { o.d.id = o.id; o.d.ts = o.ts; S.sub[o.id] = o.d; list = o.d.ph; i = Math.min(i, list.length - 1); show(); lab.textContent = 'Фото удалено ✓'; setTimeout(function () { lab.textContent = 'Удалить'; }, 1600); }
+        else { delete S.sub[o.id]; close(); }
+        render(); if (!vidOn() && sheet) openSubmit(sheet.dataset.mark);
+        var st = $('subSt'); if (!o.d && st) st.textContent = 'Фото удалено. Домашка снова «не сдано» — можно сдать заново.';
+      }, function () { b.disabled = false; lab.textContent = 'Удалить'; nextApi(); alert('Нет связи. Проверь интернет и попробуй ещё раз.'); });
+    }
     show();
   }
   /* ── экран проверки работы (ТЗ 20, сессия 6; макет — _стенд_журнала/макет_проверки) ──
@@ -4570,6 +4606,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (vSay(sm.c)) h += '<span class="v-hist">Учитель: ' + esc(sm.c) + '</span>';   // слова учителя о домашке — здесь, один раз
       if (sub && (sub.ph || []).length) h += thumbsHtml(sub.ph, own.id + '.' + meId) +
         (sub.ink && Object.keys(sub.ink).length ? '<span class="v-hist">✏️ На фото — разбор учителя. Нажми, чтобы открыть крупно, и перепиши исправления в тетрадь.</span>' : '');
+      // вопрос по домашке — тем же чатом, первая строка уже говорит, о какой (D 23.10: отдельного поля комментария нет)
+      h += '<button class="v-ask" data-va="ask" data-t="' + esc('Вопрос по домашке: ' + sj.short + ', ' + vDay(own.date) + '. ') + '">💬 Написать учителю про эту домашку</button>';
     }
     h += '</div>';
 
@@ -4971,6 +5009,20 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       vPush(); vRender(); window.scrollTo(0, 0);
     }
     else if (a === 'back') { if (history.state && history.state.vles) history.back(); else vClose(); }
+    else if (a === 'ask') {   // открыть чат и подставить, о какой домашке; ученик не вошёл в чат — окно входа, текст не нужен
+      var qa = document.querySelector('#dock .vopros'), pre = b.dataset.t;
+      if (!qa) { alert('Чат не загрузился. Обнови страницу.'); return; }
+      qa.click();
+      (function fill(n) {
+        var t = document.querySelector('.vq-pole:not([hidden]) .vq-vvod');
+        if (t && t.getClientRects().length) {
+          if (!t.value) { t.value = pre; t.dispatchEvent(new Event('input', { bubbles: true })); }
+          t.focus(); try { t.setSelectionRange(t.value.length, t.value.length); } catch (e) { /* не страшно */ }
+          return;
+        }
+        if (n < 1000 && (n < 30 || document.body.classList.contains('vq-otkryto'))) setTimeout(function () { fill(n + 1); }, 120);   // вход в чат по коду — ждём, пока окно открыто
+      })(0);
+    }
     else if (a === 'mat') { vMat = !vMat; vRender(); }
     else if (a === 'hwok') {   // отметку ставим прямо в строке: перерисовка карточки заново грузила бы её картинки
       var on = vHwToggle(b.dataset.id, b.dataset.k);
