@@ -613,6 +613,8 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .qbar .mo[data-qtr]:not([data-qtr="all"]){ min-width:44px; padding-left:0; padding-right:0; text-align:center; }   /* цель для пальца — не уже 44 */
 .zt th.it-s, .zt td.it{ box-sizing:border-box; width:54px; min-width:54px; max-width:54px; background:var(--card); }
 .zt th.it-s.it2, .zt td.it.it2{ width:66px; min-width:66px; max-width:66px; padding-left:14px; }   /* отступ от последнего дня */
+.zt th.it-s.iy, .zt td.it.iy{ width:46px; min-width:46px; max-width:46px; }   /* итоги года: четверти, годовые, ОГЭ — уже итога */
+.zt th.it-s.iy.it-l, .zt td.it.iy.it-l{ width:58px; min-width:58px; max-width:58px; padding-left:14px; }
 .zt td.it{ height:44px; padding:2px; text-align:center; }
 .zt td.it .itb{ position:relative; display:grid; place-items:center; height:40px; border-radius:11px; background:var(--z-tile); font-weight:800; font-size:15px; }
 .zt td.it .itb.long{ font-size:11px; font-weight:700; }
@@ -627,14 +629,14 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .zt .it-st{ isolation:isolate; }   /* шапка и так липкая сверху, на широком экране клетки липкие справа (ниже) */
 @media (max-width:899px){ .zt td.it-st{ position:relative; } }
 .zt td.it::before, .zt th.it-s::before, .zt th.it-h::before{ content:''; position:absolute; inset:0 -1px -1px 0; background:var(--itP); z-index:-1; pointer-events:none; }
-.zt td.it2::before, .zt th.it-s.it2::before, .zt th.it-h::before{ left:10px; }
+.zt td.it-l::before, .zt th.it-s.it-l::before, .zt th.it-h::before{ left:10px; }
 .zt th.it-h::before{ border-radius:18px 18px 0 0; }
 .zt tbody tr:last-child td.it::before{ bottom:-6px; }
-.zt tbody tr:last-child td.it2::before{ border-bottom-left-radius:18px; } .zt tbody tr:last-child td.it4::before{ border-bottom-right-radius:18px; }
+.zt tbody tr:last-child td.it-l::before{ border-bottom-left-radius:18px; } .zt tbody tr:last-child td.it4::before{ border-bottom-right-radius:18px; }
 .zt th.it-s{ color:var(--s); }
 .zt td.it-a b{ color:color-mix(in srgb, var(--s) 70%, var(--ink)); }
-.zt td.it3 .itb, .zt td.it3 .itb.m5, .zt td.it3 .itb.m4, .zt td.it3 .itb.m3, .zt td.it3 .itb.m2, .zt td.it3 .itb.mn{ background:color-mix(in srgb, var(--card) 70%, transparent); box-shadow:none; }
-.zt td.it3 .itb.m5{ color:var(--it5); } .zt td.it3 .itb.m4{ color:var(--it4); } .zt td.it3 .itb.m3{ color:var(--it3); } .zt td.it3 .itb.m2{ color:var(--it2); } .zt td.it3 .itb.mn{ color:var(--itn); }
+.zt td:is(.it3, .iy) .itb, .zt td:is(.it3, .iy) .itb.m5, .zt td:is(.it3, .iy) .itb.m4, .zt td:is(.it3, .iy) .itb.m3, .zt td:is(.it3, .iy) .itb.m2, .zt td:is(.it3, .iy) .itb.mn{ background:color-mix(in srgb, var(--card) 70%, transparent); box-shadow:none; }
+.zt td:is(.it3, .iy) .itb.m5{ color:var(--it5); } .zt td:is(.it3, .iy) .itb.m4{ color:var(--it4); } .zt td:is(.it3, .iy) .itb.m3{ color:var(--it3); } .zt td:is(.it3, .iy) .itb.m2{ color:var(--it2); } .zt td:is(.it3, .iy) .itb.mn{ color:var(--itn); }   /* итоги года: всё, кроме последней графы, — спокойно, как КР */
 .zt td.it4 .itb, .zt td.it4 .itb.m5, .zt td.it4 .itb.m4, .zt td.it4 .itb.m3, .zt td.it4 .itb.m2, .zt td.it4 .itb.mn{ background:var(--g); color:var(--on); box-shadow:0 6px 18px -6px var(--glow), 0 0 22px -8px var(--glow); font-size:18px; }
 .zt td.it4 .itb.gh{ background:transparent; box-shadow:none; color:var(--s); border-color:color-mix(in srgb, var(--s) 45%, var(--card)); font-size:12.5px; }
 .zt td.it4 .itb:where(:not(.m5):not(.m4):not(.m3):not(.m2):not(.mn):not(.gh)){ background:transparent; box-shadow:none; }   /* итога нет — пустое место на подложке; :where — рамка выбора (.cur) сильнее */
@@ -644,15 +646,16 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .zt thead th.it-h{ padding:4px 2px 4px 14px; }
 .zt thead th.it-h b{ display:block; padding:8px 6px; border-radius:11px; background:var(--g); color:var(--on); font-size:13px; font-weight:800; white-space:nowrap; box-shadow:0 0 16px -8px var(--glow); }
 .zt tfoot td.it-f, .zt tfoot td.it-f:hover{ background:var(--card); cursor:default; padding:0; }
-.edit .zt td.it3, .edit .zt td.it4{ cursor:pointer; }
-.edit .zt td.it3:not(.cur):hover .itb, .edit .zt td.it4:not(.cur):hover .itb{ box-shadow:inset 0 0 0 1.5px var(--z-ring), inset 0 0 0 3px var(--s); }
+.edit .zt td.it3, .edit .zt td.it4, .edit .zt td.iy.ed{ cursor:pointer; }
+.edit .zt td.it3:not(.cur):hover .itb, .edit .zt td.it4:not(.cur):hover .itb, .edit .zt td.iy.ed:not(.cur):hover .itb{ box-shadow:inset 0 0 0 1.5px var(--z-ring), inset 0 0 0 3px var(--s); }
 .zt td.it.cur .itb{ box-shadow:inset 0 0 0 2px var(--z-ring), inset 0 0 0 4.5px var(--z-focus); }
 @media (min-width:900px){
   .zt .it-st{ position:sticky; }
   .zt .it4, .zt th.it-h, .zt td.it-f{ right:0; } .zt .it3{ right:54px; } .zt .it2{ right:108px; }
+  .zt .iy4{ right:54px; } .zt .iy3{ right:100px; } .zt .iy2{ right:146px; } .zt .iy1{ right:192px; }
   .zt tbody td.it-st, .zt tfoot td.it-st{ z-index:2; }
   .zt thead th.it-st{ z-index:3; }
-  .zt .it2, .zt th.it-h, .zt td.it-f{ box-shadow:-12px 0 14px -14px rgba(40,24,70,.45); }
+  .zt .it-l, .zt th.it-h, .zt td.it-f{ box-shadow:-12px 0 14px -14px rgba(40,24,70,.45); }
 }
 .pop-q.q5{ grid-template-columns:repeat(5,1fr); }
 .pop-q button.sug{ box-shadow:inset 0 0 0 2.5px var(--s); }   /* выходит по среднему */
@@ -1815,8 +1818,10 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (QM && qo !== 'all') L = L.filter(function (l) { return monthOf(l.date) && vQOf(l.date) === qo; });
     else if (mo !== 'all') L = L.filter(function (l) { return monthOf(l.date) === mo; });
     var today = todayStr(), LY = layout(L), DAYS = [];
-    var IT = QM && qo !== 'all' && !mix();   // итоги — у предмета, в открытой четверти; во «Все» и за весь год их нет
-    itogCtx = IT ? { LY: LY, LA: LA, today: today, subj: tab, q: qo } : null; itogCache = {};
+    var IT = QM && qo !== 'all' && !mix();   // итоги четверти — у предмета, в открытой четверти
+    // за весь год: у предмета — «1 · 2 · 3 · 4 · Год», во «Все» — «Математика»: годовые, ОГЭ и итог в аттестат (D 23.10)
+    var IB = QM && qo === 'all' ? (mix() ? mBlock() : yBlock(tab)) : null, NIT = IT ? 3 : IB ? IB.cols.length : 0;
+    itogCtx = IT ? { LY: LY, LA: LA, today: today, subj: tab, q: qo } : IB ? { B: IB } : null; itogCache = {};
     LY.forEach(function (x) {   // день = все уроки одной даты: одна дата в шапке, под ней 1 урок · 2 урок · ДЗ
       var g = DAYS[DAYS.length - 1];
       if (!g || g.date !== x.l.date || (mix() && g.subj !== x.l.subj && !(feed() && x.l.sh))) DAYS.push(g = { date: x.l.date, subj: x.l.subj, xs: [] });   // лента: алгебра и геометрия в один день — две шапки, каждая своего цвета (у класса другой предмет — всегда своя шапка)
@@ -1837,6 +1842,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     });
     if (edit) h += '<th class="addc" rowspan="2"><button class="btn" data-act="addles" title="Добавить день">＋</button></th>';
     if (IT) h += '<th class="it-h it-st" colspan="3"><b>Итоги ' + (qo + 1) + ' четверти</b></th>';
+    else if (IB) h += '<th class="it-h it-st" colspan="' + NIT + '"><b>' + IB.title + '</b></th>';
     h += '</tr><tr>';
     DAYS.forEach(function (g) {
       g.xs.forEach(function (x, k) {
@@ -1847,7 +1853,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         });
       });
     });
-    if (IT) h += '<th class="sub it-s it-st it2" title="Средняя оценок за домашку — тех, что стоят в клетках «Д»">ДЗ</th>' +
+    if (IB) h += IB.cols.map(function (c, i) { return '<th class="sub it-s it-st ' + yCls(i, NIT) + '" title="' + esc(c.t) + '">' + esc(c.lab) + '</th>'; }).join('');
+    if (IT) h += '<th class="sub it-s it-st it2 it-l" title="Средняя оценок за домашку — тех, что стоят в клетках «Д»">ДЗ</th>' +
       '<th class="sub it-s it-st it3" title="Четвертная контрольная">КР</th><th class="sub it-s it-st it4" title="Оценка за четверть">Итог</th>';
     h += '</tr></thead><tbody>';
     P.forEach(function (p) {
@@ -1865,6 +1872,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       });
       if (edit) h += '<td></td>';
       if (IT) h += itogCells(p.id);
+      if (IB) h += IB.cols.map(function (c, i) { return yTd(c, i, p.id); }).join('');
       h += '</tr>';
     });
     if (!L.length) h += '<tr><td class="empty" colspan="2">' + (QM ? 'В этой четверти уроков пока нет.' : 'В этом месяце уроков нет.') + '</td></tr>';
@@ -1885,7 +1893,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       h += dayCell(g, g.xs.map(function (x) { var tp = topicOf(x.l); return { l: x.l, t: (tp.t || (autoUrl(x.l.au) ? 'Срез' : '')) + (autoUrl(x.l.au) ? ' 🎯' : ''), site: tp.site, nf: filesOf(x.l.id).length, cov: (coverOf(x.l.id) || {}).id }; }), 'rt');
     });
     if (edit) h += '<td></td>';
-    if (IT) h += '<td class="it-f it-st" colspan="3"></td>';
+    if (NIT) h += '<td class="it-f it-st" colspan="' + NIT + '"></td>';
     h += '</tr><tr class="hw"><th class="nm">Домашка</th>';
     var hwN = {};   // урок → сколько файлов в его домашке: один проход на всю таблицу
     vals(S.file).forEach(function (f) { if (f.w === 'hw') hwN[f.les] = (hwN[f.les] || 0) + 1; });
@@ -1894,7 +1902,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         nf: g.xs.reduce(function (a, y) { return a + (y.own === x.own ? hwN[y.l.id] || 0 : 0); }, 0) }; }), 'rh');
     });
     if (edit) h += '<td></td>';
-    if (IT) h += '<td class="it-f it-st" colspan="3"></td>';
+    if (NIT) h += '<td class="it-f it-st" colspan="' + NIT + '"></td>';
     h += '</tr></tfoot></table></div>';
     h += legend(IT);
     if (edit || krMode) h += vygRow();
@@ -1953,12 +1961,15 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   /* ── выгрузка оценок (D, 08.10): все предметы одним листом — печать, PDF или файл для Excel.
      Собирается здесь же, в браузере учителя, из того, что уже загружено: на сервер ничего не уходит. ── */
   // sr — показывать ли средний балл (D, 08.10: «пока у них там плохие средние»); помнится на этом устройстве
-  var vyg = { view: 'subj', mo: 'all', hw: true, sr: lsGet('zh:vyg-sr', true) !== false };
+  // mo: месяц ('09'), у класса с итогами — четверть ('q0'–'q3'); 'all' — весь год; null — ещё не выбран (откроется текущая четверть)
+  var vyg = { view: 'subj', mo: null, hw: true, sr: lsGet('zh:vyg-sr', true) !== false };
   var VYG_COLS = 30;   // столько клеток оценок в ширину помещает лист A4 лёжа рядом с фамилией; больше — таблица продолжается ниже
   function vygRow() { return '<div class="vyg-row"><button class="btn" data-act="vyg">⬇ Выгрузить оценки</button><span>все предметы одним листом — напечатать или отправить классному руководителю</span></div>'; }
   function vygSubj() { return (feed() ? ALLSUBJ : SUBJ).filter(function (x) { return vals(S.les).some(function (l) { return l.subj === x.id; }); }); }
   function vygLes(sid) { return lessons(sid).filter(function (l) { return l.subj === sid; }); }   // у индивидуала lessons() отдаёт все предметы лентой
-  function vygMo(m) { return m ? MONTHS[+m - 1] : 'Без даты'; }
+  function vygMo(m) { return /^q\d$/.test(m) ? V_Q[+m.slice(1)][0] : m ? MONTHS[+m - 1] : 'Без даты'; }
+  function vygQ() { return qMode() && /^q\d$/.test(vyg.mo) ? +vyg.mo.slice(1) : -1; }   // четверть в выгрузке; -1 — месяцы или год
+  function vygYear() { return qMode() && vyg.mo === 'all'; }   // у класса с итогами «Весь год» — сводная ведомость (D 23.10)
   function vygMonths() {
     var out = [];
     vygSubj().forEach(function (x) { months(vygLes(x.id)).forEach(function (m) { if (out.indexOf(m) < 0) out.push(m); }); });
@@ -1966,11 +1977,11 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
   // предмет по месяцам: целый год в одну таблицу на лист не влезет. → [{m, LA, LY, days: [{date, cols: [{l, w, lab}]}]}]
   function vygChunks(sid) {
-    var LA = vygLes(sid), ms = vyg.mo === 'all' ? months(LA) : [vyg.mo];
+    var LA = vygLes(sid), qi = vygQ(), ms = qi >= 0 ? [vyg.mo] : vyg.mo === 'all' ? months(LA) : [vyg.mo];
     // урок без понятной даты в журнале виден — и в выгрузке за весь год не теряется: отдельным куском в конце
     if (vyg.mo === 'all' && LA.some(function (l) { return !monthOf(l.date); })) ms = ms.concat(['']);
     return ms.map(function (m) {
-      var L = LA.filter(function (l) { return monthOf(l.date) === m; }), days = [];
+      var L = LA.filter(function (l) { return qi >= 0 ? monthOf(l.date) && vQOf(l.date) === qi : monthOf(l.date) === m; }), days = [];
       var LY = layout(L).map(function (x) { return { l: x.l, own: x.own, cols: x.cols.filter(function (c) { return c.w === 'u' || vyg.hw; }) }; });
       LY.forEach(function (x) {
         var g = days[days.length - 1];
@@ -2006,20 +2017,53 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     return a ? a.v : '';
   }
   function vygPeriod() { return vyg.mo === 'all' ? 'весь год' : vygMo(vyg.mo).toLowerCase(); }
+  // хвост строки предмета: у четверти — «ДЗ · КР · Итог», как в журнале (ДЗ — когда показаны средний и домашки);
+  // у месяца — средний, как раньше. → [[подпись, значение]]; sid = null — только подписи
+  function vygTail(sj, sid, chunks) {
+    var qi = vygQ();
+    if (qi < 0) return vyg.sr ? [['Ср.', sid ? vygAvg(sid, chunks) : '']] : [];
+    var R = sid ? itogOf(sj, qi, sid) : null;
+    return (vyg.sr && vyg.hw ? [['ДЗ', R && R.d ? R.d.t : '']] : []).concat([['КР', R ? R.k || '' : ''], ['Итог', R && R.im ? R.im.v || '' : '']]);
+  }
+  // сводная ведомость за год: по предмету 1–4 четверти и год, в конце — ОГЭ и итог в аттестат по математике
+  var VYG_YL = ['1 ч.', '2 ч.', '3 ч.', '4 ч.', 'Год'];
+  function vygYearRow(p) {
+    return { s: vygSubj().map(function (sj) { return { sj: sj, v: [1, 2, 3, 4].map(function (n) { return itv(sj.id + '.' + n + '.' + p.id + '.i'); }).concat([itv(sj.id + '.g.' + p.id + '.i')]) }; }),
+      m: mathSubj().length && klass9() ? [itv('mat.e.' + p.id + '.i'), itv('mat.a.' + p.id + '.i')] : null };
+  }
+  function vygYearHtml(P) {
+    var SJ = vygSubj(), M = mathSubj().length && klass9();
+    if (vyg.view === 'subj') return '<section class="vl-s"><h2>Итоги года<small>четверти и год' + (M ? '; ОГЭ и итог в аттестат по математике' : '') + '</small></h2><table><thead><tr><th class="nm" rowspan="2">Ученик</th>' +
+      SJ.map(function (sj) { return '<th class="d" colspan="5">' + esc(sj.name) + '</th>'; }).join('') + (M ? '<th class="d" colspan="2">Математика</th>' : '') + '</tr><tr>' +
+      SJ.map(function () { return VYG_YL.map(function (t) { return '<th class="w">' + t + '</th>'; }).join(''); }).join('') + (M ? '<th class="w">ОГЭ</th><th class="w">Итог</th>' : '') + '</tr></thead><tbody>' +
+      P.map(function (p) {
+        var r = vygYearRow(p);
+        return '<tr><td class="nm">' + esc(vygFio(p)) + '</td>' + r.s.map(function (x) { return x.v.map(function (v, i) { return '<td' + (i === 4 ? ' class="sr"' : '') + '>' + esc(v) + '</td>'; }).join(''); }).join('') +
+          (r.m ? '<td>' + esc(r.m[0]) + '</td><td class="sr">' + esc(r.m[1]) + '</td>' : '') + '</tr>';
+      }).join('') + '</tbody></table></section>';
+    return P.map(function (p) {
+      var r = vygYearRow(p);
+      return '<article class="vk"><h3>' + esc(vygFio(p)) + '<small>' + esc(META.title) + ' · весь год</small></h3><div class="vk-s"><b>Итоги года</b><div class="vk-t"><table><thead><tr><th class="nm"></th>' +
+        VYG_YL.map(function (t) { return '<th class="d">' + t + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        r.s.map(function (x) { return '<tr><th class="w nm">' + esc(x.sj.name) + '</th>' + x.v.map(function (v, i) { return '<td' + (i === 4 ? ' class="sr"' : '') + '>' + esc(v) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div></div>' +
+        (r.m ? '<div class="vk-s"><b>Математика<i>в аттестат</i></b><div class="vk-t">ОГЭ — ' + esc(r.m[0] || '…') + ' · итог — <b>' + esc(r.m[1] || '…') + '</b></div></div>' : '') + '</article>';
+    }).join('');
+  }
   function vygFio(p) { return (String(p.fam || '') + ' ' + String(p.name || '')).trim(); }
   function vygHtml() {
-    var P = students(), ALLCH = vygAll(), h = '<div class="vl"><h1>Оценки · ' + esc(META.title) + '</h1><div class="vl-kogda">' + esc(vygPeriod()) + ' · на ' + todayStr() + (vyg.hw ? '' : ' · без домашних') + '</div>';
-    if (vyg.view === 'subj') {
+    var P = students(), YR = vygYear(), ALLCH = YR ? [] : vygAll(), h = '<div class="vl"><h1>Оценки · ' + esc(META.title) + '</h1><div class="vl-kogda">' + esc(vygPeriod()) + ' · на ' + todayStr() + (vyg.hw || YR ? '' : ' · без домашних') + '</div>';
+    if (YR) h += vygYearHtml(P);
+    else if (vyg.view === 'subj') {
       ALLCH.forEach(function (x) {
         x.ch.forEach(function (c) {
-          var avg = {}; if (vyg.sr) P.forEach(function (p) { avg[p.id] = vygAvg(p.id, [c]); });
           vygParts(c.days).forEach(function (days, pi, all) {
+            var end = pi === all.length - 1;
             h += '<section class="vl-s"><h2>' + esc(x.sj.name) + '<small>' + vygMo(c.m) + (pi ? ' — продолжение' : '') + '</small></h2><table><thead><tr><th class="nm" rowspan="2">Ученик</th>' +
-              days.map(function (g) { return '<th class="d" colspan="' + g.cols.length + '">' + esc(g.date || '—') + '</th>'; }).join('') + (vyg.sr && pi === all.length - 1 ? '<th rowspan="2">Ср.</th>' : '') + '</tr><tr>' +
+              days.map(function (g) { return '<th class="d" colspan="' + g.cols.length + '">' + esc(g.date || '—') + '</th>'; }).join('') + (end ? vygTail(x.sj.id, null).map(function (t) { return '<th rowspan="2">' + t[0] + '</th>'; }).join('') : '') + '</tr><tr>' +
               days.map(function (g) { return g.cols.map(function (y) { return '<th class="w">' + y.lab + '</th>'; }).join(''); }).join('') + '</tr></thead><tbody>' +
               P.map(function (p) {
                 return '<tr><td class="nm">' + esc(vygFio(p)) + '</td>' + days.map(function (g) { return g.cols.map(function (y) { return '<td>' + esc(vygMark(y, p.id)) + '</td>'; }).join(''); }).join('') +
-                  (vyg.sr && pi === all.length - 1 ? '<td class="sr">' + avg[p.id] + '</td>' : '') + '</tr>';
+                  (end ? vygTail(x.sj.id, p.id, [c]).map(function (t) { return '<td class="sr">' + esc(t[1]) + '</td>'; }).join('') : '') + '</tr>';
               }).join('') + '</tbody></table></section>';
           });
         });
@@ -2028,8 +2072,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       P.forEach(function (p) {
         h += '<article class="vk"><h3>' + esc(vygFio(p)) + '<small>' + esc(META.title) + ' · ' + esc(vygPeriod()) + '</small></h3>';
         ALLCH.forEach(function (x) {
-          var avg = vyg.sr ? vygAvg(p.id, x.ch) : '';
-          h += '<div class="vk-s"><b>' + esc(x.sj.name) + (avg ? '<i>средний ' + avg + '</i>' : '') + '</b><div class="vk-t">' + x.ch.map(function (c) {
+          var tl = vygTail(x.sj.id, p.id, x.ch).filter(function (t) { return t[1]; }).map(function (t) { return (t[0] === 'Ср.' ? 'средний' : t[0]) + ' ' + esc(t[1]); });
+          h += '<div class="vk-s"><b>' + esc(x.sj.name) + (tl.length ? '<i>' + tl.join(' · ') + '</i>' : '') + '</b><div class="vk-t">' + x.ch.map(function (c) {
             // сдвоенный урок — две клетки под одной датой; оценка за ДЗ — у того урока, которому задана (общая — на обе клетки)
             var row = function (w, name) {
               return '<tr><th class="w nm">' + name + '</th>' + c.days.map(function (g) {
@@ -2039,7 +2083,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
                 return '<td colspan="' + g.nu + '">' + esc(xs.map(function (y) { return vygMark(y, p.id); }).filter(Boolean).join(' ')) + '</td>';
               }).join('') + '</tr>';
             };
-            return '<table><thead><tr><th class="nm">' + (c.m ? MONTHS[+c.m - 1].slice(0, 3).toLowerCase() : '—') + '</th>' + c.days.map(function (g) { return '<th class="d" colspan="' + g.nu + '">' + esc((g.date || '—').slice(0, 2)) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+            return '<table><thead><tr><th class="nm">' + (/^q\d$/.test(c.m) ? (+c.m.slice(1) + 1) + ' ч.' : c.m ? MONTHS[+c.m - 1].slice(0, 3).toLowerCase() : '—') + '</th>' + c.days.map(function (g) { return '<th class="d" colspan="' + g.nu + '">' + esc((g.date || '—').slice(0, 2)) + '</th>'; }).join('') + '</tr></thead><tbody>' +
               row('u', 'урок') + (vyg.hw ? row('d', 'дз') : '') + '</tbody></table>';
           }).join('') + '</div></div>';
         });
@@ -2049,15 +2093,17 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     return h + '</div>';
   }
   function openVyg() {
-    var MS = vygMonths();
-    if (vyg.mo !== 'all' && MS.indexOf(vyg.mo) < 0) vyg.mo = 'all';
+    var QMv = qMode(), MS = QMv ? [] : vygMonths(), cq = vQOf(todayStr());
+    if (QMv) { if (!/^(q[0-3]|all)$/.test(vyg.mo) || +String(vyg.mo).slice(1) > cq) vyg.mo = 'q' + cq; }   // у класса — четверти, сразу текущая
+    else if (vyg.mo !== 'all' && MS.indexOf(vyg.mo) < 0) vyg.mo = 'all';
     var b = function (k, v, t) { return '<button type="button" data-act="vygset" data-k="' + k + '" data-v="' + v + '" aria-pressed="' + (String(vyg[k]) === String(v)) + '">' + t + '</button>'; };
     $('dlg').innerHTML = '<div class="dlg-bg" data-act="close"></div><div class="dlg vyg" role="dialog" aria-modal="true"><h3>Выгрузить оценки</h3>' +
       '<div class="meta">Все предметы журнала одним листом. Ниже — как он будет выглядеть.</div>' +
       '<div class="vyg-opt"><div><b>Вид</b>' + b('view', 'subj', 'По предметам') + b('view', 'stu', 'По ученикам — разрезать') + '</div>' +
-      '<div><b>Период</b>' + b('mo', 'all', 'Весь год') + MS.map(function (m) { return b('mo', m, MONTHS[+m - 1]); }).join('') + '</div>' +
-      '<div><b>Домашние</b>' + b('hw', true, 'С оценками за ДЗ') + b('hw', false, 'Только уроки') + '</div>' +
-      '<div><b>Средний балл</b>' + b('sr', true, 'Показывать') + b('sr', false, 'Скрыть') + '</div></div>' +
+      '<div><b>Период</b>' + (QMv ? V_Q.slice(0, cq + 1).map(function (x, i) { return b('mo', 'q' + i, x[0]); }).join('') + b('mo', 'all', 'Весь год')
+        : b('mo', 'all', 'Весь год') + MS.map(function (m) { return b('mo', m, MONTHS[+m - 1]); }).join('')) + '</div>' +
+      (vygYear() ? '' : '<div><b>Домашние</b>' + b('hw', true, 'С оценками за ДЗ') + b('hw', false, 'Только уроки') + '</div>' +   // в ведомости за год дней нет — эти выборы ни к чему
+      '<div><b>' + (QMv ? 'Средняя за ДЗ' : 'Средний балл') + '</b>' + b('sr', true, 'Показывать') + b('sr', false, 'Скрыть') + '</div>') + '</div>' +
       (mode === 'teacher' && krSrv ? vygKr() : '') +
       '<div class="vyg-pre">' + vygHtml() + '</div>' +
       '<div class="row"><button class="btn" data-act="close">Закрыть</button><span class="sp"></span>' +
@@ -2099,20 +2145,24 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
   // файл для Excel: CSV с «;» и меткой UTF-8 — русский Excel открывает двойным щелчком
   function vygCsv() {
-    var P = students(), ALLCH = vygAll(), rows = [['Оценки', META.title, vygPeriod(), 'на ' + todayStr()].concat(vyg.hw ? [] : ['без домашних']), []];
+    var P = students(), YR = vygYear(), ALLCH = YR ? [] : vygAll(), rows = [['Оценки', META.title, vygPeriod(), 'на ' + todayStr()].concat(vyg.hw || YR ? [] : ['без домашних']), []];
     var cell = function (v) {
       v = String(v == null ? '' : v);
       // «4/5», «4.5» и дату «07.10» Excel превратил бы в «04.май» и «07.окт», а «-» в начале принял бы за формулу — отдаём такие как текст
       if (/^\d+\s*[\/.]\s*\d+$/.test(v) || /^[=+@\-–]/.test(v)) return '="' + v.replace(/"/g, '""') + '"';
       return /[;"\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
     };
-    if (vyg.view === 'subj') {
+    if (YR) {   // сводная ведомость — одна таблица в обоих видах: строка на ученика
+      var M = mathSubj().length && klass9();
+      rows.push([].concat.apply(['Ученик'], vygSubj().map(function (sj) { return VYG_YL.map(function (t) { return sj.name + ' ' + t; }); })).concat(M ? ['ОГЭ', 'Итог в аттестат'] : []));
+      P.forEach(function (p) { var r = vygYearRow(p); rows.push([].concat.apply([vygFio(p)], r.s.map(function (x) { return x.v; })).concat(r.m || [])); });
+    } else if (vyg.view === 'subj') {
       ALLCH.forEach(function (x) {
         var cols = [];
         x.ch.forEach(function (c) { c.days.forEach(function (g) { g.cols.forEach(function (y) { cols.push({ y: y, t: (g.date || 'без даты') + ' ' + y.lab }); }); }); });
         rows.push([x.sj.name]);
-        rows.push(['Ученик'].concat(cols.map(function (c) { return c.t; }), vyg.sr ? ['Средний'] : []));
-        P.forEach(function (p) { rows.push([vygFio(p)].concat(cols.map(function (c) { return vygMark(c.y, p.id); }), vyg.sr ? [vygAvg(p.id, x.ch)] : [])); });
+        rows.push(['Ученик'].concat(cols.map(function (c) { return c.t; }), vygTail(x.sj.id, null).map(function (t) { return t[0] === 'Ср.' ? 'Средний' : t[0]; })));
+        P.forEach(function (p) { rows.push([vygFio(p)].concat(cols.map(function (c) { return vygMark(c.y, p.id); }), vygTail(x.sj.id, p.id, x.ch).map(function (t) { return t[1]; }))); });
         rows.push([]);
       });
     } else {
@@ -2126,7 +2176,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
             var d = g.cols.filter(function (y) { return y.w === 'd'; }).map(function (y) { return vygMark(y, p.id); }).filter(Boolean).join(' ');
             rows.push([vygFio(p), x.sj.name, g.date || 'без даты', u[0] || ''].concat(dvoe ? [u.slice(1).filter(Boolean).join(' ')] : [], vyg.hw ? [d] : []));
           }); });
-          if (vyg.sr) rows.push([vygFio(p), x.sj.name, 'средний', vygAvg(p.id, x.ch)]);
+          vygTail(x.sj.id, p.id, x.ch).forEach(function (t) { rows.push([vygFio(p), x.sj.name, t[0] === 'Ср.' ? 'средний' : t[0], t[1]]); });
         });
       });
     }
@@ -4015,7 +4065,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     return ['d', 'k', 'i'].map(function (w) { return itogTd(w, sid, R); }).join('');
   }
   function itogTd(w, sid, R) {
-    var cls = 'it it-st it' + { d: 2, k: 3, i: 4 }[w], inner;
+    var cls = 'it it-st it' + { d: 2, k: 3, i: 4 }[w] + (w === 'd' ? ' it-l' : ''), inner;
     if (w === 'd') { cls += ' it-a'; inner = R.d ? '<b>' + R.d.t + '</b>' : ''; }
     else {
       var v = w === 'k' ? R.k : R.im ? R.im.v : '', c = w === 'k' ? R.km && R.km.c : R.im && R.im.c;
@@ -4038,6 +4088,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     });
   }
   function itogTip(di) {
+    if (itogCtx && itogCtx.B) { var yq = di.split('.'), yc = yCol(yq[0]); return yc && S.stu[yq[1]] ? yTip(yc, yq[1]) : ''; }
     var q = di.split('.'), w = q[0], p = S.stu[q[1]], R = itogCache[q[1]], C = itogCtx;
     if (!p || !R || !C) return '';
     var t = '<b>' + esc(p.fam + ' ' + p.name) + '</b>' + V_Q[C.q][0] + ' · ';
@@ -4055,21 +4106,22 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
   // окно оценки итогов — тот же нижний лист, что у клетки: кнопки, своя оценка, комментарий, «дальше вниз»
   function openItog(id) {
-    var q = id.split('.'), p = S.stu[q[2]], R = itogCache[q[2]], isI = q[3] === 'i';
-    if (!p || !R) return;
+    var q = id.split('.'), p = S.stu[q[2]], yr = /^[gea]$/.test(q[1]), R = yr ? null : itogCache[q[2]], isI = q[3] === 'i';
+    if (!p || (!yr && !R)) return;
     if (cur) { var old = document.querySelector('td.c.cur, td.it.cur'); if (old) old.classList.remove('cur'); }
     cur = id;
-    var td = document.querySelector('td.it[data-i="' + q[3] + '.' + q[2] + '"]');
+    var td = document.querySelector('td.it[data-i="' + itW(id) + '.' + q[2] + '"]');
     if (td) { td.classList.add('cur'); td.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
     var m = S.itog[id], sj = ALLSUBJ.filter(function (x) { return x.id === q[0]; })[0] || { name: '' }, nextOn = lsGet(LS.next, true);
-    var info = isI ? 'Уроки <b>' + (R.u ? R.u.t : '—') + '</b> · ДЗ <b>' + (R.d ? R.d.t : '—') + '</b> · КР <b>' + esc(R.k || '—') + '</b><br>' +
+    var info = yr ? yInfo(q) : isI ? 'Уроки <b>' + (R.u ? R.u.t : '—') + '</b> · ДЗ <b>' + (R.d ? R.d.t : '—') + '</b> · КР <b>' + esc(R.k || '—') + '</b><br>' +
         (R.s ? 'Средний всех оценок: <b>' + R.s.t + '</b> — выходит ' + R.s.g : 'Оценок за четверть пока нет')
       : R.kl ? 'В уроке ' + esc(R.kl.date) + ' «' + esc(plain(topicOf(R.kl).t).slice(0, 40)) + '»: <b>' + esc(R.kv) + '</b>' +
         (R.km ? '. Сотрёшь свою — в графе снова будет эта' : '. Поставишь свою — в графе будет твоя') : '';
-    var quick = isI ? ['5', '4', '3', '2', 'н/а'] : QUICK, sug = isI && R.s ? String(R.s.g) : '';
+    var yh = yr && yCol(q[1]) && yCol(q[1]).hint ? yCol(q[1]).hint(q[2]) : null;
+    var quick = isI ? ['5', '4', '3', '2', 'н/а'] : QUICK, sug = yr ? (yh ? String(yh.g) : '') : isI && R.s ? String(R.s.g) : '';
     var pop = $('pop');
-    pop.innerHTML = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(sj.name) + ' · ' + V_Q[+q[1] - 1][0] + '<br>' +
-      (isI ? 'оценка за четверть' : 'четвертная контрольная') + '</span></div>' + (info ? '<div class="pop-src">' + info + '</div>' : '') +
+    pop.innerHTML = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(sj.name) + ' · ' +
+      (yr ? { g: 'годовая оценка', e: 'экзамен (ОГЭ)', a: 'итог в аттестат' }[q[1]] : V_Q[+q[1] - 1][0] + '<br>' + (isI ? 'оценка за четверть' : 'четвертная контрольная')) + '</span></div>' + (info ? '<div class="pop-src">' + info + '</div>' : '') +
       '<div class="pop-q' + (isI ? ' q5' : '') + '">' + quick.map(function (x) {
         return '<button class="' + markCls(x) + (x === sug ? ' sug' : '') + '" data-q="' + x + '"' + (x === sug ? ' title="По среднему"' : '') + '>' + x + '</button>';
       }).join('') + '</div>' +
@@ -4095,7 +4147,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (v || c) { var d = { v: v }; if (c) d.c = c; put('itog', id, d); }
       else if (had) del('itog', id);
     }
-    itogFill(q[2]);
+    if (itogCtx && itogCtx.B) yFill(q[2]); else itogFill(q[2]);
     if (lsGet(LS.next, true)) {   // следующий ученик в той же графе
       var P = students(), i = P.findIndex(function (p) { return p.id === q[2]; });
       if (i >= 0 && i < P.length - 1) { openItog(q[0] + '.' + q[1] + '.' + P[i + 1].id + '.' + q[3]); return; }
@@ -4105,7 +4157,77 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function moveItog(dr, dc) {   // стрелки: вверх и вниз — по ученикам, вбок — между КР и итогом
     var q = cur.split('.'), P = students(), i = P.findIndex(function (p) { return p.id === q[2]; });
     var r = P[Math.min(P.length - 1, Math.max(0, i + dr))], w = dc ? (dc > 0 ? 'i' : 'k') : q[3];
+    if (itogCtx && itogCtx.B) {   // итоги года: вбок — между графами, которые ставит учитель (во «Все» — ОГЭ и итог)
+      var E = itogCtx.B.cols.filter(function (c) { return !c.ro; }), k = E.findIndex(function (c) { return c.w === itW(cur); });
+      var c2 = E[Math.min(E.length - 1, Math.max(0, k + (dc || 0)))];
+      if (r && c2) openItog(c2.id.replace('#', r.id));
+      return;
+    }
     if (r) openItog(q[0] + '.' + q[1] + '.' + r.id + '.' + w);
+  }
+
+  /* ── итоги года (D 23.10): за «Весь год» у предмета — «1 · 2 · 3 · 4 · Год»: четвертные (ставятся в своей четверти)
+     и годовая — её ставит D; пока её нет, у него серым средний четвертных. Во «Все» за весь год — «Математика»: годовые
+     предметов, ОГЭ и итог в аттестат (у 9 класса — средний годовых алгебры, геометрии, вероятности и экзамена; приказ
+     Минпросвещения № 546). Экзамен после года — так в аттестате и в ведомостях. Записи — k=itog, <предмет>.g.<ученик>.i,
+     mat.e.<ученик>.i, mat.a.<ученик>.i ── */
+  function mathSubj() { return SUBJ.filter(function (s) { return /^(alg|geo|ver)$/.test(s.id); }); }
+  function klass9() { return /(^|[^\d])9\s*кл/i.test(META.title || ''); }   // ОГЭ и аттестат — у 9 класса (по названию журнала)
+  function itv(id) { var m = S.itog[id]; return m && m.v ? m.v : ''; }
+  function itHint(a) {   // серая подсказка: средний того, что есть, до сотых; 3,50 — уже 4
+    var r = avg2(a.map(gradeVal).filter(function (x) { return x != null; }));
+    if (r) r.g = Math.floor(r.x + 0.5 + 1e-9);
+    return r;
+  }
+  function itW(id) { var q = id.split('.'); return /^[gea]$/.test(q[1]) ? q[1] : q[3]; }   // запись итога → графа клетки (data-i)
+  // графа: w — ключ клетки, lab — подпись, t — полное имя, id — запись (# — ученик), ro — только показ, hint — серая подсказка
+  function yBlock(subj) {
+    return { title: 'Итоги года', cols: V_Q.map(function (x, i) { return { w: 'q' + (i + 1), lab: String(i + 1), t: x[0], id: subj + '.' + (i + 1) + '.#.i', ro: true }; })
+      .concat([{ w: 'g', lab: 'Год', t: 'Годовая оценка', id: subj + '.g.#.i',
+        hint: function (sid) { return itHint(V_Q.map(function (x, i) { return itv(subj + '.' + (i + 1) + '.' + sid + '.i'); })); } }]) };
+  }
+  function mBlock() {
+    var M = mathSubj();
+    if (!M.length || !klass9()) return null;
+    return { title: 'Математика', cols: M.map(function (s) { return { w: 'y' + s.id, lab: s.name.slice(0, 3), t: 'Годовая · ' + s.name, id: s.id + '.g.#.i', ro: true }; })
+      .concat([{ w: 'e', lab: 'ОГЭ', t: 'Экзамен (ОГЭ)', id: 'mat.e.#.i' },
+        { w: 'a', lab: 'Итог', t: 'Итог в аттестат', id: 'mat.a.#.i',
+          hint: function (sid) {   // без ОГЭ подсказки нет: средний одних годовых — ещё не итог в аттестат
+            var e = itv('mat.e.' + sid + '.i');
+            return gradeVal(e) == null ? null : itHint(M.map(function (s) { return itv(s.id + '.g.' + sid + '.i'); }).concat([e]));
+          } }]) };
+  }
+  function yCls(i, n) { return (i === n - 1 ? 'it4' : 'iy iy' + (i + 6 - n)) + (i ? '' : ' it-l'); }   // последняя графа — яркая, как итог четверти
+  function yCol(w) { return itogCtx && itogCtx.B ? itogCtx.B.cols.filter(function (c) { return c.w === w; })[0] || null : null; }
+  function yTd(c, i, sid) {
+    var m = S.itog[c.id.replace('#', sid)], v = m && m.v ? m.v : '', h = c.hint && mode === 'teacher' && !v ? c.hint(sid) : null;
+    var dot = m && m.c && /[0-9a-zа-яё]/i.test(m.c) ? '<i class="cmt" aria-label="есть комментарий"></i>' : '';
+    var inner = v ? '<b class="itb ' + markCls(v) + (String(v).length > 3 ? ' long' : '') + '">' + esc(v) + dot + '</b>'
+      : h ? '<b class="itb gh">' + h.t + '</b>' : '<b class="itb">' + dot + '</b>';   // серым — только учителю
+    return '<td class="it it-st ' + yCls(i, itogCtx.B.cols.length) + (c.ro ? '' : ' ed') + '" data-i="' + c.w + '.' + sid + '">' + inner + '</td>';
+  }
+  function yFill(sid) {   // поставили годовую, ОГЭ или итог — строка блока пересчитывается сразу
+    if (!itogCtx || !itogCtx.B) return;
+    itogCtx.B.cols.forEach(function (c, i) {
+      var sel = 'td.it[data-i="' + c.w + '.' + sid + '"]', td = document.querySelector(sel), on = td && td.classList.contains('cur');
+      if (!td) return;
+      td.outerHTML = yTd(c, i, sid);
+      if (on) document.querySelector(sel).classList.add('cur');
+    });
+  }
+  function yTip(c, sid) {
+    var p = S.stu[sid], m = S.itog[c.id.replace('#', sid)], t = '<b>' + esc(p.fam + ' ' + p.name) + '</b>' + esc(c.t) + '\n';
+    if (m && m.v) return t + 'Оценка: ' + esc(m.v) + (m.c ? '\nКомментарий: ' + esc(m.c) : '');
+    var h = c.hint && mode === 'teacher' ? c.hint(sid) : null;
+    if (c.ro) return t + 'Ещё не выставлена' + (mode !== 'teacher' ? '' : c.w.charAt(0) === 'q' ? '\nСтавится в своей четверти' : '\nГодовую ставишь во «Весь год» у предмета');
+    return t + 'Ещё не выставлена' + (h ? '\n' + (c.w === 'g' ? 'Средний четвертных' : 'Средний годовых и ОГЭ') + ': ' + h.t + ' → ' + h.g + '\nСерую цифру видишь только ты' : '');
+  }
+  function yInfo(q) {   // строка над кнопками окна: из чего выходит оценка
+    var sid = q[2], c = yCol(q[1]), h = c && c.hint ? c.hint(sid) : null, s;
+    if (q[1] === 'g') s = 'Четверти: <b>' + V_Q.map(function (x, i) { return esc(itv(q[0] + '.' + (i + 1) + '.' + sid + '.i') || '—'); }).join(' · ') + '</b>';
+    else if (q[1] === 'a') s = 'Годовые: ' + mathSubj().map(function (x) { return esc(x.name.slice(0, 3)) + ' <b>' + esc(itv(x.id + '.g.' + sid + '.i') || '—') + '</b>'; }).join(' · ') + ' · ОГЭ <b>' + esc(itv('mat.e.' + sid + '.i') || '—') + '</b>';
+    else return '';
+    return s + '<br>' + (h ? 'Средний: <b>' + h.t + '</b> — выходит ' + h.g : q[1] === 'a' ? 'Средний покажу, когда будет ОГЭ' : 'Оценок пока нет');
   }
 
   /* ── вид ученика (ТЗ 19, шаг 2): «Задано» и карточка урока со сдачей фото — вместо таблицы учителя.
@@ -4423,7 +4545,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (q > 3) {
         var RQ = V_Q.slice(0, cur + 1).map(function (x, i) { return itogOf(s.id, i, meId); });
         if (!RQ.some(Boolean)) return '';   // предмета ещё не было — строки нет
-        t = RQ.map(function (R, i) { return (i + 1) + ' четв. — ' + (R && R.im && R.im.v ? R.im.v : '…'); }).join(' · '); tile = '';
+        t = RQ.map(function (R, i) { return (i + 1) + ' четв. — ' + (R && R.im && R.im.v ? R.im.v : '…'); }).join(' · ') + (itv(s.id + '.g.' + meId + '.i') ? ' · год — ' + itv(s.id + '.g.' + meId + '.i') : ''); tile = '';
       } else {
         var R = itogOf(s.id, q, meId);
         if (!R) return '';
@@ -4700,7 +4822,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var itc = t.closest('td.it[data-i]');
     if (itc) {   // итоги четверти: КР и итог ставит учитель, средние — только подсказка
       var iq = itc.dataset.i.split('.');
-      if (mode === 'teacher' && itogCtx && (iq[0] === 'k' || iq[0] === 'i')) { hideTip(); openItog(itogCtx.subj + '.' + (itogCtx.q + 1) + '.' + iq[1] + '.' + iq[0]); return; }
+      var yc = yCol(iq[0]);
+      if (mode === 'teacher' && yc && !yc.ro) { hideTip(); openItog(yc.id.replace('#', iq[1])); return; }
+      if (mode === 'teacher' && itogCtx && !itogCtx.B && (iq[0] === 'k' || iq[0] === 'i')) { hideTip(); openItog(itogCtx.subj + '.' + (itogCtx.q + 1) + '.' + iq[1] + '.' + iq[0]); return; }
       showTip(itc, itogTip(itc.dataset.i)); clearTimeout(tipT); tipT = setTimeout(hideTip, 4000); return;
     }
     var cell = t.closest('td.c[data-c]');
