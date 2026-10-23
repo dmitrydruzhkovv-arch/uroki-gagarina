@@ -605,6 +605,22 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .zt tbody .nm i.avg{ position:absolute; top:3px; right:5px; font-style:normal; font-size:11px; font-weight:800; line-height:1;
   padding:2px 4px; border-radius:5px; background:var(--z-head); color:var(--ink); font-family:'JetBrains Mono',ui-monospace,monospace; }
 
+/* ══ «где мы сейчас» (ТЗ 20, сессия 4): слово над датой, последний урок подсвечен, бледный «следующий» ══ */
+.dt .rel{ display:block; font-family:inherit; font-size:10px; font-weight:800; letter-spacing:.02em; line-height:1.15; color:var(--s); }
+.dt.rel-on.today b::after{ content:none; }   /* «сегодня» уже над датой */
+:root .zt thead th.dt.rel-on > *{ padding-top:3px; padding-bottom:3px; }   /* две строки в той же высоте шапки */
+:root .zt thead th.dt.last > *{ background:color-mix(in srgb, var(--s) 22%, transparent); box-shadow:inset 0 0 0 1.5px var(--s), 0 0 16px -6px var(--glow); }
+:root .zt thead th.dt.sjc.last > *{ background:var(--g); box-shadow:inset 0 0 0 2px var(--on), 0 0 16px -8px var(--glow); }
+.dt.sjc .rel{ color:inherit; opacity:.85; }
+:root .zt thead th.dt.nx > *{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--z-line2); color:var(--muted); }
+.dt.nx .rel{ color:var(--muted); }
+.zt th.sub.nx{ opacity:.55; }
+.zt td.nx{ width:46px; min-width:46px; height:44px; padding:2px; }
+.zt tbody td.nx::before{ content:''; display:block; height:40px; border-radius:11px; box-shadow:inset 0 0 0 1.5px var(--z-rule); }
+.zt tfoot td.nx, .zt tfoot td.nx:hover{ min-width:0; background:none; cursor:default; }
+.edit .zt [data-nx]{ cursor:pointer; }
+.edit .zt tbody td.nx:hover::before{ box-shadow:inset 0 0 0 1.5px var(--s); }
+
 /* ══ итоги четверти (D 22.10; сервер включает их флагом ZHURNAL_ITOG). Переключатель четвертей — справа над таблицей.
    Графы итогов — в конце таблицы предмета; на широком экране стоят справа всегда, дни уезжают под них.
    Клетки глухие (под ними едут дни), плитка — внутри: как у шапки дня ══ */
@@ -1330,6 +1346,30 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   // начала четвертей — из КТП (plan.js сайта); уроки в каникулы считаются к прошедшей четверти
   var V_Q = [['1 четверть', '01.09'], ['2 четверть', '05.11'], ['3 четверть', '11.01'], ['4 четверть', '29.03']];
   function vQOf(date) { var k = dkey(date), q = 0; V_Q.forEach(function (x, i) { if (k >= dkey(x[1])) q = i; }); return q; }
+  // дней без уроков — каникулы, праздники и лето — тоже из КТП (plan.js): бледный «следующий урок» на них не ставим
+  var V_OFF = [['26.10', '04.11'], ['30.12', '10.01'], ['22.02', '23.02'], ['08.03', '08.03'], ['22.03', '28.03'], ['03.05', '03.05'], ['10.05', '10.05'], ['29.05', '31.07'], ['01.08', '31.08']];
+  function offDay(date) { var k = dkey(date); return V_OFF.some(function (x) { return k >= dkey(x[0]) && k <= dkey(x[1]); }); }
+  /* ── «где мы сейчас» (D 16.10: «сегодня 16-е, а урок 14-го — это сегодня было или позавчера?») ── */
+  // слово над датой — в пределах недели назад; дальше только дата
+  function relDay(date) {
+    var d = realDate(date), t = new Date();
+    if (!d) return '';
+    t.setHours(0, 0, 0, 0);
+    var n = Math.round((t - d) / 864e5);
+    return n === 0 ? 'сегодня' : n === 1 ? 'вчера' : n === 2 ? 'позавчера' : n > 2 && n < 7 ? n + (n < 5 ? ' дня' : ' дней') + ' назад' : '';
+  }
+  // следующий урок по расписанию: дни недели — из последних уроков предмета (как срок домашки у ученика), без каникул и праздников
+  function nextSched(L) {
+    var cnt = {}, wd = {}, has = {}, d = new Date();
+    L.forEach(function (l) { has[dkey(l.date)] = 1; });
+    L.filter(function (l) { return realDate(l.date); }).slice(-8).forEach(function (l) { var w = realDate(l.date).getDay(); cnt[w] = (cnt[w] || 0) + 1; });
+    Object.keys(cnt).forEach(function (w) { if (cnt[w] > 1) wd[w] = 1; });   // урок, перенесённый один раз, — ещё не расписание
+    if (!Object.keys(wd).length) wd = cnt;   // журнал только начат — что есть
+    d.setHours(0, 0, 0, 0);
+    // с сегодняшнего: урок сегодня, а в журнале его ещё нет, — он и есть следующий
+    for (var i = 0; i < 21; i++, d.setDate(d.getDate() + 1)) if (wd[d.getDay()] && !offDay(ddmm(d)) && !has[dkey(ddmm(d))]) return ddmm(d);
+    return '';
+  }
   var qSel = null;   // открытая четверть: 0–3 или 'all' («Весь год»); null — та, что идёт сейчас (в каникулы — прошедшая)
   function qMode() { return itogSrv && !feed(); }
   function qOpen() { return qSel === null ? vQOf(todayStr()) : qSel; }
@@ -1828,6 +1868,14 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       g.xs.push(x); x.day = g;
     });
     DAYS.forEach(function (g) { g.xs[g.xs.length - 1].last = true; });
+    // последний прошедший (или сегодняшний) день — подсвечен; будущих дней нет — справа бледный «следующий» по расписанию
+    // подсвечен только настоящий последний урок предмета: в прошлом месяце (четверти) последний день — не «где мы»
+    var tk0 = dkey(today), lastG = null, lastD = '';
+    LA.forEach(function (l) { if (dkey(l.date) <= tk0) lastD = l.date; });
+    DAYS.forEach(function (g) { if (lastD && g.date === lastD) lastG = g; });
+    var NX = !mix() && !LA.some(function (l) { return dkey(l.date) > tk0 && dkey(l.date) < 99999; }) ? nextSched(LA) : '';
+    if (NX && (QM ? qo !== 'all' && vQOf(NX) !== qo : mo !== 'all' && monthOf(NX) !== mo)) NX = '';
+    var nxd = NX ? (realDate(NX) ? WD[realDate(NX).getDay()] + ' ' : '') + NX : '';
 
     var h = QM ? qBar(qo) : '<div class="months" role="tablist">' + MS.map(function (m) {
       return '<button class="mo" data-month="' + m + '" aria-selected="' + (m === mo) + '">' + MONTHS[+m - 1] + '</button>';
@@ -1835,11 +1883,12 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     h += '<div class="wrap" id="wrap"><table class="zt"><thead><tr><th class="nm" rowspan="2">Ученик</th>';
     DAYS.forEach(function (g) {
       var l = g.xs[0].l, go = siteLink(l), n = g.xs.reduce(function (a, x) { return a + x.cols.length; }, 0);
-      var rd = realDate(g.date), lbl = (rd ? WD[rd.getDay()] + ' ' : '') + esc(g.date || '—');
+      var rd = realDate(g.date), rel = relDay(g.date), lbl = (rel ? '<small class="rel">' + rel + '</small>' : '') + (rd ? WD[rd.getDay()] + ' ' : '') + esc(g.date || '—');
       var sj = mix() ? ALLSUBJ.filter(function (s) { return s.id === l.subj; })[0] : null;
-      h += '<th class="dt dend' + (g.date === today ? ' today' : '') + (go ? ' go' : '') + (sj ? ' sjc ' + sj.k : '') + '" colspan="' + n + '" data-les="' + l.id + '"' + (sj ? ' title="' + esc(sj.name) + '"' : '') + '>' +
+      h += '<th class="dt dend' + (g.date === today ? ' today' : '') + (g === lastG ? ' last' : '') + (rel ? ' rel-on' : '') + (go ? ' go' : '') + (sj ? ' sjc ' + sj.k : '') + '" colspan="' + n + '" data-les="' + l.id + '"' + (sj ? ' title="' + esc(sj.name) + '"' : '') + '>' +
         (go ? '<a href="' + go + '" title="Открыть урок на сайте"><b class="mono">' + lbl + '<i>↗</i></b></a>' : '<b class="mono">' + lbl + '</b>') + '</th>';
     });
+    if (NX) h += '<th class="dt dend nx rel-on" colspan="2" data-nx="' + NX + '" title="' + (edit ? 'Следующий урок по расписанию — нажми, чтобы завести день' : 'Следующий урок по расписанию') + '"><b class="mono"><small class="rel">следующий</small>' + nxd + '</b></th>';
     if (edit) h += '<th class="addc" rowspan="2"><button class="btn" data-act="addles" title="Добавить день">＋</button></th>';
     if (IT) h += '<th class="it-h it-st" colspan="3"><b>Итоги ' + (qo + 1) + ' четверти</b></th>';
     else if (IB) h += '<th class="it-h it-st" colspan="' + NIT + '"><b>' + IB.title + '</b></th>';
@@ -1853,6 +1902,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         });
       });
     });
+    if (NX) h += '<th class="sub nx" data-nx="' + NX + '">У</th><th class="sub nx dend" data-nx="' + NX + '">Д</th>';
     if (IB) h += IB.cols.map(function (c, i) { return '<th class="sub it-s it-st ' + yCls(i, NIT) + '" title="' + esc(c.t) + '">' + esc(c.lab) + '</th>'; }).join('');
     if (IT) h += '<th class="sub it-s it-st it2 it-l" title="Средняя оценок за домашку — тех, что стоят в клетках «Д»">ДЗ</th>' +
       '<th class="sub it-s it-st it3" title="Четвертная контрольная">КР</th><th class="sub it-s it-st it4" title="Оценка за четверть">Итог</th>';
@@ -1870,6 +1920,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
           h += '<td class="' + cv.cls + (x.last && ci === x.cols.length - 1 ? ' dend' : '') + '" data-c="' + id + '">' + cv.inner + '</td>';
         });
       });
+      if (NX) h += '<td class="nx" data-nx="' + NX + '"></td><td class="nx dend" data-nx="' + NX + '"></td>';
       if (edit) h += '<td></td>';
       if (IT) h += itogCells(p.id);
       if (IB) h += IB.cols.map(function (c, i) { return yTd(c, i, p.id); }).join('');
@@ -1892,6 +1943,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     DAYS.forEach(function (g) {
       h += dayCell(g, g.xs.map(function (x) { var tp = topicOf(x.l); return { l: x.l, t: (tp.t || (autoUrl(x.l.au) ? 'Срез' : '')) + (autoUrl(x.l.au) ? ' 🎯' : ''), site: tp.site, nf: filesOf(x.l.id).length, cov: (coverOf(x.l.id) || {}).id }; }), 'rt');
     });
+    if (NX) h += '<td class="nx dend" colspan="2"></td>';
     if (edit) h += '<td></td>';
     if (NIT) h += '<td class="it-f it-st" colspan="' + NIT + '"></td>';
     h += '</tr><tr class="hw"><th class="nm">Домашка</th>';
@@ -1901,6 +1953,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       h += dayCell(g, g.xs.filter(function (x) { return !x.joinedNext; }).map(function (x) { var hw = hwOf(x.own); return { l: x.own, t: (hw.t || (autoUrl(x.own.ad) ? 'Веб-домашка' : '')) + (autoUrl(x.own.ad) ? ' 🕹' : ''), site: hw.site,
         nf: g.xs.reduce(function (a, y) { return a + (y.own === x.own ? hwN[y.l.id] || 0 : 0); }, 0) }; }), 'rh');
     });
+    if (NX) h += '<td class="nx dend" colspan="2"></td>';
     if (edit) h += '<td></td>';
     if (NIT) h += '<td class="it-f it-st" colspan="' + NIT + '"></td>';
     h += '</tr></tfoot></table></div>';
@@ -1919,9 +1972,13 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       L.forEach(function (l) { if (dkey(l.date) <= tk) target = l; });
       if (!target) target = L[0];
       var th = target && wrap.querySelector('th.dt[data-les="' + (L.filter(function (l) { return l.date === target.date; })[0] || target).id + '"]');
-      if (th) {
-        var nmw = wrap.querySelector('thead .nm').offsetWidth;
-        wrap.scrollLeft = Math.max(0, th.offsetLeft - nmw - (wrap.clientWidth - nmw) * 0.55);
+      if (th) {   // последний урок — у правого края, за ним бледный «следующий» (D 16.10); итоги на широком экране стоят поверх справа
+        var nxh = wrap.querySelector('th.nx'), end = nxh || th, ith = wrap.querySelector('th.it-h'), nm = wrap.querySelector('thead .nm');
+        var itw = ith && window.matchMedia('(min-width:900px)').matches ? ith.offsetWidth : 0;   // итоги липнут справа только на широком экране
+        // последний урок не должен уехать под липкую колонку имён (узкий телефон)
+        wrap.scrollLeft = Math.max(0, end.offsetLeft + end.offsetWidth - (wrap.clientWidth - itw) + 12);
+        var gap = th.getBoundingClientRect().left - nm.getBoundingClientRect().right - 8;
+        if (gap < 0) wrap.scrollLeft = Math.max(0, wrap.scrollLeft + gap);
       }
       keepScroll();
     }
@@ -2432,13 +2489,13 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         return '<button type="button" class="' + x.k + '" data-act="daysubj" data-sj="' + x.id + '">' + esc(x.short) + '</button>';
       }).join('') + '</div><div class="row"><span class="sp"></span><button class="btn" data-act="close">Отмена</button></div></div>';
   }
-  function openDay(date, sj) {
+  function openDay(date, sj, want) {   // want — дата нового дня (бледный «следующий урок»)
     dayTab = !feed() && tab === ALL ? (SUBJ.some(function (s) { return s.id === sj; }) ? sj : '') : tab;
     if (!dayTab) { pickDaySubj(); return; }
     var subj = SUBJ.filter(function (s) { return s.id === dayTab; })[0], D = date ? dayLessons(dayTab, date) : [];
     var isNew = !D.length, two = isNew ? !feed() && (dayTab === 'alg' || dayTab === 'geo') : D.length > 1;   // сдвоенные — алгебра и геометрия Гагарина
     dayQ = []; dayIds = [D[0] ? D[0].id : null, D[1] ? D[1].id : null];
-    if (isNew) date = dayLessons(dayTab, todayStr()).length ? '' : todayStr();
+    if (isNew) date = want || (dayLessons(dayTab, todayStr()).length ? '' : todayStr());
     // лента: предмет — у дня. Новый день — тот же предмет, что в прошлый раз
     var all = lessons(dayTab);
     daySubj = D[0] ? D[0].subj : all.length ? all[all.length - 1].subj : 'mat';
@@ -4693,6 +4750,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (fb) { applyFmt(fb.closest('.fmtbar').dataset.for, fb.dataset.fmt); return; }
     var jb = t.closest('[data-jr]');
     if (jb) { switchJournal(jb.dataset.jr); return; }
+    var nxc = t.closest('[data-nx]');
+    if (nxc) { if (mode === 'teacher') { if (cur) closeCell(); hideTip(); openDay(null, undefined, nxc.dataset.nx); } return; }
     var qb = t.closest('[data-qtr]');
     if (qb) { if (cur) closeCell(); qSel = qb.dataset.qtr === 'all' ? 'all' : +qb.dataset.qtr; scrollPos = {}; resetScroll(tab); render(); return; }
     var mb = t.closest('[data-month]');
