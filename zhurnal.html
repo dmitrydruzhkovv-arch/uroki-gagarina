@@ -140,7 +140,7 @@ input, textarea{ font:inherit; color:inherit; }
 /* таблица */
 .wrap{ overflow:auto; max-height:calc(100vh - 120px); max-height:calc(100dvh - 120px); background:var(--card);
   border-radius:18px; box-shadow:inset 0 0 0 1px var(--line), 0 14px 40px -28px rgba(40,24,70,.35);
-  -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
+  -webkit-overflow-scrolling:touch; overscroll-behavior-x:none; }   /* жест двумя пальцами по таблице листает только таблицу: Chrome на Маке не уходит «назад» (D 23.10); вне таблицы — как обычно */
 table.zt{ border-collapse:separate; border-spacing:0; font-size:14px; }
 .zt th, .zt td{ border-right:1px solid transparent; border-bottom:1px solid transparent; }   /* линий сетки нет (плитки, ниже) — поля держат шаг */
 .zt thead th{ position:sticky; top:0; z-index:2; background:var(--card); }
