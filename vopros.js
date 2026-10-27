@@ -172,7 +172,15 @@ function ubratPodskazku(){
 }
 /* учителю подсказка «позови учителя» ни к чему: ни вошедшему в чат, ни открывшему журнал своим ключом */
 const uchitelZhurnala = () => { try { return !!(localStorage.getItem('zh:key') || localStorage.getItem('kab:key')); } catch (_) { return false; } };
-if ((+mem.get(HINT_KEY) || 0) < 3 && !uchitel() && !uchitelZhurnala()) setTimeout(podskazka, 1800);
+/* на экране кода класса подсказка закрывала заголовок (ТЗ 22, E6): там — после неверного кода (журнал шлёт
+   «vopros:podskazka») или через 20 секунд, если код так и не ввели */
+const naVhode = () => !!document.getElementById('gateIn');
+// журнал, который ещё грузится, — тоже «вход»: экран кода может появиться после ответа сервера
+const zhurnalNeGotov = () => !!document.getElementById('footLinks') && !document.documentElement.classList.contains('vid') && !document.querySelector('#wrap table');
+const mozhno = () => (+mem.get(HINT_KEY) || 0) < 3 && !uchitel() && !uchitelZhurnala() && !hint;
+if (mozhno())
+  setTimeout(() => { if (!naVhode() && !zhurnalNeGotov()) podskazka(); else setTimeout(() => { if (naVhode() && mozhno()) podskazka(); }, 18200); }, 1800);
+document.addEventListener('vopros:podskazka', () => { if (mozhno()) podskazka(); });
 
 /* ═════════════ ДОМАШКИ «про что» — из data.js ═════════════ */
 function dateOf(str){                                   /* как в app.js: «29.09» → дата учебного года */

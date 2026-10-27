@@ -461,7 +461,7 @@ td.c .cmt{ position:absolute; top:4px; left:4px; width:6px; height:6px; border-r
 /* сдача ДЗ (шаг 4): 📷 — есть фото; кольцо «сдано» и пунктир «на доработку» — в блоке плиток */
 td.c .cam{ position:absolute; bottom:1px; right:2px; font-size:10px; font-style:normal; line-height:1; }
 .zt tbody tr.me th.nm{ background:color-mix(in srgb, #7c3aed 12%, var(--card)); box-shadow:inset 4px 0 0 #7c3aed, 1px 0 0 var(--z-rule); }
-.zt tbody tr.me td.c.d.mine{ cursor:pointer; }
+.zt tbody tr.me td.c.mine{ cursor:pointer; }
 ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin-bottom:6px; }
 /* вход учителя по логину и паролю (D 12.10): устройства в окне «Логин и пароль», «Выйти» в панели — справа */
 .udev{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--z-line2); font-size:14px; }
@@ -531,7 +531,7 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .view .vcount{ color:#fff; align-self:center; }
 /* телефон: сверху имя файла и «Свернуть», под ними размер и «Скачать»; рамки браузера убирать незачем */
 @media (max-width:560px){ .fview .vtools{ justify-content:center; } .fview .vtools button{ order:2; } .fview .vname{ flex:1 1 calc(100% - 136px); } .fview .vtools [data-v="x"]{ order:1; } .fview .vtools [data-v="fs"]{ display:none; } }
-#footLinks:not(:empty)::before{ content:' · '; }
+#footLinks:not(:empty)::before{ content:' | '; }   /* «·» у D — знак умножения (ТЗ 22, A5, E11) */
 /* дни и месяцы (D, 01.10): одна дата на день, жирная черта между днями, листаем по месяцам */
 .zt th.dend, .zt td.dend{ border-right:2px solid transparent; }   /* конец дня; у плиток и подписей поле шире — в блоке плиток */
 .months{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
@@ -562,7 +562,7 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 @keyframes z-sent{ 50%{ box-shadow:inset 0 0 0 1.5px var(--z-ring), inset 0 0 0 4px var(--z-sent2); } }
 :root .zt td.c.sub-redo::before{ content:''; position:absolute; inset:3px; border:2px solid var(--z-ring); outline:2px dashed var(--z-redo); outline-offset:-2px; border-radius:7px; pointer-events:none; }   /* на доработке: пунктир по светлой подложке */
 :root .edit .zt td.c:not(.cur):hover{ box-shadow:inset 0 0 0 1.5px var(--z-ring), inset 0 0 0 3px var(--s); }   /* выбранную клетку наведение не перебивает */
-:root .zt tbody tr.me td.c.d.mine:hover{ box-shadow:inset 0 0 0 1.5px var(--z-ring), inset 0 0 0 3px var(--z-sent); }
+:root .zt tbody tr.me td.c.mine:hover{ box-shadow:inset 0 0 0 1.5px var(--z-ring), inset 0 0 0 3px var(--z-sent); }
 :root .zt td.c.cur{ box-shadow:inset 0 0 0 2px var(--z-ring), inset 0 0 0 4.5px var(--z-focus); animation:none; }
 /* шапка дня — та же плитка: сама клетка глухая (под ней едут оценки), плашка — внутри */
 :root .zt thead th.dt{ padding:4px 2px; border-top-width:0; }
@@ -677,6 +677,31 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
   .zt .it-l, .zt th.it-h, .zt td.it-f{ box-shadow:-12px 0 14px -14px rgba(40,24,70,.45); }
 }
 .pop-q.q5{ grid-template-columns:repeat(5,1fr); }
+/* панель оценки вкладками (ТЗ 22 C, вариант 3 — D 24.10): «Отметка | Работы нет | Зачёт», под ними второй шанс */
+.pp-seg{ display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; border-radius:14px; background:var(--z-head); }
+.pp-seg button{ min-height:44px; border-radius:11px; font-size:14px; font-weight:800; color:var(--sub); text-align:center; }
+.pp-seg button[aria-selected="true"]{ background:var(--card); color:var(--ink); box-shadow:0 1px 4px rgba(0,0,0,.12); }
+.pp-p{ margin-top:10px; }
+.pp-m{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+.pp-m button{ height:48px; border-radius:12px; font-weight:800; font-size:19px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); }
+.pp-m button.m5, .pp-m button.m2{ box-shadow:none; }
+.pp-m button.on, .pop-x button.on{ outline:3px solid var(--ink); outline-offset:2px; }
+.pp-no{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.pp-no button{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-height:72px; border-radius:14px; background:transparent; box-shadow:inset 0 0 0 1.5px var(--z-line2); }
+.pp-no button b{ font-size:24px; font-weight:800; line-height:1; } .pp-no button span{ font-size:12.5px; font-weight:700; color:var(--sub); }
+.pp-no button.on{ box-shadow:inset 0 0 0 2.5px var(--ink); background:var(--z-head); }
+.pp-sc{ margin-top:12px; padding:10px 12px; border-radius:14px; background:var(--z-head); }
+.pp-sch{ display:flex; width:100%; align-items:center; justify-content:space-between; gap:10px; min-height:44px; text-align:left; font-weight:800; font-size:15px; }
+.pp-sch small{ display:block; font-weight:600; font-size:12.5px; color:var(--sub); }
+.pp-sw{ flex:none; position:relative; width:46px; height:28px; border-radius:99px; background:var(--z-line2); }
+.pp-sw i{ position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:left .15s; }
+.pp-sc.on .pp-sw{ background:#16a34a; } .pp-sc.on .pp-sw i{ left:21px; }
+.btn.talk{ color:#b42318; box-shadow:inset 0 0 0 1.5px #f3a8a1; }
+.zt th.nm.flash{ box-shadow:inset 0 0 0 3px #f97316; }
+.pp-ch{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; }
+.pp-ch button, .pp-dt{ position:relative; display:flex; align-items:center; justify-content:center; min-height:44px; padding:0 10px; border-radius:99px; font-size:13.5px; font-weight:700; background:var(--card); box-shadow:inset 0 0 0 1px var(--z-line2); }
+.pp-ch button[aria-pressed="true"], .pp-dt.on{ background:var(--ink); color:var(--card); box-shadow:none; }
+.pp-dt input{ position:absolute; inset:0; opacity:0; width:100%; cursor:pointer; }   /* своя дата — системный календарь телефона по нажатию */
 .pop-q button.sug{ box-shadow:inset 0 0 0 2.5px var(--s); }   /* выходит по среднему */
 .lgd .ch i.it-lg{ background:none; color:var(--ink); font-variant-numeric:tabular-nums; }
 .lgd .ch i.it-lg.gh{ color:var(--muted); box-shadow:inset 0 0 0 1.5px var(--z-line2); }
@@ -725,7 +750,11 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-tiles .fill .v-go{ color:inherit; opacity:.7; }
 #vid .v-tiles .fill .v-st{ background:rgba(255,255,255,.92); padding:2px 8px; border-radius:8px; }
 [data-theme="night"] #vid .v-tiles .fill .v-st{ background:rgba(10,5,16,.78); }
-/* долг — строка с красной полосой слева; просроченный — на розовом и стоит первым */
+/* долг — строка с красной полосой слева; просроченный — на розовом и стоит первым; закрытый второй шанс — день зелёным */
+#vid .v-card .v-debt.v-scok{ box-shadow:inset 4px 0 0 #16a34a; }
+#vid .v-more{ justify-content:center; }
+#vid .v-btnu{ position:relative; display:flex; align-items:center; justify-content:center; margin-top:10px; min-height:48px; padding:0 16px; border-radius:14px; font-weight:800; color:#fff; background:var(--v-pri); cursor:pointer; }   /* «Сдать фото работы» у работы на уроке — под оценкой */
+#vid .v-btnu input{ position:absolute; inset:0; opacity:0; cursor:pointer; }   /* как .upl: системный выбор фото по всей кнопке */
 #vid .v-debt{ box-shadow:inset 3px 0 0 var(--v-red); }
 #vid .v-debt + .v-debt{ box-shadow:inset 3px 0 0 var(--v-red), inset 0 1px 0 var(--v-line); }
 #vid .v-debt.late{ background:var(--v-late); }
@@ -807,7 +836,7 @@ html.vid[data-theme="night"] body{ background:#000; }
 .v-hi{ display:flex; gap:10px; align-items:flex-start; width:100%; margin-top:6px; padding:10px 12px; border-radius:12px; background:color-mix(in srgb, var(--s) 8%, var(--h-panel));
   color:inherit; font:inherit; font-size:16px; line-height:1.45; text-align:left; overflow-wrap:anywhere; }
 .v-hi i{ flex:none; width:22px; height:22px; border-radius:50%; box-shadow:inset 0 0 0 2px var(--s); display:grid; place-items:center; font-style:normal; font-size:14px; font-weight:800; color:var(--h-panel); }
-.v-hi.on i{ background:var(--s); }
+.v-hi.on i, .v-hi.sent i{ background:var(--s); }
 .v-hi.on span{ opacity:.55; text-decoration:line-through; }
 .v-hi .no{ display:inline-block; padding:0 8px; border-radius:8px; background:var(--g); color:var(--on); font-weight:800; white-space:nowrap; }
 .v-hi .bu{ color:var(--s); font-weight:800; }
@@ -1223,6 +1252,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   // таблица класса у ученика (ТЗ 22 B, ZHURNAL_SVOI; говорит в /view и /me): средние и итоги — только в своей строке,
   // по коду класса — ни в чьей. Итоги чужих сервер и не отдаёт; средние он спрятать не может — их считает страница из оценок
   var svoiSrv = false;
+  // второй шанс (ТЗ 22 C, ZHURNAL_SHANS; говорит в /sync, /view, /me): панель оценки вкладками, слова «второй шанс» вместо
+  // «долг», срок пересдачи — у самой оценки. Учитель помнит между заходами, как итоги: лист рисуется раньше ответа сервера
+  var shansSrv = lsGet('zh:shans', false) === true;
   function svoiView() { return svoiSrv && mode !== 'teacher' && !krMode; }
   function alien(sid) { return svoiView() && sid !== meId; }
   function canAvg(sid) { return !qMode() && !alien(sid); }   // средний у фамилии: у класса с итогами его нет — он в «Итоге»
@@ -1345,12 +1377,71 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var g = x ? x[1] : v, note = x ? x[2].replace(/^\(\s*|\s*\)$/g, '').trim() : '';
     return { g: g, c: (m && m.c) || note };
   }
-  // долг по клетке: до какого числа пересдать и сколько дней осталось (0 — сегодня последний день)
-  function debtOf(l, v) {
-    if (!markInfo(v).red) return null;
-    var d = realDate(l.date);
+  /* второй шанс (ТЗ 22 C): отметка и второй шанс — разные вещи. sc у оценки — до какого дня «ДД.ММ», пусто — шанса нет;
+     sx — когда шанс закрыт хорошей отметкой. Поля sc нет — запись до второго шанса: долг по цифре (1, 2, «–», незачёт),
+     14 дней от урока — так уже стоящим двойкам шанс переносится с прежним сроком (D 23.10) */
+  var SC_DAYS = 14;
+  function isDebt(m) {   // можно сдать заново: шанс открыт и срок не вышел; у записи без sc — по цифре, как раньше
+    if (!(m && 'sc' in m)) return !!markInfo(m && m.v).red;
+    var d = m.sc && realDate(m.sc), t = new Date(); t.setHours(0, 0, 0, 0);
+    return !!d && d >= t;
+  }
+  // сдача ↔ клетка: домашка — сдача «урок.ученик», клетка «…d»; работа на уроке со вторым шансом (ТЗ 22 C) — сдача
+  // и клетка «урок.ученик.u» (сервер принимает её только при открытом шансе)
+  function subOfCell(cellId) { var p = String(cellId).split('.'); return p[2] === 'u' ? cellId : p[0] + '.' + p[1]; }
+  function cellOfSub(subId) { return /\.u$/.test(subId) ? subId : subId + '.d'; }
+  function canU(l, m) { var d = l && m ? debtOf(l, m) : null; return !!d && d.left >= 0; }   // работу с урока можно сдать: шанс открыт и срок не вышел
+  function noChance(m) { return !!m && 'sc' in m && !m.sc && !!String(m.v || '').trim(); }   // отметка стоит, шанса нет
+  function scAuto(v) { return /^[–-](?:\s|\(|$)/.test(String(v || '').trim()); }   // «–» — работы нет: шанс включается сам
+  function scOffer(v) { var i = markInfo(v); return !!i.red || i.cls === 'mn'; }   // 2, 1, незачёт, «–», «н» — шанс можно дать
+  function scPlus(n) { var d = new Date(); d.setDate(d.getDate() + n); return ddmm(d); }
+  // «до конца четверти» — последний учебный день перед ближайшими каникулами (неделя и дольше)
+  function scQEnd() {
+    var t = new Date(), a0 = null; t.setHours(0, 0, 0, 0);
+    V_OFF.forEach(function (r) { var a = realDate(r[0]), z = realDate(r[1]); if (a && z && z - a >= 5 * 864e5 && a > t && (!a0 || a < a0)) a0 = a; });
+    if (!a0) return scPlus(SC_DAYS);
+    a0 = new Date(a0); a0.setDate(a0.getDate() - 1); return ddmm(a0);
+  }
+  // поля второго шанса у новой отметки: «–» — шанс сам на SC_DAYS дней; 2, 1, «н», незачёт — выключен, пока учитель не включит;
+  // хорошая отметка поверх открытого шанса — шанс закрыт (sx), прежняя видна учителю и ученику зачёркнутой
+  // против «закапывания» (Атлас 24.10, D «да»): не больше SC_CAP открытых шансов у ученика по предмету — следующий «–»
+  // шанс сам не открывает, а учителю — «поговорить» у фамилии и рядом с «Ждут проверки». Вручную включить можно
+  var SC_CAP = 3, scMapC = null;
+  // открытые шансы (срок не вышел) «ученик.предмет» → клетки; один проход по оценкам, сброс — при правке оценки и перерисовке
+  function scMap() {
+    if (scMapC) return scMapC;
+    scMapC = {};
+    Object.keys(S.mark).forEach(function (id) {
+      var p = id.split('.'), l = S.les[p[0]], d = l && debtOf(l, S.mark[id]);
+      if (d && d.left >= 0) (scMapC[p[1] + '.' + l.subj] = scMapC[p[1] + '.' + l.subj] || []).push(id);
+    });
+    return scMapC;
+  }
+  function scOpenN(sid, subj, skip) { return (scMap()[sid + '.' + subj] || []).filter(function (id) { return id !== skip; }).length; }
+  function scTalk(sid) {   // предметы, где у ученика SC_CAP и больше открытых шансов; n — сколько
+    return shansSrv ? ALLSUBJ.map(function (sj) { return { id: sj.id, short: sj.short, n: scOpenN(sid, sj.id) }; }).filter(function (x) { return x.n >= SC_CAP; }) : [];
+  }
+  function scFields(d, old, l, id) {
+    if (!shansSrv) return d;
+    if (old && splitMark(old).g.toLowerCase() === splitMark(d).g.toLowerCase()) {   // поменяли комментарий — шанс прежний
+      if ('sc' in old) d.sc = old.sc;
+      if (old.sx) d.sx = old.sx;
+      return d;
+    }
+    if (scOffer(d.v)) d.sc = scAuto(d.v) && !(l && id && scOpenN(id.split('.')[1], l.subj, id) >= SC_CAP) ? scPlus(SC_DAYS) : '';
+    else if (d.v && old && l && debtOf(l, old)) d.sx = Date.now();
+    else if (d.v && old && old.sx) d.sx = old.sx;   // 4 → 5 после закрытого шанса — он по-прежнему закрыт
+    return d;
+  }
+  // долг (второй шанс) по клетке: до какого числа пересдать и сколько дней осталось (0 — сегодня последний день).
+  // m — запись оценки; строка — старый вызов, как запись без поля sc
+  function debtOf(l, m) {
+    if (!m || typeof m !== 'object') m = { v: m };
+    var d;
+    if ('sc' in m) { if (!m.sc) return null; d = realDate(m.sc); }
+    else if (!markInfo(m.v).red) return null;
+    else { d = realDate(l.date); if (d) d.setDate(d.getDate() + DEBT_DAYS); }
     if (!d) return null;
-    d.setDate(d.getDate() + DEBT_DAYS);
     var t = new Date(); t.setHours(0, 0, 0, 0);
     return { until: ddmm(d), left: Math.round((d - t) / 864e5) };
   }
@@ -1358,22 +1449,22 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     return Object.keys(S.mark).filter(function (id) {
       var p = id.split('.'), l = S.les[p[0]];
       if (l && p[2] === 'd' && l.sh && prevSameDay(l, l.date, l.subj)) return false;   // ДЗ сдвоенного урока не видна — не считаем
-      return p[1] === sid && l && inTab(l) && debtOf(l, S.mark[id].v);   // долги открытого предмета (Атлас, 30.09); во «Все» — по всем предметам журнала
+      return p[1] === sid && l && inTab(l) && debtOf(l, S.mark[id]);   // долги открытого предмета (Атлас, 30.09); во «Все» — по всем предметам журнала
     }).length;
   }
   // клетка целиком: класс, содержимое, подсказка
   function cellView(id) {
     var parts = id.split('.'), l = S.les[parts[0]], m = S.mark[id], v = m ? m.v : '';
-    var inf = markInfo(v), dbt = l ? debtOf(l, v) : null, cls = 'c ' + parts[2] + ' ' + inf.cls + (splitMark(m).g.length > 3 ? ' long' : '');
+    var inf = markInfo(v), dbt = l ? debtOf(l, m) : null, cls = 'c ' + parts[2] + ' ' + inf.cls + (splitMark(m).g.length > 3 ? ' long' : '');
     var sm = splitMark(m), inner = esc(sm.g);
     if (/[0-9a-zа-яё]/i.test(sm.c)) inner += '<i class="cmt" aria-label="есть комментарий"></i>';
     if (dbt) { cls += ' debt' + (dbt.left < 0 ? ' zlate' : ''); inner += '<sup>' + (dbt.left < 0 ? '!' : dbt.left + 'д') + '</sup>'; }
-    var sb = parts[2] === 'd' ? S.sub[parts[0] + '.' + parts[1]] : null;
+    var sb = S.sub[subOfCell(id)];
     if (sb) {
       cls += sb.st === 'sent' ? ' sub-sent' : sb.st === 'redo' ? ' sub-redo' : '';
       inner += '<i class="cam" aria-label="сдано фото">📷</i>';
     }
-    if (parts[2] === 'd' && parts[1] === meId) cls += ' mine';
+    if (parts[1] === meId && (parts[2] === 'd' || (shansSrv && (sb || canU(l, m))))) cls += ' mine';   // своя клетка: сдать фото (у работы на уроке — по второму шансу)
     if (mode !== 'teacher') { /* A и ✎ — пометки для D, детям без легенды непонятны */ }
     else if (m && m.by === 'auto') inner += '<i class="src" aria-hidden="true">A</i>';
     else if (m && m.av) inner += '<i class="src" aria-hidden="true">✎</i>';
@@ -1387,15 +1478,16 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var t = '<b>' + esc(p.fam + ' ' + p.name) + '</b>' + esc(l.date) + ', ' + (parts[2] === 'd' ? (shared ? 'ДЗ, общая на ' + sharedCount(l) + ' урока' : 'ДЗ') : 'урок') +
       (l.topic ? '\n' + esc(plain(l.topic).slice(0, 90)) : '');
     var sm = splitMark(m);
-    var sb1 = parts[2] === 'd' ? S.sub[parts[0] + '.' + parts[1]] : null;
+    var sb1 = S.sub[subOfCell(id)];
     if (!m || (!m.v && !sm.c)) return t + (sb1 ? '\n📷 ' + ({ sent: 'Сдано, ждёт проверки', redo: 'На доработке', checked: 'Сдано и проверено' }[sb1.st] || '') : '\nОценки нет');
     t += '\nОценка: ' + esc(sm.g || '—') + (m.pv && (vidSrv || vidUrl) ? ' (исправлено' + (m.gt ? ' ' + ddmm(new Date(m.gt)) : '') + ', было ' + esc(splitMark({ v: m.pv }).g) + ')' : '') + (sm.c ? '\nКомментарий: ' + esc(sm.c) : '');
     if (m.by === 'auto') t += '\nПоставила автоматика' + (m.an ? ': ' + esc(m.an) : '');
     else if (m.av) t += '\nD исправил. Автоматика ставила ' + esc(m.av) + (m.an ? ' (' + esc(m.an) + ')' : '');
-    var dbt = debtOf(l, m.v);
-    var sb0 = parts[2] === 'd' ? S.sub[parts[0] + '.' + parts[1]] : null;
+    var dbt = debtOf(l, m);
+    var sb0 = S.sub[subOfCell(id)];
     if (sb0) t += '\n📷 ' + ({ sent: 'Сдано, ждёт проверки', redo: 'На доработке', checked: 'Сдано и проверено' }[sb0.st] || '');
-    if (dbt) t += '\n' + (dbt.left < 0 ? 'Долг: срок пересдачи вышел ' + dbt.until : 'Долг: пересдать до ' + dbt.until + (dbt.left === 0 ? ' — сегодня последний день' : ', осталось ' + dbt.left + ' дн.'));
+    var dw = shansSrv ? 'Второй шанс: ' : 'Долг: ';
+    if (dbt) t += '\n' + (dbt.left < 0 ? dw + 'срок пересдачи вышел ' + dbt.until : dw + 'пересдать до ' + dbt.until + (dbt.left === 0 ? ' — сегодня последний день' : ', осталось ' + dbt.left + ' дн.'));
     return t;
   }
 
@@ -1548,12 +1640,14 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function newId(p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function stamp(k, id) { var p = S[k][id]; return Math.max(Date.now(), (p && p.ts || 0) + 1); }
   function put(k, id, d) {
+    if (k === 'mark') scMapC = null;
     var ts = stamp(k, id), o = {};
     Object.keys(d).forEach(function (x) { o[x] = d[x]; });
     o.id = id; o.ts = ts; S[k][id] = o;
     queue({ t: 'put', k: k, id: id, d: d, ts: ts });
   }
   function del(k, id) {
+    if (k === 'mark') scMapC = null;
     var ts = stamp(k, id);
     delete S[k][id];
     queue({ t: 'del', k: k, id: id, ts: ts });
@@ -1600,6 +1694,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         vidSrv = !!r.data.vid; provSrv = !!r.data.prov;   // вид ученика включён детям — в окне дня домашка показана так, как её увидят
         var itogNew = itogSrv !== !!r.data.itog;   // итоги включили или выключили — перерисовать, даже если записи те же
         if (itogNew) { itogSrv = !!r.data.itog; lsSet('zh:itog', itogSrv); }
+        if (shansSrv !== !!r.data.shans) { shansSrv = !!r.data.shans; lsSet('zh:shans', shansSrv); itogNew = true; }   // и тогда перерисовать
         // значок открыли там, где память держится: ключ — ещё и в память, тогда ссылка «Журнал» с сайта уроков (адрес без ключа) тоже откроет журнал
         if (uMode && !uMem()) lsSet('zh:us', teacherKey);
         if (uMode) uOk = true;
@@ -1632,7 +1727,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (e && e.badKey) {
           // неотправленные оценки не трогаем: сервер мог просто перезапускаться
           setSt('bad', 'ключ не подошёл — правки ждут на этом устройстве');
-          $('footLinks').innerHTML = '<button class="link" data-act="teacher">Ввести ключ учителя заново</button> · <button class="link" data-act="asview">Смотреть по коду класса</button>';
+          $('footLinks').innerHTML = '<button class="link" data-act="teacher">Ввести ключ учителя заново</button> | <button class="link" data-act="asview">Смотреть по коду класса</button>';
           if (!loaded) $('main').innerHTML = '<div class="gate"><h2>Ключ учителя не подошёл</h2><p>Журнал на этом устройстве пока не открывался.</p>' +
             '<p style="margin-top:14px"><button class="btn pri" data-act="teacher">Ввести ключ</button> <button class="btn" data-act="asview">Смотреть по коду</button></p></div>';
           clearTimeout(retryT); retryT = setTimeout(sync, 60000);
@@ -1659,6 +1754,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (r.status === 403) {
           lsDel(LS.pass);
           gate(code ? 'Код не подошёл. Проверь его или спроси у учителя.' : 'Учитель сменил код класса — введи новый.');
+          if (code) document.dispatchEvent(new Event('vopros:podskazka'));   // подсказка «?» — после неверного кода, а не сразу (ТЗ 22, E6)
           return;
         }
         if (r.status === 429) { gate('Слишком много неверных попыток. Подожди 10 минут.'); return; }
@@ -1667,7 +1763,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (r.data.pass) lsSet(LS.pass, r.data.pass);
         if (r.data.j) J = r.data.j;
         if (r.data.meta) setMeta(r.data.meta);
-        itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; meId = null; S = fromObjects(r.data.objects); loaded = true; render();   // по коду — кто смотрит, неизвестно
+        itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; shansSrv = !!r.data.shans; meId = null; S = fromObjects(r.data.objects); loaded = true; render();   // по коду — кто смотрит, неизвестно
         viewFoot();
       })
       .catch(function (e) {
@@ -1702,7 +1798,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (!krUrl()) krPut(kr());   // пришла без ключа в адресе (ссылка «Журнал» с сайта уроков) — вернуть: закладка его запомнит
         if (r.data.j) J = r.data.j;
         if (r.data.meta) setMeta(r.data.meta);
-        itogSrv = !!r.data.itog; S = fromObjects(r.data.objects); loaded = true; render();
+        itogSrv = !!r.data.itog; shansSrv = !!r.data.shans; S = fromObjects(r.data.objects); loaded = true; render();
         krFoot();
       })
       .catch(function (e) {
@@ -1714,7 +1810,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
   // подвал в режиме классного руководителя: что это за режим и как из него выйти (иначе ссылка «прилипает» к устройству)
   function krFoot() {
-    $('footLinks').innerHTML = (krMode ? 'Вы смотрите журнал по ссылке классного руководителя: оценки можно смотреть и выгружать, менять нельзя · ' : '') +
+    $('footLinks').innerHTML = (krMode ? 'Вы смотрите журнал по ссылке классного руководителя: оценки можно смотреть и выгружать, менять нельзя | ' : '') +
       '<button class="link" data-act="krexit">Выйти из этого режима</button>';
   }
   function gate(err) {
@@ -1723,7 +1819,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       '<div class="gate"><h2>Код класса</h2><p>Журнал открывается по коду. Его говорит учитель на уроке.</p>' +
       '<form id="gateForm"><input id="gateIn" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="40" aria-label="Код класса" placeholder="код">' +
       '<button class="btn pri" type="submit">Открыть</button></form><div class="err">' + esc(err || '') + '</div>' +
-      '<div class="ili">или</div><button class="btn vh" data-act="vhod">Войти</button></div>';
+      '<div class="ili">или</div><button class="btn vh" data-act="vhod">Я учитель — войти</button></div>';
     viewFoot();   // «Войти» уже на карточке — подвал при ней пуст
     var f = $('gateForm');
     f.onsubmit = function (ev) { ev.preventDefault(); var c = $('gateIn').value.trim(); if (c) view(c); };
@@ -1903,7 +1999,10 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (uDead) { t.hidden = true; return; }   // вход отключён — журнала на экране нет, и править нечего
     t.hidden = false;
     var code = S.cfg.code && S.cfg.code.v, waiting = waitingSubs().length;
+    var talk = students().map(function (p) { return { p: p, sj: scTalk(p.id) }; }).filter(function (x) { return x.sj.length; });
     t.innerHTML = (waiting ? '<button class="btn queue" data-act="queue">📥 Ждут проверки: ' + waiting + '</button>' : '') +
+      talk.slice(0, 3).map(function (x) { return '<button class="btn talk" data-act="talk" data-sid="' + x.p.id + '" data-subj="' + x.sj[0].id + '" title="' + SC_CAP + ' и больше открытых вторых шансов — новый «–» шанс сам не откроет">💬 Поговорить: ' + esc(x.p.fam || x.p.name) + ', ' + esc(x.sj.map(function (s) { return s.short.toLowerCase(); }).join(', ')) + '</button>'; }).join('') +
+      (talk.length > 3 ? '<span class="codebox">и ещё ' + (talk.length - 3) + '</span>' : '') +
       '<button class="btn pri" data-act="addles">＋ День</button>' +
       '<button class="btn" data-act="students">Ученики</button>' +
       (META.kind !== 'cls' ? '<span class="codebox">Ученикам — кнопка «📒 Мой журнал» в боте или личная ссылка (🔗 в «Учениках»)</span>'
@@ -1914,6 +2013,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
 
   function render() {
+    scMapC = null;   // данные могли прийти с сервера целиком
     if (vidShow()) { vRender(); return; }   // ученик своей строки — свои экраны, не таблица (ТЗ 19)
     if (cur) { pendingRender = true; return; }
     renderTabs(); renderTools();
@@ -1982,12 +2082,13 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       '<th class="sub it-s it-st it3" title="Четвертная контрольная">КР</th><th class="sub it-s it-st it4" title="Оценка за четверть">Итог</th>';
     h += '</tr></thead><tbody>';
     P.forEach(function (p) {
-      var dn = edit ? debtCount(p.id) : 0;   // счётчик долгов — только учителю; дети видят красные клетки (D, 30.09)
+      var dn = edit ? debtCount(p.id) : 0, tk;   // счётчик долгов — только учителю; дети видят красные клетки (D, 30.09)
       var ca = canAvg(p.id), av = ca && avgOn[p.id] ? rowAvg(p.id, LY) : null;   // у класса с итогами среднего у фамилии нет — он в «Итоге» (D 23.10)
       h += '<tr' + (p.id === meId ? ' class="me"' : '') + '><th class="nm" data-sid="' + p.id + '"' + (ca ? ' title="Нажми — средний балл"' : '') + '>' +
         (av ? '<i class="avg" title="Средний балл ' + (mo === 'all' ? 'за год' : 'за месяц') + ': ' + av.n + ' оц.">' + av.v + '</i>' : '') +
         '<b>' + esc(p.name || p.fam) + '</b><span><i class="fm">' + esc(p.name ? p.fam : '') + '</i>' + (p.id === meId ? ',\u00a0это ты' : '') +   // пробелы неразрывные: в строке-ряду обычный пробел у края пропал бы
-        (dn ? ',\u00a0<em>' + dn + ' ' + (dn === 1 ? 'долг' : dn < 5 ? 'долга' : 'долгов') + '</em>' : '') + '</span></th>';
+        (edit && (tk = scTalk(p.id).filter(function (sj) { return inTab({ subj: sj.id }); })).length ? ',\u00a0<em>поговорить: ' + vN(Math.max.apply(null, tk.map(function (x) { return x.n; })), 'второй шанс', 'вторых шанса', 'вторых шансов').replace(' ', '\u00a0') + '</em>'
+          : dn ? ',\u00a0<em>' + (shansSrv ? 'второй шанс: ' + dn : dn + ' ' + (dn === 1 ? 'долг' : dn < 5 ? 'долга' : 'долгов')) + '</em>' : '') + '</span></th>';
       LY.forEach(function (x) {
         x.cols.forEach(function (c, ci) {
           var id = c.l.id + '.' + p.id + '.' + c.w, cv = cellView(id);
@@ -2070,10 +2171,11 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         li('<i class="m5">85</i>', 'баллы из 100') +
         li('<i class="m4">зач</i>', 'зачёт') +
         li('<i class="mn">н</i>', 'не было на уроке') + '</ul></div>' +
-      '<div class="dbt"><h4>Долги</h4><ul>' +
-        li('<i class="m2">2<small>9д</small></i>', 'пересдать за ' + DEBT_DAYS + ' дней; в углу — сколько осталось') +
+      '<div class="dbt"><h4>' + (shansSrv ? 'Второй шанс' : 'Долги') + '</h4><ul>' +
+        li('<i class="m2">2<small>9д</small></i>', (shansSrv ? 'можно пересдать' : 'пересдать за ' + DEBT_DAYS + ' дней') + '; в углу — сколько осталось') +
         li('<i class="m2">2<small class="late">!</small></i>', 'срок пересдачи вышел') +
-        li('<i class="m2">1</i><i class="m2">2</i><i class="m2">–</i>', 'за домашку — не сдано: исправь и сдай заново') + '</ul></div>' +
+        (shansSrv ? li('<i class="m2">–</i>', 'работы нет — сдай до срока в углу') + li('<i class="m2">2</i>', 'без числа в углу — второго шанса нет')
+          : li('<i class="m2">1</i><i class="m2">2</i><i class="m2">–</i>', 'за домашку — не сдано: исправь и сдай заново')) + '</ul></div>' +
       (it ? '<div><h4>Итоги четверти</h4><ul>' +
         li('<i class="it-lg">4,50</i>', 'ДЗ — средняя оценок за домашку, считается сама') +
         li('<i class="m4">4</i>', 'КР — четвертная контрольная') +
@@ -2084,7 +2186,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       }).join('') + '</ul></div>' : '') +
       '<div><h4>Подсказки</h4><ul class="tips">' +
         (qMode() || svoiView() && !meId ? '' : '<li>Нажми на ' + (svoiView() ? 'своё имя' : 'имя') + ' — средний балл, ещё раз — спрятать</li>') +
-        '<li>' + (mode === 'teacher' ? 'Наведи' : 'Нажми') + ' на клетку — вспомнишь, что было</li>' +
+        '<li>' + (mode === 'teacher' && !(window.matchMedia && matchMedia('(hover: none)').matches) ? 'Наведи' : 'Нажми') + ' на клетку — вспомнишь, что было</li>' +
         (J === MAIN_J ? '<li>Дата с ↗ — урок на сайте</li>' : '') +
         '<li>Тема — карточка урока и файлы</li></ul></div></aside>';
   }
@@ -3084,7 +3186,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (want && r.data.j === want) { lsSet('zh:sj', want); lsSet('zh:sjt', Date.now()); }   // выбрал в переключателе и он открылся — в следующий раз откроется он
       if (!r.data.stu) { meId = null; freeRows = r.data.free || []; return 'nolink'; }
       setMeta(r.data.meta);
-      meId = r.data.stu; sdachaOn = !!r.data.sdacha; sdelSrv = !!r.data.sdel; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; viewFoot();
+      meId = r.data.stu; sdachaOn = !!r.data.sdacha; sdelSrv = !!r.data.sdel; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; shansSrv = !!r.data.shans; viewFoot();
       if (znUrl()) lsSet('zh:zn', znUrl());   // отдельной записью: в деле только когда другого входа на устройстве нет (см. старт) // ключ значка — ещё и в память: ушёл на сайт уроков и вернулся по ссылке «Журнал» без ключа — кода класса не спросим (D 12.10)
       S = fromObjects(r.data.objects); loaded = true; render();
       return true;
@@ -3122,7 +3224,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (mode === 'teacher' || krMode) return;
     $('footLinks').innerHTML = document.querySelector('#main #gateIn') ? ''
       : meId ? '<button class="link" data-act="teacher">Войти как учитель</button>'
-        : '<button class="link" data-act="recode">Ввести другой код</button> · <button class="link" data-act="vhod">Войти</button>';
+        : '<button class="link" data-act="recode">Ввести другой код</button> | <button class="link" data-act="vhod">Я учитель — войти</button>';
     znFoot();
   }
   // ссылка на значок — в подвале, под таблицей и легендой (D 12.10): действие разовое, наверху ему не место.
@@ -3133,7 +3235,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (!(znSrv && meId && (JOURNALS.length < 2 || znUrl()))) return;
     var sp = document.createElement('span');
     sp.setAttribute('data-zn', '1');
-    sp.innerHTML = '<button class="link" data-act="znachok">📱 Значок на экран телефона</button>' + (f.firstChild ? ' · ' : '');
+    sp.innerHTML = '<button class="link" data-act="znachok">📱 Значок на экран телефона</button>' + (f.firstChild ? ' | ' : '');
     f.insertBefore(sp, f.firstChild);
   }
   // значок: ключ своей строки — в адрес, дальше ученик сам добавляет страницу на экран «Домой»
@@ -3170,8 +3272,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   // подвал учителя: значок, логин с паролем и устройства, выход. Действия редкие — наверху им не место (как значку ученика)
   function uFoot() {
     if (mode !== 'teacher' || uDead || !uchSrv) return;
-    $('footLinks').innerHTML = '<button class="link" data-act="uzn">📱 Значок на экран телефона</button> · ' +
-      '<button class="link" data-act="uset">Логин и пароль</button>' + (uMode ? ' · <button class="link" data-act="uexit">Выйти</button>' : '');
+    $('footLinks').innerHTML = '<button class="link" data-act="uzn">📱 Значок на экран телефона</button> | ' +
+      '<button class="link" data-act="uset">Логин и пароль</button>' + (uMode ? ' | <button class="link" data-act="uexit">Выйти</button>' : '');
   }
   // с устройства долой всё учительское: ключ входа, копии журналов, выбранный журнал; dropOut — и несохранённые правки.
   // Входы ученика (бот, значок, код класса) не трогаем: телефон может быть его
@@ -3603,15 +3705,15 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     });
     // убрать можно, пока учитель не начал: работа не проверена, оценки нет (или долг), на фото нет его разбора и пометок
     function canDel() {
-      var sb = S.sub[subId] || {}, m = S.mark[subId + '.d'], f = list[i];
-      return mine && sb.st === 'sent' && !(m && String(m.v || '').trim() && !markInfo(m.v).red) && !(sb.ink || {})[f] && !((sb.cm || {})[f] || []).length;
+      var sb = S.sub[subId] || {}, m = S.mark[cellOfSub(subId)], f = list[i];
+      return mine && sb.st === 'sent' && !(m && String(m.v || '').trim() && !isDebt(m)) && !(sb.ink || {})[f] && !((sb.cm || {})[f] || []).length;
     }
     // ученик убирает своё фото; убрал последнее — сдачи нет, домашка снова «не сдано»
     function delPhoto(b) {
       if (!confirm('Удалить это фото из сдачи? Учитель его не увидит.')) return;
       var lab = b.lastChild;
       b.disabled = true; lab.textContent = 'Удаляю…';
-      post('/zhurnal/subdel', { les: subId.split('.')[0], f: list[i] }, stuH()).then(function (r) {
+      post('/zhurnal/subdel', { les: subId.split('.')[0], f: list[i], w: /\.u$/.test(subId) ? 'u' : 'd' }, stuH()).then(function (r) {
         b.disabled = false; lab.textContent = 'Удалить';
         if (r.status !== 200 || !r.data.ok) {
           alert(r.status === 409 ? (r.data.error === 'marked' ? 'Учитель уже начал проверять это фото — удалить нельзя. Если что-то не так, напиши ему в чат.' : 'Работу уже проверили — фото удалить нельзя.')
@@ -3674,14 +3776,14 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function openReview(subId, i) {
     var sb = S.sub[subId];
     if (!sb || !sb.ph || !sb.ph.length) return;
-    var q = subId.split('.'), les = S.les[q[0]], stu = S.stu[q[1]], cellId = subId + '.d';
+    var q = subId.split('.'), les = S.les[q[0]], stu = S.stu[q[1]], cellId = cellOfSub(subId);
     if (!les || !stu) return;
     var list = sb.ph, sj = vSj(les.subj), v = document.createElement('div'), from = document.activeElement;
     var color = PEN_COLORS[0], width = PEN_W.m, tool = 'pen', strokes = [], notes = [], stk = null, img = null, W = 0, H = 0, bw = 0, bh = 0, zoom = 1, rot = 0, dirty = false, raf = 0, docSeq = 0;
     var m0 = S.mark[cellId], pick = splitMark(m0).g;
     var Q = waitingSubs().sort(function (x, y) { return (x.at || 0) - (y.at || 0); }).map(function (x) { return x.id; });
     v.className = 'rv ' + sj.k;
-    v.innerHTML = '<div class="rv-top"><button class="rv-back" data-rv="x">← Журнал</button><div class="rv-who"><b>' + esc((stu.fam + ' ' + stu.name).trim()) + '</b><span>' + esc(sj.short + ', ' + vDay(les.date) + ', домашка') + '</span></div>' +
+    v.innerHTML = '<div class="rv-top"><button class="rv-back" data-rv="x">← Журнал</button><div class="rv-who"><b>' + esc((stu.fam + ' ' + stu.name).trim()) + '</b><span>' + esc(sj.short + ', ' + vDay(les.date) + (/\.u$/.test(subId) ? ', работа на уроке' : ', домашка')) + '</span></div>' +
         (Q.length ? '<div class="rv-q"><span>Ждут проверки: ' + Q.length + '</span><button data-rv="qp" aria-label="Предыдущая работа">‹</button><button data-rv="qn" aria-label="Следующая работа">›</button></div>' : '') + '</div>' +
       '<div class="rv-wrap"><aside class="rv-les"><button class="rv-lesx" data-rv="lesx">✕ Свернуть урок</button><div class="rv-seg"><button data-rv="sg" data-s="this" aria-pressed="true">Этот урок</button><button data-rv="sg" data-s="other" aria-pressed="false">Другой урок</button><button data-rv="sg" data-s="own" aria-pressed="false">Свой файл</button></div><div class="rv-lbody"></div></aside>' +
       '<main class="rv-work"><button class="rv-lesb" data-rv="lesb">📘 Урок и файлы ›</button>' +
@@ -3844,6 +3946,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       var old = S.mark[cellId], d = { v: g };
       if (c) d.c = c;
       if (old && (old.by === 'auto' || old.av)) { d.by = 'D'; d.av = old.av || old.v; if (old.an) d.an = old.an; }
+      scFields(d, old, S.les[cellId.split('.')[0]], cellId);
       if (g || c) put('mark', cellId, d); else if (old) del('mark', cellId);
     }
     function close() {
@@ -3900,10 +4003,25 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     status(); setNext(); lesPanel('this'); show();
   }
 
+  // сдать работу с урока по второму шансу (ТЗ 22 C, D 24.10) — в таблице ученика, тем же потоком фото, что домашку
+  function openSubmitU(markId, l, sub, m, sm) {
+    var subj = ALLSUBJ.filter(function (x) { return x.id === l.subj; })[0] || { name: '' }, dbt = debtOf(l, m), can = sdachaOn && canU(l, m);
+    var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
+      '<h3>Работа на уроке, ' + esc(l.date) + '</h3><div class="meta">' + esc(subj.name) + (l.topic ? ', ' + esc(plain(l.topic)) : '') + '</div>';
+    if (m && (m.v || sm.c)) h += '<div class="lbl">Учитель</div><div class="big">' + (sm.g ? '<i class="' + markCls(m.v) + '">' + esc(sm.g) + '</i>' : '') + '<span>' + esc(sm.c || '') + '</span></div>';
+    if (dbt) h += '<div class="note">' + (dbt.left < 0 ? 'Срок второго шанса вышел ' + esc(dbt.until) + '. Подойди к учителю.' : 'Второй шанс: исправь работу и сдай фото до ' + esc(vDay(dbt.until)) + '. Можно и устно — подойди к учителю.') + '</div>';
+    h += '<div class="lbl">Сдача</div><div class="note">' + (sub ? SUB_ST[sub.st] : 'Ещё не сдано.') + '</div>';
+    if (sub) h += thumbsHtml(sub.ph, subOfCell(markId));
+    if (can) h += '<label class="btn pri upl" style="margin-top:6px">📷 ' + (sub && sub.st === 'sent' ? 'Дослать фото' : 'Сдать фото') +
+      '<input type="file" id="subIn" data-lid="' + l.id + '" data-mark="' + markId + '" accept="image/*" multiple></label><div class="note" id="subSt">Можно несколько страниц сразу, до 12 фото.</div>';
+    h += '<div class="row"><span class="sp"></span><button class="btn" data-act="close">Закрыть</button></div></div>';
+    $('dlg').innerHTML = h; fillThumbs($('dlg'));
+  }
   var SUB_ST = { sent: 'Сдано — ждёт проверки учителя.', redo: 'Учитель вернул на доработку: посмотри комментарий и сдай заново.', checked: 'Проверено ✅' };
   function openSubmit(markId) {
-    var q = markId.split('.'), l = S.les[q[0]], sub = S.sub[q[0] + '.' + q[1]], m = S.mark[markId], sm = splitMark(m);
+    var q = markId.split('.'), l = S.les[q[0]], sub = S.sub[subOfCell(markId)], m = S.mark[markId], sm = splitMark(m);
     if (!l) return;
+    if (q[2] === 'u') { openSubmitU(markId, l, sub, m, sm); return; }
     var subj = SUBJ.filter(function (x) { return x.id === l.subj; })[0], n = sharedCount(l), HF = hwFiles(l);
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
       '<h3>Домашка, ' + esc(l.date) + '</h3><div class="meta">' + esc(subj.name) + (n > 1 ? ', общая на ' + n + ' урока' : '') + (l.topic ? ', ' + esc(plain(l.topic)) : '') + '</div>' +
@@ -3912,7 +4030,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     h += '<div class="lbl">Сдача</div><div class="note">' + (sub ? SUB_ST[sub.st] : 'Ещё не сдано. Сфотографируй решение целиком и нажми «Сдать фото».') + '</div>';
     if (sub) h += thumbsHtml(sub.ph, q[0] + '.' + q[1]) + (sub.ink && Object.keys(sub.ink).length ? '<div class="note">✏️ На фото — разбор учителя. Нажми, чтобы открыть крупно, и перепиши исправления в тетрадь.</div>' : '');
     if (!sdachaOn) h += '<div class="note">Приём домашек через журнал пока выключен.</div>';
-    else if (!sub || sub.st !== 'checked' || markInfo(m && m.v).red)   // 1 и 2 — не сдано: можно сдать заново
+    else if (!sub || sub.st !== 'checked' || isDebt(m))   // 1 и 2 — не сдано (второй шанс): можно сдать заново
       h += (sub && sub.st === 'checked' ? '<div class="note">Оценка ' + esc(sm.g) + ' — домашка не сдана. Исправь и сдай заново: учитель проверит ещё раз.</div>' : '') +
         '<label class="btn pri upl" style="margin-top:6px">📷 ' + (sub && sub.st !== 'sent' ? 'Сдать заново' : sub ? 'Дослать фото' : 'Сдать фото') +
         '<input type="file" id="subIn" data-lid="' + l.id + '" data-mark="' + markId + '" accept="image/*" multiple></label><div class="note" id="subSt">Можно несколько страниц сразу, до 12 фото.</div>';
@@ -3934,12 +4052,13 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     });
   }
   function submitPhotos(input) {
-    var files = Array.prototype.slice.call(input.files, 0, 12), st = $('subSt'), lid = input.dataset.lid, markId = input.dataset.mark;
+    var files = Array.prototype.slice.call(input.files, 0, 12), st = $(input.dataset.st || 'subSt'), lid = input.dataset.lid, markId = input.dataset.mark;
     if (st) st.textContent = 'Готовлю ' + files.length + ' фото…';
     input.disabled = true; subSeq++;
     Promise.all(files.map(shrink)).then(function (blobs) {
       var fd = new FormData();
       fd.append('les', lid);
+      if (/\.u$/.test(markId || '')) fd.append('w', 'u');   // работа на уроке — по второму шансу
       blobs.forEach(function (b, i) { fd.append('photo', b, 'foto' + (i + 1) + '.jpg'); });
       if (st) st.textContent = 'Отправляю…';
       fd.append('j', J);
@@ -3950,10 +4069,10 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         var o = r.j.obj, d = o.d; d.id = o.id; d.ts = o.ts; S.sub[o.id] = d;
         subSeq++; input.disabled = false; input.value = '';   // в новом виде кнопка остаётся на экране — «Дослать фото» должна работать и второй раз
         render(); if (!vidOn()) openSubmit(markId);   // в новом виде сдача — прямо в карточке урока
-        var s2 = $('subSt'); if (s2) s2.textContent = '✅ Сдано! Учитель получил уведомление.';
+        var s2 = $(input.dataset.st || 'subSt'); if (s2) s2.textContent = '✅ Сдано! Учитель получил уведомление.';
         return;
       }
-      var why = { 503: 'Приём домашек пока выключен.', 409: r.j.error === 'checked' ? 'Эта домашка уже проверена.' : 'Слишком много фото — до 12 в одной сдаче.',
+      var why = { 503: 'Приём домашек пока выключен.', 409: r.j.error === 'checked' ? (shansSrv ? 'Сдать нельзя: работа проверена или срок второго шанса вышел. Подойди к учителю.' : 'Эта домашка уже проверена.') : 'Слишком много фото — до 12 в одной сдаче.',
         415: 'Это не фото. Нужна картинка (JPG, PNG).', 403: 'Учитель ещё не отметил тебя в журнале.', 401: 'Вход устарел — войди через Телеграм заново.', 413: 'Фото слишком большие.' };
       if (r.status === 401) { if (znUrl()) znSet(''); else lsDel(LS.ck); }   // значок отключён — негодный ключ из адреса долой, свой вход через бота цел
       if (st) st.textContent = why[r.status] || 'Не получилось отправить. Попробуй ещё раз.';
@@ -4080,13 +4199,22 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var src = '';
     if (m && m.by === 'auto') src = '<div class="pop-src">Поставила автоматика' + (m.an ? ': ' + esc(m.an) : '') + '. Исправишь — останется твоя оценка, автоматика её больше не тронет.</div>';
     else if (m && m.av) src = '<div class="pop-src">Ты исправил оценку автоматики. Она ставила <b>' + esc(m.av) + '</b>' + (m.an ? ' (' + esc(m.an) + ')' : '') + '.</div>';
-    var sb = parts[2] === 'd' ? S.sub[parts[0] + '.' + parts[1]] : null;
+    var sb = S.sub[subOfCell(id)], sbId = subOfCell(id);
     if (sb) src += '<div class="pop-sub">📷 ' + ({ sent: 'Сдал(а) — ждёт проверки. Оценка отправит ученику «проверено» в бот.', redo: 'На доработке — ждём новую сдачу.', checked: 'Проверено.' }[sb.st] || '') +
-      thumbsHtml(sb.ph, parts[0] + '.' + parts[1]) + '<div class="pop-x">' + (sb.st === 'sent' ? '<button class="redo" data-act="subredo">↺ На доработку (с комментарием)</button>' : '') +
-      '<button data-act="submove" title="Ученик сдал не в тот день — перенести фото и разбор в другой">↪ В другой день</button></div><div id="popMove"></div></div>';
+      thumbsHtml(sb.ph, sbId) + '<div class="pop-x">' + (sb.st === 'sent' ? '<button class="redo" data-act="subredo">↺ На доработку (с комментарием)</button>' : '') +
+      (parts[2] === 'd' ? '<button data-act="submove" title="Ученик сдал не в тот день — перенести фото и разбор в другой">↪ В другой день</button>' : '') + '</div><div id="popMove"></div></div>';
     var pop = $('pop');
-    pop.innerHTML = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(l.date) + ', ' +
-      (parts[2] === 'd' ? (nSh > 1 ? 'ДЗ, общая на ' + nSh + ' урока' : 'ДЗ') : 'урок') + (l.topic ? '<br>' + esc(plain(l.topic).slice(0, 60)) : '') + '</span></div>' + src +
+    var head = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(l.date) + ', ' +
+      (parts[2] === 'd' ? (nSh > 1 ? 'ДЗ, общая на ' + nSh + ' урока' : 'ДЗ') : 'урок') + (l.topic ? '<br>' + esc(plain(l.topic).slice(0, 60)) : '') + '</span></div>' + src;
+    if (shansSrv) {
+      pop.innerHTML = head + popTabsHtml(id, m, nextOn);
+      pop.hidden = false;
+      fillThumbs(pop);
+      $('popForm').onsubmit = function (ev) { ev.preventDefault(); setMark($('popIn').value); };
+      $('popNext').onchange = function () { lsSet(LS.next, this.checked); };
+      return;
+    }
+    pop.innerHTML = head +
       '<div class="pop-q">' + QUICK.map(function (q) { return '<button class="' + markCls(q) + '" data-q="' + q + '">' + q + '</button>'; }).join('') + '</div>' +
       '<div class="pop-x"><button class="m4" data-q="зачёт">зачёт</button><button class="m2" data-q="незачёт">незачёт</button></div>' +
       '<label class="pop-l" for="popIn">Своя оценка</label><form class="pop-t" id="popForm" autocomplete="off"><input id="popIn" maxlength="20" autocomplete="off" placeholder="например 85 или 4/5" value="' + esc(splitMark(m).g) + '">' +
@@ -4099,6 +4227,52 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     fillThumbs(pop);
     $('popForm').onsubmit = function (ev) { ev.preventDefault(); setMark($('popIn').value); };
     $('popNext').onchange = function () { lsSet(LS.next, this.checked); };
+  }
+  /* панель оценки вкладками (ТЗ 22 C, вариант 3 — D 24.10): «Отметка | Работы нет | Зачёт»; открыта та, где стоит оценка,
+     у пустой клетки — та, где учитель ставил в прошлый раз (колонку «–» ставят подряд). Под вкладками — второй шанс */
+  var popTab = 'o';
+  function scTabOf(v) { var g = splitMark({ v: v }).g; return !g ? popTab : /^[1-5]$/.test(g) ? 'o' : /^(н|–|-)$/i.test(g) ? 'n' : 'z'; }
+  function popTabsHtml(id, m, nextOn) {
+    var g = splitMark(m).g, tb = scTabOf(m && m.v), on = function (x) { return g === x || (x === '–' && g === '-') ? ' on' : ''; };
+    var T = [['o', 'Отметка'], ['n', 'Работы нет'], ['z', 'Зачёт']];
+    var pane = function (k, h) { return '<div class="pp-p" data-p="' + k + '"' + (tb === k ? '' : ' hidden') + '>' + h + '</div>'; };
+    return '<div class="pp-seg" role="tablist">' + T.map(function (x) { return '<button role="tab" data-act="ptab" data-id="' + x[0] + '" aria-selected="' + (tb === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+      pane('o', '<div class="pp-m">' + ['5', '4', '3', '2', '1'].map(function (q) { return '<button class="' + markCls(q) + on(q) + '" data-q="' + q + '">' + q + '</button>'; }).join('') + '</div>') +
+      pane('n', '<div class="pp-no"><button class="' + on('н') + '" data-q="н"><b>н</b><span>не был на уроке</span></button><button class="' + on('–') + '" data-q="–"><b>–</b><span>не принёс, не сдал</span></button></div>') +
+      pane('z', '<div class="pop-x"><button class="m4' + on('зачёт') + '" data-q="зачёт">зачёт</button><button class="m2' + on('незачёт') + '" data-q="незачёт">незачёт</button></div>' +
+        '<label class="pop-l" for="popIn">Своя оценка</label><form class="pop-t" id="popForm" autocomplete="off"><input id="popIn" maxlength="20" autocomplete="off" placeholder="например 85 или 4/5" value="' + esc(g) + '">' +
+        '<button class="btn pri" type="submit">OK</button></form>') +
+      '<div id="popSc">' + scBoxHtml(id) + '</div>' +
+      '<label class="pop-l" for="popCm">Комментарий ученику</label><textarea id="popCm" class="pop-cm" maxlength="300" rows="2" autocomplete="off" placeholder="например: перепиши №3">' + esc(splitMark(m).c) + '</textarea>' +
+      '<div class="pop-f"><button class="btn danger" data-q="" data-wipe="1">Стереть</button>' +
+      '<label><input type="checkbox" id="popNext"' + (nextOn ? ' checked' : '') + '> После отметки — к следующему</label>' +
+      '<button class="btn" data-act="popclose">Закрыть</button></div>';
+  }
+  // второй шанс открытой клетки: переключатель и срок. Только у отметок, где шанс можно дать
+  function scBoxHtml(id) {
+    var m = S.mark[id], l = S.les[id.split('.')[0]];
+    if (!m || !l || !scOffer(m.v)) return '';
+    var dbt = debtOf(l, m), hw = id.split('.')[2] === 'd';
+    var C = [[scPlus(7), '7 дней'], [scPlus(SC_DAYS), SC_DAYS + ' дней'], [scQEnd(), 'до конца четверти']], any = false;
+    var chips = C.map(function (c) { var p = !!dbt && dbt.until === c[0]; any = any || p; return '<button data-act="sc" data-id="' + c[0] + '" aria-pressed="' + p + '">' + c[1] + '</button>'; }).join('');
+    var r = dbt ? realDate(dbt.until) : null, iso = r ? r.getFullYear() + '-' + ('0' + (r.getMonth() + 1)).slice(-2) + '-' + ('0' + r.getDate()).slice(-2) : '';
+    var full = !dbt && scOpenN(id.split('.')[1], l.subj, id) >= SC_CAP;
+    return '<div class="pp-sc' + (dbt ? ' on' : '') + '"><button class="pp-sch" data-act="sc" data-id="' + (dbt ? 'off' : 'on') + '" aria-pressed="' + !!dbt + '"><span>Второй шанс' +
+      '<small>' + (!dbt ? (full ? 'выключен: у ученика уже ' + SC_CAP + ' по предмету — поговорить' : 'выключен') : dbt.left < 0 ? 'срок вышел ' + esc(vDay(dbt.until)) : 'до ' + esc(vDay(dbt.until)) + (hw ? ', ученик сдаст сам' : ', пересдача на уроке')) + '</small></span><i class="pp-sw" aria-hidden="true"><i></i></i></button>' +
+      (dbt ? '<div class="pp-ch">' + chips + '<label class="pp-dt' + (any ? '' : ' on') + '">своя дата<input type="date" id="scDate" value="' + iso + '"></label></div>' : '') + '</div>';
+  }
+  // переключатель и срок второго шанса: on — включить на SC_DAYS дней, off — выключить, «ДД.ММ» — срок
+  function scSet(val) {
+    var id = cur, old = S.mark[id];
+    if (!id || !old || isItog(id)) return;
+    var d = { v: old.v };
+    ['c', 'by', 'av', 'an', 'sx'].forEach(function (f) { if (old[f]) d[f] = old[f]; });
+    d.sc = val === 'off' ? '' : val === 'on' ? scPlus(SC_DAYS) : val;
+    put('mark', id, d);
+    pendingRender = true;
+    var td = document.querySelector('td.c[data-c="' + id + '"]');
+    if (td) { var cv = cellView(id); td.className = cv.cls + (td.classList.contains('dend') ? ' dend' : '') + ' cur'; td.innerHTML = cv.inner; }
+    $('popSc').innerHTML = scBoxHtml(id);
   }
   // сдал не в тот день: показать дни этого предмета (ближние первыми), куда сдачу можно перенести
   function subMoveList() {
@@ -4125,11 +4299,12 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       alert(e === 409 ? 'В том дне станет больше 12 фото — столько в одну сдачу не помещается.' : e === 404 ? 'Сдачи или урока уже нет — обнови страницу.' : 'Не получилось перенести. Проверь интернет и попробуй ещё раз.');
     });
   }
-  function setMark(v) {
+  function setMark(v, tap) {
     var id = cur;
     if (!id) return;
     if (isItog(id)) { setItog(v); return; }   // открыта клетка итогов четверти
     v = String(v || '').trim().slice(0, 20);
+    if (v && shansSrv) popTab = scTabOf(v);   // следующая пустая клетка откроется на той же вкладке
     var cmEl = $('popCm'), c = v === '' && cmEl && cmEl.dataset.wipe ? '' : cmEl ? cmEl.value.trim().slice(0, 300) : '';
     var old = S.mark[id], was = splitMark(old), had = old ? old.v + '|' + (old.c || '') : '';
     if (v + '|' + c !== had || (old && was.g !== old.v)) {
@@ -4138,16 +4313,20 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (c) d.c = c;
         // правка поверх автоматики: помним, что она ставила, — автоматика больше не перезапишет
         if (old && (old.by === 'auto' || old.av)) { d.by = 'D'; d.av = old.av || old.v; if (old.an) d.an = old.an; }
+        scFields(d, old, S.les[id.split('.')[0]], id);
         put('mark', id, d);
       } else if (had) del('mark', id);
       pendingRender = true;   // счётчик долгов у фамилии — после закрытия листа
     }
     // оценка по сданной работе = «проверено» ученику, даже если оценка та же (стояла от автоматики)
-    var q2 = id.split('.'), sb = q2[2] === 'd' ? S.sub[q2[0] + '.' + q2[1]] : null;
-    if (v && sb && sb.st === 'sent') review(q2[0] + '.' + q2[1], 'checked', splitMark({ v: v }).g, c);
+    var q2 = id.split('.'), sb = S.sub[subOfCell(id)];
+    if (v && sb && sb.st === 'sent') review(subOfCell(id), 'checked', splitMark({ v: v }).g, c);
     var td = document.querySelector('td.c[data-c="' + id + '"]');
     if (td) { var cv = cellView(id); td.className = cv.cls + (td.classList.contains('dend') ? ' dend' : '') + ' cur'; td.innerHTML = cv.inner; }
     itogFill(q2[1]);   // средние строки в итогах четверти — сразу, не дожидаясь закрытия листа
+    // касанием поставил 2, 1, «н» или незачёт — лист остаётся: шанс выключен, но включить его — одно касание тут же (ТЗ 22 C).
+    // С клавиатуры колонку ставят подряд — идём дальше, как раньше
+    if (tap && shansSrv && v && scOffer(v) && !scAuto(v)) { openCell(id); return; }
     if (lsGet(LS.next, true)) {   // следующий ученик в том же столбце
       var P = students(), parts = id.split('.'), i = P.findIndex(function (p) { return p.id === parts[1]; });
       if (i >= 0 && i < P.length - 1) { openCell(parts[0] + '.' + P[i + 1].id + '.' + parts[2]); return; }
@@ -4451,7 +4630,11 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var sub = S.sub[own.id + '.' + meId], m = S.mark[own.id + '.' + meId + '.d'], inf = markInfo(m && m.v), g = inf.cls === 'mn' ? '' : splitMark(m).g;
     if (sub && sub.st === 'sent') return { k: 'wait', t: 'ждёт проверки', full: 'сдано, ждёт проверки' };
     if (sub && sub.st === 'redo') return { k: 'no', t: 'вернули: исправь', full: 'вернули: исправь и сдай заново', todo: true };
-    if (g && inf.red) return { k: 'no', t: 'не сдано: ' + g, full: (inf.cls === 'm2' && /^[–-]/.test(g) ? 'прочерк' : 'оценка ' + g) + ' — не сдано: исправь и сдай заново', todo: true };
+    if (m && m.sc && !isDebt(m)) return { k: 'no', t: 'срок вышел', full: 'второй шанс: срок вышел — подойди к учителю' };
+    if (g && shansSrv && m && 'sc' in m && !m.sc) return scAuto(g) ? { k: 'no', t: 'не сдано', full: 'не сдано' } : { k: 'no', t: 'проверено: ' + g, full: 'проверено: ' + g };   // шанса нет — сдавать нечего
+    var sd = shansSrv && isDebt(m) ? debtOf(S.les[own.id], m) : null;
+    if (sd) return { k: 'no', t: 'второй шанс', full: 'второй шанс: сдай до ' + vDay(sd.until), todo: true };
+    if (g && isDebt(m)) return { k: 'no', t: 'не сдано: ' + g, full: (inf.cls === 'm2' && /^[–-]/.test(g) ? 'прочерк' : 'оценка ' + g) + ' — не сдано: исправь и сдай заново', todo: true };
     if (g) return { k: inf.cls === 'm2' ? 'no' : 'ok', t: 'проверено: ' + g, full: 'проверено: ' + g };
     if (sub && sub.st === 'checked') return { k: 'ok', t: 'проверено', full: 'проверено' };
     return { k: 'no', t: 'не сдано', full: 'не сдано', todo: true };
@@ -4477,11 +4660,24 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       var p = id.split('.'), l = S.les[p[0]], m = S.mark[id];
       if (p[1] !== meId || !l || (!feed() && !SUBJ.some(function (s) { return s.id === l.subj; }))) return;
       if (p[2] === 'd' && l.sh && prevSameDay(l, l.date, l.subj)) return;   // ДЗ сдвоенного урока не видна
-      var dbt = debtOf(l, m.v);
-      if (dbt) out.push({ l: l, w: p[2], m: m, dbt: dbt, sent: p[2] === 'd' && (S.sub[p[0] + '.' + meId] || {}).st === 'sent' });
+      var dbt = debtOf(l, m);
+      if (dbt) out.push({ l: l, w: p[2], m: m, dbt: dbt, sent: (S.sub[subOfCell(id)] || {}).st === 'sent' });
     });
     return out.sort(function (a, b) { return a.dbt.left - b.dbt.left || dkey(a.l.date) - dkey(b.l.date); });
   }
+  // закрытые вторые шансы: всего за год и закрытые за последние сутки — их строка ещё день стоит зелёной
+  function vScClosed() {
+    var all = [], fresh = [];
+    Object.keys(S.mark).forEach(function (id) {
+      var p = id.split('.'), l = S.les[p[0]], m = S.mark[id];
+      if (p[1] !== meId || !l || !m.sx || (!feed() && !SUBJ.some(function (s) { return s.id === l.subj; }))) return;
+      if (p[2] === 'd' && l.sh && prevSameDay(l, l.date, l.subj)) return;   // как в vDebts: ДЗ сдвоенного урока не видна
+      all.push(id);
+      if (Date.now() - m.sx < 864e5) fresh.push({ l: l, w: p[2], m: m });
+    });
+    return { n: all.length, fresh: fresh };
+  }
+  var vScAll = false;   // «ещё N» раскрыто
   function vDebtLeft(d) { return d.left < 0 ? 'срок вышел' : d.left === 0 ? 'сегодня последний день' : 'осталось ' + vN(d.left, 'день', 'дня', 'дней'); }
   // долг словами: за что оценка и что сделать (D: «сложно объяснять, за что долг»)
   function vDebtText(x) {
@@ -4490,6 +4686,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var t = (x.w === 'd' ? 'За домашку' : 'За работу на уроке') + (tp ? ' «' + tp + '»' : '') + '. ' + (vSay(sm.c) ? 'Учитель: ' + sm.c.replace(/[.\s]+$/, '') + '. ' : '');
     if (x.sent) return t + 'Сдано заново — ждёт проверки.';
     if (x.dbt.left < 0) return t + 'Срок был до ' + vDay(x.dbt.until) + '. Подойди к учителю — договоритесь о пересдаче.';
+    if (shansSrv) return t + 'Сдай до ' + vDay(x.dbt.until) + (x.w === 'd' ? ' — кнопка «Сдать» внутри.' : ' — фото работы, кнопка внутри.');
     return t + (x.w === 'd' ? 'Исправь и сдай заново до ' : 'Пересдать до ') + vDay(x.dbt.until) + '.';
   }
   var V_DAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
@@ -4502,18 +4699,38 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       return '<a class="v-out" href="' + esc(m[x.id]) + '" target="_blank" rel="noopener">' + x.name + ' ↗</a>';
     }).join('');
     if (links) h += '<div class="v-links">' + links + '</div>';
+    // последние два дня срока — над текущей домашкой; остальные шансы ниже: у новой темы приоритет, у старой есть время
+    var hot = shansSrv ? D.filter(function (x) { return !x.sent && x.dbt.left >= 0 && x.dbt.left <= 1; }) : [];
+    if (hot.length) h += '<div class="v-lbl">Второй шанс: последние дни</div><div class="v-card">' + hot.map(vScRow).join('') + '</div>';
     h += '<div class="v-lbl">К следующим урокам</div><div class="' + (rows.length ? 'v-tiles' : 'v-card') + '">' + (rows.length ? rows.map(function (r) {
       var sj = vSj(r.subj);
       if (!r.own) return '<div class="v-row v-quiet"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><b>' + esc(sj.short) + '</b><span class="v-hw">нового пока не задано</span></span></div>';
       return '<button class="v-row ' + sj.k + (r.st.todo ? ' fill' : '') + '" data-va="urok" data-id="' + r.own.id + '"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><span class="v-rt"><b>' + esc(sj.short) + (r.due ? ', ' + esc(vDay(r.due.date)) : '') + '</b>' +
         '<span class="v-st ' + r.st.k + '">' + esc(r.st.t) + '</span></span><span class="v-hw">' + esc(vHwLine(r.own)) + '</span></span><span class="v-go">›</span></button>';
     }).join('') : '<div class="v-pad"><span class="v-cap">Пока ничего не задано.</span></div>') + '</div>';
-    if (D.length) h += '<div class="v-lbl">Долги: ' + D.length + '</div><div class="v-card">' + D.map(function (x) {
-      var g = splitMark(x.m).g;
-      return '<button class="v-row v-debt' + (x.dbt.left < 0 && !x.sent ? ' late' : '') + '" data-va="urok" data-id="' + x.l.id + '"><span class="v-m ' + markCls(x.m.v) + (g.length > 2 ? ' long' : '') + '">' + esc(g) + '</span><span class="v-body"><span class="v-rt"><b>' + esc(vSj(x.l.subj).short) + ', ' + esc(x.l.date) + '</b>' +
-        '<span class="v-st ' + (x.sent ? 'wait' : 'no') + '">' + (x.sent ? 'ждёт проверки' : vDebtLeft(x.dbt)) + '</span></span><span class="v-hw">' + esc(vDebtText(x)) + '</span></span><span class="v-go">›</span></button>';
-    }).join('') + '</div>';
+    if (shansSrv) return h + vScHtml(D.filter(function (x) { return hot.indexOf(x) < 0; }), hot.length);
+    if (D.length) h += '<div class="v-lbl">Долги: ' + D.length + '</div><div class="v-card">' + D.map(vScRow).join('') + '</div>';
     return h;
+  }
+  // блок «Второй шанс» (ТЗ 22 C): три ближайших по сроку (просроченные — первыми), остальное под «ещё N»; сверху — сколько
+  // закрыто; закрытый за сутки стоит зелёным «Закрыт, отметка 4»
+  function vScRow(x) {
+    var g = splitMark(x.m).g;
+    return '<button class="v-row v-debt' + (x.dbt.left < 0 && !x.sent ? ' late' : '') + '" data-va="urok" data-id="' + x.l.id + '"><span class="v-m ' + markCls(x.m.v) + (g.length > 2 ? ' long' : '') + '">' + esc(g) + '</span><span class="v-body"><span class="v-rt"><b>' + esc(vSj(x.l.subj).short) + ', ' + esc(x.l.date) + '</b>' +
+      '<span class="v-st ' + (x.sent ? 'wait' : 'no') + '">' + (x.sent ? 'ждёт проверки' : vDebtLeft(x.dbt)) + '</span></span><span class="v-hw">' + esc(vDebtText(x)) + '</span></span><span class="v-go">›</span></button>';
+  }
+  function vScHtml(D, nHot) {
+    var C = vScClosed();
+    if (!D.length && !C.fresh.length) return '';
+    nHot = nHot || 0;
+    var shown = vScAll ? D : D.slice(0, 3), more = D.length - shown.length;
+    return '<div class="v-lbl">Второй шанс' + (C.n ? ', закрыто ' + C.n + ' из ' + (C.n + D.length + nHot) : '') + '</div><div class="v-card">' +
+      C.fresh.map(function (x) {
+        var g = splitMark(x.m).g;
+        return '<button class="v-row v-debt v-scok" data-va="urok" data-id="' + x.l.id + '"><span class="v-m ' + markCls(x.m.v) + '">' + esc(g) + '</span><span class="v-body"><span class="v-rt"><b>' + esc(vSj(x.l.subj).short) + ', ' + esc(x.l.date) + '</b>' +
+          '<span class="v-st ok">закрыт</span></span><span class="v-hw">Закрыт, отметка ' + esc(g) + '.</span></span><span class="v-go">›</span></button>';
+      }).join('') + shown.map(vScRow).join('') +
+      (more > 0 ? '<button class="v-row v-more" data-va="scmore"><span class="v-body"><b>ещё ' + more + '</b></span><span class="v-go">⌄</span></button>' : '') + '</div>';
   }
   // подпись ученику: пустая — «Фото 1», «Файл 2»
   function vFileName(f, n) {
@@ -4532,16 +4749,28 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     return '<span class="v-mm">' + (pv ? '<s class="v-pv" title="прежняя оценка">' + esc(pv) + '</s>' : '') +
       '<span class="v-m ' + cls + (g.length > 2 ? ' long' : '') + '">' + esc(g) + '</span></span>';
   }
-  function vFixed(m) { return m && m.pv ? 'Исправлено' + (m.gt ? ' ' + ddmm(new Date(m.gt)) : '') + ': было ' + splitMark({ v: m.pv }).g + ', стало ' + splitMark(m).g + '.' : ''; }
+  function vFixed(m) {
+    if (m && m.pv && scAuto(m.pv)) return 'Сдано позже' + (m.gt ? ' ' + ddmm(new Date(m.gt)) : '') + ', отметка ' + splitMark(m).g + '.';   // был прочерк
+    return m && m.pv ? 'Исправлено' + (m.gt ? ' ' + ddmm(new Date(m.gt)) : '') + ': было ' + splitMark({ v: m.pv }).g + ', стало ' + splitMark(m).g + '.' : ''; }
   function vMarkHtml(l, w, tail) {
     var m = S.mark[l.id + '.' + meId + '.' + w], sm = splitMark(m);
     if (!m || (w === 'd' ? !sm.g : !sm.g && !vSay(sm.c))) return '';   // слова учителя о домашке — в карточке над её статусом (A7)
-    var inf = markInfo(m.v), dbt = debtOf(l, m.v);
+    var inf = markInfo(m.v), dbt = debtOf(l, m);
     return '<div class="v-mk">' + (sm.g ? vMkTile(sm.g, inf.cls, m.pv && splitMark({ v: m.pv }).g) : '') +
       '<span class="v-body"><b>' + (inf.cls === 'mn' && w === 'u' ? 'Не было на уроке' : w === 'd' ? 'Домашка' : 'Работа на уроке') + esc(tail) + '</b>' +
       (m.pv ? '<span class="v-hist">' + esc(vFixed(m)) + '</span>' : '') +
       (m.by === 'auto' && m.an ? '<span class="v-hist">' + esc(m.an) + '</span>' : '') + (w !== 'd' && vSay(sm.c) ? '<span class="v-hist">Учитель: ' + esc(sm.c) + '</span>' : '') +
-      (dbt ? '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок пересдачи вышел ' + esc(dbt.until) : 'Пересдать до ' + esc(vDay(dbt.until)) + ', ' + vDebtLeft(dbt)) + '</span>' : '') + '</span></div>';
+      (dbt ? '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок пересдачи вышел ' + esc(dbt.until) : (shansSrv ? 'Второй шанс до ' : 'Пересдать до ') + esc(vDay(dbt.until)) + ', ' + vDebtLeft(dbt)) + '</span>' : '') +
+      (w === 'u' ? vSubU(l, m) : '') + '</span></div>';
+  }
+  // работа на уроке со вторым шансом (ТЗ 22 C, D 24.10): сдача фото — тот же поток, что у домашки, кнопка прямо под оценкой
+  function vSubU(l, m) {
+    if (!shansSrv) return '';
+    var sid = l.id + '.' + meId + '.u', sb = S.sub[sid], h = '', ux = 'U-' + l.id;   // у сдвоенного урока кнопок две — id у каждой свой
+    if (sb) h += '<span class="v-hist' + (sb.st === 'sent' ? ' wait' : '') + '">📷 ' + esc({ sent: 'Сдано — ждёт проверки', redo: 'Вернули: исправь и сдай заново', checked: 'Проверено' }[sb.st] || '') + '</span>' + thumbsHtml(sb.ph, sid);
+    if (sdachaOn && canU(l, m)) h += '<label class="v-btn v-btnu">' + (sb && sb.st === 'sent' ? 'Дослать фото' : 'Сдать фото работы') +
+      '<input type="file" id="subIn' + ux + '" data-st="subSt' + ux + '" data-lid="' + l.id + '" data-mark="' + sid + '" accept="image/*" multiple></label><span class="v-cap" id="subSt' + ux + '">Можно и устно — подойди к учителю.</span>';
+    return h;
   }
   /* домашка блоками (ТЗ 19, вариант А — D 13.10). Учитель пишет текстом, как привык, правил не помнит — страница
      разбирает сама: строка — пункт чек-листа; «№ 214 а, в» — номер плашкой, буквы цветом предмета; короткая строка
@@ -4583,13 +4812,15 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     return i < 0;
   }
   function vDueWords(date) { var d = realDate(date); return d ? 'к ' + V_WD_DAT[d.getDay()] + ', ' + d.getDate() + ' ' + V_MON[d.getMonth()] : ''; }
-  // блок домашки: lid — у ученика (пункты отмечаются); '' — показ в окне дня у учителя, пункты не нажимаются
-  function vHwBox(subj, txt, due, lid, extra) {
-    var P = vHwParse(txt), ok = lid ? vHwOk(lid) : [];
+  // блок домашки: lid — у ученика (пункты отмечаются); '' — показ в окне дня у учителя, пункты не нажимаются.
+  // st — сдача, как кружок в календаре (ТЗ 22, E3): «sent» — кружки залиты, «ok» — с галочкой; тогда пункты не нажимаются
+  function vHwBox(subj, txt, due, lid, extra, st) {
+    var P = vHwParse(txt), ok = lid ? vHwOk(lid) : [], fix = st === 'sent' || st === 'ok';
     var h = '<div class="v-hwb ' + vSj(subj).k + '"><div class="v-hwt">' + (P.due || due ? '📌 ' + esc(P.due || due) : 'Домашка') + '</div><div class="v-hwi">';
     P.items.forEach(function (x) {
       if (x.h) { var ic = V_HICON.filter(function (r) { return r[0].test(x.h.toLowerCase()); })[0]; h += '<div class="v-hwh">' + (ic ? ic[1] + ' ' : '') + esc(x.h) + '</div>'; return; }
       var on = ok.indexOf(x.k) >= 0;
+      if (fix) { h += '<div class="v-hi ' + (st === 'ok' ? 'on' : 'sent') + '"><i aria-hidden="true">' + (st === 'ok' ? '✓' : '') + '</i><span>' + vHwItem(x.t) + '</span></div>'; return; }
       h += lid ? '<button class="v-hi' + (on ? ' on' : '') + '" data-va="hwok" data-id="' + lid + '" data-k="' + esc(x.k) + '" aria-pressed="' + on + '"><i aria-hidden="true">' + (on ? '✓' : '') + '</i><span>' + vHwItem(x.t) + '</span></button>'
         : '<div class="v-hi"><i aria-hidden="true"></i><span>' + vHwItem(x.t) + '</span></div>';
     });
@@ -4622,7 +4853,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       h += vHwBox(own.subj, txt, due ? vDueWords(due.date) : '', own.id,
         (webOnly ? '<p class="v-hwp">Домашка на телефоне или ноутбуке. Балл сам появится в журнале; можно перерешать — считается лучший результат.</p>' : '') +
         (HF.length ? vHwFiles(HF) : '') +
-        (web && !webOnly ? '<div class="v-links"><a class="v-out" href="' + esc(web) + '" target="_blank" rel="noopener">🕹 Открыть веб-домашку ↗</a></div>' : ''));
+        (web && !webOnly ? '<div class="v-links"><a class="v-out" href="' + esc(web) + '" target="_blank" rel="noopener">🕹 Открыть веб-домашку ↗</a></div>' : ''), vHwDot(own));
       // слова учителя о домашке — здесь, один раз, и выше отметки: сначала что исправить, потом цифра (ТЗ 22, A7)
       h += '<div class="v-card v-pad v-stc" style="margin-top:10px">' + (vSay(sm.c) ? '<p class="v-tc"><span class="v-cap">Учитель:</span> ' + esc(sm.c) + '</p>' : '') +
         '<div class="v-status"><span class="v-cap">Статус:</span><span class="v-st ' + st.k + '">' + esc(st.full) + '</span></div>';
@@ -4646,10 +4877,11 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (MK) h += '<div class="v-lbl">Мои оценки за урок</div><div class="v-card">' + MK + '</div>';
 
     // сдавать можно, пока не проверено; 1 и 2 — «не сдано»: исправил и сдаёт заново. Хорошая оценка без фото (тетрадь на уроке) — сдавать нечего
-    var good = /^m[345]$/.test(inf.cls), can = has && (sub ? sub.st !== 'checked' || !!inf.red : !good), cta = '';
+    var dbtD = isDebt(m), good = /^m[345]$/.test(inf.cls), can = has && (sub ? sub.st !== 'checked' || dbtD : !good) && !((noChance(m) && !(sub && sub.st === 'redo')) || (m && m.sc && !dbtD)), cta = '';
     if (webOnly) cta = '<a class="v-btn" href="' + esc(web) + '" target="_blank" rel="noopener">Открыть домашку ↗</a>';
-    else if (can && sdachaOn) cta = '<span class="v-cap" id="subSt">Можно несколько страниц сразу, до 12 фото.</span><label class="v-btn">' + (sub && sub.st === 'sent' ? 'Дослать фото' : sub || inf.red ? 'Сдать заново' : 'Сдать фото') +
-      '<input type="file" id="subIn" data-lid="' + own.id + '" data-mark="' + own.id + '.' + meId + '.d" accept="image/*" multiple></label>';
+    else if (can && sdachaOn) cta = '<span class="v-cap" id="subSt">Можно несколько страниц сразу, до 12 фото.</span><label class="v-btn">' + (sub && sub.st === 'sent' ? 'Дослать фото' : shansSrv && dbtD ? 'Сдать' : sub || inf.red ? 'Сдать заново' : 'Сдать фото') +
+      '<input type="file" id="subIn" data-lid="' + own.id + '" data-mark="' + own.id + '.' + meId + '.d" accept="image/*" multiple></label>' +
+      (shansSrv && dbtD ? '<span class="v-cap">Можно и устно — подойди к учителю.</span>' : '');
     else if (can) cta = '<span class="v-cap">Приём домашек через журнал пока выключен.</span>';
     return { h: h, cta: cta };
   }
@@ -4681,9 +4913,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var sj = vSj(r.l.subj), cv = coverOf(r.l.id) || coverOf(r.x.l.id), sm = splitMark(r.m), inf = markInfo(r.m.v);
     var tp = plain(topicOf(r.l).t || '').split('\n')[0].trim().replace(/\.$/, '') || (r.w === 'd' ? 'Домашка' : 'Работа на уроке');   // ТЗ 22, A4
     var what = r.w === 'd' ? 'домашка' : inf.cls === 'mn' ? 'не было на уроке' : 'работа на уроке';
-    var sub = r.w === 'd' ? S.sub[r.l.id + '.' + meId] : null, dbt = debtOf(r.l, r.m.v), tail = '';
+    var sub = S.sub[subOfCell(r.l.id + '.' + meId + '.' + r.w)], dbt = debtOf(r.l, r.m), tail = '';
     if (dbt && sub && sub.st === 'sent') tail = '<span class="v-hist wait">Сдано заново — ждёт проверки</span>';
-    else if (dbt) tail = '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок пересдачи вышел' : 'Пересдать: ' + vDebtLeft(dbt)) + '</span>';
+    else if (dbt) tail = '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок пересдачи вышел' : (shansSrv ? 'Второй шанс: ' : 'Пересдать: ') + vDebtLeft(dbt)) + '</span>';
     return '<button class="v-row v-gr" data-va="urok" data-id="' + r.l.id + '">' + (vF ? '' : '<span class="v-gc ' + sj.k + '">' + esc(sj.short.charAt(0)) + (cv ? '<img data-ff="' + cv.id + '" alt="">' : '') + '</span>') +   // выбран один предмет — буква не нужна (A3)
       vMkTile(r.g, inf.cls, r.m.pv && splitMark({ v: r.m.pv }).g) +
       '<span class="v-body"><b>' + esc(tp) + '</b><span class="v-cap">' + esc(what + ', ' + vDay(r.l.date)) + (r.m.pv && r.m.gt ? ', исправлено ' + ddmm(new Date(r.m.gt)) : '') + '</span>' +
@@ -4795,8 +5027,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   var V_HWD = { no: 'домашка не сдана', sent: 'домашка сдана', ok: 'домашка проверена' };
   function vHwDot(own) {
     if (!vHwHas(own)) return '';
-    var st = vStatus(own);
-    return st.todo ? 'no' : st.k === 'wait' ? 'sent' : 'ok';
+    var st = vStatus(own);   // «срок вышел» и «не сдано» без шанса — не сдана; «проверено: 2» — проверена
+    return st.k === 'wait' ? 'sent' : st.k === 'ok' || /^проверено/.test(st.t) ? 'ok' : 'no';
   }
   function vCellHtml(x, other) {
     var subs = vSubsOf(x), s0 = subs[0], cls = 'v-dc';
@@ -4866,7 +5098,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function vFeedHtml(U) {
     var tk = dkey(todayStr());
     var F = U.all.filter(function (b) {
-      if (b.k > tk) return false;
+      if (b.k > tk || (b.k === tk && +vSel === +vMid(new Date()))) return false;   // сегодняшний стоит в «Сегодня» над лентой — в прошедшие со вчерашнего (ТЗ 22, E4); выбран другой день — сегодняшний в ленте
       b.tp = vTopics(b.les);
       return b.tp.length || vHwHas(b.own) || b.les.some(function (l) { return filesOf(l.id, '*').length || l.nt; });
     }).sort(function (a, b) { return b.k - a.k || (b.les[0].ord || 0) - (a.les[0].ord || 0); });
@@ -4963,7 +5195,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       '<div class="lbl">Тема</div><div class="v-setrow"><button class="btn" data-tema="day">Светлая</button><button class="btn" data-tema="night">Тёмная</button></div>' +
       (znSrv && (JOURNALS.length < 2 || znUrl()) ? '<button class="btn v-wide" data-act="znachok">📱 Значок на экран телефона</button>' : '') +
       '<div class="row"><button class="btn danger" data-va="exit">Выйти на этом устройстве</button><span class="sp"></span><button class="btn pri" data-act="close">Готово</button></div>' +
-      '<div class="note"><a class="link" href="pravila.html">Правила и конфиденциальность</a> · <button class="link" data-act="teacher">Войти как учитель</button></div></div>';
+      '<div class="note"><a class="link" href="pravila.html">Правила и конфиденциальность</a> | <button class="link" data-act="teacher">Войти как учитель</button></div></div>';
     markTheme();
   }
   var vFromOld = false;   // карточку открыли из таблицы («Таблицей») — закрыли, и снова таблица
@@ -5041,6 +5273,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       vPush(); vRender(); window.scrollTo(0, 0);
     }
     else if (a === 'back') { if (history.state && history.state.vles) history.back(); else vClose(); }
+    else if (a === 'scmore') { vScAll = true; vRender(); }
     else if (a === 'ask') {   // открыть чат и подставить, о какой домашке; ученик не вошёл в чат — окно входа, текст не нужен
       var qa = document.querySelector('#dock .vopros'), pre = b.dataset.t;
       if (!qa) { alert('Чат не загрузился. Обнови страницу.'); return; }
@@ -5117,12 +5350,18 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     }
     var q = t.closest('[data-q]');
     if (q && q.dataset.wipe && $('popCm')) $('popCm').dataset.wipe = '1';
-    if (q && cur) { setMark(q.dataset.q); return; }
+    if (q && cur) { setMark(q.dataset.q, true); return; }
     var a = t.closest('[data-act]');
     if (a) {
       var act = a.dataset.act;
       if (act === 'close') closeDlg();
       else if (act === 'popclose') closeCell();
+      else if (act === 'ptab') {   // вкладка панели оценки — без перерисовки, поле комментария не теряется
+        popTab = a.dataset.id;
+        document.querySelectorAll('#pop [data-act="ptab"]').forEach(function (b) { b.setAttribute('aria-selected', b === a); });
+        document.querySelectorAll('#pop .pp-p').forEach(function (x) { x.hidden = x.dataset.p !== popTab; });
+      }
+      else if (act === 'sc') scSet(a.dataset.id);
       else if (act === 'retry') { if (znUrl()) location.reload(); else view(''); }
       else if (act === 'addles') openDay(null);
       else if (act === 'saveday') saveDay(a.dataset.date);
@@ -5147,16 +5386,21 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         else if (res === false) { alert('Вход устарел. Нажми «📒 Мой журнал» в боте ещё раз.'); render(); }
       }, function () { alert('Нет связи с журналом. Проверь интернет и нажми ещё раз.'); });
       else if (act === 'view') (mode === 'teacher' && provSrv ? openReview : openViewer)(a.dataset.sub, +a.dataset.i);
+      else if (act === 'talk') {   // к строке ученика в его предмете
+        if (!mix() && a.dataset.subj !== tab && SUBJ.some(function (x) { return x.id === a.dataset.subj; })) { tab = a.dataset.subj; lsSet(LS.tab, tab); render(); }
+        var row = document.querySelector('tbody th.nm[data-sid="' + a.dataset.sid + '"]');
+        if (row) { row.scrollIntoView({ block: 'center' }); row.classList.add('flash'); setTimeout(function () { row.classList.remove('flash'); }, 1600); }
+      }
       else if (act === 'queue') {
         var first = waitingSubs().sort(function (x, y) { return (x.at || 0) - (y.at || 0); })[0];
         if (first) {
           var fl = S.les[first.id.split('.')[0]];
           if (!mix() && fl.subj !== tab) { tab = fl.subj; lsSet(LS.tab, tab); render(); }
-          openCell(first.id + '.d');
+          openCell(cellOfSub(first.id));
         }
       }
       else if (act === 'subredo' && cur) {
-        var cq = cur.split('.'), sid = cq[0] + '.' + cq[1], cm = $('popCm') ? $('popCm').value.trim() : '';
+        var sid = subOfCell(cur), cm = $('popCm') ? $('popCm').value.trim() : '';
         if (!cm && !confirm('Отправить на доработку без комментария? Лучше написать, что исправить.')) return;
         if (S.sub[sid]) S.sub[sid].st = 'redo';   // до записи оценки: иначе она сама отправит «проверено»
         var gOld = splitMark(S.mark[cur]).g;
@@ -5314,7 +5558,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   document.addEventListener('change', function (ev) {
     if (ev.target.classList && ev.target.classList.contains('upFile') && ev.target.files.length) { uploadFiles(ev.target.dataset.lid, ev.target.files, ev.target.dataset.w); return; }
     if (ev.target.classList && ev.target.classList.contains('upSlot') && ev.target.files.length) { slotAdd(ev.target.dataset.slot, ev.target.files); return; }
-    if (ev.target.id === 'subIn' && ev.target.files.length) { submitPhotos(ev.target); return; }
+    if (/^subIn(U-|$)/.test(ev.target.id) && ev.target.files.length) { submitPhotos(ev.target); return; }
+    if (ev.target.id === 'scDate' && ev.target.value) { var dp = ev.target.value.split('-'); scSet(dp[2] + '.' + dp[1]); return; }
     var row = ev.target.closest('.srow');
     if (row) saveStudentRow(row);
   });
