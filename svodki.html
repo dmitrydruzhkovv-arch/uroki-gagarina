@@ -14,7 +14,7 @@
   * { box-sizing: border-box; margin: 0; }
   body { font: 16px/1.4 -apple-system, "SF Pro Text", system-ui, sans-serif; background: var(--bg); color: var(--ink); padding: 16px 16px 40px; }
   main { max-width: 560px; margin: 0 auto; }
-  h1 { font-size: 26px; } .sub { color: var(--mut); margin: 4px 0 16px; font-size: 15px; }
+  h1 { font-size: 26px; } .sub { color: var(--mut); margin: 4px 0 0; font-size: 15px; } .sub + .wk { margin-top: 16px; }
   .wk { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
   .wk b { flex: 1; text-align: center; font-size: 17px; }
   .wk button { min-width: 48px; min-height: 48px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 12px; font-size: 20px; }
@@ -32,6 +32,7 @@
 <main>
   <h1>Сводки недели</h1>
   <p class="sub" id="sub">Так их увидят родители в воскресенье в 18:00. Пока никому не уходит.</p>
+  <p class="sub">Текст собирается из журнала сам: поправил журнал — поменялась сводка.</p>
   <div class="wk"><button id="prev" aria-label="Прошлая неделя">‹</button><b id="wk">…</b><button id="next" aria-label="Следующая неделя" disabled>›</button></div>
   <div id="out"><p class="msg">Собираю…</p></div>
 </main>
