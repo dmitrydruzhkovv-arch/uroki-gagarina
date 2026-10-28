@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Сводки недели</title>
 <!-- Сводки родителям — что ушло бы каждому в воскресенье в 18:00 (ТЗ 22 D, шаг 1, Кодер 28.10.2026).
+     Шаг 2: «✍️ Дописать» у каждой сводки — слово за неделю, «Сверх урока», статус темы у индивидуала (POST …/svodki/put).
      Только для учителя: ключ — тот же, что у журнала на этом устройстве. Никому ничего не отправляет.
      Сервер: POST /cabinet/zhurnal/svodki (флаг ZHURNAL_SVODKA). Стенд: svodki.html?api=http://127.0.0.1:<порт>/cabinet -->
 <style>
@@ -26,6 +27,25 @@
   .none { color: var(--mut); font-size: 15px; padding: 2px 4px 4px; }
   .msg { background: var(--card); border-radius: 14px; padding: 16px; color: var(--mut); }
   .msg a { color: var(--acc); }
+  /* «Дописать» (шаг 2): слово за неделю, «Сверх урока», статус темы у индивидуала */
+  button { font: inherit; color: var(--ink); }
+  .more { margin-top: 8px; min-height: 44px; padding: 0 14px; border: 0; border-radius: 12px; background: rgba(255,255,255,.55); font-weight: 600; }
+  .ed { background: var(--card); border-radius: 14px; padding: 12px; margin-top: 8px; display: grid; gap: 14px; }
+  .ed h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--mut); margin-bottom: 6px; }
+  .ed textarea, .ed input { width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+  .ed textarea { min-height: 64px; resize: vertical; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  .go { min-height: 44px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--acc); color: #fff; font-weight: 600; }
+  .go:disabled { opacity: .4; }
+  .ok { color: var(--mut); font-size: 14px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 22px; background: var(--bg); font-size: 15px; }
+  .chip.on { background: var(--acc); border-color: var(--acc); color: #fff; }
+  .ev { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+  .ev span { flex: 1; }
+  .x { min-width: 44px; min-height: 44px; border: 0; border-radius: 12px; background: var(--bg); font-size: 18px; }
+  .les { margin-bottom: 10px; } .les b { font-weight: 600; }
+  .hint { color: var(--mut); font-size: 14px; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -61,24 +81,27 @@
     var only = t.replace(/<\/?[bi]>/g, '');
     if (only.indexOf('<') < 0) el.innerHTML = t; else el.textContent = t;
   }
-  function post(i, body) {
-    return fetch(APIS[i] + '/zhurnal/svodki', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + KEY }, body: JSON.stringify(body) })
-      .catch(function (e) { if (i + 1 < APIS.length) return post(i + 1, body); throw e; });
+  function post(i, body, path) {
+    return fetch(APIS[i] + '/zhurnal/svodki' + (path || ''), { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + KEY }, body: JSON.stringify(body) })
+      .catch(function (e) { if (i + 1 < APIS.length) return post(i + 1, body, path); throw e; });
   }
-  function load(week) {
-    if (!KEY) { msg('Открой <a href="zhurnal.html">журнал</a> как учитель на этом устройстве, потом вернись сюда.'); return; }
-    msg('Собираю…');
-    post(0, week ? { week: week } : {}).then(function (r) {
+  var last = null, open = {};   // last — ответ за открытую неделю; open — у каких учеников раскрыто «Дописать»
+  function load(week, keep) {
+    if (!KEY) { msg('Открой <a href="zhurnal.html">журнал</a> как учитель на этом устройстве, потом вернись сюда.'); return Promise.resolve(); }
+    if (!keep) msg('Собираю…');
+    return post(0, week ? { week: week } : {}).then(function (r) {
       if (r.status === 401) { msg('Журнал не узнал учителя. Войди в <a href="zhurnal.html">журнал</a> и открой эту страницу снова.'); return null; }
       if (r.status === 404) { msg('Сводки на сервере ещё не включены.'); return null; }
       return r.json();
     }).then(function (r) {
       if (!r) return;
       if (!r.ok) { msg('Не получилось собрать. Попробуй ещё раз.'); return; }
-      show(r);
+      show(r, keep);
     }, function () { msg('Нет связи с сервером. Проверь интернет и обнови страницу.'); });
   }
-  function show(r) {
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function show(r, keep) {
+    last = r;
     mon = day(r.mon);
     if (!cur) cur = r.mon;
     var sun = new Date(mon); sun.setDate(sun.getDate() + 6);
@@ -87,17 +110,104 @@
     var go = r.items.filter(function (x) { return x.text; }).length;
     document.getElementById('sub').textContent = 'Так их увидят родители в воскресенье в 18:00. Пока никому не уходит. Сводок: ' + go +
       (r.items.length > go ? ', без сводки: ' + (r.items.length - go) : '') + '.';
+    var y = window.scrollY;
+    if (!keep) open = {};
     out.innerHTML = '';
     var j = null;
     r.items.forEach(function (x) {
-      if (x.j !== j) { j = x.j; var h = document.createElement('h2'); h.textContent = x.title; out.appendChild(h); }
-      var st = document.createElement('div'), b = document.createElement('div');
-      st.className = 'st';
-      if (x.text) { b.className = 'b'; bubble(b, x.text); } else { b.className = 'none'; b.textContent = x.name + ': на этой неделе ничего не было — сводка не уйдёт.'; }
-      st.appendChild(b);
-      out.appendChild(st);
+      if (x.j !== j) { j = x.j; out.appendChild(el('h2', '', x.title)); }
+      out.appendChild(card(x));
     });
     if (!r.items.length) msg('В журналах пока нет учеников.');
+    if (keep) window.scrollTo(0, y);
+  }
+  // сохранить и пересобрать неделю: сводка сразу показывает, что вышло
+  function save(body, status) {
+    status.textContent = 'Сохраняю…';
+    return post(0, body, '/put').then(function (r) { return r.json().catch(function () { return {}; }); }).then(function (r) {
+      if (!r.ok) { status.textContent = 'Не сохранилось. Попробуй ещё раз.'; return; }
+      return load(last.mon, true);
+    }, function () { status.textContent = 'Нет связи — не сохранилось.'; });
+  }
+  function card(x) {
+    var st = el('div', 'st'), b = el('div'), k = x.j + '.' + x.sid;
+    if (x.text) { b.className = 'b'; bubble(b, x.text); } else { b.className = 'none'; b.textContent = x.name + ': на этой неделе ничего не было — сводка не уйдёт.'; }
+    st.appendChild(b);
+    var more = el('button', 'more', open[k] ? 'Свернуть' : '✍️ Дописать');
+    st.appendChild(more);
+    var ed = editor(x);
+    ed.hidden = !open[k];
+    st.appendChild(ed);
+    more.onclick = function () { open[k] = !open[k]; ed.hidden = !open[k]; more.textContent = open[k] ? 'Свернуть' : '✍️ Дописать'; };
+    return st;
+  }
+  var TYPES = [['ol', 'Олимпиада'], ['pr', 'Пробник'], ['kn', 'Конкурс'], ['dr', 'Другое']];
+  var US = [[1, 'Познакомились'], [2, 'С подсказкой'], [3, 'Без подсказки']];
+  function editor(x) {
+    var ed = el('div', 'ed'), base = { j: x.j, sid: x.sid };
+    // слово за неделю
+    var w = el('div'); w.appendChild(el('h3', '', 'Слово за неделю'));
+    var ta = el('textarea'); ta.maxLength = 300; ta.value = x.wk || '';
+    ta.placeholder = 'Одно предложение: что получилось или над чем поработать дома';
+    var r1 = el('div', 'row'), b1 = el('button', 'go', 'Сохранить'), s1 = el('span', 'ok', x.wk ? 'В сводке — строкой «Дмитрий».' : '');
+    b1.disabled = true;
+    ta.oninput = function () { b1.disabled = ta.value.trim() === (x.wk || ''); s1.textContent = ''; };
+    b1.onclick = function () { b1.disabled = true; save(Object.assign({ op: 'wk', mon: last.mon, c: ta.value }, base), s1); };
+    r1.appendChild(b1); r1.appendChild(s1);
+    w.appendChild(ta); w.appendChild(r1); ed.appendChild(w);
+    // статус темы — у индивидуала, у каждого урока недели
+    if (x.les && x.les.length) {
+      var u = el('div'); u.appendChild(el('h3', '', 'Как получается тема'));
+      var s3 = el('div', 'ok');
+      x.les.forEach(function (l) {
+        var box = el('div', 'les'), t = el('div'); t.appendChild(el('b', '', l.date)); t.appendChild(document.createTextNode(' — ' + (l.topic || 'без темы')));
+        var ch = el('div', 'chips');
+        US.forEach(function (o) {
+          var c = el('button', 'chip' + (l.us === o[0] ? ' on' : ''), o[1]);
+          c.onclick = function () { save(Object.assign({ op: 'us', les: l.id, v: l.us === o[0] ? 0 : o[0] }, base), s3); };   // ещё раз — снять
+          ch.appendChild(c);
+        });
+        box.appendChild(t); box.appendChild(ch); u.appendChild(box);
+      });
+      u.appendChild(s3); ed.appendChild(u);
+    }
+    // сверх урока
+    var v = el('div'); v.appendChild(el('h3', '', 'Сверх урока'));
+    var s2 = el('div', 'ok');
+    (x.ev || []).forEach(function (e) {
+      var row = el('div', 'ev'), name = (TYPES.filter(function (t) { return t[0] === e.t && t[0] !== 'dr'; })[0] || [0, ''])[1];
+      row.appendChild(el('span', '', e.date + ' · ' + (name ? name + ': ' : '') + e.name + (e.res ? ' — ' + e.res : '')));
+      var del = el('button', 'x', '×'); del.setAttribute('aria-label', 'Убрать');
+      del.onclick = function () { save(Object.assign({ op: 'evdel', id: e.id }, base), s2); };
+      row.appendChild(del); v.appendChild(row);
+    });
+    var t0 = 'ol', chips = el('div', 'chips');
+    TYPES.forEach(function (t) {
+      var c = el('button', 'chip' + (t[0] === t0 ? ' on' : ''), t[1]);
+      c.onclick = function () { t0 = t[0]; Array.prototype.forEach.call(chips.children, function (z) { z.classList.toggle('on', z === c); }); };
+      chips.appendChild(c);
+    });
+    var nm = el('input'); nm.placeholder = 'Что: школьный этап, ОГЭ по математике…'; nm.maxLength = 80;
+    var rs = el('input'); rs.placeholder = 'Результат: 1 место из 100, 18 баллов'; rs.maxLength = 60;
+    var dt = el('input'); dt.type = 'date';
+    var today = new Date(), sun = new Date(mon); sun.setDate(sun.getDate() + 6);
+    dt.value = iso(today >= mon && today <= sun ? today : mon);
+    var r2 = el('div', 'row'), b2 = el('button', 'go', 'Добавить');
+    b2.disabled = true;
+    nm.oninput = function () { b2.disabled = !nm.value.trim(); };
+    b2.onclick = function () {
+      var d = dt.value ? day(dt.value) : mon; b2.disabled = true;
+      save(Object.assign({ op: 'ev', t: t0, name: nm.value, res: rs.value, date: ru(d) }, base), s2);
+    };
+    r2.appendChild(b2);
+    var add = el('button', 'chip', '+ Добавить'), form = el('div');   // форма — по нажатию: олимпиада бывает не каждую неделю
+    form.hidden = true;
+    add.onclick = function () { form.hidden = false; add.hidden = true; nm.focus(); };
+    [chips, nm, rs, dt, r2].forEach(function (z) { if (z !== chips) z.style.marginTop = '8px'; form.appendChild(z); });
+    form.appendChild(el('div', 'hint', 'Попадёт в сводку той недели, на которую пришлась дата.'));
+    v.appendChild(add); v.appendChild(form); v.appendChild(s2);
+    ed.appendChild(v);
+    return ed;
   }
   function shift(n) { if (!mon) return; var d = new Date(mon); d.setDate(d.getDate() + 7 * n); load(iso(d)); }
   document.getElementById('prev').onclick = function () { shift(-1); };
