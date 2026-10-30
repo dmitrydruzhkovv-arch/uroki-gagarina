@@ -434,17 +434,21 @@ let pokolenie = 0;     // растёт при каждом сбросе лент
 const zhivoi = k => (+(String(k).split('.')[2] || 0)) * 1000 > Date.now() ? k : '';
 const svoiKlyuch = () => zhivoi(mem.get(CHAT_KEY));
 /* вошёл в журнал через бота — тот же ключ годится и чату (страницы на одном адресе) */
-let plohoiZh = '';
+const plohoiZh = new Set();   // ключи журнала, которые сервер отверг: больше их не пробуем
+const kto = k => String(k || '').split('.').slice(0, 2).join('.');   // bot.id: ключ по личной ссылке выдаётся заново при каждом заходе — «Выйти» помнит человека, а не ключ
 function klyuchZhurnala(){
   if (!V_ZHURNALE) return '';
   try {
-    const k = zhivoi(JSON.parse(localStorage.getItem('zh:ck') || '""'));
-    return k && k !== plohoiZh && k !== mem.get(VYSHEL_KEY) ? k : '';
+    const v = mem.get(VYSHEL_KEY), a = zhivoi(JSON.parse(localStorage.getItem('zh:ck') || '""'));
+    if (a && !plohoiZh.has(a) && a !== v) return a;   // вход через бота: «Выйти» помнит сам ключ — новый вход через бота пускает снова
+    // ключ по личной ссылке (ТЗ 22, E5) выдаётся заново при каждом заходе — «Выйти» помнит человека, а не ключ
+    const b = zhivoi(JSON.parse(localStorage.getItem('zh:ckl') || '""'));
+    return b && !plohoiZh.has(b) && kto(b) !== kto(v) ? b : '';
   } catch (_) { return ''; }
 }
 function chatKey(){ return svoiKlyuch() || klyuchZhurnala(); }
 function zabytKlyuch(){
-  if (!svoiKlyuch()) plohoiZh = klyuchZhurnala();      // сервер отверг ключ журнала — больше его не пробуем
+  if (!svoiKlyuch() && klyuchZhurnala()) plohoiZh.add(klyuchZhurnala());      // сервер отверг ключ журнала — больше его не пробуем (следующий — по ссылке, если есть)
   try { localStorage.removeItem(CHAT_KEY); localStorage.removeItem(UCH_KEY); } catch (_) {}
 }
 function tester(){ return mem.get(TEST_KEY) === '1'; }
@@ -783,7 +787,11 @@ async function tyanut(pervyi){
     const adres = u ? `/chat/d/history?u=${dlya}&` : '/chat/history?';
     const r = await timedFetch(`${chatBase}${adres}after=${lastId}&open=1&rv=${rv}`, { cache: 'no-store', headers: zagolovki() }, 15000);
     if (!tot()) return;                                // пока ждали ответ, открыли другого ученика
-    if (r.status === 401){ zabytKlyuch(); znachok(0); vhodEkran(); return; }
+    if (r.status === 401){
+      zabytKlyuch();
+      if (!u && chatKey()){ setTimeout(() => tyanut(true), 0); return; }   // есть другой ключ (по личной ссылке) — пробуем его; отвергнутые не повторяются
+      znachok(0); vhodEkran(); return;
+    }
     if (u && r.status === 403){ neUchitel(); return; }
     if (u && r.status === 404){ komu = 0; spisokTyanut(true); return; }      // ученик ушёл из класса
     const d = await r.json();

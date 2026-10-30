@@ -13,6 +13,7 @@
   :root { --bg: #f2f2f6; --card: #fff; --ink: #1c1c1e; --mut: #6b6b72; --line: #e3e3e8; --chat: #cddcbf; --acc: #3d7fd9; }
   @media (prefers-color-scheme: dark) { :root { --bg: #111114; --card: #1d1d22; --ink: #ececf0; --mut: #9a9aa3; --line: #2c2c33; --chat: #22301c; --acc: #6aa2ff; } }
   * { box-sizing: border-box; margin: 0; }
+  [hidden] { display: none !important; }   /* иначе .ed { display: grid } держал «Дописать» всегда раскрытым (28.10–30.10) */
   body { font: 16px/1.4 -apple-system, "SF Pro Text", system-ui, sans-serif; background: var(--bg); color: var(--ink); padding: 16px 16px 40px; }
   main { max-width: 560px; margin: 0 auto; }
   h1 { font-size: 26px; } .sub { color: var(--mut); margin: 4px 0 0; font-size: 15px; } .sub + .wk { margin-top: 16px; }
@@ -46,6 +47,9 @@
   .x { min-width: 44px; min-height: 44px; border: 0; border-radius: 12px; background: var(--bg); font-size: 18px; }
   .les { margin-bottom: 10px; } .les b { font-weight: 600; }
   .hint { color: var(--mut); font-size: 14px; margin-top: 4px; }
+  /* заходы ученика за неделю (ZHURNAL_STAT) — только тебе, в сводку родителю не входят */
+  .zah { color: var(--mut); font-size: 14px; padding: 0 4px 8px; }
+  .zah b { color: var(--ink); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -129,8 +133,30 @@
       return load(last.mon, true);
     }, function () { status.textContent = 'Нет связи — не сохранилось.'; });
   }
+  // «Дневник: 4 дня из 7 · последний раз вчера 21:10 · Задано 5, Оценки 2» — что ученик открывал за неделю (ТЗ 20, сессия 2)
+  var EV = [['ocenki', 'Оценки'], ['uroki', 'Уроки'], ['chat', 'Чат'], ['card', 'карточки уроков']];   // «Задано» — первый экран, его видит каждый заход
+  function when(ms) {
+    var d = new Date(ms), t = new Date(), y = new Date(); y.setDate(y.getDate() - 1);
+    var hm = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    return d.toDateString() === t.toDateString() ? 'сегодня ' + hm : d.toDateString() === y.toDateString() ? 'вчера ' + hm : ru(d) + ' ' + hm;
+  }
+  function zah(x) {
+    var z = x.stat, row = el('div', 'zah'), bits = [];
+    if (!z) return null;
+    z = { days: +z.days || 0, last: +z.last || 0, ev: z.ev || {} };   // в разметку идут только числа
+    if (!z.days) bits.push(z.last ? 'Дневник на этой неделе не открывал(а), последний раз ' + when(z.last) : 'Дневник ещё не открывал(а)');
+    else {
+      bits.push('Дневник: <b>' + z.days + ' ' + (z.days === 1 ? 'день' : z.days < 5 ? 'дня' : 'дней') + ' из 7</b>, последний раз ' + when(z.last));
+      var ev = EV.filter(function (e) { return +z.ev[e[0]]; }).map(function (e) { return e[1] + ' ' + (+z.ev[e[0]]); });
+      if (ev.length) bits.push('открывал(а): ' + ev.join(', '));
+    }
+    if (+x.due) bits.push('домашек к сроку: ' + (+x.done) + ' из ' + (+x.due) + ' сделано');
+    row.innerHTML = '📊 ' + bits.join(' · ');
+    return row;
+  }
   function card(x) {
-    var st = el('div', 'st'), b = el('div'), k = x.j + '.' + x.sid;
+    var st = el('div', 'st'), b = el('div'), k = x.j + '.' + x.sid, zr = zah(x);
+    if (zr) st.appendChild(zr);
     if (x.text) { b.className = 'b'; bubble(b, x.text); } else { b.className = 'none'; b.textContent = x.name + ': на этой неделе ничего не было — сводка не уйдёт.'; }
     st.appendChild(b);
     var more = el('button', 'more', open[k] ? 'Свернуть' : '✍️ Дописать');

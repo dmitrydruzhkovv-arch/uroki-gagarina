@@ -747,6 +747,8 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-tiles .v-row{ border-radius:16px; background:var(--v-card); box-shadow:inset 0 0 0 1px var(--v-line); }
 #vid .v-tiles .v-row.fill{ background:var(--g); color:var(--on); box-shadow:0 10px 22px -14px var(--glow); }
 #vid .v-tiles .fill .v-dot{ display:none; }
+#vid .v-tiles .v-row.done{ background:transparent; }   /* сдал — плитка уходит вниз и гаснет: делать тут нечего */
+#vid .v-tiles .done b, #vid .v-tiles .done .v-hw{ color:var(--v-sub); }
 #vid .v-tiles .fill .v-go{ color:inherit; opacity:.7; }
 #vid .v-tiles .fill .v-st{ background:rgba(255,255,255,.92); padding:2px 8px; border-radius:8px; }
 [data-theme="night"] #vid .v-tiles .fill .v-st{ background:rgba(10,5,16,.78); }
@@ -1078,7 +1080,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (kk) kk.textContent = META.title + ' · 2026/27';
   }
   var QUICK = ['5', '4', '3', '2', '1', 'н', '–'];
-  var LS = { kabKey: 'kab:key', key: 'zh:key', pass: 'zh:pass', tab: 'zh:tab', api: 'kab:api', cache: 'zh:cache', out: 'zh:out', next: 'zh:next', j: 'zh:j', sk: 'zh:sk' };
+  var LS = { kabKey: 'kab:key', key: 'zh:key', pass: 'zh:pass', tab: 'zh:tab', api: 'kab:api', cache: 'zh:cache', out: 'zh:out', next: 'zh:next', j: 'zh:j', sk: 'zh:sk',
+    ckl: 'zh:ckl' };   // ключ чата, выданный по личной ссылке: отдельно от входа через бота — отозвали ссылку, он уходит с ней
   // кэш и неотправленные правки — у каждого журнала свои (у Гагарина — прежние ключи)
   function lk(base) { return J === MAIN_J ? base : base + ':' + J; }
   var KINDS = ['stu', 'les', 'mark', 'cfg', 'file', 'sub', 'itog'];
@@ -1227,7 +1230,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       var qs = q.toString();
       history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + location.hash);   // шаг истории открытого окна (вид ученика) не затираем
     } catch (e) { /* адрес не поменять — значок выйдет без ключа, вход останется прежним */ }
-    if (!v) lsDel('zh:zn');   // ключ не годен — и его копию из памяти долой
+    if (!v) { lsDel('zh:zn'); lsDel(LS.ckl); }   // ключ не годен — и его копию из памяти долой, и ключ чата по нему
   }
   LS.ck = 'zh:ck'; LS.vhod = 'zh:vhod'; LS.kr = 'zh:kr';
   function ck() { return lsGet(LS.ck, ''); }
@@ -3177,16 +3180,18 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function meLoad(want) {
     // at — когда ученик сам выбрал запомненный журнал: подключили к новому позже — сервер откроет новый (D, 01.10)
     var body = want ? { j: want } : { j: lsGet('zh:sj', ''), at: lsGet('zh:sjt', 0) || 1 }, seq0 = subSeq;
+    if (uchDevice()) body.t = 1;   // на устройстве вход учителя: D смотрит глазами ученика — в статистику не идёт
     return post('/zhurnal/me', body, stuH()).then(function (r) {
       if (seq0 !== subSeq && r.status === 200) return meLoad(want);   // пока шёл запрос, ученик сдал фото — этот снимок старше сдачи, берём свежий
-      if (r.status === 401) { if (!znUrl()) lsDel(sk() ? LS.sk : LS.ck); return false; }   // ключ значка — в адресе, память не при чём
+      if (r.status === 401) { lsDel(LS.ckl); if (!znUrl()) lsDel(sk() ? LS.sk : LS.ck); return false; }   // ключ значка — в адресе, память не при чём
       if (r.status !== 200 || !r.data.ok) throw { http: r.status };
       lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
       JOURNALS = r.data.journals || []; J = r.data.j || MAIN_J; renderJournals();
       if (want && r.data.j === want) { lsSet('zh:sj', want); lsSet('zh:sjt', Date.now()); }   // выбрал в переключателе и он открылся — в следующий раз откроется он
-      if (!r.data.stu) { meId = null; freeRows = r.data.free || []; return 'nolink'; }
+      if (!r.data.stu) { meId = null; freeRows = r.data.free || []; lsDel(LS.ckl); return 'nolink'; }   // строку отвязали — и чат по ссылке долой
       setMeta(r.data.meta);
-      meId = r.data.stu; sdachaOn = !!r.data.sdacha; sdelSrv = !!r.data.sdel; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; shansSrv = !!r.data.shans; viewFoot();
+      meId = r.data.stu; sdachaOn = !!r.data.sdacha; sdelSrv = !!r.data.sdel; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; shansSrv = !!r.data.shans; statSrv = !!r.data.stat; viewFoot();
+      if (r.data.ck && !uchDevice()) lsSet(LS.ckl, r.data.ck); else lsDel(LS.ckl);   // чат без кода: пришёл по личной ссылке — чат узнаёт его сам (ТЗ 22, E5); у D — никогда
       if (znUrl()) lsSet('zh:zn', znUrl());   // отдельной записью: в деле только когда другого входа на устройстве нет (см. старт) // ключ значка — ещё и в память: ушёл на сайт уроков и вернулся по ссылке «Журнал» без ключа — кода класса не спросим (D 12.10)
       S = fromObjects(r.data.objects); loaded = true; render();
       return true;
@@ -4583,6 +4588,13 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
      уроки, оценки и сдачи своей строки. «Оценки» — шаг 3, «Уроки» — шаг 4. ── */
   var vidSrv = false, vidUrl = /[?&#]vid=1(?:&|#|$)/.test(location.search + location.hash), vidOld = false;   // vidOld — ученик сам открыл прежний журнал
   var vTab = 'zadano', vLes = '', vMat = false, vY = 0;
+  // статистика заходов (ТЗ 20, сессия 2; сервер говорит в /me): какие вкладки и карточки открывают. Ответа не ждём, ошибка — не беда
+  var statSrv = false;
+  function uchDevice() {   // вход учителя на устройстве: ключ Кабинета (не отвергнутый сервером) или вход по паролю
+    var k = lsGet(LS.key, '') || lsGet(LS.kabKey, '');
+    return !!((k && k !== lsGet('zh:kbad', '')) || lsGet('zh:us', ''));
+  }
+  function vStat(ev) { if (statSrv && meId && !uchDevice()) post('/zhurnal/stat', { ev: ev }, stuH()).catch(function () {}); }
   function vidOn() { return mode !== 'teacher' && loaded && !!meId && !!S.stu[meId] && (vidSrv || vidUrl) && !vidOld; }
   // показать или спрятать новый вид; живая стена шапки (fon.js) — одна на страницу, переезжает туда, где её видно
   function vidShow() {
@@ -4651,7 +4663,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (!x || (due && due.les && dkey(due.date) < tk)) { if (!feed()) rows.push({ subj: g }); return; }
       rows.push({ subj: x.own.subj, own: x.own, due: due, st: vStatus(x.own) });
     });
-    return rows.sort(function (a, b) { return (a.own ? 0 : 1) - (b.own ? 0 : 1) || (a.due ? dkey(a.due.date) : 99999) - (b.due ? dkey(b.due.date) : 99999); });
+    // сначала то, где от ученика что-то нужно; сданное и проверенное — ниже, серым: на нём глаз не задерживается (ТЗ 22, E1, D 29.10)
+    function rank(r) { return !r.own ? 2 : r.st.todo ? 0 : 1; }
+    return rows.sort(function (a, b) { return rank(a) - rank(b) || (a.due ? dkey(a.due.date) : 99999) - (b.due ? dkey(b.due.date) : 99999); });
   }
   // долги: свои плохие оценки со сроком пересдачи; просроченные — первыми
   function vDebts() {
@@ -4685,8 +4699,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     // сама оценка стоит плиткой слева (D 12.10) — словами её не повторяем
     var t = (x.w === 'd' ? 'За домашку' : 'За работу на уроке') + (tp ? ' «' + tp + '»' : '') + '. ' + (vSay(sm.c) ? 'Учитель: ' + sm.c.replace(/[.\s]+$/, '') + '. ' : '');
     if (x.sent) return t + 'Сдано заново — ждёт проверки.';
-    if (x.dbt.left < 0) return t + 'Срок был до ' + vDay(x.dbt.until) + '. Подойди к учителю — договоритесь о пересдаче.';
-    if (shansSrv) return t + 'Сдай до ' + vDay(x.dbt.until) + (x.w === 'd' ? ' — кнопка «Сдать» внутри.' : ' — фото работы, кнопка внутри.');
+    if (x.dbt.left < 0) return t + 'Подойди к учителю — договоритесь о пересдаче.';
+    if (shansSrv) return t + 'Сдай до ' + vDay(x.dbt.until) + '.';
     return t + (x.w === 'd' ? 'Исправь и сдай заново до ' : 'Пересдать до ') + vDay(x.dbt.until) + '.';
   }
   var V_DAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
@@ -4705,7 +4719,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     h += '<div class="v-lbl">К следующим урокам</div><div class="' + (rows.length ? 'v-tiles' : 'v-card') + '">' + (rows.length ? rows.map(function (r) {
       var sj = vSj(r.subj);
       if (!r.own) return '<div class="v-row v-quiet"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><b>' + esc(sj.short) + '</b><span class="v-hw">нового пока не задано</span></span></div>';
-      return '<button class="v-row ' + sj.k + (r.st.todo ? ' fill' : '') + '" data-va="urok" data-id="' + r.own.id + '"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><span class="v-rt"><b>' + esc(sj.short) + (r.due ? ', ' + esc(vDay(r.due.date)) : '') + '</b>' +
+      return '<button class="v-row ' + sj.k + (r.st.todo ? ' fill' : ' done') + '" data-va="urok" data-id="' + r.own.id + '"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><span class="v-rt"><b>' + esc(sj.short) + (r.due ? ', ' + esc(vDay(r.due.date)) : '') + '</b>' +
         '<span class="v-st ' + r.st.k + '">' + esc(r.st.t) + '</span></span><span class="v-hw">' + esc(vHwLine(r.own)) + '</span></span><span class="v-go">›</span></button>';
     }).join('') : '<div class="v-pad"><span class="v-cap">Пока ничего не задано.</span></div>') + '</div>';
     if (shansSrv) return h + vScHtml(D.filter(function (x) { return hot.indexOf(x) < 0; }), hot.length);
@@ -4768,7 +4782,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (!shansSrv) return '';
     var sid = l.id + '.' + meId + '.u', sb = S.sub[sid], h = '', ux = 'U-' + l.id;   // у сдвоенного урока кнопок две — id у каждой свой
     if (sb) h += '<span class="v-hist' + (sb.st === 'sent' ? ' wait' : '') + '">📷 ' + esc({ sent: 'Сдано — ждёт проверки', redo: 'Вернули: исправь и сдай заново', checked: 'Проверено' }[sb.st] || '') + '</span>' + thumbsHtml(sb.ph, sid);
-    if (sdachaOn && canU(l, m)) h += '<label class="v-btn v-btnu">' + (sb && sb.st === 'sent' ? 'Дослать фото' : 'Сдать фото работы') +
+    if (sdachaOn && canU(l, m)) h += '<label class="v-btn v-btnu">' + (sb && sb.st === 'sent' ? 'Дослать фото работы' : 'Сдать фото работы') +
       '<input type="file" id="subIn' + ux + '" data-st="subSt' + ux + '" data-lid="' + l.id + '" data-mark="' + sid + '" accept="image/*" multiple></label><span class="v-cap" id="subSt' + ux + '">Можно и устно — подойди к учителю.</span>';
     return h;
   }
@@ -4879,7 +4893,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     // сдавать можно, пока не проверено; 1 и 2 — «не сдано»: исправил и сдаёт заново. Хорошая оценка без фото (тетрадь на уроке) — сдавать нечего
     var dbtD = isDebt(m), good = /^m[345]$/.test(inf.cls), can = has && (sub ? sub.st !== 'checked' || dbtD : !good) && !((noChance(m) && !(sub && sub.st === 'redo')) || (m && m.sc && !dbtD)), cta = '';
     if (webOnly) cta = '<a class="v-btn" href="' + esc(web) + '" target="_blank" rel="noopener">Открыть домашку ↗</a>';
-    else if (can && sdachaOn) cta = '<span class="v-cap" id="subSt">Можно несколько страниц сразу, до 12 фото.</span><label class="v-btn">' + (sub && sub.st === 'sent' ? 'Дослать фото' : shansSrv && dbtD ? 'Сдать' : sub || inf.red ? 'Сдать заново' : 'Сдать фото') +
+    else if (can && sdachaOn) cta = '<span class="v-cap" id="subSt">Можно несколько страниц сразу, до 12 фото.</span><label class="v-btn">' + (sub && sub.st === 'sent' ? 'Дослать фото домашки' : sub || inf.red || (shansSrv && dbtD) ? 'Сдать домашку заново' : 'Сдать фото домашки') +
       '<input type="file" id="subIn" data-lid="' + own.id + '" data-mark="' + own.id + '.' + meId + '.d" accept="image/*" multiple></label>' +
       (shansSrv && dbtD ? '<span class="v-cap">Можно и устно — подойди к учителю.</span>' : '');
     else if (can) cta = '<span class="v-cap">Приём домашек через журнал пока выключен.</span>';
@@ -5258,10 +5272,11 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function vAct(b) {
     var a = b.dataset.va;
     if (a === 'tab') {
-      if (b.dataset.id === 'chat') { var q = document.querySelector('#dock .vopros'); if (q) q.click(); else alert('Чат не загрузился. Обнови страницу.'); return; }   // чат — то же окно, что за знаком «?»
+      if (b.dataset.id === 'chat') { vStat('chat'); var q = document.querySelector('#dock .vopros'); if (q) q.click(); else alert('Чат не загрузился. Обнови страницу.'); return; }   // чат — то же окно, что за знаком «?»
       if (vSkip) { setTimeout(function () { vAct(b); }, 80); return; }   // шаг закрытого окна ещё снимается — счёт шагов после него
       var to = b.dataset.id, st = history.state || {};
       if (to === vTab) { window.scrollTo(0, 0); return; }
+      vStat(to);
       if (to === 'zadano' && st.d > 0) { history.go(-st.d); return; }   // домой — все свои шаги разом, «Задано» покажет popstate
       vTab = to;   // между «Оценками» и «Уроками» — один шаг на месте прежнего: вкладки не копятся
       if (st.d && st.vtab && st.vtab !== 'zadano' && !st.vles && !st.vold && !st.vov) { try { history.replaceState(vStep({ d: st.d }), ''); } catch (e) { /* не страшно */ } }
@@ -5269,7 +5284,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       vRender(); window.scrollTo(0, 0);
     }
     else if (a === 'urok') {
-      vY = window.pageYOffset; vLes = b.dataset.id; vMat = false;
+      vY = window.pageYOffset; vLes = b.dataset.id; vMat = false; vStat('card');
       vPush(); vRender(); window.scrollTo(0, 0);
     }
     else if (a === 'back') { if (history.state && history.state.vles) history.back(); else vClose(); }
@@ -5302,7 +5317,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     else if (a === 'set') vSettings();
     else if (a === 'exit') {   // чужой телефон или общий компьютер: стереть все свои входы с устройства
       if (!confirm('Выйти из журнала на этом устройстве? Войти снова — кнопкой «📒 Мой журнал» в боте или своим значком.')) return;
-      closeDlg(); lsDel(LS.ck); lsDel(LS.sk); lsDel('zh:hwok'); znSet(''); meId = null; gate('');
+      closeDlg(); lsDel(LS.ck); lsDel(LS.ckl); lsDel(LS.sk); lsDel('zh:hwok'); lsDel('vopros-vyshel'); lsDel('vopros-chat-klyuch'); znSet(''); meId = null; gate('');   // и продлённый чатом ключ
     }
     else if (a === 'new' && history.state && history.state.vold && !history.state.vles) history.back();   // из таблицы — тем же шагом, что «Назад» телефона
     else if (a === 'old' || a === 'new') {
