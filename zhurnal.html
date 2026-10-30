@@ -748,6 +748,8 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-tiles .v-row.fill{ background:var(--g); color:var(--on); box-shadow:0 10px 22px -14px var(--glow); }
 #vid .v-tiles .fill .v-dot{ display:none; }
 #vid .v-tiles .v-row.done{ background:transparent; }   /* сдал — плитка уходит вниз и гаснет: делать тут нечего */
+#vid .v-new{ display:inline-block; font-size:var(--t3); font-weight:800; letter-spacing:.02em; padding:0 7px; border-radius:7px; background:var(--v-red); color:#fff; }   /* «Новое» — ещё не открывал */
+#vid .v-tiles .fill .v-new{ background:rgba(255,255,255,.92); color:var(--v-red); }
 #vid .v-tiles .done b, #vid .v-tiles .done .v-hw{ color:var(--v-sub); }
 #vid .v-tiles .fill .v-go{ color:inherit; opacity:.7; }
 #vid .v-tiles .fill .v-st{ background:rgba(255,255,255,.92); padding:2px 8px; border-radius:8px; }
@@ -4703,11 +4705,29 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (shansSrv) return t + 'Сдай до ' + vDay(x.dbt.until) + '.';
     return t + (x.w === 'd' ? 'Исправь и сдай заново до ' : 'Пересдать до ') + vDay(x.dbt.until) + '.';
   }
+  /* «новое» (D 30.10: уведомление о каждой домашке — в нашем приложении): домашка, которую ученик ещё не открывал на этом
+     устройстве, — с меткой «Новое» в «Задано»; поменяли текст — снова новая. Открыл карточку — метка ушла. Помним по
+     ученику журнала (телефон бывает общий), последние 80; при самом первом заходе всё, что уже задано, — не новое */
+  function vHwSig(own) { var t = vHwText(own) + '|' + hwFiles(own).length + '|' + (own.ad || ''), h = 0; for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return String(h); }
+  function vSeenKey() { return J + '.' + meId; }
+  function vSeen() { var o = lsGet('zh:hwseen', {}); return (o && o[vSeenKey()]) || null; }
+  function vSeenPut(m) {
+    var o = lsGet('zh:hwseen', {}) || {}, ks = Object.keys(m);
+    ks.slice(0, Math.max(0, ks.length - 80)).forEach(function (k) { delete m[k]; });
+    o[vSeenKey()] = m; lsSet('zh:hwseen', o);
+  }
+  function vIsNew(own) { var m = meId && vSeen(); return !!m && m['l' + own.id] !== vHwSig(own); }   // ключ с буквой: порядок — по открытию, не числовой
+  function vSeenMark(own) { if (!meId) return; var m = vSeen() || {}; delete m['l' + own.id]; m['l' + own.id] = vHwSig(own); vSeenPut(m); }
+  function vSeenInit(rows) {   // первый заход на устройстве: что уже задано — увидено
+    if (!meId || vSeen()) return;
+    var m = {}; rows.forEach(function (r) { if (r.own) m['l' + r.own.id] = vHwSig(r.own); }); vSeenPut(m);
+  }
   var V_DAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
   var V_MON = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
   // экран «Задано» — вопрос: «Что задано к следующему уроку?»
   function vZadHtml(rows) {
     var now = new Date(), m = ssylNow(), D = vDebts();
+    vSeenInit(rows);
     var h = '<span class="v-cap">' + V_DAYS[now.getDay()] + ', ' + now.getDate() + ' ' + V_MON[now.getMonth()] + '</span>';
     var links = SSYL.filter(function (x) { return okUrl(m[x.id]); }).map(function (x) {
       return '<a class="v-out" href="' + esc(m[x.id]) + '" target="_blank" rel="noopener">' + x.name + ' ↗</a>';
@@ -4720,7 +4740,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       var sj = vSj(r.subj);
       if (!r.own) return '<div class="v-row v-quiet"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><b>' + esc(sj.short) + '</b><span class="v-hw">нового пока не задано</span></span></div>';
       return '<button class="v-row ' + sj.k + (r.st.todo ? ' fill' : ' done') + '" data-va="urok" data-id="' + r.own.id + '"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><span class="v-rt"><b>' + esc(sj.short) + (r.due ? ', ' + esc(vDay(r.due.date)) : '') + '</b>' +
-        '<span class="v-st ' + r.st.k + '">' + esc(r.st.t) + '</span></span><span class="v-hw">' + esc(vHwLine(r.own)) + '</span></span><span class="v-go">›</span></button>';
+        '<span class="v-st ' + r.st.k + '">' + esc(r.st.t) + '</span></span><span class="v-hw">' + (vIsNew(r.own) ? '<b class="v-new">Новое</b> ' : '') + esc(vHwLine(r.own)) + '</span></span><span class="v-go">›</span></button>';
     }).join('') : '<div class="v-pad"><span class="v-cap">Пока ничего не задано.</span></div>') + '</div>';
     if (shansSrv) return h + vScHtml(D.filter(function (x) { return hot.indexOf(x) < 0; }), hot.length);
     if (D.length) h += '<div class="v-lbl">Долги: ' + D.length + '</div><div class="v-card">' + D.map(vScRow).join('') + '</div>';
@@ -5285,6 +5305,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     }
     else if (a === 'urok') {
       vY = window.pageYOffset; vLes = b.dataset.id; vMat = false; vStat('card');
+      var B0 = vBlock(vLes); if (B0) vSeenMark(B0.own);   // открыл — «Новое» ушло
       vPush(); vRender(); window.scrollTo(0, 0);
     }
     else if (a === 'back') { if (history.state && history.state.vles) history.back(); else vClose(); }
@@ -5317,7 +5338,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     else if (a === 'set') vSettings();
     else if (a === 'exit') {   // чужой телефон или общий компьютер: стереть все свои входы с устройства
       if (!confirm('Выйти из журнала на этом устройстве? Войти снова — кнопкой «📒 Мой журнал» в боте или своим значком.')) return;
-      closeDlg(); lsDel(LS.ck); lsDel(LS.ckl); lsDel(LS.sk); lsDel('zh:hwok'); lsDel('vopros-vyshel'); lsDel('vopros-chat-klyuch'); znSet(''); meId = null; gate('');   // и продлённый чатом ключ
+      closeDlg(); lsDel(LS.ck); lsDel(LS.ckl); lsDel(LS.sk); lsDel('zh:hwok'); lsDel('zh:hwseen'); lsDel('vopros-vyshel'); lsDel('vopros-chat-klyuch'); znSet(''); meId = null; gate('');   // и продлённый чатом ключ
     }
     else if (a === 'new' && history.state && history.state.vold && !history.state.vles) history.back();   // из таблицы — тем же шагом, что «Назад» телефона
     else if (a === 'old' || a === 'new') {
