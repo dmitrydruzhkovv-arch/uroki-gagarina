@@ -1260,6 +1260,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   // второй шанс (ТЗ 22 C, ZHURNAL_SHANS; говорит в /sync, /view, /me): панель оценки вкладками, слова «второй шанс» вместо
   // «долг», срок пересдачи — у самой оценки. Учитель помнит между заходами, как итоги: лист рисуется раньше ответа сервера
   var shansSrv = lsGet('zh:shans', false) === true;
+  var svodkaSrv = lsGet('zh:svodka', false) === true;   // сводки родителям включены (ZHURNAL_SVODKA) — у учителя кнопка «Сводки»
   function svoiView() { return svoiSrv && mode !== 'teacher' && !krMode; }
   function alien(sid) { return svoiView() && sid !== meId; }
   function canAvg(sid) { return !qMode() && !alien(sid); }   // средний у фамилии: у класса с итогами его нет — он в «Итоге»
@@ -1700,6 +1701,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         var itogNew = itogSrv !== !!r.data.itog;   // итоги включили или выключили — перерисовать, даже если записи те же
         if (itogNew) { itogSrv = !!r.data.itog; lsSet('zh:itog', itogSrv); }
         if (shansSrv !== !!r.data.shans) { shansSrv = !!r.data.shans; lsSet('zh:shans', shansSrv); itogNew = true; }   // и тогда перерисовать
+        if (svodkaSrv !== !!r.data.svodka) { svodkaSrv = !!r.data.svodka; lsSet('zh:svodka', svodkaSrv); itogNew = true; }
         // значок открыли там, где память держится: ключ — ещё и в память, тогда ссылка «Журнал» с сайта уроков (адрес без ключа) тоже откроет журнал
         if (uMode && !uMem()) lsSet('zh:us', teacherKey);
         if (uMode) uOk = true;
@@ -2010,6 +2012,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       (talk.length > 3 ? '<span class="codebox">и ещё ' + (talk.length - 3) + '</span>' : '') +
       '<button class="btn pri" data-act="addles">＋ День</button>' +
       '<button class="btn" data-act="students">Ученики</button>' +
+      // сводки недели родителям (ТЗ 22 D, D 28.10); адрес — со своим ?test= и ?api=, чтобы тестовый журнал вёл в тестового бота и свой сервер
+      (svodkaSrv ? '<a class="btn" href="svodki.html' + esc(location.search) + '" style="text-decoration:none">Сводки</a>' : '') +
       (META.kind !== 'cls' ? '<span class="codebox">Ученикам — кнопка «📒 Мой журнал» в боте или личная ссылка (🔗 в «Учениках»)</span>'
         : code ? '<span class="codebox">Код для класса: <b class="mono">' + esc(code) + '</b></span> <button class="link" data-act="code">изменить</button>'
             : '<span class="warn">Код класса не задан — ученики журнал не увидят.</span> <button class="btn" data-act="code">Задать код</button>') +

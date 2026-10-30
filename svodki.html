@@ -8,6 +8,7 @@
 <!-- Сводки родителям — что ушло бы каждому в воскресенье в 18:00 (ТЗ 22 D, шаг 1, Кодер 28.10.2026).
      Шаг 2: «✍️ Дописать» у каждой сводки — слово за неделю, «Сверх урока», статус темы у индивидуала (POST …/svodki/put).
      Только для учителя: ключ — тот же, что у журнала на этом устройстве. Никому ничего не отправляет.
+     Шаг 3: «👪 Ссылка родителю» — ссылка в бота, родитель жмёт «Получать сводку» (POST …/svodki/rod, флаг ZHURNAL_ROD).
      Сервер: POST /cabinet/zhurnal/svodki (флаг ZHURNAL_SVODKA). Стенд: svodki.html?api=http://127.0.0.1:<порт>/cabinet -->
 <style>
   :root { --bg: #f2f2f6; --card: #fff; --ink: #1c1c1e; --mut: #6b6b72; --line: #e3e3e8; --chat: #cddcbf; --acc: #3d7fd9; }
@@ -50,6 +51,13 @@
   /* заходы ученика за неделю (ZHURNAL_STAT) — только тебе, в сводку родителю не входят */
   .zah { color: var(--mut); font-size: 14px; padding: 0 4px 8px; }
   .zah b { color: var(--ink); font-weight: 600; }
+  /* ссылка родителю (шаг 3) */
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .lnk { font-size: 14px; word-break: break-all; background: var(--bg); border-radius: 10px; padding: 10px; user-select: all; }
+  .who { display: flex; align-items: center; gap: 8px; }
+  .who span { flex: 1; }
+  .sec { min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+  .warn { color: #b45309; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -89,7 +97,8 @@
     return fetch(APIS[i] + '/zhurnal/svodki' + (path || ''), { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + KEY }, body: JSON.stringify(body) })
       .catch(function (e) { if (i + 1 < APIS.length) return post(i + 1, body, path); throw e; });
   }
-  var last = null, open = {};   // last — ответ за открытую неделю; open — у каких учеников раскрыто «Дописать»
+  var last = null, open = {}, openR = {};   // last — ответ за открытую неделю; open / openR — у каких учеников раскрыто «Дописать» / «Родители»
+  var BOT = /[?&]test=chat\b/.test(location.search) ? 'Lemma_test1_bot' : 'D_mathh_bot';
   function load(week, keep) {
     if (!KEY) { msg('Открой <a href="zhurnal.html">журнал</a> как учитель на этом устройстве, потом вернись сюда.'); return Promise.resolve(); }
     if (!keep) msg('Собираю…');
@@ -112,10 +121,12 @@
     document.getElementById('wk').textContent = (r.mon === cur ? 'Эта неделя · ' : '') + ru(mon) + ' – ' + ru(sun);
     document.getElementById('next').disabled = r.mon >= cur;
     var go = r.items.filter(function (x) { return x.text; }).length;
-    document.getElementById('sub').textContent = 'Так их увидят родители в воскресенье в 18:00. Пока никому не уходит. Сводок: ' + go +
+    document.getElementById('sub').textContent = 'Так их увидят родители в воскресенье в 18:00. ' +
+      (r.rod ? 'По воскресеньям пока не уходит; подключённый родитель видит сводку сразу, но без твоего слова за неделю — оно до воскресенья 18:00 черновик. Сводок: '
+        : 'Пока никому не уходит. Сводок: ') + go +
       (r.items.length > go ? ', без сводки: ' + (r.items.length - go) : '') + '.';
     var y = window.scrollY;
-    if (!keep) open = {};
+    if (!keep) { open = {}; openR = {}; }
     out.innerHTML = '';
     var j = null;
     r.items.forEach(function (x) {
@@ -159,13 +170,78 @@
     if (zr) st.appendChild(zr);
     if (x.text) { b.className = 'b'; bubble(b, x.text); } else { b.className = 'none'; b.textContent = x.name + ': на этой неделе ничего не было — сводка не уйдёт.'; }
     st.appendChild(b);
-    var more = el('button', 'more', open[k] ? 'Свернуть' : '✍️ Дописать');
-    st.appendChild(more);
+    var btns = el('div', 'btns'), more = el('button', 'more', open[k] ? 'Свернуть' : '✍️ Дописать');
+    btns.appendChild(more);
+    st.appendChild(btns);
     var ed = editor(x);
     ed.hidden = !open[k];
     st.appendChild(ed);
     more.onclick = function () { open[k] = !open[k]; ed.hidden = !open[k]; more.textContent = open[k] ? 'Свернуть' : '✍️ Дописать'; };
+    if (x.rod) {
+      var n = (x.rod.who || []).length, rb = el('button', 'more'), rp = rodPanel(x);
+      var label = function () { return openR[k] ? 'Свернуть' : n ? '👪 Родители: ' + n : '👪 Ссылка родителю'; };
+      rb.textContent = label();
+      rp.hidden = !openR[k];
+      rb.onclick = function () { openR[k] = !openR[k]; rp.hidden = !openR[k]; rb.textContent = label(); };
+      btns.appendChild(rb);
+      st.appendChild(rp);
+    }
     return st;
+  }
+  // «👪 Ссылка родителю» (ТЗ 22 D, шаг 3): ссылка в бота — родитель жмёт «Получать сводку» и сразу видит сводку
+  function rodPost(body, status, btn) {
+    status.textContent = 'Делаю…';
+    if (btn) btn.disabled = true;
+    var fail = function (t) { status.textContent = t; if (btn) btn.disabled = false; };
+    return post(0, body, '/rod').then(function (r) { return r.json().catch(function () { return {}; }); }).then(function (r) {
+      if (!r.ok) { fail('Не получилось. Попробуй ещё раз.'); return; }
+      return load(last.mon, true);
+    }, function () { fail('Нет связи — не получилось.'); });
+  }
+  function rodPanel(x) {
+    var ed = el('div', 'ed'), base = { j: x.j, sid: x.sid }, rod = x.rod, s0 = el('div', 'ok');
+    var who = rod.who || [];
+    if (who.length) {
+      var w = el('div'); w.appendChild(el('h3', '', 'Получают сводку'));
+      who.forEach(function (p) {
+        var row = el('div', 'who'), off = el('button', 'sec', 'Отключить');
+        row.appendChild(el('span', '', (p.nm || 'без имени в Телеграме') + (p.at ? ' · с ' + ru(new Date(p.at)) : '')));
+        off.onclick = function () { if (confirm('Отключить? Сводка этому человеку больше не придёт.')) rodPost(Object.assign({ op: 'off', id: p.id }, base), s0); };
+        row.appendChild(off); w.appendChild(row);
+      });
+      ed.appendChild(w);
+    }
+    var l = el('div'); l.appendChild(el('h3', '', 'Ссылка родителю'));
+    if (rod.start) {
+      var url = 'https://t.me/' + BOT + '?start=' + rod.start;
+      var say = 'Здравствуйте! По этой ссылке раз в неделю в Телеграм будет приходить короткая сводка: что проходили, что задано, отметки. Откройте и нажмите «Получать сводку».';
+      l.appendChild(el('div', 'lnk', url));
+      var r1 = el('div', 'row'), share = el('a', 'go', 'Отправить в Телеграме'), cp = el('button', 'sec', 'Скопировать');
+      share.href = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(say);
+      share.target = '_blank'; share.rel = 'noopener';
+      share.style.cssText = 'display:inline-flex;align-items:center;text-decoration:none';
+      cp.onclick = function () {
+        var done = function () { s0.textContent = 'Скопировано — вставь родителю в личку.'; };
+        if (navigator.clipboard) navigator.clipboard.writeText(say + '\n' + url).then(done, function () { s0.textContent = 'Не скопировалось — выдели ссылку пальцем.'; });
+        else s0.textContent = 'Выдели ссылку пальцем и скопируй.';
+      };
+      r1.appendChild(share); r1.appendChild(cp); l.appendChild(r1);
+      l.appendChild(el('div', 'hint', 'Отправь один раз, в личку. По ней подключится ' + (rod.left === 1 ? 'ещё один человек' : 'до двух человек') + ', потом она перестанет работать.'));
+      var nw = el('button', 'sec', 'Новая ссылка');
+      nw.style.marginTop = '8px';
+      nw.onclick = function () { if (confirm('Сделать новую? Эта ссылка перестанет работать. Кто уже подключён — останется.')) rodPost(Object.assign({ op: 'link' }, base), s0); };
+      l.appendChild(nw);
+    } else {
+      if (x.talk) l.appendChild(el('div', 'warn', 'Открытых работ: ' + (+x.open) + '. Первая сводка будет тяжёлой — лучше сначала поговорить с родителем.'));
+      var mk = el('button', 'go', 'Сделать ссылку');
+      mk.style.marginTop = '8px';
+      mk.onclick = function () { rodPost(Object.assign({ op: 'link' }, base), s0, mk); };
+      l.appendChild(mk);
+      l.appendChild(el('div', 'hint', who.length ? 'Ещё один родитель — сделай новую ссылку.' : 'Родитель нажмёт её, согласится одной кнопкой и сразу увидит сводку этой недели. Тебе придёт сообщение.'));
+    }
+    l.appendChild(s0);
+    ed.appendChild(l);
+    return ed;
   }
   var TYPES = [['ol', 'Олимпиада'], ['pr', 'Пробник'], ['kn', 'Конкурс'], ['dr', 'Другое']];
   var US = [[1, 'Познакомились'], [2, 'С подсказкой'], [3, 'Без подсказки']];
