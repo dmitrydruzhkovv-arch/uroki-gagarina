@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Журнал — Математика 9 класс</title>
 <meta name="apple-mobile-web-app-title" content="Журнал">
+<!-- значок на экран «Домой» (D 04.11: белая «Д» на чёрном, без полоски); учителю — такой же «Ж», меняет appName() -->
+<link rel="apple-touch-icon" href="znachok-dnevnik.png">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#16131a">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -2028,9 +2030,11 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   // название значка на экране «Домой» (D 04.11: «чтобы назывался Дневник у всех всегда»): айфон берёт его из
   // apple-mobile-web-app-title, остальные — из заголовка вкладки. Ученик и родитель — «Дневник», учитель — «Журнал»
   function appName() {
-    var n = mode === 'teacher' || krMode ? 'Журнал' : 'Дневник', m = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+    var zh = mode === 'teacher' || krMode, n = zh ? 'Журнал' : 'Дневник', m = document.querySelector('meta[name="apple-mobile-web-app-title"]'),
+      ic = document.querySelector('link[rel="apple-touch-icon"]'), f = zh ? 'znachok-zhurnal.png' : 'znachok-dnevnik.png';
     if (document.title !== n) document.title = n;
     if (m && m.content !== n) m.content = n;
+    if (ic && ic.getAttribute('href') !== f) ic.setAttribute('href', f);
   }
   function render() {
     scMapC = null;   // данные могли прийти с сервера целиком
