@@ -300,7 +300,7 @@ function onKlik(e){
   else if (a.dataset.vq === 'reak'){ if (a.dataset.kto === ya()) reagirovat(+a.dataset.id, ''); }   // своя — снять
   else if (a.dataset.vq === 'otv-net'){ otvetNa = 0; risovatOtvet(); }
   else if (a.dataset.vq === 'k-soobshcheniyu'){
-    const el = okno.querySelector(`.vq-msg[data-id="${+a.dataset.id}"]`);
+    const el = okno.querySelector(`.vq-msg[data-id="${+a.dataset.id}"], .vq-msg[data-ids~="${+a.dataset.id}"]`);
     if (el){ el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.classList.add('vq-mig'); setTimeout(() => el.classList.remove('vq-mig'), 1200); }
   }
   else if (a.dataset.vq === 'vyjti'){                  // чужой или школьный компьютер
@@ -326,10 +326,34 @@ function otkryt(){
   requestAnimationFrame(() => { fon.classList.add('on'); okno.classList.add('on'); okno.focus({ preventScroll: true }); });
 }
 
+/* Клавиатура телефона (D 04.11: «чат сворачивается в маленькое окошко вверху»). Айфон не сжимает страницу под
+   клавиатуру, а сдвигает видимую часть: лист чата снизу уезжает под клавиатуру. Пока клавиатура открыта, окно
+   чата занимает ровно видимую часть экрана (visualViewport), шапка «Чат с учителем» прячется — место под переписку.
+   Полоску браузера со стрелками и «✓» над клавиатурой рисует сам Safari — страница её убрать не может */
+function podKlaviaturu(){
+  const vv = window.visualViewport;
+  if (!okno || !vv || (!otkryto && !okno.classList.contains('vq-kb'))) return;
+  const pishet = document.activeElement && okno.contains(document.activeElement) && /^(TEXTAREA|INPUT)$/.test(document.activeElement.tagName);
+  const kb = otkryto && pishet && okno.classList.contains('vq-chat') && matchMedia('(max-width:700px)').matches
+    && vv.scale < 1.05 && document.documentElement.clientHeight - vv.height > 120;
+  if (!kb && !okno.classList.contains('vq-kb')) return;
+  const box = okno.querySelector('.vq-lenta');
+  const vnizu = box && box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+  okno.classList.toggle('vq-kb', kb);
+  okno.style.top = kb ? Math.round(vv.offsetTop) + 'px' : '';
+  okno.style.height = kb ? Math.round(vv.height) + 'px' : '';
+  if (box && vnizu) box.scrollTop = box.scrollHeight;
+}
+if (window.visualViewport){
+  visualViewport.addEventListener('resize', podKlaviaturu);
+  visualViewport.addEventListener('scroll', podKlaviaturu);
+}
+
 function zakryt(){
   if (!otkryto) return;
   menuZakryt();
   otkryto = false;
+  podKlaviaturu();
   fon.classList.remove('on'); okno.classList.remove('on');
   document.body.classList.remove('vq-otkryto');
   clearInterval(chatTaimer); chatTaimer = null;
@@ -467,6 +491,7 @@ function vzyatKlyuch(d){                               // ответ серве�
    браузера: сходил в Телеграм, вернулся, страница перезагрузилась — та же ссылка. */
 function vhodEkran(soobshchenie){
   okno.classList.remove('vq-chat');
+  podKlaviaturu();
   okno.innerHTML = `
     <div class="vq-head">${blok('vq-mini')}<h2 id="vq-h">Чат с учителем</h2>
       <button type="button" class="vq-x" data-vq="zakryt" aria-label="Закрыть">✕</button></div>
@@ -577,7 +602,7 @@ function chatNachat(){
     <div class="vq-otv" hidden></div>
     <div class="vq-pole"${u ? ' hidden' : ''}>
       <button type="button" class="vq-skrepka" data-vq="foto" aria-label="Прикрепить фото">${SKREPKA}</button>
-      <input type="file" class="vq-file" accept="image/*" hidden>
+      <input type="file" class="vq-file" accept="image/*" multiple hidden>
       <textarea class="vq-vvod" rows="1" maxlength="2000" placeholder="${u ? 'Ответ ученику…' : 'Напиши сообщение…'}" aria-label="${u ? 'Ответ ученику' : 'Сообщение учителю'}"></textarea>
       <button type="button" class="vq-go" data-vq="poslat" aria-label="Отправить">${STRELKA}</button>
     </div>`;
@@ -588,10 +613,11 @@ function chatNachat(){
   vvod.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey && matchMedia('(pointer:fine)').matches){ e.preventDefault(); poslat(); }
   });
+  /* несколько фото разом (D 04.11): уходят по одному подряд, в ленте собираются в одно сообщение-альбом */
   okno.querySelector('.vq-file').addEventListener('change', e => {
-    const f = e.target.files && e.target.files[0];
+    const f = Array.from(e.target.files || []);
     e.target.value = '';
-    if (f) poslatFoto(f);
+    if (f.length) poslatFotki(f);
   });
   if (!u) tyanut(true);
   else {
@@ -748,17 +774,20 @@ function risovat(vniz){
     return;
   }
   let den = '', html = '';
-  lenta.forEach(m => {
-    const d = new Date(m.ts);
+  albomy(lenta).forEach(g => {
+    const m = g[0], d = new Date(m.ts), konec = new Date(g[g.length - 1].ts);
     const dp = denPodpis(d);
     if (dp !== den){ den = dp; html += `<div class="vq-den">${dp}</div>`; }
-    const src = m.preview || (m.photo ? fotoUrl(m.photo) : '');
-    /* нажатие на сообщение — реакция или «Ответить»: только если сервер это умеет и сообщение уже на сервере */
-    html += `<div class="vq-msg ${m.who === ya() ? 'moe' : 'ego'}${m.zhdet ? ' zhdet' : ''}"${m.id && estReakcii ? ` data-vq="menu" data-id="${m.id}"` : ''}>
+    const fotki = g.map(x => x.preview || (x.photo ? fotoUrl(x.photo) : '')).filter(Boolean);
+    const zhdet = g.some(x => x.zhdet);
+    const img = src => `<img src="${esc(src)}" alt="Фото" data-vq="uvelichit">`;
+    /* нажатие на сообщение — реакция или «Ответить»: только если сервер это умеет и сообщение уже на сервере.
+       У альбома реакция и ответ — к первому фото, к нему же подпись */
+    html += `<div class="vq-msg ${m.who === ya() ? 'moe' : 'ego'}${zhdet ? ' zhdet' : ''}${fotki.length > 1 ? ' alb' : ''}"${m.id && estReakcii ? ` data-vq="menu" data-id="${m.id}"` : ''}${g.length > 1 ? ` data-ids="${g.map(x => x.id || '').join(' ')}"` : ''}>
       ${m.re ? citata(m.re) : ''}
-      ${src ? `<img src="${esc(src)}" alt="Фото" data-vq="uvelichit">` : ''}
+      ${fotki.length > 1 ? `<div class="vq-alb${fotki.length % 2 ? ' nechet' : ''}">${fotki.map(img).join('')}</div>` : fotki.map(img).join('')}
       ${m.text ? `<div class="t">${esc(m.text)}</div>` : ''}
-      <div class="vr">${m.zhdet ? 'отправляю…' : vremya(d)}</div>${reakciiHtml(m)}</div>`;
+      <div class="vr">${zhdet ? 'отправляю…' : vremya(konec)}</div>${reakciiHtml(m)}</div>`;
   });
   box.innerHTML = html;
   if (vniz || bylVnizu){
@@ -766,6 +795,20 @@ function risovat(vniz){
     /* картинки догружаются позже и сдвигают низ — докручиваем */
     box.querySelectorAll('img').forEach(i => i.addEventListener('load', () => { box.scrollTop = box.scrollHeight; }, { once: true }));
   }
+}
+
+/* фото, отправленные пачкой: идут подряд от одного человека, без своей подписи и ответа, в пределах трёх минут
+   и одного дня — рисуем одним сообщением. Первое в пачке может быть с подписью — она и есть подпись альбома */
+function albomy(spisok){
+  const gr = [];
+  spisok.forEach(m => {
+    const g = gr[gr.length - 1], p = g && g[g.length - 1];
+    const foto = x => !!(x.preview || x.photo);
+    if (p && foto(m) && foto(p) && !m.text && !m.re && !(m.id && reakcii[m.id]) && m.who === p.who && g.length < FOTO_ZA_RAZ
+        && Math.abs(new Date(m.ts) - new Date(p.ts)) < 180000 && denPodpis(new Date(m.ts)) === denPodpis(new Date(p.ts))) g.push(m);
+    else gr.push([m]);
+  });
+  return gr;
 }
 
 function videl(){
@@ -930,25 +973,48 @@ function szhat(file){
   });
 }
 
-async function poslatFoto(file){
+const FOTO_ZA_RAZ = 10;
+/* пачка (D 04.11): кому и подпись — на момент выбора фото. Учитель открыл другого ученика посреди пачки —
+   остальные не шлём никому. Не фото — пропускаем и говорим; сбой сети — говорим, сколько ушло */
+async function poslatFotki(files){
+  if (uchitel() && !komu) return;
+  const dlya = komu, vvod = okno.querySelector('.vq-vvod');
+  const vse = files.slice(0, FOTO_ZA_RAZ);
+  let podpis = vvod.value.trim(), ushlo = 0, plohih = 0;
+  if (podpis){ vvod.value = ''; rost(vvod); }
+  for (const f of vse){
+    if (dlya !== komu || !otkryto) break;
+    const r = await poslatFoto(f, dlya, podpis);
+    if (r === 'ne-foto'){ plohih++; continue; }
+    if (!r){
+      if (vse.length > 1) oshibka(`Ушло ${ushlo} из ${vse.length} фото. Остальные прикрепи ещё раз.`);
+      return;
+    }
+    ushlo++; podpis = '';
+  }
+  if (podpis && !vvod.value){ vvod.value = podpis; rost(vvod); }      // ни одно не ушло — подпись возвращаем в поле
+  const net = [];
+  if (plohih) net.push(plohih === 1 && vse.length === 1 ? 'Это не фото или оно слишком большое. Попробуй другое.' : `${plohih} из ${vse.length} — не фото или слишком большие, их пропустил.`);
+  if (files.length > FOTO_ZA_RAZ) net.push(`За раз — до ${FOTO_ZA_RAZ} фото. Остальные прикрепи ещё раз.`);
+  if (net.length) oshibka(net.join(' '));
+}
+
+async function poslatFoto(file, dlya, text){
   oshibka('');
-  const dlya = komu;
   const blob = await szhat(file);
-  if (!blob){ oshibka('Это не фото или оно слишком большое. Попробуй другое.'); return; }
-  if (dlya !== komu || (uchitel() && !komu)) return;   // пока фото сжималось, открыли другого ученика
+  if (!blob) return 'ne-foto';
+  if (dlya !== komu || (uchitel() && !komu)) return false;   // пока фото сжималось, открыли другого ученика
   const vvod = okno.querySelector('.vq-vvod');
-  const text = vvod.value.trim();
-  vvod.value = ''; rost(vvod);
-  const re = otvetNa;
+  const re = otvetNa;   // у пачки «ответ на» уходит с первым фото: otpravitVChat его сбрасывает
   const fd = new FormData();
   fd.append('photo', blob, 'foto.jpg');
   if (text) fd.append('text', text);
   if (re) fd.append('re', re);
   if (uchitel()) fd.append('u', komu);
   else if (urokSejchas()) fd.append('urok', urokSejchas());
-  otpravitVChat(fd, '', { text, re, preview: URL.createObjectURL(blob) }, () => {
+  return otpravitVChat(fd, '', { text, re, preview: URL.createObjectURL(blob) }, () => {
     if (text && !vvod.value){ vvod.value = text; rost(vvod); }
-  });
+  }).then(ok => ok && dlya === komu);
 }
 
 async function otpravitVChat(body, tip, vid, vernut){
@@ -976,6 +1042,7 @@ async function otpravitVChat(body, tip, vid, vernut){
     if (tot()){ await tyanut(true); risovat(true); }
     if (u) spisokTyanut(false);
     if (m.preview) setTimeout(() => URL.revokeObjectURL(m.preview), 60000);
+    return true;
   } catch (_) {
     baseP = null;
     nazad();
