@@ -488,6 +488,9 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .pop-sub .thumbs button{ width:64px; height:64px; }
 .pop-sub .pop-x button.ok{ background:#16a34a; color:#fff; box-shadow:none; }
 .pop-sub .pop-x button.redo{ color:#c026d3; }
+/* D загружает фото работы за ученика (ТЗ 25) — кнопка во всю ширину, палец попадает (44 px) */
+.pop-up{ width:100%; justify-content:center; min-height:44px; margin:0 0 4px; border-radius:12px; font-weight:700; font-size:14px; box-shadow:inset 0 0 0 1px var(--z-line2); }
+.pop-upst{ display:block; min-height:16px; margin:0 0 8px; font-size:12px; color:var(--sub); text-align:center; }
 .dlg .big{ display:flex; align-items:center; gap:12px; margin:6px 0; }
 .dlg .big i{ font-style:normal; display:grid; place-items:center; min-width:48px; height:48px; padding:0 8px; border-radius:12px; font-size:22px; font-weight:800; box-shadow:inset 0 0 0 1px var(--z-line2); }
 .dlg .kod{ font-size:26px; letter-spacing:.3em; text-align:center; font-family:'JetBrains Mono',ui-monospace,monospace; }
@@ -761,6 +764,8 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-card .v-debt.v-scok{ box-shadow:inset 4px 0 0 #16a34a; }
 #vid .v-more{ justify-content:center; }
 #vid .v-btnu{ position:relative; display:flex; align-items:center; justify-content:center; margin-top:10px; min-height:48px; padding:0 16px; border-radius:14px; font-weight:800; color:#fff; background:var(--v-pri); cursor:pointer; }   /* «Сдать фото работы» у работы на уроке — под оценкой */
+#vid .v-ask.v-upu{ position:relative; margin-top:0; padding-top:0; box-shadow:none; color:var(--v-sub, inherit); }   /* работа с урока без оценки (ТЗ 25) — тихо */
+#vid .v-upu input{ position:absolute; inset:0; opacity:0; cursor:pointer; }
 #vid .v-btnu input{ position:absolute; inset:0; opacity:0; cursor:pointer; }   /* как .upl: системный выбор фото по всей кнопке */
 #vid .v-debt{ box-shadow:inset 3px 0 0 var(--v-red); }
 #vid .v-debt + .v-debt{ box-shadow:inset 3px 0 0 var(--v-red), inset 0 1px 0 var(--v-line); }
@@ -987,6 +992,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
 .rv-marks button{ height:48px; border-radius:12px; font-size:20px; font-weight:800; }
 .rv-marks button[aria-pressed="true"]{ outline:3px solid var(--ink); outline-offset:1px; }
 .rv-side textarea{ width:100%; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); color:var(--ink); font:inherit; padding:8px 10px; resize:vertical; }
+.rv-pdel{ min-height:44px; border-radius:12px; box-shadow:inset 0 0 0 1px var(--z-line2); font-weight:700; color:#dc2626 !important; }
 .rv-redo{ min-height:44px; border-radius:12px; box-shadow:inset 0 0 0 1px var(--z-line2); font-weight:700; color:#a21caf !important; }
 .rv-next{ margin-top:auto; min-height:52px; border-radius:14px; background:var(--g); color:var(--on) !important; font-size:16px; font-weight:800; box-shadow:0 10px 24px -12px var(--glow); }
 @media (max-width:900px){
@@ -1224,6 +1230,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   if (!tabOk()) tab = SUBJ[0].id;
   var botEntry = /[#&][ts]=/.test(location.hash);   // пришёл по ссылке из бота или по личной ссылке
   var loaded = false, cur = null, pendingRender = false, scrollPos = {};
+  var urabSrv = false;   // работу с урока сдают и без второго шанса, пока нет оценки и урок не старше 14 дней (ТЗ 25)
   var meId = null, sdachaOn = false, sdelSrv = false;   // ученик, вошедший через бота (сдача ДЗ, шаг 4); sdelSrv — можно убрать своё фото (ZHURNAL_SUBDEL)
   // личный значок (D 12.10): ключ своей строки лежит в адресе (?s=<журнал>.<ключ>) и из него не убирается — значок
   // на экране «Домой» несёт его сам. Память браузера у значка не держится (Яндекс Браузер на Андроиде): без этого
@@ -1403,6 +1410,10 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function subOfCell(cellId) { var p = String(cellId).split('.'); return p[2] === 'u' ? cellId : p[0] + '.' + p[1]; }
   function cellOfSub(subId) { return /\.u$/.test(subId) ? subId : subId + '.d'; }
   function canU(l, m) { var d = l && m ? debtOf(l, m) : null; return !!d && d.left >= 0; }   // работу с урока можно сдать: шанс открыт и срок не вышел
+  // работа с урока без шанса (ТЗ 25, D 06.11 «пусть всегда могут»): оценки за неё нет, урок уже был — как считает сервер (_u_free)
+  function uFree(l, m) { var d = urabSrv && l ? realDate(l.date) : null, now = new Date(); return !!d && d <= now && now - d < (U_DAYS + 1) * 864e5 && !splitMark(m).g; }
+  var U_DAYS = 14;   // сдать работу с урока без оценки — две недели, как и второй шанс; старые уроки кнопкой не обрастают
+  function canUAny(l, m) { return uFree(l, m) || (shansSrv && canU(l, m)); }
   function noChance(m) { return !!m && 'sc' in m && !m.sc && !!String(m.v || '').trim(); }   // отметка стоит, шанса нет
   function scAuto(v) { return /^[–-](?:\s|\(|$)/.test(String(v || '').trim()); }   // «–» — работы нет: шанс включается сам
   function scOffer(v) { var i = markInfo(v); return !!i.red || i.cls === 'mn'; }   // 2, 1, незачёт, «–», «н» — шанс можно дать
@@ -1476,7 +1487,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       cls += sb.st === 'sent' ? ' sub-sent' : sb.st === 'redo' ? ' sub-redo' : '';
       inner += '<i class="cam" aria-label="сдано фото">📷</i>';
     }
-    if (parts[1] === meId && (parts[2] === 'd' || (shansSrv && (sb || canU(l, m))))) cls += ' mine';   // своя клетка: сдать фото (у работы на уроке — по второму шансу)
+    if (parts[1] === meId && (parts[2] === 'd' || ((shansSrv || urabSrv) && (sb || canUAny(l, m))))) cls += ' mine';   // своя клетка: сдать фото (у работы на уроке — по второму шансу)
     if (mode !== 'teacher') { /* A и ✎ — пометки для D, детям без легенды непонятны */ }
     else if (m && m.by === 'auto') inner += '<i class="src" aria-hidden="true">A</i>';
     else if (m && m.av) inner += '<i class="src" aria-hidden="true">✎</i>';
@@ -1703,7 +1714,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if ('kr' in r.data) krSrv = !!r.data.kr;
         if (ssylSrv !== !!r.data.ssyl) { ssylSrv = !!r.data.ssyl; lsSet('zh:ssyl', ssylSrv); }
         uchSrv = !!r.data.uch;
-        vidSrv = !!r.data.vid; provSrv = !!r.data.prov;   // вид ученика включён детям — в окне дня домашка показана так, как её увидят
+        vidSrv = !!r.data.vid; provSrv = !!r.data.prov; tsubSrv = !!r.data.tsub;   // вид ученика включён детям — в окне дня домашка показана так, как её увидят
         var itogNew = itogSrv !== !!r.data.itog;   // итоги включили или выключили — перерисовать, даже если записи те же
         if (itogNew) { itogSrv = !!r.data.itog; lsSet('zh:itog', itogSrv); }
         if (shansSrv !== !!r.data.shans) { shansSrv = !!r.data.shans; lsSet('zh:shans', shansSrv); itogNew = true; }   // и тогда перерисовать
@@ -3212,7 +3223,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (want && r.data.j === want) { lsSet('zh:sj', want); lsSet('zh:sjt', Date.now()); }   // выбрал в переключателе и он открылся — в следующий раз откроется он
       if (!r.data.stu) { meId = null; freeRows = r.data.free || []; lsDel(LS.ckl); return 'nolink'; }   // строку отвязали — и чат по ссылке долой
       setMeta(r.data.meta);
-      meId = r.data.stu; sdachaOn = !!r.data.sdacha; sdelSrv = !!r.data.sdel; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; shansSrv = !!r.data.shans; statSrv = !!r.data.stat; viewFoot();
+      meId = r.data.stu; sdachaOn = !!r.data.sdacha; sdelSrv = !!r.data.sdel; urabSrv = !!r.data.urab; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; shansSrv = !!r.data.shans; statSrv = !!r.data.stat; viewFoot();
       if (r.data.ck && !uchDevice()) lsSet(LS.ckl, r.data.ck); else lsDel(LS.ckl);   // чат без кода: пришёл по личной ссылке — чат узнаёт его сам (ТЗ 22, E5); у D — никогда
       if (znUrl()) lsSet('zh:zn', znUrl());   // отдельной записью: в деле только когда другого входа на устройстве нет (см. старт) // ключ значка — ещё и в память: ушёл на сайт уроков и вернулся по ссылке «Журнал» без ключа — кода класса не спросим (D 12.10)
       S = fromObjects(r.data.objects); loaded = true; render();
@@ -3602,6 +3613,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var list = sb.ph, edit = mode === 'teacher', v = document.createElement('div');
     // своя сдача ученика: пока не проверена, фото можно убрать (D 23.10) — в новом виде, за флагом сервера
     var mine = !edit && !!meId && subId.split('.')[1] === meId && sdachaOn && sdelSrv && (vidSrv || vidUrl), seq = 0;
+    var tdel = edit && tsubSrv;   // учитель убирает лишнее фото — своё снятое криво или чужое (ТЗ 25)
     var color = PEN_COLORS[0], width = PEN_W.m, strokes = [], stk = null, img = null, W = 0, H = 0, dirty = false, raf = 0, rot = 0;
     v.className = 'view';
     v.innerHTML = (edit ? '<div class="vtools">' + PEN_COLORS.map(function (c, k) { return '<button data-pc="' + c + '" aria-pressed="' + (k === 0) + '" title="Цвет"><span style="background:' + c + '"></span></button>'; }).join('') +
@@ -3611,7 +3623,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         '<button class="vrot" data-v="rr" title="Повернуть фото вправо на 90°" aria-label="Повернуть фото вправо">90°' + TURN_SVG + '<path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button><span class="vst" id="vSt">Рисуй пером, мышкой или пальцем · Shift — прямая</span></div>' : '') +
       '<div class="vstage"><canvas></canvas></div><div class="vnotes" hidden></div>' +
       '<div class="vbar"><button data-v="-1">←</button><span id="vN"></span><button data-v="1">→</button>' +
-      (mine ? '<button class="vdel" data-v="del" aria-label="Удалить фото"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Удалить</button>' : '') +
+      (mine || tdel ? '<button class="vdel" data-v="del" aria-label="Удалить фото"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Удалить</button>' : '') +
       '<button data-v="x">' + (edit ? 'Сохранить и закрыть' : 'Закрыть') + '</button></div>';
     document.body.appendChild(v);
     var cv = v.querySelector('canvas'), stage = v.querySelector('.vstage');
@@ -3670,6 +3682,23 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       vn.hidden = !NN.length; vn.innerHTML = NN.map(function (n, k) { return '<div><b>' + (k + 1) + '</b><span>' + esc(n.t) + '</span></div>'; }).join('');
       var my = ++seq;   // фото сменили (листнули, удалили), пока грузилось, — прежнее на экран не ставим
       photoUrl(list[i]).then(function (u) { var im = new Image(); im.onload = function () { if (my === seq) { img = im; fit(); } }; im.src = u; });
+    }
+    // учитель: фото уходит из сдачи и у ученика; разбор этого фото — вместе с ним. Убрал последнее — сдачи нет, оценка остаётся
+    function tDelPhoto(b) {
+      if (!confirm('Удалить это фото? Ученик его тоже больше не увидит.')) return;
+      var lab = b.lastChild;
+      b.disabled = true; lab.textContent = 'Удаляю…';
+      post('/zhurnal/tsubdel', { id: subId, f: list[i] }, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
+        b.disabled = false; lab.textContent = 'Удалить';
+        if (r.status !== 200 || !r.data.ok) { alert(r.status === 404 ? 'Этого фото уже нет — обнови страницу.' : r.status === 503 ? 'Удаление фото пока выключено.' : 'Не получилось удалить. Попробуй ещё раз.'); return; }
+        var o = r.data.obj; dirty = false;   // разбор удалённого фото сохранять некуда
+        if (o.d) { o.d.id = o.id; o.d.ts = o.ts; S.sub[o.id] = o.d; list = o.d.ph; i = Math.min(i, list.length - 1); show(); }
+        else delete S.sub[o.id];
+        save(); pendingRender = true;
+        var td = document.querySelector('td.c[data-c="' + cellOfSub(subId) + '"]');
+        if (td) { var cv = cellView(td.dataset.c); td.className = cv.cls + (td.classList.contains('dend') ? ' dend' : '') + (cur === td.dataset.c ? ' cur' : ''); td.innerHTML = cv.inner; }
+        if (!o.d) close();
+      }, function () { b.disabled = false; lab.textContent = 'Удалить'; nextApi(); alert('Нет связи. Проверь интернет и попробуй ещё раз.'); });
     }
     function r4(x) { return Math.round(Math.min(1, Math.max(0, x)) * 1e4) / 1e4; }
     // поворот на четверть: d = 1 — вправо (по часовой), −1 — влево. Штрихи не трогаем — меняется только показ
@@ -3733,10 +3762,12 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     // убрать можно, пока учитель не начал: работа не проверена, оценки нет (или долг), на фото нет его разбора и пометок
     function canDel() {
       var sb = S.sub[subId] || {}, m = S.mark[cellOfSub(subId)], f = list[i];
+      if (tdel) return true;
       return mine && sb.st === 'sent' && !(m && String(m.v || '').trim() && !isDebt(m)) && !(sb.ink || {})[f] && !((sb.cm || {})[f] || []).length;
     }
     // ученик убирает своё фото; убрал последнее — сдачи нет, домашка снова «не сдано»
     function delPhoto(b) {
+      if (tdel) { tDelPhoto(b); return; }
       if (!confirm('Удалить это фото из сдачи? Учитель его не увидит.')) return;
       var lab = b.lastChild;
       b.disabled = true; lab.textContent = 'Удаляю…';
@@ -3761,7 +3792,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
      в центре фото с пером — приближается только фото, страница и панели стоят; рядом поле с пометками-номерами
      (cm: доли самого фото, как у штрихов). Справа оценка, комментарий, «На доработку», «Поставить и к следующему».
      Включается флагом сервера ZHURNAL_PROV (prov в /sync); без него — прежний просмотр фото. */
-  var provSrv = false;
+  var provSrv = false, tsubSrv = false;   // tsubSrv — учитель загружает фото работы за ученика и убирает лишнее (ТЗ 25)
   var RV_PIN = 13;   // радиус кружка с номером, px экрана
   function rvLessonHtml(l) {
     var D = layout(lessons(l.subj).filter(function (x) { return x.date === l.date; })), sj = vSj(l.subj), h = '<div class="rv-cap">' + esc(sj.short) + ', ' + esc(vDay(l.date)) + '</div>';
@@ -3821,7 +3852,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         (list.length > 1 ? '<div class="rv-ph"><button data-rv="p-1">←</button><span class="rv-pn"></span><button data-rv="p1">→</button></div>' : '') + '</main>' +
       '<aside class="rv-side"><div class="rv-st"></div><div class="rv-lbl">Оценка</div><div class="rv-marks">' + ['5', '4', '3', '2', '1'].map(function (g) { return '<button class="' + markCls(g) + '" data-rv="mk" data-g="' + g + '" aria-pressed="' + (g === pick) + '">' + g + '</button>'; }).join('') + '</div>' +
         '<label class="rv-lbl" for="rvCm">Комментарий ученику</label><textarea id="rvCm" maxlength="300" rows="3" autocomplete="off" placeholder="например: перепиши №3">' + esc(splitMark(m0).c) + '</textarea>' +
-        '<button class="rv-redo" data-rv="redo">↺ На доработку</button><div class="note">Оценка уйдёт ученику «проверено» в бот; на фото — твоё перо и пометки с номерами.</div>' +
+        '<button class="rv-redo" data-rv="redo">↺ На доработку</button>' + (tsubSrv ? '<button class="rv-pdel" data-rv="pdel">🗑 Удалить это фото</button>' : '') + '<div class="note">Оценка уйдёт ученику «проверено» в бот; на фото — твоё перо и пометки с номерами.</div>' +
         '<button class="rv-next" data-rv="next"></button></aside></div>';
     document.body.appendChild(v); document.documentElement.classList.add('rv-on');
     var cv = v.querySelector('canvas'), stage = v.querySelector('.rv-stage'), mg = v.querySelector('.rv-mg'), work = v.querySelector('.rv-work'), lbody = v.querySelector('.rv-lbody');
@@ -3983,6 +4014,21 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         render(); if (cur) openCell(cur); else if (from && from.focus && document.contains(from)) from.focus();   // окно клетки — со свежей оценкой и комментарием
       });
     }
+    // учитель убирает фото, снятое криво или не у того ученика (ТЗ 25); разбор этого фото — вместе с ним
+    function rvDel(b) {
+      if (!confirm('Удалить это фото? Ученик его тоже больше не увидит.')) return;
+      b.disabled = true;
+      post('/zhurnal/tsubdel', { id: subId, f: list[i] }, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
+        b.disabled = false;
+        if (r.status !== 200 || !r.data.ok) { alert(r.status === 404 ? 'Этого фото уже нет — обнови страницу.' : r.status === 503 ? 'Удаление фото пока выключено.' : 'Не получилось удалить. Попробуй ещё раз.'); return; }
+        var o = r.data.obj, k = i;
+        if (o.d) { o.d.id = o.id; o.d.ts = o.ts; S.sub[o.id] = o.d; } else delete S.sub[o.id];
+        save(); dirty = false;   // разбор удалённого фото сохранять некуда
+        v.remove(); document.documentElement.classList.remove('rv-on'); document.removeEventListener('keydown', key, true); window.removeEventListener('resize', fit);
+        render();
+        if (o.d) openReview(subId, Math.min(k, o.d.ph.length - 1)); else if (cur) openCell(cur);
+      }, function () { b.disabled = false; nextApi(); alert('Нет связи. Проверь интернет и попробуй ещё раз.'); });
+    }
     function go(id) { rvSave().then(function (ok) { if (!ok) return; v.remove(); document.documentElement.classList.remove('rv-on'); document.removeEventListener('keydown', key, true); window.removeEventListener('resize', fit); render(); openReview(id, 0); }); }
     function nextId(d) { var R = Q.filter(function (x) { return x !== subId && S.sub[x] && S.sub[x].st === 'sent'; }); if (!R.length) return ''; var k = Q.indexOf(subId); if (k < 0) return R[0]; for (var s = 1; s <= Q.length; s++) { var x = Q[(k + d * s + Q.length * s) % Q.length]; if (R.indexOf(x) >= 0) return x; } return R[0]; }
     function key(ev) {
@@ -4003,6 +4049,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       else if (a === 'sg') lesPanel(b.dataset.s);
       else if (a === 'lf') { var my = ++docSeq, f = S.file[b.dataset.id]; lbody.querySelectorAll('[data-rv="lf"]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); if (f) rvShowDoc(lbody.querySelector('.rv-doc'), fileData(f.id), /^pdf$/i.test(f.ext), function () { return my === docSeq; }); }
       else if (a === 'cm') { tool = tool === 'cm' ? 'pen' : 'cm'; b.setAttribute('aria-pressed', String(tool === 'cm')); v.querySelectorAll('[data-pc]').forEach(function (x) { x.setAttribute('aria-pressed', String(tool === 'pen' && x.dataset.pc === color)); }); cv.style.cursor = tool === 'cm' ? 'copy' : 'crosshair'; }
+      else if (a === 'pdel') rvDel(b);
       else if (a === 'cmx') { notes.splice(+b.dataset.k, 1); dirty = true; soon(); margin(); }
       else if (a === 'cmok') { delete notes[+b.dataset.k].ai; dirty = true; soon(); margin(); }   // принял — пометка его, ученик видит её красной
       else if (a === 'undo') { strokes.pop(); dirty = true; soon(); }
@@ -4032,12 +4079,12 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
 
   // сдать работу с урока по второму шансу (ТЗ 22 C, D 24.10) — в таблице ученика, тем же потоком фото, что домашку
   function openSubmitU(markId, l, sub, m, sm) {
-    var subj = ALLSUBJ.filter(function (x) { return x.id === l.subj; })[0] || { name: '' }, dbt = debtOf(l, m), can = sdachaOn && canU(l, m);
+    var subj = ALLSUBJ.filter(function (x) { return x.id === l.subj; })[0] || { name: '' }, dbt = debtOf(l, m), can = sdachaOn && canUAny(l, m);
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
       '<h3>Работа на уроке, ' + esc(l.date) + '</h3><div class="meta">' + esc(subj.name) + (l.topic ? ', ' + esc(plain(l.topic)) : '') + '</div>';
     if (m && (m.v || sm.c)) h += '<div class="lbl">Учитель</div><div class="big">' + (sm.g ? '<i class="' + markCls(m.v) + '">' + esc(sm.g) + '</i>' : '') + '<span>' + esc(sm.c || '') + '</span></div>';
     if (dbt) h += '<div class="note">' + (dbt.left < 0 ? 'Срок второго шанса вышел ' + esc(dbt.until) + '. Подойди к учителю.' : 'Второй шанс: исправь работу и сдай фото до ' + esc(vDay(dbt.until)) + '. Можно и устно — подойди к учителю.') + '</div>';
-    h += '<div class="lbl">Сдача</div><div class="note">' + (sub ? SUB_ST[sub.st] : 'Ещё не сдано.') + '</div>';
+    h += '<div class="lbl">Сдача</div><div class="note">' + (sub ? SUB_ST[sub.st] : uFree(l, m) ? 'Писал на уроке контрольную или самостоятельную — сфотографируй все листы и сдай.' : 'Ещё не сдано.') + '</div>';
     if (sub) h += thumbsHtml(sub.ph, subOfCell(markId));
     if (can) h += '<label class="btn pri upl" style="margin-top:6px">📷 ' + (sub && sub.st === 'sent' ? 'Дослать фото' : 'Сдать фото') +
       '<input type="file" id="subIn" data-lid="' + l.id + '" data-mark="' + markId + '" accept="image/*" multiple></label><div class="note" id="subSt">Можно несколько страниц сразу, до 12 фото.</div>';
@@ -4069,7 +4116,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     return new Promise(function (ok) {
       var url = URL.createObjectURL(file), img = new Image();
       img.onload = function () {
-        var k = Math.min(1, (side || 1600) / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        var k = Math.min(1, (side > 100 ? side : 1600) / Math.max(img.width, img.height)), c = document.createElement('canvas');   // не число стороны (номер из map) — обычный предел
         c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
         c.toBlob(function (b) { ok(b || file); }, 'image/jpeg', 0.85);
@@ -4082,7 +4129,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var files = Array.prototype.slice.call(input.files, 0, 12), st = $(input.dataset.st || 'subSt'), lid = input.dataset.lid, markId = input.dataset.mark;
     if (st) st.textContent = 'Готовлю ' + files.length + ' фото…';
     input.disabled = true; subSeq++;
-    Promise.all(files.map(shrink)).then(function (blobs) {
+    Promise.all(files.map(function (f) { return shrink(f); })).then(function (blobs) {   // не map(shrink): номер фото ушёл бы пределом стороны — второе сжималось до точки
       var fd = new FormData();
       fd.append('les', lid);
       if (/\.u$/.test(markId || '')) fd.append('w', 'u');   // работа на уроке — по второму шансу
@@ -4099,12 +4146,41 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         var s2 = $(input.dataset.st || 'subSt'); if (s2) s2.textContent = '✅ Сдано! Учитель получил уведомление.';
         return;
       }
-      var why = { 503: 'Приём домашек пока выключен.', 409: r.j.error === 'checked' ? (shansSrv ? 'Сдать нельзя: работа проверена или срок второго шанса вышел. Подойди к учителю.' : 'Эта домашка уже проверена.') : 'Слишком много фото — до 12 в одной сдаче.',
+      var why = { 503: 'Приём домашек пока выключен.', 409: r.j.error === 'checked' && /\.u$/.test(markId || '') && !shansSrv ? 'Работу уже оценили. Если что-то не так — напиши учителю.' : r.j.error === 'checked' ? (shansSrv ? 'Сдать нельзя: работа проверена или срок второго шанса вышел. Подойди к учителю.' : 'Эта домашка уже проверена.') : 'Слишком много фото — до 12 в одной сдаче.',
         415: 'Это не фото. Нужна картинка (JPG, PNG).', 403: 'Учитель ещё не отметил тебя в журнале.', 401: 'Вход устарел — войди через Телеграм заново.', 413: 'Фото слишком большие.' };
       if (r.status === 401) { if (znUrl()) znSet(''); else lsDel(LS.ck); }   // значок отключён — негодный ключ из адреса долой, свой вход через бота цел
       if (st) st.textContent = why[r.status] || 'Не получилось отправить. Попробуй ещё раз.';
       input.disabled = false;
     }, function () { nextApi(); if (st) st.textContent = 'Нет связи. Проверь интернет и попробуй ещё раз.'; input.disabled = false; });
+  }
+  // D загружает фото работы за ученика (ТЗ 25): работа встаёт в «Ждут проверки», ученик видит её у себя как сданную
+  function tsubPhotos(input) {
+    var id = input.dataset.c, q = id.split('.'), all = input.files.length, files = Array.prototype.slice.call(input.files, 0, 12), st = $('tsubSt');
+    if (st) st.textContent = 'Готовлю ' + files.length + ' фото…';
+    input.disabled = true;
+    Promise.all(files.map(function (f) { return shrink(f); })).then(function (blobs) {
+      var fd = new FormData();
+      fd.append('les', q[0]); fd.append('stu', q[1]); fd.append('w', q[2]); fd.append('j', J);
+      blobs.forEach(function (b, i) { fd.append('photo', b, 'foto' + (i + 1) + '.jpg'); });
+      if (st) st.textContent = 'Отправляю…';
+      return fetch(API + '/zhurnal/tsub', { method: 'POST', headers: { Authorization: 'Bearer ' + teacherKey }, body: fd })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, j: j }; }); });
+    }).then(function (r) {
+      input.disabled = false; input.value = '';   // и после ошибки: те же фото можно выбрать снова
+      if (r.status === 200 && r.j.ok) {
+        var o = r.j.obj, d = o.d; d.id = o.id; d.ts = o.ts; S.sub[o.id] = d; save();
+        pendingRender = true;   // «Ждут проверки» в шапке — после закрытия окна
+        var td = document.querySelector('td.c[data-c="' + id + '"]');
+        if (td) { var cv = cellView(id); td.className = cv.cls + (td.classList.contains('dend') ? ' dend' : '') + (cur === id ? ' cur' : ''); td.innerHTML = cv.inner; }
+        if (cur === id) openCell(id);
+        var s2 = $('tsubSt');
+        if (s2) s2.textContent = '✅ Загружено: ' + files.length + ' фото' + (all > files.length ? ' (больше 12 за раз нельзя)' : '') + (d.st === 'checked' ? '. Работа уже проверена — поставь оценку заново, если нужно.' : '. Работа — в «Ждут проверки».');
+        return;
+      }
+      var why = { 409: 'В одной работе — до 12 фото. Лишние сначала удали.', 415: 'Это не фото. Нужна картинка (JPG, PNG).', 413: 'Фото слишком большие.',
+        401: 'Вход учителя устарел — войди заново.', 404: 'Урока или ученика уже нет — обнови страницу.', 503: 'Загрузка за ученика пока выключена.' };
+      if (st) st.textContent = why[r.status] || 'Не получилось загрузить. Попробуй ещё раз.';
+    }, function () { nextApi(); input.disabled = false; input.value = ''; if (st) st.textContent = 'Нет связи. Проверь интернет и попробуй ещё раз.'; });
   }
   // D: «проверено» / «на доработку» — сервер пишет статус и шлёт ученику в Телеграм
   function review(subId, st, v, c) {
@@ -4230,6 +4306,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (sb) src += '<div class="pop-sub">📷 ' + ({ sent: 'Сдал(а) — ждёт проверки. Оценка отправит ученику «проверено» в бот.', redo: 'На доработке — ждём новую сдачу.', checked: 'Проверено.' }[sb.st] || '') +
       thumbsHtml(sb.ph, sbId) + '<div class="pop-x">' + (sb.st === 'sent' ? '<button class="redo" data-act="subredo">↺ На доработку (с комментарием)</button>' : '') +
       (parts[2] === 'd' ? '<button data-act="submove" title="Ученик сдал не в тот день — перенести фото и разбор в другой">↪ В другой день</button>' : '') + '</div><div id="popMove"></div></div>';
+    // ТЗ 25: D фотографирует работу ученика своим телефоном — сел телефон, контрольная, олимпиада
+    if (tsubSrv && mode === 'teacher') src += '<label class="btn upl pop-up">📷 ' + (sb ? 'Добавить фото' : parts[2] === 'u' ? 'Загрузить работу' : 'Загрузить домашку') +
+      '<input type="file" id="tsubIn" data-c="' + id + '" accept="image/*" multiple></label><span class="pop-upst" id="tsubSt"></span>';
     var pop = $('pop');
     var head = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(l.date) + ', ' +
       (parts[2] === 'd' ? (nSh > 1 ? 'ДЗ, общая на ' + nSh + ' урока' : 'ДЗ') : 'урок') + (l.topic ? '<br>' + esc(plain(l.topic).slice(0, 60)) : '') + '</span></div>' + src;
@@ -4808,7 +4887,10 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     return m && m.pv ? 'Исправлено' + (m.gt ? ' ' + ddmm(new Date(m.gt)) : '') + ': было ' + splitMark({ v: m.pv }).g + ', стало ' + splitMark(m).g + '.' : ''; }
   function vMarkHtml(l, w, tail) {
     var m = S.mark[l.id + '.' + meId + '.' + w], sm = splitMark(m);
-    if (!m || (w === 'd' ? !sm.g : !sm.g && !vSay(sm.c))) return '';   // слова учителя о домашке — в карточке над её статусом (A7)
+    if (!m || (w === 'd' ? !sm.g : !sm.g && !vSay(sm.c))) {   // оценки нет: у работы с урока — сдача без второго шанса (ТЗ 25)
+      var su = w === 'u' && urabSrv ? vSubU(l, m) : '';
+      return su ? '<div class="v-mk v-free"><span class="v-body">' + (tail ? '<b>' + esc(tail.replace(/^, /, '')) + '</b>' : '') + su + '</span></div>' : '';
+    }   // слова учителя о домашке — в карточке над её статусом (A7)
     var inf = markInfo(m.v), dbt = debtOf(l, m);
     return '<div class="v-mk">' + (sm.g ? vMkTile(sm.g, inf.cls, m.pv && splitMark({ v: m.pv }).g) : '') +
       '<span class="v-body"><b>' + (inf.cls === 'mn' && w === 'u' ? 'Не было на уроке' : w === 'd' ? 'Домашка' : 'Работа на уроке') + esc(tail) + '</b>' +
@@ -4819,10 +4901,13 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
   // работа на уроке со вторым шансом (ТЗ 22 C, D 24.10): сдача фото — тот же поток, что у домашки, кнопка прямо под оценкой
   function vSubU(l, m) {
-    if (!shansSrv) return '';
-    var sid = l.id + '.' + meId + '.u', sb = S.sub[sid], h = '', ux = 'U-' + l.id;   // у сдвоенного урока кнопок две — id у каждой свой
+    if (!shansSrv && !urabSrv) return '';
+    var sid = l.id + '.' + meId + '.u', sb = S.sub[sid], h = '', ux = 'U-' + l.id, free = uFree(l, m) && !canU(l, m);   // у сдвоенного урока кнопок две — id у каждой свой
     if (sb) h += '<span class="v-hist' + (sb.st === 'sent' ? ' wait' : '') + '">📷 ' + esc({ sent: 'Сдано — ждёт проверки', redo: 'Вернули: исправь и сдай заново', checked: 'Проверено' }[sb.st] || '') + '</span>' + thumbsHtml(sb.ph, sid);
-    if (sdachaOn && canU(l, m)) h += '<label class="v-btn v-btnu">' + (sb && sb.st === 'sent' ? 'Дослать фото работы' : 'Сдать фото работы') +
+    // без оценки (ТЗ 25) — тихая кнопка: нужна редко, на каждом уроке не кричит; по второму шансу — заметная, как раньше
+    if (sdachaOn && free) h += '<label class="v-ask v-upu">📷 ' + (sb && sb.st === 'sent' ? 'Дослать фото работы' : 'Сдать фото работы с урока') +
+      '<input type="file" id="subIn' + ux + '" data-st="subSt' + ux + '" data-lid="' + l.id + '" data-mark="' + sid + '" accept="image/*" multiple></label><span class="v-cap" id="subSt' + ux + '"></span>';
+    else if (sdachaOn && shansSrv && canU(l, m)) h += '<label class="v-btn v-btnu">' + (sb && sb.st === 'sent' ? 'Дослать фото работы' : 'Сдать фото работы') +
       '<input type="file" id="subIn' + ux + '" data-st="subSt' + ux + '" data-lid="' + l.id + '" data-mark="' + sid + '" accept="image/*" multiple></label><span class="v-cap" id="subSt' + ux + '">Можно и устно — подойди к учителю.</span>';
     return h;
   }
@@ -4928,7 +5013,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         (srez ? '<a class="v-out" href="' + esc(srez) + '" target="_blank" rel="noopener">🎯 Срез: ввести ответы ↗</a>' : '') + '</div>' : '') + '</div>' : '') + '</div>';
 
     var MK = B.les.map(function (l, i) { return vMarkHtml(l, 'u', many ? ', ' + (i + 1) + '-й урок' : ''); }).join('') + vMarkHtml(own, 'd', '');
-    if (MK) h += '<div class="v-lbl">Мои оценки за урок</div><div class="v-card">' + MK + '</div>';
+    var graded = !!splitMark(m).g || B.les.some(function (l) { var mu = S.mark[l.id + '.' + meId + '.u'], su = splitMark(mu); return !!mu && (!!su.g || vSay(su.c)); });
+    if (MK) h += '<div class="v-lbl">' + (graded ? 'Мои оценки за урок' : 'Работа на уроке') + '</div><div class="v-card">' + MK + '</div>';
 
     // сдавать можно, пока не проверено; 1 и 2 — «не сдано»: исправил и сдаёт заново. Хорошая оценка без фото (тетрадь на уроке) — сдавать нечего
     var dbtD = isDebt(m), good = /^m[345]$/.test(inf.cls), can = has && (sub ? sub.st !== 'checked' || dbtD : !good) && !((noChance(m) && !(sub && sub.st === 'redo')) || (m && m.sc && !dbtD)), cta = '';
@@ -5615,6 +5701,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (ev.target.classList && ev.target.classList.contains('upFile') && ev.target.files.length) { uploadFiles(ev.target.dataset.lid, ev.target.files, ev.target.dataset.w); return; }
     if (ev.target.classList && ev.target.classList.contains('upSlot') && ev.target.files.length) { slotAdd(ev.target.dataset.slot, ev.target.files); return; }
     if (/^subIn(U-|$)/.test(ev.target.id) && ev.target.files.length) { submitPhotos(ev.target); return; }
+    if (ev.target.id === 'tsubIn' && ev.target.files.length) { tsubPhotos(ev.target); return; }
     if (ev.target.id === 'scDate' && ev.target.value) { var dp = ev.target.value.split('-'); scSet(dp[2] + '.' + dp[1]); return; }
     var row = ev.target.closest('.srow');
     if (row) saveStudentRow(row);
