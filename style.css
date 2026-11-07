@@ -1029,3 +1029,13 @@ a.vq-tg:not([aria-disabled="true"]):active{ transform:translateY(2px); box-shado
 @media (max-width:700px){
   .vq.vq-chat.vq-kb .vq-sostav, .vq.vq-chat.vq-kb .vq-komnaty, .vq.vq-chat.vq-kb .vq-pin{ display:none; }
 }
+
+/* чат на ноутбуке (D 07.11: «окошечко чата очень маленькое») — большое окно почти на весь экран;
+   пузырь не шире ~60 знаков в строке, иначе длинные строки читать тяжело */
+@media (min-width:701px){
+  .vq.vq-chat{ width:min(780px, calc(100vw - 48px)); height:calc(100vh - 48px); max-height:980px; }
+  .vq.vq-chat .vq-msg, .vq.vq-chat .vq-ryad .vq-msg, .vq.vq-chat .vq-ryad.moe .vq-msg{ max-width:min(82%, 560px); font-size:16px; }
+  .vq.vq-chat .vq-msg.alb, .vq.vq-chat .vq-msg.vid, .vq.vq-chat .vq-ryad .vq-msg.alb{ width:min(82%, 480px); }
+  .vq.vq-chat .vq-msg img{ max-height:340px; }
+  .vq.vq-chat .vq-msg video{ max-height:380px; }
+}

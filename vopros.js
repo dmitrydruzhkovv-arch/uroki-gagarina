@@ -1365,7 +1365,8 @@ function risovatB(vniz){
     const mid = Math.max(...g.map(x => x.id || 0));
     if (bNovoeOt && g.some(x => x.id === bNovoeOt)){ html += '<div class="vq-novye">Новые сообщения</div>'; prev = null; }
     const p = bChel(m.who), imya = m.who === 'd' ? 'Учитель' : imyaKogo(m.who, m.n);
-    const ava = moe ? '' : (nach ? avatar(m.who, imya, p && p.on) : '<span class="vq-bava pusto"></span>');
+    /* точка «в сети» — только в полосе над лентой (D 07.11): у каждого сообщения она рябит */
+    const ava = moe ? '' : (nach ? avatar(m.who, imya, false) : '<span class="vq-bava pusto"></span>');
     if (m.del){
       html += `<div class="vq-ryad ${moe ? 'moe' : 'ego'}">${ava}<div class="vq-msg vq-udal ${moe ? 'moe' : 'ego'}"${mid ? ` data-mid="${mid}"` : ''}>${m.del === 'd' ? 'Удалено учителем' : 'Сообщение удалено'}</div></div>`;
       return;
@@ -1407,15 +1408,17 @@ function risovatSostav(){
   if (!box) return;
   box.hidden = !komnata || !bLyudi.length;
   if (box.hidden){ box._v = ''; return; }
-  const on = bLyudi.filter(p => p.on).length;
-  const vid = JSON.stringify([bYa, bLyudi.map(p => [p.w, p.n, p.on, bylKogda(p)])]);
+  /* себя в полосе не показываем (D 07.11: «ученик сам себя не видит») — и в счёте «в сети» только другие */
+  const drugie = bLyudi.filter(p => p.w !== bYa);
+  const on = drugie.filter(p => p.on).length;
+  const vid = JSON.stringify([bYa, drugie.map(p => [p.w, p.n, p.on, bylKogda(p)])]);
   if (vid === box._v) return;
   box._v = vid;
   const sdvig = (box.querySelector('.vq-sostav-r') || {}).scrollLeft || 0;
-  const kto = bLyudi.filter(p => p.on && p.w !== bYa).map(p => imyaPervoe(p.n)).join(', ');
+  const kto = drugie.filter(p => p.on).map(p => imyaPervoe(p.n)).join(', ');
   /* у учителя на телефоне над лентой уже кружки учеников — здесь одна строка, нажал — аватарки (стиль .vq-sostav) */
-  box.innerHTML = `<button type="button" class="vq-sostav-t" data-vq="sostav" aria-expanded="${box.classList.contains('raskryt')}"><i class="vq-on"></i>в сети: <b>${on}</b> из ${bLyudi.length}${kto ? `<span class="kto"> · ${esc(kto)}</span>` : ''}<span class="str">›</span></button><div class="vq-sostav-r">`
-    + bLyudi.map(p => `<div class="vq-sost${p.on ? ' on' : ''}${p.vhod ? '' : ' net'}" title="${esc(p.n)} — ${p.on ? 'в сети' : esc(bylKogda(p, true))}">${avatar(p.w, p.n, p.on)}<span class="i">${esc(p.w === bYa ? 'Ты' : imyaPervoe(p.n))}</span><span class="s">${p.on ? 'в сети' : esc(bylKogda(p))}</span></div>`).join('')
+  box.innerHTML = `<button type="button" class="vq-sostav-t" data-vq="sostav" aria-expanded="${box.classList.contains('raskryt')}"><i class="vq-on"></i>в сети: <b>${on}</b> из ${drugie.length}${kto ? `<span class="kto"> · ${esc(kto)}</span>` : ''}<span class="str">›</span></button><div class="vq-sostav-r">`
+    + drugie.map(p => `<div class="vq-sost${p.on ? ' on' : ''}${p.vhod ? '' : ' net'}" title="${esc(p.n)} — ${p.on ? 'в сети' : esc(bylKogda(p, true))}">${avatar(p.w, p.n, p.on)}<span class="i">${esc(imyaPervoe(p.n))}</span><span class="s">${p.on ? 'в сети' : esc(bylKogda(p))}</span></div>`).join('')
     + '</div>';
   box.querySelector('.vq-sostav-r').scrollLeft = sdvig;
 }
