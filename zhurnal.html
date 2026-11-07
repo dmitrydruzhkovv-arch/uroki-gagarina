@@ -5571,6 +5571,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   ];
   // экран переписываем, только когда он изменился: ученик выбирает фото — страница уходит с экрана и возвращается
   // (сверка с сервером, см. visibilitychange); перерисованная кнопка «Сдать фото» выбранные фото потеряла бы
+  // на вкладке «Чат»: ответ учителя (1) + непрочитанное в беседе класса (ТЗ 27, vopros.js кладёт число в data-bn)
+  function vChatN() { var q = document.querySelector('#dock .vopros'); return q ? (q.classList.contains('est-otvet') ? 1 : 0) + (+q.getAttribute('data-bn') || 0) : 0; }
   function vPut(el, h) { if (el._h === h) return false; el._h = h; el.innerHTML = h; return true; }
   function vRender() {
     var B = vLes ? vBlock(vLes) : null, rows = vZadano(), todo = rows.filter(function (r) { return r.st && r.st.todo; }).length, cta = '';
@@ -5580,7 +5582,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     vPut($('vTabs'), V_TABS.map(function (t) {
       return '<button data-va="tab" data-id="' + t[0] + '"' + (t[0] === vTab ? ' class="on" aria-current="page"' : '') + '>' +
         (t[0] === 'zadano' && todo ? '<span class="v-badge" aria-label="не сдано: ' + todo + '">' + todo + '</span>' : '') +
-        (t[0] === 'chat' && document.querySelector('#dock .vopros.est-otvet') ? '<span class="v-badge" aria-label="новый ответ учителя">1</span>' : '') + '<svg viewBox="0 0 24 24" aria-hidden="true">' + t[2] + '</svg>' + t[1] + '</button>';
+        (t[0] === 'chat' && vChatN() ? '<span class="v-badge" aria-label="новых сообщений: ' + vChatN() + '">' + (vChatN() > 99 ? '99+' : vChatN()) + '</span>' : '') + '<svg viewBox="0 0 24 24" aria-hidden="true">' + t[2] + '</svg>' + t[1] + '</button>';
     }).join(''));
     if (B) { var c = vCardHtml(B); cta = c.cta; if (vPut($('vU'), c.h)) { fillFileThumbs($('vU')); fillThumbs($('vU')); } }
     else if (vTab === 'zadano') { if (vPut($('vZb'), vZadHtml(rows))) fillFileThumbs($('vZb')); }   // обложки уроков в карточках
