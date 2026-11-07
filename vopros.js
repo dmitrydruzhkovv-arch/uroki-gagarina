@@ -311,11 +311,13 @@ function onKlik(e){
   else if (a.dataset.vq === 'kto') ktoProchital(+a.dataset.id);
   else if (a.dataset.vq === 'kto-x'){ const ov = okno.querySelector('.vq-ktookno'); if (ov) ov.remove(); }
   else if (a.dataset.vq === 'napomnit') napomnit(a);
-  else if (a.dataset.vq === 'pin-x') zakrepit(0);
+  else if (a.dataset.vq === 'pin-x'){ const p = bPins[pinIdx % bPins.length]; if (p) zakrepit(p.id, false); }
+  else if (a.dataset.vq === 'red-net') bezPravki(true);
   else if (a.dataset.vq === 'at') vstavitImya(a.dataset.imya);
   else if (a.dataset.vq === 'sostav'){ const b = okno.querySelector('.vq-sostav'); b.classList.toggle('raskryt'); a.setAttribute('aria-expanded', b.classList.contains('raskryt')); }
   else if (a.dataset.vq === 'otv-net'){ otvetNa = 0; risovatOtvet(); }
   else if (a.dataset.vq === 'k-soobshcheniyu'){
+    if (a.classList.contains('vq-pin-t') && bPins.length > 1){ pinIdx = (pinIdx + 1) % bPins.length; risovatPin(); }   // как в Телеграме: дальше — следующий закреп
     const el = okno.querySelector(`.vq-msg[data-id="${+a.dataset.id}"], .vq-msg[data-ids~="${+a.dataset.id}"]`);
     if (el){ el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.classList.add('vq-mig'); setTimeout(() => el.classList.remove('vq-mig'), 1200); }
   }
@@ -466,7 +468,7 @@ const SKREPKA = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" str
 const STRELKA = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4l17.4-7.5a1 1 0 0 0 0-1.8L3.4 3.6a1 1 0 0 0-1.4 1.1L4 11l9 1-9 1-2 6.3a1 1 0 0 0 1.4 1.1z"/></svg>';
 
 let chatTaimer = null, chatBase = '', lenta = [], lastId = 0, tyanu = false;
-let rv = -1, reakcii = {}, estReakcii = false, otvetNa = 0;   // реакции чата и их счётчик на сервере; на какое сообщение отвечаю
+let rv = -1, reakcii = {}, estReakcii = false, otvetNa = 0, pravka = 0;   // реакции чата и их счётчик на сервере; на какое сообщение отвечаю; какое своё правлю (беседа)
 let komu = 0, lyudi = [], spisokKogda = 0, spisokVid = '';     // учитель: открытый ученик и лента имён
 let pokolenie = 0;     // растёт при каждом сбросе ленты: ответ на запрос прошлого поколения выбрасываем
 
@@ -625,7 +627,7 @@ function chatNachat(){
       <textarea class="vq-vvod" rows="1" maxlength="2000" placeholder="${u ? 'Ответ ученику…' : 'Напиши сообщение…'}" aria-label="${u ? 'Ответ ученику' : 'Сообщение учителю'}"></textarea>
       <button type="button" class="vq-go" data-vq="poslat" aria-label="Отправить">${STRELKA}</button>
     </div>`;
-  lenta = []; lastId = 0; rv = -1; reakcii = {}; otvetNa = 0; spisokVid = ''; pokolenie++;
+  lenta = []; lastId = 0; rv = -1; reakcii = {}; otvetNa = 0; if (pravka) bezPravki(true); spisokVid = ''; pokolenie++;
   bSbros();
   /* беседа (ТЗ 27): пришёл из её уведомления или в прошлый раз был в ней — открываем её, если сервер её знает */
   const hotel = besedaVidna() && (zovutVBesedu || mem.get(KOMNATA_KEY) === 'b');
@@ -643,6 +645,7 @@ function chatNachat(){
   okno.querySelector('.vq-file').addEventListener('change', e => {
     const f = Array.from(e.target.files || []);
     e.target.value = '';
+    if (f.length && pravka) bezPravki(true);
     if (f.length) poslatFotki(f);
   });
   risovatKomnaty();
@@ -767,7 +770,7 @@ function vybrat(u){
   if (!chelovek(u)) return;
   menuZakryt(); atZakryt();
   if (komnata){ komnata = ''; mem.set(KOMNATA_KEY, ''); bSbros(); risovatKomnaty(); zapustitTaimer(); }
-  komu = u; lenta = []; lastId = 0; rv = -1; reakcii = {}; otvetNa = 0; pokolenie++;
+  komu = u; lenta = []; lastId = 0; rv = -1; reakcii = {}; otvetNa = 0; if (pravka) bezPravki(true); pokolenie++;
   okno.querySelector('.vq-pole').hidden = false;
   okno.querySelector('.vq-lenta').innerHTML = '<div class="vq-pusto">Загружаю…</div>';
   oshibka(''); risovatOtvet(); risovatLyudi();
@@ -948,11 +951,12 @@ function menu(el){
     if (!b) return;
     if (b.dataset.e){ menuZakryt(); reagirovat(id, moya === b.dataset.e ? '' : b.dataset.e); }
     else if ('otv' in b.dataset){
-      menuZakryt(); otvetNa = id; risovatOtvet();
+      menuZakryt(); if (pravka) bezPravki(true); otvetNa = id; risovatOtvet();
       okno.querySelector('.vq-vvod').focus({ preventScroll: true });
     }
     else if ('kto' in b.dataset){ menuZakryt(); ktoProchital(id); }
-    else if ('pin' in b.dataset){ menuZakryt(); zakrepit(bPin && bPin.id === id ? 0 : id); }
+    else if ('pin' in b.dataset){ menuZakryt(); zakrepit(id, !bPins.some(p => p.id === id)); }
+    else if ('red' in b.dataset){ menuZakryt(); nachatPravku(id); }
     else if ('del' in b.dataset){ menuZakryt(); udalit((el.dataset.ids || String(id)).split(' ').map(Number).filter(Boolean)); }
     else if ('plus' in b.dataset){
       mn.querySelector('.vq-menu-r').innerHTML = '<input class="vq-menu-in" placeholder="Смайлик с клавиатуры" maxlength="16" aria-label="Смайлик">';
@@ -987,6 +991,12 @@ async function reagirovat(id, e){
 function risovatOtvet(){
   const box = okno && okno.querySelector('.vq-otv');
   if (!box) return;
+  const r = pravka && lenta.find(x => x.id === pravka && !x.del);
+  if (r){
+    box.hidden = false;
+    box.innerHTML = `<span><b>✏️ Изменить</b>${esc(kratko(r))}</span><button type="button" data-vq="red-net" aria-label="Не менять">✕</button>`;
+    return;
+  }
   const o = otvetNa && lenta.find(x => x.id === otvetNa);
   box.hidden = !o;
   box.innerHTML = o ? `<span><b>↩ ${esc(chyo(o))}</b>${esc(kratko(o))}</span><button type="button" data-vq="otv-net" aria-label="Не отвечать на сообщение">✕</button>` : '';
@@ -997,6 +1007,7 @@ function poslat(gotovyi){
   const vvod = okno.querySelector('.vq-vvod');
   const text = String(gotovyi || vvod.value).trim();
   if (!text || nekomu()) return;
+  if (pravka && komnata && !gotovyi){ pravit(pravka, text); return; }
   if (!gotovyi){ vvod.value = ''; rost(vvod); }
   atZakryt();
   const re = otvetNa;
@@ -1126,7 +1137,7 @@ async function otpravitVChat(body, tip, vid, vernut){
    Прочитано — сообщение побывало на экране при открытой беседе (vidnoDo → seen). Учитель видит «Прочитали 4 из 6»
    и кто именно, ученик у своих — ✓✓ без имён. Уведомления в Телеграм шлёт сервер (одно на серию, ночью тихо, @имя — всегда). */
 let komnata = '', besedy = [];                         // открытая беседа ('' — личный чат) и мои беседы с сервера
-let bYa = '', bLyudi = [], bChit = {}, bProchli = 0, bChitVid = '', bPin = null, bVidel = 0, otlozheno = false;
+let bYa = '', bLyudi = [], bChit = {}, bProchli = 0, bChitVid = '', bPins = [], pinIdx = 0, bVidel = 0, otlozheno = false;
 let bMoi = -1, bNovoeOt = 0;                           // до чего я дочитал при входе; с какого сообщения черта «Новые»
 /* Выключатель один — на сервере (BESEDA, BESEDA_PROBA в .env). Проба: беседа видна только там, где открыли
    страницу с ?beseda=1; без пробы — всем, кому сервер её отдаёт. До ответа сервера — не показываем */
@@ -1134,7 +1145,7 @@ let besedaProba = true;
 const besedaVidna = () => mem.get(BESEDA_KEY) === '1' || !besedaProba;
 const kuda = () => (komnata ? 'b:' + komnata : komu);   // куда сейчас пишем: беседа или ученик (у учителя)
 const nekomu = () => uchitel() && !komu && !komnata;
-function bSbros(){ bYa = ''; bLyudi = []; bChit = {}; bProchli = 0; bChitVid = ''; bPin = null; bVidel = 0; otlozheno = false; bMoi = -1; bNovoeOt = 0; }
+function bSbros(){ bYa = ''; bLyudi = []; bChit = {}; bProchli = 0; bChitVid = ''; bPins = []; pinIdx = 0; bVidel = 0; otlozheno = false; bMoi = -1; bNovoeOt = 0; }
 const fileUrl = name => `${chatBase}/chat/beseda/file/${encodeURIComponent(name)}?j=${encodeURIComponent(komnata)}&k=${encodeURIComponent(chatKey())}`;
 const neFoto = f => /^video\//.test(f.type) || f.type === 'application/pdf' || /\.(pdf|mp4|mov|webm)$/i.test(f.name || '');
 const bChel = w => bLyudi.find(p => p.w === w);
@@ -1225,7 +1236,7 @@ function vybratKomnatu(j){
   const ov = okno.querySelector('.vq-ktookno'); if (ov) ov.remove();
   komnata = j || ''; mem.set(KOMNATA_KEY, komnata ? 'b' : '');
   if (komnata && uchitel()) komu = 0;
-  lenta = []; lastId = 0; rv = -1; reakcii = {}; otvetNa = 0; pokolenie++;
+  lenta = []; lastId = 0; rv = -1; reakcii = {}; otvetNa = 0; if (pravka) bezPravki(true); pokolenie++;
   bSbros();
   oshibka(''); risovatOtvet(); risovatKomnaty();
   if (uchitel()) risovatLyudi();
@@ -1289,13 +1300,24 @@ async function tyanutB(pervyi){
     if (d.dels){
       const del = new Map(d.dels);
       lenta.forEach(m => { if (m.id && del.has(m.id) && !m.del){ m.del = del.get(m.id); ['text', 'f', 'ft', 'fn', 're'].forEach(k => delete m[k]); novoe = true; } });
+      if (pravka && del.has(pravka)) bezPravki(true);
     }
     if (d.reak){
       reakcii = {};
       d.reak.forEach(([id, w, e]) => { (reakcii[id] = reakcii[id] || {})[w] = e; });
       novoe = true;
     }
-    if ('pin' in d){ bPin = d.pin ? Object.assign(d.pin, { who: d.pin.w }) : null; risovatPin(); }
+    if ('pins' in d || 'pin' in d){
+      const stare = new Set(bPins.map(p => p.id)), bylo = (bPins[pinIdx % (bPins.length || 1)] || {}).id;
+      bPins = (d.pins || (d.pin ? [d.pin] : [])).map(p => Object.assign(p, { who: p.w }));
+      const nov = bPins.findIndex(p => !stare.has(p.id)), i = bPins.findIndex(p => p.id === bylo);
+      pinIdx = stare.size && nov >= 0 ? nov : i >= 0 ? i : 0;   // появился новый закреп — показываем его; снят показанный — первый
+      risovatPin();
+    }
+    if (d.eds){                                        // автор поправил текст — у всех новый, с подписью «изменено»
+      const ed = new Map(d.eds);
+      lenta.forEach(m => { if (m.id && ed.has(m.id) && !m.del && (m.text !== ed.get(m.id) || !m.ed)){ m.text = ed.get(m.id); m.ed = 1; novoe = true; } });
+    }
     rv = d.rv; estReakcii = true;
     bLyudi = d.lyudi || bLyudi;
     risovatSostav();
@@ -1377,7 +1399,7 @@ function risovatB(vniz){
     let fajl = '';
     if (m.ft === 'video') fajl = m.f ? `<video src="${esc(fileUrl(m.f))}#t=0.1" controls playsinline preload="metadata"></video>` : '<div class="vq-fajl">🎬 видео</div>';
     else if (m.ft === 'file') fajl = m.f ? `<a class="vq-fajl" data-vq="fajl" href="${esc(fileUrl(m.f))}" target="_blank" rel="noopener">📄 <span>${esc(m.fn || 'Файл')}</span></a>` : `<div class="vq-fajl">📄 <span>${esc(m.fn || 'Файл')}</span></div>`;
-    const niz = zhdet ? 'отправляю…' : vremya(konec) + (moe && !uchitel() && mid ? ` <span class="vq-gal${bProchli >= mid ? ' vse' : ''}" data-id="${mid}">${galki(mid)}</span>` : '');
+    const niz = zhdet ? 'отправляю…' : (m.ed ? '<span class="vq-ed">изменено</span> ' : '') + vremya(konec) + (moe && !uchitel() && mid ? ` <span class="vq-gal${bProchli >= mid ? ' vse' : ''}" data-id="${mid}">${galki(mid)}</span>` : '');
     const chit = uchitel() && m.who === 'd' && mid && !zhdet
       ? `<button type="button" class="vq-chit" data-vq="kto" data-id="${mid}" data-avtor="d">${chitTekst(mid, 'd')}</button>` : '';
     html += `<div class="vq-ryad ${moe ? 'moe' : 'ego'}${nach ? ' nach' : ''}">${ava}<div class="vq-msg ${moe ? 'moe' : 'ego'}${m.who === 'd' && !moe ? ' uch' : ''}${zhdet ? ' zhdet' : ''}${fotki.length > 1 ? ' alb' : ''}${m.ft === 'video' ? ' vid' : ''}"${m.id ? ` data-vq="menu" data-id="${m.id}"` : ''}${mid ? ` data-mid="${mid}"` : ''}${g.length > 1 ? ` data-ids="${g.map(x => x.id || '').join(' ')}"` : ''}>
@@ -1426,8 +1448,10 @@ function risovatSostav(){
 function risovatPin(){
   const box = okno && okno.querySelector('.vq-pin');
   if (!box) return;
-  box.hidden = !komnata || !bPin;
-  box.innerHTML = box.hidden ? '' : `<button type="button" class="vq-pin-t" data-vq="k-soobshcheniyu" data-id="${bPin.id}"><b>📌 Закреплено</b><span>${esc(kratko(bPin))}</span></button>`
+  /* несколько закрепов (D 07.11): виден один, нажал — к сообщению и следующий; «2 из 3» — сколько их */
+  const n = bPins.length, pin = n && bPins[pinIdx % n];
+  box.hidden = !komnata || !pin;
+  box.innerHTML = box.hidden ? '' : `<button type="button" class="vq-pin-t" data-vq="k-soobshcheniyu" data-id="${pin.id}"><b>📌 Закреплено${n > 1 ? ` · ${pinIdx % n + 1} из ${n}` : ''}</b><span>${esc(kratko(pin))}</span></button>`
     + (uchitel() ? '<button type="button" class="vq-pin-x" data-vq="pin-x" aria-label="Открепить">✕</button>' : '');
 }
 
@@ -1436,7 +1460,9 @@ function menuBesedy(id){
   if (!komnata) return '';
   const m = lenta.find(x => x.id === id);
   if (!m || m.del) return '';
-  return (uchitel() ? `<button type="button" class="vq-menu-o" data-pin>📌 ${bPin && bPin.id === id ? 'Открепить' : 'Закрепить'}</button>
+  const moe = m.who === ya() && m.text && (uchitel() || Date.now() - new Date(m.ts) < 864e5);   // ученик — в течение суток
+  return (moe ? '<button type="button" class="vq-menu-o" data-red>✏️ Изменить</button>' : '')
+    + (uchitel() ? `<button type="button" class="vq-menu-o" data-pin>📌 ${bPins.some(p => p.id === id) ? 'Открепить' : 'Закрепить'}</button>
     <button type="button" class="vq-menu-o" data-kto>👁 Кто прочитал</button>` : '')
     + (uchitel() || m.who === ya() ? '<button type="button" class="vq-menu-o vq-menu-del" data-del>🗑 Удалить</button>' : '');
 }
@@ -1456,12 +1482,52 @@ async function udalit(ids){
     rv = -1; tyanut(false);                            // удалённое придёт с сервера
   } catch (_) { baseP = null; oshibka('Не удалилось. Попробуй ещё раз.'); }
 }
-async function zakrepit(id){
+async function zakrepit(id, on){
   try {
-    const r = await postB('/chat/beseda/pin', { id });
+    const r = await postB('/chat/beseda/pin', { id, on: on ? 1 : 0 });
+    if (r.status === 409){ const d = await r.json().catch(() => ({})); oshibka(`Закрепов уже ${d.max || 'много'} — открепи старый.`); return; }
     if (!r.ok) throw new Error('HTTP ' + r.status);
     rv = -1; tyanut(false);
   } catch (_) { baseP = null; oshibka('Не получилось. Попробуй ещё раз.'); }
+}
+
+/* правка своего сообщения (D 07.11): текст в поле, над полем «✏️ Изменить», отправка — сохранить */
+function nachatPravku(id){
+  const m = lenta.find(x => x.id === id);
+  if (!m || !m.text) return;
+  const vvod = okno.querySelector('.vq-vvod');
+  if (!pravka) vvod.dataset.chernovik = vvod.value;    // что набирал до правки — вернём после
+  pravka = id; otvetNa = 0;
+  vvod.value = m.text; rost(vvod); risovatOtvet();
+  vvod.focus({ preventScroll: true });
+  vvod.setSelectionRange(vvod.value.length, vvod.value.length);
+}
+function bezPravki(vernut){
+  const vvod = okno && okno.querySelector('.vq-vvod');
+  pravka = 0; risovatOtvet();
+  if (vvod){ vvod.value = vernut ? vvod.dataset.chernovik || '' : ''; delete vvod.dataset.chernovik; rost(vvod); }
+}
+async function pravit(id, text){
+  const m = lenta.find(x => x.id === id);
+  bezPravki(false);
+  if (!m || text === m.text) return;
+  const bylo = [m.text, m.ed];
+  m.text = text; m.ed = 1; risovat();                  // сразу на экране, сервер подтвердит
+  try {
+    const r = await postB('/chat/beseda/edit', { id, text });
+    if (r.status === 409){ throw Object.assign(new Error('pozdno'), { pozdno: true }); }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    oshibka(''); rv = -1;
+  } catch (e) {
+    [m.text, m.ed] = bylo; risovat();
+    const vvod = okno && okno.querySelector('.vq-vvod');
+    if (vvod && !vvod.value){                          // набранное не теряем: сбой — снова правка, поздно — уйдёт новым
+      if (!e.pozdno){ vvod.dataset.chernovik = ''; pravka = id; }
+      vvod.value = text; rost(vvod); risovatOtvet();
+    }
+    if (!e.pozdno) baseP = null;
+    oshibka(e.pozdno ? 'Изменить можно только в первые сутки — отправь новым сообщением.' : 'Не сохранилось. Попробуй ещё раз.');
+  }
 }
 
 /* «Кто прочитал» — только учителю: прочитали (со временем и реакцией) и не прочитали; «Напомнить» — им в Телеграм */

@@ -1039,3 +1039,5 @@ a.vq-tg:not([aria-disabled="true"]):active{ transform:translateY(2px); box-shado
   .vq.vq-chat .vq-msg img{ max-height:340px; }
   .vq.vq-chat .vq-msg video{ max-height:380px; }
 }
+/* «изменено» под исправленным сообщением (правка своего, D 07.11) */
+.vq-ed{ margin-right:3px; font-style:italic; }
