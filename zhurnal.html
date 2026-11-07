@@ -394,7 +394,7 @@ td.c .cmt{ position:absolute; top:4px; left:4px; width:6px; height:6px; border-r
 .fnote{ margin-top:8px; } .fnote summary{ cursor:pointer; font-size:14px; font-weight:700; color:var(--sub); padding:6px 0; list-style:none; } .fnote summary::-webkit-details-marker{ display:none; }
 .fnote[open] summary{ color:var(--muted); } .fnote textarea{ min-height:56px; }
 .fnote .fnote-h{ margin:0 0 6px; font-size:13px; line-height:1.35; }
-#vid .v-note{ margin:6px 0 12px; white-space:pre-line; font-size:15px; line-height:1.45; }
+#vid .v-note{ margin:6px 0 12px; white-space:pre-line; font-size:15px; line-height:1.3; }
 .dnote{ margin:0 0 10px; white-space:pre-line; font-size:15px; line-height:1.4; }
 .dnote.me{ padding:8px 10px; border-radius:10px; background:var(--z-head); color:var(--sub); font-size:14px; }
 .fnm-e{ display:block; width:100%; min-height:36px; margin-top:4px; padding:6px; border-radius:8px; text-align:left; color:inherit; }
@@ -723,11 +723,11 @@ html.vid[data-theme="night"] body{ background:#000; }
   --v-red:#b42318; --v-wait:#6d28d9; --v-ok:#35701a; --v-late:#fff5f4;
   --v-pri:linear-gradient(135deg,#fb9a3c 0%,#f07a12 55%,#e0620a 100%); --v-glow:rgba(234,88,12,.42);
   --t1:24px; --t2:16px; --t3:13px;
-  position:relative; max-width:480px; min-height:100vh; min-height:100dvh; margin:0 auto; background:var(--v-bg); color:var(--v-ink); font-size:var(--t2); line-height:1.4; }
+  position:relative; max-width:480px; min-height:100vh; min-height:100dvh; margin:0 auto; background:var(--v-bg); color:var(--v-ink); font-size:var(--t2); line-height:1.3; }
 [data-theme="night"] #vid{ --v-dim:var(--h-dim); --v-red:#ff9aa8; --v-wait:#c4b5fd; --v-ok:#b9e69c; --v-late:rgba(255,90,90,.09); }
 #vid button:focus:not(:focus-visible), #vid a:focus:not(:focus-visible){ outline:none; }   /* рамка фокуса — только с клавиатуры (ТЗ 22, A1) */
 #vid .v-scr{ padding:20px 16px calc(112px + env(safe-area-inset-bottom, 0px)); }
-#vid .v-h1{ font-size:var(--t1); font-weight:800; letter-spacing:-.01em; line-height:1.15; margin:0; color:var(--v-ink); }
+#vid .v-h1{ font-size:var(--t1); font-weight:800; letter-spacing:-.01em; line-height:1.1; margin:0; color:var(--v-ink); }
 #vid .v-h1 + .v-h1{ margin-top:6px; }
 #vid .v-cap{ display:block; font-size:var(--t3); color:var(--v-sub); }
 #vid .v-cap .v-dot{ display:inline-block; margin:0 6px 0 0; }
@@ -794,7 +794,7 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-back svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
 #vid .v-cover{ display:block; width:100%; aspect-ratio:2/1; border-radius:16px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--v-line); margin-bottom:14px; }
 #vid .v-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
-#vid .v-tasks{ white-space:pre-line; line-height:1.6; overflow-wrap:anywhere; }
+#vid .v-tasks{ white-space:pre-line; line-height:1.4; overflow-wrap:anywhere; }
 #vid .v-files{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
 #vid .v-file{ display:inline-flex; align-items:center; gap:8px; max-width:100%; padding:6px 12px 6px 6px; border-radius:12px; box-shadow:inset 0 0 0 1px var(--v-line); font-size:var(--t3); font-weight:700; color:var(--v-ink); }
 #vid .v-file u{ flex:none; width:34px; height:44px; border-radius:6px; overflow:hidden; text-decoration:none; display:grid; place-items:center; box-shadow:inset 0 0 0 1px var(--v-line); }
@@ -846,13 +846,13 @@ html.vid[data-theme="night"] body{ background:#000; }
 .v-hwh{ font-size:13px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--h-soft); margin:14px 2px 2px; }
 .v-hwi > .v-hwh:first-child{ margin-top:8px; }
 .v-hi{ display:flex; gap:10px; align-items:flex-start; width:100%; margin-top:6px; padding:10px 12px; border-radius:12px; background:color-mix(in srgb, var(--s) 8%, var(--h-panel));
-  color:inherit; font:inherit; font-size:16px; line-height:1.45; text-align:left; overflow-wrap:anywhere; }
+  color:inherit; font:inherit; font-size:16px; line-height:1.3; text-align:left; overflow-wrap:anywhere; }
 .v-hi i{ flex:none; width:22px; height:22px; border-radius:50%; box-shadow:inset 0 0 0 2px var(--s); display:grid; place-items:center; font-style:normal; font-size:14px; font-weight:800; color:var(--h-panel); }
 .v-hi.on i, .v-hi.sent i{ background:var(--s); }
 .v-hi.on span{ opacity:.55; text-decoration:line-through; }
 .v-hi .no{ display:inline-block; padding:0 8px; border-radius:8px; background:var(--g); color:var(--on); font-weight:800; white-space:nowrap; }
 .v-hi .bu{ color:var(--s); font-weight:800; }
-.v-hwp{ margin:8px 2px 0; line-height:1.45; }
+.v-hwp{ margin:8px 2px 0; line-height:1.3; }
 .fprev.v-like{ white-space:normal; background:none; padding:0; }
 #vid .v-hwb{ margin-top:22px; }
 #vid .v-hwb .v-files, #vid .v-hwb .v-links{ margin-top:10px; }
@@ -944,6 +944,178 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-fb .v-cap .v-dot{ display:inline-block; margin:0 6px 1px 0; vertical-align:middle; }
 #vid .v-fb b{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; margin-top:2px; font-weight:700; overflow-wrap:anywhere; }
 @media (prefers-reduced-motion:reduce){ #vid .v-fcv{ animation:none; } }
+/* ── ТЗ 26, шаг 0 — азбука (Атлас 06.11): у цвета и формы одна работа. Фон ничего не значит (нейтральный, не сиреневый);
+   карточка — белая с тонкой рамкой, без цветной тени, радиус 14 (D 06.11: вариант 2 «чуть острее»); кнопка 2 — белая с рамкой, радиус 12, от 44 px;
+   ссылка — текст без рамки; предмет — точка; статус — цвет текста: красный горит, зелёный проверено, серый ждёт ── */
+#vid{ --v-bg:#f5f5f7; --v-card:#fff; --v-line:#e7e7ec; --v-wait:var(--v-sub); --v-link:#4338ca; }
+[data-theme="night"] #vid{ --v-bg:var(--h-bg); --v-card:var(--h-panel); --v-line:var(--h-line); --v-wait:var(--v-sub); --v-link:#c4b5fd; }
+html.vid body{ background:#e9e9ee; }
+html.vid[data-theme="night"] body{ background:#000; }
+html:not([data-theme="night"]) #vid .v-head{ background:var(--v-bg); }
+#vid .v-head .gif-wall::after{ background:linear-gradient(90deg, var(--v-bg) 0%, color-mix(in srgb, var(--v-bg) 78%, transparent) 34%, color-mix(in srgb, var(--v-bg) 26%, transparent) 66%, color-mix(in srgb, var(--v-bg) 14%, transparent) 100%); }
+#vid .v-card, #vid .v-tiles .v-row, #vid .v-fc{ border-radius:14px; }
+#vid .v-tiles .v-row.fill{ box-shadow:none; }
+#vid .v-out{ min-height:44px; }
+#vid .v-st.due{ color:var(--v-sub); }
+/* «Задано»: второй шанс — один раздел, строка на долг; полоса слева ушла — предмет точкой, долг красным словом */
+#vid .v-card .v-row.v-debt{ box-shadow:none; }
+#vid .v-card .v-row + .v-row.v-debt, #vid .v-card .v-row.v-debt + .v-row{ box-shadow:inset 0 1px 0 var(--v-line); }
+#vid .v-debt .v-st{ white-space:normal; text-align:right; }
+/* карточка урока: «Назад» — строка сверху с фоном, а не плавающая таблетка */
+#vid .v-back{ position:sticky; top:0; display:flex; width:calc(100% + 32px); height:auto; min-height:48px; margin:-20px -16px 14px; padding:env(safe-area-inset-top, 0px) 16px 0 8px;
+  border-radius:0; background:var(--v-bg); box-shadow:inset 0 -1px 0 var(--v-line); color:var(--v-link); font-weight:700; }
+[data-theme="night"] #vid .v-back{ box-shadow:inset 0 -1px 0 var(--v-line); }
+#vid .v-say .v-cap{ font-weight:700; }
+#vid .v-say p{ margin:2px 0 0; font-weight:600; overflow-wrap:anywhere; white-space:pre-line; }
+#vid .v-note{ margin:0 0 10px; }
+#vid .v-hwb .v-files{ margin-top:12px; }
+/* лист домашки картинкой — превью не выше трети экрана, белые поля обрезаны; нажатие — на весь экран */
+#vid .v-flist{ margin-top:6px; }
+#vid .v-frow{ display:flex; align-items:center; gap:10px; width:100%; min-height:44px; text-align:left; font-weight:600; color:var(--v-ink); }
+#vid .v-frow + .v-frow{ box-shadow:inset 0 1px 0 var(--v-line); }
+#vid .v-frow .fz{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#vid .v-frow .v-go{ font-size:20px; }
+#vid .v-flist + .v-links{ margin-top:8px; }
+#vid .v-fix{ margin:0; font-size:18px; font-weight:700; line-height:1.3; overflow-wrap:anywhere; white-space:pre-line; }
+#vid .v-was{ margin:14px 2px 0; color:var(--v-sub); overflow-wrap:anywhere; }
+/* домашка (ТЗ 26): без кружков и плашек — строки текстом, номера жирным, «по желанию» серым, «Повторить: …» подсказкой.
+   Без #vid: тот же блок — в окне дня у учителя, «так увидит ученик» */
+.v-hwb{ padding:12px 16px 14px; border-radius:14px; }
+.v-hwd{ font-weight:800; margin-bottom:4px; }
+.v-hwb .v-hwh{ margin:12px 0 0; }
+.v-hwb > .v-hwh:first-child, .v-hwd + .v-hwh{ margin-top:4px; }
+.v-hi{ display:block; margin-top:3px; padding:0; border-radius:0; background:none; }
+.v-hi b{ font-weight:800; }
+.v-hi .v-opt{ color:var(--h-soft); }
+.v-hi.v-tip{ display:flex; gap:8px; margin-top:12px; padding:10px 12px; border-radius:12px; font-size:14px; color:var(--h-soft); background:color-mix(in srgb, var(--h-soft) 9%, transparent); }
+.v-hi.v-tip i{ flex:none; width:auto; height:auto; border-radius:0; box-shadow:none; background:none; font-size:16px; line-height:1.3; color:inherit; }
+/* ── ТЗ 26, шаг 2 — «Небо и коралл» (выбор D 06–07.11 по макетам Атласа: домашка 2, «Задано» В, долг Д; заменяет
+   «Ночную шапку» и углы «чуть острее»). Роли — шага 0: коралл — только главное действие и «горит» (завтра, сегодня,
+   прошло, долг); ссылка и кнопка 2 — синие; предмет — точка цвета обложек: алгебра малиновая, геометрия индиго,
+   вероятность бирюза — оранжевого в Дневнике нет. Ночью — прежние цвета, порядок блоков новый, кнопка та же ── */
+#vid{ --v-pri:#FF4466; --v-glow:rgba(255,68,102,.7); --v-hot:#F23D5C; --v-hotbg:#FFE5EA; --v-calm:#EEF3FB; --v-calmt:#3B4A66;
+  --v-sh:0 10px 28px -14px rgba(30,80,170,.35); --v-ic:#EAF2FF; line-height:1.3; }
+html:not([data-theme="night"]) #vid{ --v-bg:#EFF5FF; --v-card:#fff; --v-ink:#0F1B33; --v-sub:#5A6A84; --v-dim:#9AA7BD; --v-line:#EDF1F7;
+  --v-link:#1F6FEB; --v-red:#F23D5C; --v-ok:#12A150; --v-wait:#5A6A84;
+  background:linear-gradient(180deg,#C7DFFF 0px,#E3EFFF 330px,#EFF5FF 620px) no-repeat, #EFF5FF; }
+[data-theme="night"] #vid{ --v-hot:#ff9aa8; --v-hotbg:rgba(255,68,102,.16); --v-calm:rgba(255,255,255,.08); --v-calmt:var(--h-soft); --v-sh:0 0 0 1px var(--v-line); --v-ic:rgba(255,255,255,.08); }
+html.vid:not([data-theme="night"]) body{ background:#E3EDFB; }
+html:not([data-theme="night"]) #vid .k-algebra{ --g:linear-gradient(135deg,#F2457F 0%,#C8125C 100%); --s:#D81B65; --on:#fff; --t:#FFE4EE; --d:#9E0E46; --glow:rgba(216,27,101,.45); }
+html:not([data-theme="night"]) #vid .k-geometriya{ --g:linear-gradient(135deg,#6C6CFF 0%,#3F35D8 100%); --s:#4A3FE0; --on:#fff; --t:#E9E8FF; --d:#2E25A8; --glow:rgba(74,63,224,.45); }
+html:not([data-theme="night"]) #vid .k-veroyatnost{ --g:linear-gradient(135deg,#21B39B 0%,#0B8573 100%); --s:#0E8A78; --on:#fff; --t:#DDF5F0; --d:#0A6B5C; --glow:rgba(14,138,120,.45); }
+/* общее: карточка белая без рамки, всплывает тенью; подписи разделов — капс 12.5; радиусы: карточка 20, кнопка 16, кнопка 2 и поле 12, метка 10 */
+#vid .v-card, #vid .v-tiles .v-row, #vid .v-fc, #vid .v-cover, #vid .v-tabs{ border-radius:20px; }
+html:not([data-theme="night"]) #vid .v-card, html:not([data-theme="night"]) #vid .v-tiles .v-row, html:not([data-theme="night"]) #vid .v-fc{ box-shadow:var(--v-sh); }
+#vid .v-pht, #vid .v-out, #vid .v-file, #vid .v-m, #vid .v-seg, #vid .v-arr, #vid .v-tdy, #vid .v-av, #vid .v-gc, #vid .v-dc, .v-hi.v-tip{ border-radius:12px; }
+#vid .v-btnu, #vid .v-cta .v-btn{ border-radius:16px; }
+#vid .v-seg button{ border-radius:9px; }
+#vid .v-tiles .fill .v-st, #vid .v-new{ border-radius:8px; }
+#vid .v-lbl{ font-size:12.5px; letter-spacing:.06em; margin:18px 2px 8px; }
+html:not([data-theme="night"]) #vid .v-lbl{ color:#4E6487; }
+#vid .v-dot{ width:8px; height:8px; }
+#vid .v-new{ background:var(--v-hot); color:#fff; }
+/* шапка «Задано»: без картинки — небо и есть фон; шестерёнка в белом круге */
+html:not([data-theme="night"]) #vid .v-head{ background:none; box-shadow:none; }
+html:not([data-theme="night"]) #vid .v-head .gif-wall{ display:none; }
+#vid .v-head{ height:auto; min-height:0; padding:18px 20px 0; margin:-20px -16px 0; justify-content:flex-start; }
+#vid .v-head .v-h1{ font-size:32px; letter-spacing:-.02em; line-height:1.1; margin-top:2px; }
+#vid .v-head .v-kick{ font-size:12.5px; letter-spacing:.07em; }
+html:not([data-theme="night"]) #vid .v-head .v-kick{ color:#4E6487; }
+#vid .v-gear{ top:calc(14px + env(safe-area-inset-top, 0px)); right:16px; width:42px; height:42px; border-radius:50%; }
+html:not([data-theme="night"]) #vid .v-gear{ background:rgba(255,255,255,.85); color:var(--v-ink); box-shadow:0 4px 12px -6px rgba(30,80,170,.4); }
+#vid .v-date{ font-size:15px; color:var(--v-sub); margin:2px 4px 0; }
+#vid #vZ.sc .v-head{ display:none; }
+/* второй шанс — одна коралловая полоса: сколько и какой ближайший; нажал — список (один долг — сразу он) */
+#vid .v-sum{ display:flex; align-items:center; gap:12px; width:100%; margin-top:14px; padding:12px 14px; border-radius:20px; color:#fff; text-align:left;
+  background:linear-gradient(135deg,#FF6A80,#F23D5C); box-shadow:0 12px 26px -10px rgba(255,68,102,.7); }
+#vid .v-sum .big{ flex:none; width:44px; height:44px; border-radius:14px; display:grid; place-items:center; font-size:26px; font-weight:800; line-height:1; background:rgba(255,255,255,.22); }
+#vid .v-sum .t{ flex:1; min-width:0; } #vid .v-sum .t b{ display:block; font-size:16.5px; font-weight:700; }
+#vid .v-sum .t span{ display:block; font-size:13.5px; opacity:.92; margin-top:1px; }
+#vid .v-sum .v-go{ color:#fff; opacity:.9; }
+#vid .v-sum.calm{ color:var(--v-ink); background:var(--v-card); box-shadow:var(--v-sh); }
+#vid .v-sum.calm .big{ background:var(--v-calm); color:var(--v-calmt); } #vid .v-sum.calm .t span{ color:var(--v-sub); opacity:1; } #vid .v-sum.calm .v-go{ color:var(--v-dim); }
+#vid .v-b2{ flex:none; display:inline-grid; place-items:center; min-width:26px; height:26px; padding:0 4px; border-radius:8px; font-size:14px; font-weight:800; color:#fff;
+  background:linear-gradient(135deg,#FF6A80,#F23D5C); box-shadow:0 6px 14px -6px rgba(242,61,92,.7); }
+#vid .v-scl .v-row{ align-items:center; padding:12px 14px; }
+#vid .v-scl .v-b2{ min-width:34px; height:34px; border-radius:10px; font-size:17px; }
+#vid .v-scl .v-body b{ display:block; font-size:16.5px; } #vid .v-scl .v-body .v-cap{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#vid .v-scl .v-st{ font-size:14px; } #vid .v-scl .v-st.due{ color:var(--v-sub); font-weight:600; }
+#vid .v-sch{ margin:4px 4px 2px; font-size:28px; }
+/* «К следующим урокам»: карточка с обложкой урока; сданное — бледной карточкой без обложки ниже */
+#vid .v-zl{ display:grid; gap:12px; }
+#vid .v-zc{ display:block; width:100%; padding:0; overflow:hidden; text-align:left; color:inherit; background:var(--v-card); border-radius:20px; box-shadow:var(--v-sh); }
+#vid .v-zc .zimg{ display:block; width:100%; height:112px; object-fit:cover; object-position:left top; background:var(--t, var(--v-calm)); }
+#vid .v-zc .zin{ display:flex; align-items:center; gap:10px; padding:10px 14px 12px; }
+#vid .v-zc .zt{ flex:1; min-width:0; }
+#vid .v-zc .zt b{ display:flex; align-items:center; gap:7px; font-size:16.5px; font-weight:700; }
+#vid .v-zc .zt b .v-dot{ margin:0; }
+#vid .v-zc .v-hw{ margin-top:2px; font-size:14px; color:var(--v-sub); }
+#vid .v-zc .v-hw .v-new{ font-size:12px; padding:0 6px; }
+#vid .v-zc.done{ background:rgba(255,255,255,.65); box-shadow:inset 0 0 0 1px #D9E4F5; }
+[data-theme="night"] #vid .v-zc.done{ background:transparent; box-shadow:inset 0 0 0 1px var(--v-line); }
+#vid .v-zc.done .zt b{ color:var(--v-calmt); }
+#vid .v-pl{ flex:none; font-size:13px; font-weight:700; padding:4px 10px; border-radius:10px; white-space:nowrap; background:var(--v-hotbg); color:var(--v-hot); }
+#vid .v-pl.calm{ background:var(--v-calm); color:var(--v-calmt); }
+#vid .v-pl.ok{ background:color-mix(in srgb, var(--v-ok) 12%, transparent); color:var(--v-ok); }
+/* карточка урока: «‹ Назад» строкой; обложка и тема — одна белая карточка, под темой плашка срока */
+#vid .v-back{ min-height:52px; font-size:16px; font-weight:600; margin-bottom:6px; }
+html:not([data-theme="night"]) #vid .v-back{ color:var(--v-link); background:rgba(214,231,255,.86); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:none; }
+#vid .v-back svg{ width:20px; height:20px; }
+#vid .v-hc{ background:var(--v-card); border-radius:20px; overflow:hidden; box-shadow:var(--v-sh); }
+#vid .v-hcv{ display:block; width:100%; aspect-ratio:2/1; padding:0; background:var(--t, var(--v-calm)); }
+#vid .v-hcv img{ width:100%; height:100%; object-fit:cover; display:block; }
+#vid .v-hc .in{ padding:12px 16px 14px; }
+#vid .v-meta{ display:flex; align-items:center; gap:6px; font-size:13.5px; font-weight:500; color:var(--v-sub); }
+#vid .v-meta .v-dot{ margin:0; }
+#vid .v-hc .v-h1{ font-size:19px; font-weight:700; line-height:1.15; margin-top:3px; overflow-wrap:anywhere; }
+#vid .v-hc.nocv .v-h1{ font-size:23px; }
+#vid .v-hc .v-h1 + .v-h1{ margin-top:4px; }
+#vid .v-hc .v-pl{ display:inline-flex; margin-top:10px; font-size:15px; font-weight:650; padding:6px 10px; white-space:normal; }
+#vid .v-hc + .v-card, #vid .v-hc + .v-hwb{ margin-top:12px; }
+/* задание: белая карточка; номера жирным, «по желанию» серым, подсказка 💡 серым; лист домашки — строкой с миниатюрой */
+#vid .v-hwb{ margin-top:12px; background:var(--v-card); border-radius:20px; padding:14px 16px; box-shadow:var(--v-sh); }
+#vid .v-hwb .v-hwh{ font-size:12.5px; font-weight:700; letter-spacing:.06em; color:var(--v-sub); margin:0 0 6px; }
+#vid .v-hwb .v-hi:not(.v-tip){ font-size:17px; line-height:1.25; padding:4px 0; margin:0; }
+#vid .v-hwb .v-hi b{ font-weight:750; }
+#vid .v-hwb .v-opt{ color:var(--v-sub); font-size:15px; }
+#vid .v-hwb .v-hi.v-tip{ margin-top:8px; padding:0; background:none; font-size:14.5px; line-height:1.3; color:var(--v-sub); }
+#vid .v-lst{ display:flex; align-items:center; gap:12px; width:100%; margin-top:10px; text-align:left; color:inherit; }
+#vid .v-lst img{ flex:none; width:52px; height:52px; border-radius:10px; object-fit:cover; object-position:top; background:var(--v-calm); box-shadow:inset 0 0 0 1px rgba(0,0,0,.08); }
+#vid .v-lst .t{ flex:1; min-width:0; line-height:1.25; } #vid .v-lst .t b{ display:block; font-size:16px; font-weight:650; } #vid .v-lst .t span{ font-size:13.5px; color:var(--v-sub); }
+#vid .v-frow{ color:var(--v-link); }
+#vid .v-frow .v-go{ color:var(--v-dim); }
+#vid .v-note{ font-size:15.5px; line-height:1.32; }
+/* «Написать учителю» и «Вспомнить урок» — белые строки-карточки во всю ширину */
+#vid .v-askc, #vid .v-rem{ display:flex; align-items:center; gap:12px; width:100%; margin-top:12px; padding:13px 14px; text-align:left; background:var(--v-card); border-radius:20px; box-shadow:var(--v-sh); }
+#vid .v-askc{ font-size:16px; font-weight:650; color:var(--v-link); }
+#vid .v-askc span:first-child{ flex:1; }
+#vid .v-rem{ color:inherit; }
+#vid .v-rem .ic{ flex:none; width:40px; height:40px; border-radius:12px; display:grid; place-items:center; font-size:20px; background:var(--v-ic); }
+#vid .v-rem .t{ flex:1; min-width:0; } #vid .v-rem .t b{ display:block; font-size:16.5px; } #vid .v-rem .t span{ display:block; font-size:13.5px; line-height:1.3; color:var(--v-sub); margin-top:2px; }
+/* долг: обложка во всю ширину, в углу — оценка и срок; «Что исправить» наезжает на обложку снизу */
+#vid .v-hero{ position:relative; margin:-6px -16px 0; }
+#vid .v-hero .v-hcv{ aspect-ratio:2/1; }
+#vid .v-hero.none{ min-height:48px; }
+#vid .v-tag{ position:absolute; right:14px; top:10px; display:inline-flex; align-items:center; gap:8px; padding:6px 12px 6px 6px; border-radius:12px; font-size:15px; font-weight:700;
+  background:#fff; color:#F23D5C; box-shadow:0 8px 18px -8px rgba(242,61,92,.6); }
+#vid .v-tag.calm{ color:#3B4A66; box-shadow:0 8px 18px -8px rgba(30,80,170,.4); }
+#vid .v-tag.calm .v-b2{ background:#9AA7BD; box-shadow:none; }
+#vid .v-over{ position:relative; margin-top:-34px; padding:16px 18px; background:var(--v-card); border-radius:20px; box-shadow:var(--v-sh); }
+#vid .v-over.flat{ margin-top:8px; }
+#vid .v-over .who{ font-size:12.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--v-hot); margin-bottom:6px; }
+#vid .v-over .v-fix{ font-size:20px; line-height:1.3; font-weight:700; }
+#vid .v-over .v-thumbs, #vid .v-over .v-hist{ margin-top:10px; }
+#vid .v-was{ margin:12px 2px 0; font-size:15px; color:var(--v-sub); }
+#vid .v-hwx{ margin-top:10px; } #vid .v-hwx > :first-child{ margin-top:0; }
+/* кнопка 1 — коралловая, 56 px; меню — белая плашка, значок открытой вкладки коралловый */
+#vid .v-cta{ background:linear-gradient(180deg, transparent, var(--v-bg) 26px); }
+#vid .v-cta .v-btn{ display:flex; align-items:center; justify-content:center; min-height:56px; padding:0 16px; font-size:17.5px; font-weight:700; letter-spacing:.005em;
+  background:var(--v-pri); box-shadow:0 12px 26px -10px var(--v-glow); }
+#vid .v-cta .v-cap:empty{ display:none; }
+#vid .v-tabs{ border-radius:24px; }
+html:not([data-theme="night"]) #vid .v-tabs{ box-shadow:0 10px 30px -10px rgba(30,60,140,.35); }
+#vid .v-tabs .on svg{ stroke:#F23D5C; }
+[data-theme="night"] #vid .v-tabs .on svg{ stroke:#ff8fa3; }
 
 /* ── экран проверки работы (ТЗ 20, сессия 6) ── */
 html.rv-on, html.rv-on body{ overflow:hidden; }
@@ -2782,7 +2954,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (vidSrv || vidUrl) {   // у детей вид ученика: домашка — блоками, ровно как в карточке урока (ТЗ 19, вариант А)
         var sj = feed() ? daySubj : dayTab, d0 = normDate($('fDate').value), du = d0 ? vDue(lessons(sj), { date: d0 }) : null;
         pv.hidden = !v.trim(); pv.className = 'fprev v-like';
-        pv.innerHTML = '<span class="fprev-h">Так увидит ученик:</span>' + vHwBox(sj, v, du ? vDueWords(du.date) : '', '', '');
+        pv.innerHTML = '<span class="fprev-h">Так увидит ученик:</span>' + vHwBox(sj, v, du ? 'Сдать к ' + vDayL(du.date) : '', '');
         return;
       }
       pv.hidden = fmt(v) === esc(v).replace(/\n/g, '\n') && !/^\s*[•\-–]\s/m.test(v); pv.innerHTML = '<span class="fprev-h">Так увидят:</span>' + fmt(v);
@@ -2931,7 +3103,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         img.src = u;
         if (pdf) { var i = img.nextElementSibling; if (i) i.remove(); img.parentNode.classList.add('cover'); }
       }, function () {
-        if (img.classList.contains('tcov')) { delete fileUrls[id]; img.remove(); return; }   // обложки в таблице просто нет; в другой раз попробуем снова
+        if (img.classList.contains('tcov') || img.closest('.v-hcv, .v-zc, .v-lst')) { delete fileUrls[id]; img.remove(); return; }   // большая обложка Дневника — пустая рамка, без «jpg»   // обложки в таблице просто нет; в другой раз попробуем снова
         if (pdf) { img.remove(); return; }   // не вышло — остаётся цветная плитка «PDF» (обложки в таблице просто нет); заново этот файл не качаем
         delete fileUrls[id];
         var i = document.createElement('i'); i.textContent = (S.file[id] || {}).ext || '?'; img.replaceWith(i);
@@ -4127,7 +4299,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
   function submitPhotos(input) {
     var files = Array.prototype.slice.call(input.files, 0, 12), st = $(input.dataset.st || 'subSt'), lid = input.dataset.lid, markId = input.dataset.mark;
-    if (st) st.textContent = 'Готовлю ' + files.length + ' фото…';
+    var over = input.files.length > 12 ? ' (больше 12 за раз нельзя — взяли первые 12)' : '';   // предел — когда выбрал, а не подписью заранее (ТЗ 26)
+    if (st) st.textContent = 'Готовлю ' + files.length + ' фото…' + over;
     input.disabled = true; subSeq++;
     Promise.all(files.map(function (f) { return shrink(f); })).then(function (blobs) {   // не map(shrink): номер фото ушёл бы пределом стороны — второе сжималось до точки
       var fd = new FormData();
@@ -4143,7 +4316,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         var o = r.j.obj, d = o.d; d.id = o.id; d.ts = o.ts; S.sub[o.id] = d;
         subSeq++; input.disabled = false; input.value = '';   // в новом виде кнопка остаётся на экране — «Дослать фото» должна работать и второй раз
         render(); if (!vidOn()) openSubmit(markId);   // в новом виде сдача — прямо в карточке урока
-        var s2 = $(input.dataset.st || 'subSt'); if (s2) s2.textContent = '✅ Сдано! Учитель получил уведомление.';
+        var s2 = $(input.dataset.st || 'subSt'); if (s2) s2.textContent = '✅ Сдано! Учитель получил уведомление.' + over;
         return;
       }
       var why = { 503: 'Приём домашек пока выключен.', 409: r.j.error === 'checked' && /\.u$/.test(markId || '') && !shansSrv ? 'Работу уже оценили. Если что-то не так — напиши учителю.' : r.j.error === 'checked' ? (shansSrv ? 'Сдать нельзя: работа проверена или срок второго шанса вышел. Подойди к учителю.' : 'Эта домашка уже проверена.') : 'Слишком много фото — до 12 в одной сдаче.',
@@ -4714,8 +4887,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   var V_NONE = /^(?:—|–|-|нет|не задано)\.?$/i;
   function vHwText(own) { var t = String(hwOf(own).t || '').trim(); return V_NONE.test(t) ? '' : t; }
   function vHwHas(own) { return !!(vHwText(own) || hwFiles(own).length || autoUrl(own.ad)); }
-  function vHwLine(own) {
-    var t = plain(vHwText(own)).split('\n').map(function (x) { return x.trim(); }).filter(Boolean).join('; '), n = hwFiles(own).length;
+  function vHwLine(own) {   // превью в строку: заголовок «В тетради:» и срок не берём, строки — через запятую (ТЗ 26)
+    var I = vHwParse(vHwText(own)).items.filter(function (x) { return x.t; }), J0 = I.filter(function (x) { return !V_TIP.test(x.k); }), n = hwFiles(own).length;
+    var t = (J0.length ? J0 : I).map(function (x) { return x.k; }).join(', ');   // подсказку «Повторить: …» — не в превью, если есть что-то кроме неё
     return t || (n ? 'Задание — в карточке урока: ' + vN(n, 'файл', 'файла', 'файлов') : 'Домашка на телефоне или ноутбуке');
   }
   // блок урока: сам урок, его сдвоенные соседи и урок, у которого клетка домашки (own); L — все уроки этого предмета
@@ -4728,7 +4902,19 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
   // к какому дню домашка: следующий урок предмета. Его в журнале ещё нет (D заводит день в день урока) — ближайший день
   // по расписанию мимо каникул, как «следующий» у учителя: «к вт 13.10» ученику нужнее, чем дата, когда задали
+  var V_WDN = [/^(?:вс|воскресень)/, /^(?:пн|понедельник)/, /^(?:вт|вторник)/, /^(?:ср|сред)/, /^(?:чт|четверг)/, /^(?:пт|пятниц)/, /^(?:сб|суббот)/];
+  function vDueWord(s, own) {   // «к 20 ноября», «до 14.10», «к среде» → «ДД.ММ»; «к следующему уроку» — null (это и есть следующий урок)
+    var m = /(\d{1,2})(?:\.(\d{1,2})|\s+([а-яё]+))/i.exec(s), d0 = realDate(own.date);
+    if (m) { var mo = m[2] ? +m[2] : V_MON.indexOf(m[3].toLowerCase()) + 1; return mo >= 1 && mo <= 12 && +m[1] >= 1 && +m[1] <= 31 ? ('0' + m[1]).slice(-2) + '.' + ('0' + mo).slice(-2) : null; }
+    var w = String(s).replace(/^(?:к|до)\s+/i, '').toLowerCase(), wd = -1;
+    V_WDN.forEach(function (re, i) { if (wd < 0 && re.test(w)) wd = i; });
+    if (wd < 0 || !d0) return null;
+    for (var i = 1; i <= 7; i++) { d0.setDate(d0.getDate() + 1); if (d0.getDay() === wd) return ddmm(d0); }   // ближайший такой день после урока
+    return null;
+  }
   function vDue(L, own) {
+    var pd = vHwParse(vHwText(own)).due, dw = pd && vDueWord(pd, own);
+    if (dw) return { date: dw, word: true };
     var k = dkey(own.date), nx = L.filter(function (l) { return dkey(l.date) > k; })[0];
     if (nx) return { date: nx.date, les: nx };
     var d = realDate(own.date), wd = schedWd(L), t = new Date();
@@ -4738,19 +4924,35 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     for (var i = 0; i < 21; i++, d.setDate(d.getDate() + 1)) if (wd[d.getDay()] && !offDay(ddmm(d))) return { date: ddmm(d) };
     return null;
   }
-  // сдача словами: t — коротко в строке «Задано», full — в карточке урока; todo — от ученика ещё что-то нужно
-  function vStatus(own) {
+  /* сдача словами — словарь ТЗ 26 (везде одинаково): t — коротко в строке «Задано» («сдать к сб 7.11»), full — в карточке
+     («Сдать к сб 7 ноября»); k — цвет: no красный (горит, прошло, вернули, долг), ok зелёный, wait и due серые;
+     todo — от ученика ещё что-то нужно; due — строка и есть срок. До срока больше дня — серым: красное «не сдано» не кричит зря */
+  var V_WD2 = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+  function vDayS(date) { var d = realDate(date); return d ? V_WD2[d.getDay()] + ' ' + d.getDate() + '.' + (d.getMonth() + 1) : String(date || ''); }   // в списках: «сб 7.11»
+  function vDayL(date) { var d = realDate(date); return d ? V_WD2[d.getDay()] + ' ' + d.getDate() + ' ' + V_MON[d.getMonth()] : String(date || ''); }   // на экране урока: «сб 7 ноября»
+  function vLeft(date) { var d = realDate(date), t = new Date(); if (!d) return null; t.setHours(0, 0, 0, 0); d.setHours(0, 0, 0, 0); return Math.round((d - t) / 864e5); }
+  function vLeftW(n) { return n < 0 ? 'срок прошёл' : n === 0 ? 'сегодня последний день' : 'ещё ' + vN(n, 'день', 'дня', 'дней'); }
+  function vCap1(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+  // прочерк (работы нет) и «н» (не было на уроке) — исправлять нечего, работу надо сдать; 2 и 1 — исправить
+  function vNone(m) { var c = markInfo(m && m.v).cls; return c === 'mn' || scAuto(m && m.v); }
+  function vStatus(own, due) {
     var sub = S.sub[own.id + '.' + meId], m = S.mark[own.id + '.' + meId + '.d'], inf = markInfo(m && m.v), g = inf.cls === 'mn' ? '' : splitMark(m).g;
-    if (sub && sub.st === 'sent') return { k: 'wait', t: 'ждёт проверки', full: 'сдано, ждёт проверки' };
-    if (sub && sub.st === 'redo') return { k: 'no', t: 'вернули: исправь', full: 'вернули: исправь и сдай заново', todo: true };
-    if (m && m.sc && !isDebt(m)) return { k: 'no', t: 'срок вышел', full: 'второй шанс: срок вышел — подойди к учителю' };
-    if (g && shansSrv && m && 'sc' in m && !m.sc) return scAuto(g) ? { k: 'no', t: 'не сдано', full: 'не сдано' } : { k: 'no', t: 'проверено: ' + g, full: 'проверено: ' + g };   // шанса нет — сдавать нечего
+    var gk = inf.cls === 'm2' ? 'no' : 'ok';
+    if (sub && sub.st === 'sent') return { k: 'wait', t: 'отправлено, ждёт проверки', full: 'отправлено, ждёт проверки' };
+    if (sub && sub.st === 'redo') return { k: 'no', t: 'вернули: посмотри замечание', full: 'вернули: посмотри замечание', todo: true };
+    if (m && m.sc && !isDebt(m)) return { k: 'no', t: 'срок прошёл', full: 'срок исправления прошёл — подойди к учителю' };
+    if (g && shansSrv && m && 'sc' in m && !m.sc) return scAuto(g) ? { k: 'no', t: 'срок прошёл', full: 'срок прошёл, не сдано' } : { k: gk, t: 'проверено · ' + g, full: 'проверено · ' + g };   // шанса нет — сдавать нечего
     var sd = shansSrv && isDebt(m) ? debtOf(S.les[own.id], m) : null;
-    if (sd) return { k: 'no', t: 'второй шанс', full: 'второй шанс: сдай до ' + vDay(sd.until), todo: true };
-    if (g && isDebt(m)) return { k: 'no', t: 'не сдано: ' + g, full: (inf.cls === 'm2' && /^[–-]/.test(g) ? 'прочерк' : 'оценка ' + g) + ' — не сдано: исправь и сдай заново', todo: true };
-    if (g) return { k: inf.cls === 'm2' ? 'no' : 'ok', t: 'проверено: ' + g, full: 'проверено: ' + g };
+    if (sd) { var vb = vNone(m) ? 'сдать до ' : 'исправить до '; return { k: 'no', t: vb + vDayS(sd.until) + ' · ' + vLeftW(sd.left), full: vb + vDayL(sd.until) + ' · ' + vLeftW(sd.left), todo: true }; }
+    if (g && isDebt(m)) return { k: 'no', t: 'исправить ' + g, full: (inf.cls === 'm2' && /^[–-]/.test(g) ? 'прочерк' : 'оценка ' + g) + ' — исправь и сдай заново', todo: true };
+    if (g) return { k: gk, t: 'проверено · ' + g, full: 'проверено · ' + g };
     if (sub && sub.st === 'checked') return { k: 'ok', t: 'проверено', full: 'проверено' };
-    return { k: 'no', t: 'не сдано', full: 'не сдано', todo: true };
+    if (due === undefined) { var B = vBlock(own.id); due = B ? vDue(B.L, own) : null; }
+    var n = due ? vLeft(due.date) : null;
+    if (n === null) return { k: 'due', t: 'не сдано', full: 'не сдано', todo: true };
+    if (n < 0) return { k: 'no', t: 'срок прошёл', full: 'срок прошёл, не сдано', todo: true };
+    if (n <= 1) return { k: 'no', t: n ? 'сдать завтра' : 'сдать сегодня', full: (n ? 'сдать завтра, ' : 'сдать сегодня, ') + vDayL(due.date), todo: true, due: true };
+    return { k: 'due', t: 'сдать к ' + vDayS(due.date), full: 'сдать к ' + vDayL(due.date), todo: true, due: true };
   }
   // «К следующим урокам»: по строке на предмет — последняя заданная домашка (у индивидуала лента одна, строка одна).
   // Урок, к которому задавали, уже прошёл, а нового не задано — так и пишем: «не ту домашку» делают от неизвестности
@@ -4762,7 +4964,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       for (var i = LY.length - 1; i >= 0 && !x; i--) if (!LY[i].joinedNext && dkey(LY[i].l.date) <= tk && vHwHas(LY[i].own)) x = LY[i];
       var due = x ? vDue(L, x.own) : null;
       if (!x || (due && due.les && dkey(due.date) < tk)) { if (!feed()) rows.push({ subj: g }); return; }
-      rows.push({ subj: x.own.subj, own: x.own, due: due, st: vStatus(x.own) });
+      rows.push({ subj: x.own.subj, own: x.own, due: due, st: vStatus(x.own, due) });
     });
     // сначала то, где от ученика что-то нужно; сданное и проверенное — ниже, серым: на нём глаз не задерживается (ТЗ 22, E1, D 29.10)
     function rank(r) { return !r.own ? 2 : r.st.todo ? 0 : 1; }
@@ -4792,18 +4994,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     });
     return { n: all.length, fresh: fresh };
   }
-  var vScAll = false;   // «ещё N» раскрыто
-  function vDebtLeft(d) { return d.left < 0 ? 'срок вышел' : d.left === 0 ? 'сегодня последний день' : 'осталось ' + vN(d.left, 'день', 'дня', 'дней'); }
-  // долг словами: за что оценка и что сделать (D: «сложно объяснять, за что долг»)
-  function vDebtText(x) {
-    var sm = splitMark(x.m), tp = plain(topicOf(x.l).t || '').split('\n')[0].trim().replace(/\.$/, '');
-    // сама оценка стоит плиткой слева (D 12.10) — словами её не повторяем
-    var t = (x.w === 'd' ? 'За домашку' : 'За работу на уроке') + (tp ? ' «' + tp + '»' : '') + '. ' + (vSay(sm.c) ? 'Учитель: ' + sm.c.replace(/[.\s]+$/, '') + '. ' : '');
-    if (x.sent) return t + 'Сдано заново — ждёт проверки.';
-    if (x.dbt.left < 0) return t + 'Подойди к учителю — договоритесь о пересдаче.';
-    if (shansSrv) return t + 'Сдай до ' + vDay(x.dbt.until) + '.';
-    return t + (x.w === 'd' ? 'Исправь и сдай заново до ' : 'Пересдать до ') + vDay(x.dbt.until) + '.';
-  }
+  // ТЗ 26, шаг 2: vScList — открыт список долгов (из коралловой полосы); vPlain — «Вспомнить урок»: карточка того же урока
+  // без экрана долга (обложка, заметка, файлы). Оба — шаги истории: «Назад» телефона возвращает на шаг
+  var vScList = false, vPlain = false, vYz = 0, vDw = '';   // vYz — где был в «Задано», когда открыл список долгов
   /* «новое» (D 30.10: уведомление о каждой домашке — в нашем приложении): домашка, которую ученик ещё не открывал на этом
      устройстве, — с меткой «Новое» в «Задано»; поменяли текст — снова новая. Открыл карточку — метка ушла. Помним по
      ученику журнала (телефон бывает общий), последние 80; при самом первом заходе всё, что уже задано, — не новое */
@@ -4827,54 +5020,94 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function vZadHtml(rows) {
     var now = new Date(), m = ssylNow(), D = vDebts();
     vSeenInit(rows);
-    var h = '<span class="v-cap">' + V_DAYS[now.getDay()] + ', ' + now.getDate() + ' ' + V_MON[now.getMonth()] + '</span>';
+    if (vScList && shansSrv) return vScListHtml(D);
+    var h = '<span class="v-cap v-date">' + V_DAYS[now.getDay()] + ', ' + now.getDate() + ' ' + V_MON[now.getMonth()] + '</span>';
     var links = SSYL.filter(function (x) { return okUrl(m[x.id]); }).map(function (x) {
       return '<a class="v-out" href="' + esc(m[x.id]) + '" target="_blank" rel="noopener">' + x.name + ' ↗</a>';
     }).join('');
     if (links) h += '<div class="v-links">' + links + '</div>';
-    // последние два дня срока — над текущей домашкой; остальные шансы ниже: у новой темы приоритет, у старой есть время
-    var hot = shansSrv ? D.filter(function (x) { return !x.sent && x.dbt.left >= 0 && x.dbt.left <= 1; }) : [];
-    if (hot.length) h += '<div class="v-lbl">Второй шанс: последние дни</div><div class="v-card">' + hot.map(vScRow).join('') + '</div>';
-    h += '<div class="v-lbl">К следующим урокам</div><div class="' + (rows.length ? 'v-tiles' : 'v-card') + '">' + (rows.length ? rows.map(function (r) {
-      var sj = vSj(r.subj);
-      if (!r.own) return '<div class="v-row v-quiet"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><b>' + esc(sj.short) + '</b><span class="v-hw">нового пока не задано</span></span></div>';
-      return '<button class="v-row ' + sj.k + (r.st.todo ? ' fill' : ' done') + '" data-va="urok" data-id="' + r.own.id + '"><span class="v-dot ' + sj.k + '"></span><span class="v-body"><span class="v-rt"><b>' + esc(sj.short) + (r.due ? ', ' + esc(vDay(r.due.date)) : '') + '</b>' +
-        '<span class="v-st ' + r.st.k + '">' + esc(r.st.t) + '</span></span><span class="v-hw">' + (vIsNew(r.own) ? '<b class="v-new">Новое</b> ' : '') + esc(vHwLine(r.own)) + '</span></span><span class="v-go">›</span></button>';
-    }).join('') : '<div class="v-pad"><span class="v-cap">Пока ничего не задано.</span></div>') + '</div>';
-    if (shansSrv) return h + vScHtml(D.filter(function (x) { return hot.indexOf(x) < 0; }), hot.length);
-    if (D.length) h += '<div class="v-lbl">Долги: ' + D.length + '</div><div class="v-card">' + D.map(vScRow).join('') + '</div>';
+    // второй шанс — одна коралловая полоса над домашками (ТЗ 26, шаг 2, «Задано» В): высота не растёт со счётом долгов
+    if (shansSrv) h += vSumHtml(D);
+    else if (D.length) h += '<div class="v-lbl">Долги: ' + D.length + '</div><div class="v-card v-scl">' + D.map(vScRow).join('') + '</div>';
+    h += '<div class="v-lbl">К следующим урокам</div>' + (rows.length ? '<div class="v-zl">' + rows.map(vZcHtml).join('') + '</div>' : '<div class="v-card v-pad"><span class="v-cap">Пока ничего не задано.</span></div>');
     return h;
   }
-  // блок «Второй шанс» (ТЗ 22 C): три ближайших по сроку (просроченные — первыми), остальное под «ещё N»; сверху — сколько
-  // закрыто; закрытый за сутки стоит зелёным «Закрыт, отметка 4»
-  function vScRow(x) {
-    var g = splitMark(x.m).g;
-    return '<button class="v-row v-debt' + (x.dbt.left < 0 && !x.sent ? ' late' : '') + '" data-va="urok" data-id="' + x.l.id + '"><span class="v-m ' + markCls(x.m.v) + (g.length > 2 ? ' long' : '') + '">' + esc(g) + '</span><span class="v-body"><span class="v-rt"><b>' + esc(vSj(x.l.subj).short) + ', ' + esc(x.l.date) + '</b>' +
-      '<span class="v-st ' + (x.sent ? 'wait' : 'no') + '">' + (x.sent ? 'ждёт проверки' : vDebtLeft(x.dbt)) + '</span></span><span class="v-hw">' + esc(vDebtText(x)) + '</span></span><span class="v-go">›</span></button>';
+  // плашка срока и статуса (ТЗ 26, шаг 2): коралловая — горит (завтра, сегодня, прошло, вернули, долг), серо-голубая —
+  // спокойно, зелёная — проверено. В списке коротко («завтра», «вс 8.11»), на экране урока — словарём шага 1 целиком
+  function vPillHtml(st, due, full, txt) {
+    var t = txt || st.t, k = st.k === 'no' ? '' : st.k === 'ok' ? ' ok' : ' calm';
+    if (!full && !txt) {
+      if (st.due && due) { var n = vLeft(due.date); t = n < 0 ? 'срок прошёл' : n === 0 ? 'сегодня' : n === 1 ? 'завтра' : vDayS(due.date); }
+      else if (st.k === 'wait') t = 'ждёт проверки';
+      else if (/^вернули/.test(t)) t = 'вернули';
+      else if (/^(?:исправить|сдать) до /.test(t)) t = t.replace(/^\S+ /, '').replace(/ · .*$/, '');   // «исправить до сб 7.11 · ещё 3 дня» → «до сб 7.11»
+    } else if (!txt) t = vCap1(st.full);
+    return '<span class="v-pl' + k + '"' + (t !== st.t ? ' title="' + esc(st.t) + '"' : '') + '>' + esc(t) + '</span>';   // коротко на экране, словарём — в подсказке
   }
-  function vScHtml(D, nHot) {
+  // карточка «К следующим урокам»: обложка урока (нечего делать — без обложки, бледная), предмет точкой, домашка, срок
+  function vZcHtml(r) {
+    var sj = vSj(r.subj);
+    if (!r.own) return '<div class="v-zc done v-quiet"><span class="zin"><span class="zt"><b><span class="v-dot ' + sj.k + '"></span>' + esc(sj.short) + '</b><span class="v-hw">нового пока не задано</span></span></span></div>';
+    var todo = !!r.st.todo, cv = null, B = todo ? vBlock(r.own.id) : null;
+    if (todo) { cv = coverOf(r.own.id); if (!cv && B) B.les.forEach(function (l) { cv = cv || coverOf(l.id); }); }
+    return '<button class="v-zc ' + sj.k + (todo ? '' : ' done') + '" data-va="urok" data-id="' + r.own.id + '">' + (cv ? '<img class="zimg" data-ff="' + cv.id + '" alt="">' : '') +
+      '<span class="zin"><span class="zt"><b><span class="v-dot ' + sj.k + '"></span>' + esc(sj.short) + '</b><span class="v-hw">' + (vIsNew(r.own) ? '<b class="v-new">Новое</b> ' : '') + esc(vHwLine(r.own)) + '</span></span>' +
+      vPillHtml(r.st, r.due) + '</span></button>';
+  }
+  function vWhen(x) { return x.dbt.left < 0 ? 'срок прошёл' : x.dbt.left === 0 ? 'сегодня' : x.dbt.left === 1 ? 'завтра' : 'до ' + vDayS(x.dbt.until); }
+  // коралловая полоса: «Второй шанс: 3 долга / ближайший — геометрия, завтра»; один долг — назван и ведёт прямо в него;
+  // всё отправлено — полоса спокойная, белая; долгов нет — полосы нет
+  function vSumHtml(D) {
+    if (!D.length) {
+      var C = vScClosed();
+      if (!C.fresh.length) return '';
+      var f = C.fresh[0];
+      return '<button class="v-sum calm" data-va="sclist"><span class="big">✓</span><span class="t"><b>Второй шанс: всё закрыто</b><span>' +
+        esc(vSj(f.l.subj).short.toLowerCase() + ' — закрыт · ' + splitMark(f.m).g + (C.fresh.length > 1 ? ' и ещё ' + (C.fresh.length - 1) : '')) + '</span></span><span class="v-go">›</span></button>';
+    }
+    var todo = D.filter(function (x) { return !x.sent; }), act = todo.filter(function (x) { return x.dbt.left >= 0; }), x = act[0] || todo[0] || D[0], one = D.length === 1, sub = vSj(x.l.subj).short.toLowerCase();   // ближайший — тот, что ещё можно исправить
+    var big = one ? (splitMark(x.m).g || '!') : String(D.length), t, s;
+    if (one) {
+      t = 'Второй шанс: ' + sub;
+      s = x.sent ? 'отправлено, ждёт проверки' : x.dbt.left < 0 ? 'срок прошёл — подойди к учителю' : (vNone(x.m) ? 'сдать ' : 'исправить ') + (x.dbt.left === 0 ? 'сегодня' : x.dbt.left === 1 ? 'до завтра' : vWhen(x));
+    } else {
+      t = 'Второй шанс: ' + vN(D.length, 'долг', 'долга', 'долгов');
+      s = todo.length ? 'ближайший — ' + sub + ', ' + vWhen(x) : 'всё отправлено, ждёт проверки';
+    }
+    return '<button class="v-sum' + (todo.length ? '' : ' calm') + '" data-va="' + (one ? 'urok" data-w="' + x.w + '" data-id="' + x.l.id : 'sclist') + '"><span class="big">' + esc(big) + '</span>' +
+      '<span class="t"><b>' + esc(t) + '</b><span>' + esc(s) + '</span></span><span class="v-go">›</span></button>';
+  }
+  // строка долга в списке: оценка коралловым квадратом, предмет, за что; справа — срок словом (горит — коралловым)
+  function vScRow(x) {
+    var g = splitMark(x.m).g, tp = plain(topicOf(x.l).t || '').split('\n')[0].trim().replace(/\.$/, '');
+    var what = (x.w === 'd' ? 'домашка ' : 'работа на уроке ') + vDayS(x.l.date) + (x.w === 'd' && tp ? ', ' + tp : '');
+    var st = x.sent ? ['wait', 'ждёт проверки'] : x.dbt.left <= 1 ? ['no', vWhen(x)] : ['due', vWhen(x)];
+    return '<button class="v-row v-debt' + (x.dbt.left < 0 && !x.sent ? ' late' : '') + '" data-va="urok" data-w="' + x.w + '" data-id="' + x.l.id + '"><span class="v-b2">' + esc(g || '!') + '</span><span class="v-body"><b>' + esc(vSj(x.l.subj).short) + '</b><span class="v-cap">' + esc(what) + '</span></span>' +
+      '<span class="v-st ' + st[0] + '">' + esc(st[1]) + '</span><span class="v-go">›</span></button>';
+  }
+  // список долгов (нажатие на полосу): по сроку; сверху — сколько закрыто и закрытый за сутки зелёным «закрыт · 4»
+  function vScListHtml(D) {
     var C = vScClosed();
-    if (!D.length && !C.fresh.length) return '';
-    nHot = nHot || 0;
-    var shown = vScAll ? D : D.slice(0, 3), more = D.length - shown.length;
-    return '<div class="v-lbl">Второй шанс' + (C.n ? ', закрыто ' + C.n + ' из ' + (C.n + D.length + nHot) : '') + '</div><div class="v-card">' +
-      C.fresh.map(function (x) {
-        var g = splitMark(x.m).g;
-        return '<button class="v-row v-debt v-scok" data-va="urok" data-id="' + x.l.id + '"><span class="v-m ' + markCls(x.m.v) + '">' + esc(g) + '</span><span class="v-body"><span class="v-rt"><b>' + esc(vSj(x.l.subj).short) + ', ' + esc(x.l.date) + '</b>' +
-          '<span class="v-st ok">закрыт</span></span><span class="v-hw">Закрыт, отметка ' + esc(g) + '.</span></span><span class="v-go">›</span></button>';
-      }).join('') + shown.map(vScRow).join('') +
-      (more > 0 ? '<button class="v-row v-more" data-va="scmore"><span class="v-body"><b>ещё ' + more + '</b></span><span class="v-go">⌄</span></button>' : '') + '</div>';
+    var h = '<button class="v-back" data-va="scback"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Назад</button>' +
+      '<h1 class="v-h1 v-sch">Второй шанс</h1>' + (C.n ? '<span class="v-cap v-date">закрыто ' + C.n + ' из ' + (C.n + D.length) + '</span>' : '');
+    if (!D.length && !C.fresh.length) return h + '<div class="v-card v-pad" style="margin-top:14px"><span class="v-cap">Долгов нет.</span></div>';
+    return h + '<div class="v-card v-scl" style="margin-top:14px">' + C.fresh.map(function (x) {
+      var g = splitMark(x.m).g;
+      return '<button class="v-row v-debt v-scok" data-va="urok" data-id="' + x.l.id + '"><span class="v-dot ' + vSj(x.l.subj).k + '"></span><span class="v-body"><b>' + esc(vSj(x.l.subj).short) + '</b><span class="v-cap">' + (x.w === 'd' ? 'домашка' : 'работа на уроке') + '</span></span>' +
+        '<span class="v-st ok">закрыт · ' + esc(g) + '</span><span class="v-go">›</span></button>';
+    }).join('') + D.map(vScRow).join('') + '</div>';   // закрытый за сутки — сверху: хорошая новость первой
   }
   // подпись ученику: пустая — «Фото 1», «Файл 2»
   function vFileName(f, n) {
     var nm = fCap(f);
     return nm ? nm.charAt(0).toUpperCase() + nm.slice(1) : (/^(png|jpe?g|webp)$/i.test(f.ext || '') ? 'Фото ' : 'Файл ') + n;
   }
+  // файлы открытым списком, строка с именем: «📄 Теория.pdf» (ТЗ 26) — ученик видит, что внутри, не открывая
   function vFilesHtml(F) {
-    return '<div class="v-files">' + F.map(function (f, i) {
-      var show = canShow(f);
-      return '<button class="v-file" data-act="' + (show ? 'openfile' : 'dl') + '" data-id="' + f.id + '"><u>' + (/^(png|jpe?g|webp)$/i.test(f.ext || '') ? '<img data-ff="' + f.id + '" alt="">' : '<i>' + esc(f.ext) + '</i>') +
-        '</u><span class="fz">' + esc(vFileName(f, i + 1)) + '</span></button>';
+    return '<div class="v-flist">' + F.map(function (f, i) {
+      var img = /^(png|jpe?g|webp)$/i.test(f.ext || ''), nm = vFileName(f, i + 1), ext = String(f.ext || '').toLowerCase();
+      if (ext && !img && nm.toLowerCase().slice(-ext.length - 1) !== '.' + ext) nm += '.' + ext;
+      return '<button class="v-frow" data-act="' + (canShow(f) ? 'openfile' : 'dl') + '" data-id="' + f.id + '"><span aria-hidden="true">' + (img ? '🖼' : '📄') + '</span><span class="fz">' + esc(nm) + '</span><span class="v-go">›</span></button>';
     }).join('') + '</div>';
   }
   // плитка оценки; исправленная — перед ней прежняя, серая и зачёркнутая: видна, но в средний не идёт (D 12.10)
@@ -4896,7 +5129,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       '<span class="v-body"><b>' + (inf.cls === 'mn' && w === 'u' ? 'Не было на уроке' : w === 'd' ? 'Домашка' : 'Работа на уроке') + esc(tail) + '</b>' +
       (m.pv ? '<span class="v-hist">' + esc(vFixed(m)) + '</span>' : '') +
       (m.by === 'auto' && m.an ? '<span class="v-hist">' + esc(m.an) + '</span>' : '') + (w !== 'd' && vSay(sm.c) ? '<span class="v-hist">Учитель: ' + esc(sm.c) + '</span>' : '') +
-      (dbt ? '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок пересдачи вышел ' + esc(dbt.until) : (shansSrv ? 'Второй шанс до ' : 'Пересдать до ') + esc(vDay(dbt.until)) + ', ' + vDebtLeft(dbt)) + '</span>' : '') +
+      (dbt ? '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок исправления прошёл ' + esc(vDayS(dbt.until)) : 'Исправить до ' + esc(vDayS(dbt.until)) + ' · ' + vLeftW(dbt.left)) + '</span>' : '') +
       (w === 'u' ? vSubU(l, m) : '') + '</span></div>';
   }
   // работа на уроке со вторым шансом (ТЗ 22 C, D 24.10): сдача фото — тот же поток, что у домашки, кнопка прямо под оценкой
@@ -4905,22 +5138,20 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var sid = l.id + '.' + meId + '.u', sb = S.sub[sid], h = '', ux = 'U-' + l.id, free = uFree(l, m) && !canU(l, m);   // у сдвоенного урока кнопок две — id у каждой свой
     if (sb) h += '<span class="v-hist' + (sb.st === 'sent' ? ' wait' : '') + '">📷 ' + esc({ sent: 'Сдано — ждёт проверки', redo: 'Вернули: исправь и сдай заново', checked: 'Проверено' }[sb.st] || '') + '</span>' + thumbsHtml(sb.ph, sid);
     // без оценки (ТЗ 25) — тихая кнопка: нужна редко, на каждом уроке не кричит; по второму шансу — заметная, как раньше
+    if (vPlain) return h;   // «Вспомнить урок»: только посмотреть
     if (sdachaOn && free) h += '<label class="v-ask v-upu">📷 ' + (sb && sb.st === 'sent' ? 'Дослать фото работы' : 'Сдать фото работы с урока') +
       '<input type="file" id="subIn' + ux + '" data-st="subSt' + ux + '" data-lid="' + l.id + '" data-mark="' + sid + '" accept="image/*" multiple></label><span class="v-cap" id="subSt' + ux + '"></span>';
     else if (sdachaOn && shansSrv && canU(l, m)) h += '<label class="v-btn v-btnu">' + (sb && sb.st === 'sent' ? 'Дослать фото работы' : 'Сдать фото работы') +
       '<input type="file" id="subIn' + ux + '" data-st="subSt' + ux + '" data-lid="' + l.id + '" data-mark="' + sid + '" accept="image/*" multiple></label><span class="v-cap" id="subSt' + ux + '">Можно и устно — подойди к учителю.</span>';
     return h;
   }
-  /* домашка блоками (ТЗ 19, вариант А — D 13.10). Учитель пишет текстом, как привык, правил не помнит — страница
-     разбирает сама: строка — пункт чек-листа; «№ 214 а, в» — номер плашкой, буквы цветом предмета; короткая строка
-     с двоеточием на конце («В тетради:») — заголовок блока; «к среде, 14 октября» — срок в шапку.
-     Чего разобрать не вышло — остаётся обычным пунктом: сломать вид текстом нельзя */
-  var V_HICON = [[/тетрад|письменн/, '✍️'], [/распечат|листе|листок/, '📄'], [/учебник/, '📘'], [/мало|дополнит|желани|звёздоч|сложн/, '⭐'],
-    [/выучи|повтор|запомн|теори|правил/, '🧠'], [/устно/, '🗣'], [/телефон|ноутбук|онлайн|сайте/, '🕹']];
-  var V_WD_DAT = ['воскресенью', 'понедельнику', 'вторнику', 'среде', 'четвергу', 'пятнице', 'субботе'];
+  /* домашка (ТЗ 19 — D 13.10, вид — ТЗ 26, Атлас 06.11). Учитель пишет текстом, как привык, правил не помнит — страница
+     разбирает сама: строка — строка задания; короткая строка с двоеточием на конце («В тетради:») — заголовок;
+     «к среде, 14 октября» целой строкой — срок. Кружков и плашек нет (решение D 06.11): номера жирным, «(по желанию)»
+     серым, «Повторить: …» — подсказкой. Чего разобрать не вышло — остаётся обычной строкой: сломать вид текстом нельзя */
   var V_DATE = '\\d{1,2}(?:\\.\\d{1,2}|\\s+(?:января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря))';
   var V_DUE = new RegExp('^(?:к|до)\\s+(?:(?:понедельник[ау]?|вторник[ау]?|сред[аеуы]|четверг[ау]?|пятниц[аеуы]|суббот[аеуы]|воскресень[юея]|пн|вт|ср|чт|пт|сб|вс)(?:,?\\s+' + V_DATE + ')?|' +
-    V_DATE + '|следующ(?:ему|его)\\s+урок[ау])\\s*[.!]?$', 'i');   // срок — вся строка целиком: «До 5 задач из тренажёра» — пункт, а не срок
+    V_DATE + '|следующ(?:ему|его)\\s+урок[ау])\\s*[.!]?$', 'i');   // срок — вся строка целиком: «До 5 задач из тренажёра» — строка задания, а не срок
   function vHwParse(t) {
     var due = '', out = [];
     String(t || '').split('\n').forEach(function (ln) {
@@ -4932,98 +5163,132 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     });
     return { due: due, items: out };
   }
-  // пункт: номер — плашкой, буквы при нём — цветом. Буквы берём, только если за ними конец, знак или «№»: «№ 12 в тетради» — не буква «в»
-  var V_NO = /№\s*(\d+(?:\.\d+)*)((?:\s*\(?\s*[а-яё](?:\s*[,–-]\s*[а-яё])*\s*\)?)(?=$|\s*[,;.:)—–]|\s+-\s|\s*№))?/gi;
+  // номера жирным целиком: «№ 214 а, в», «№ 190, 192, 195», «№ 41–45», «№ 312 315». Буква и число через пробел — только если за ними конец или знак:
+  // «№ 12 в тетради» — не буква «в»
+  var V_NO = /№\s*\d+(?:\.\d+)*(?:\s*[,–-]\s*\d+(?:\.\d+)*|\s+\d+(?:\.\d+)*(?=\s*(?:$|[,;.:)—–]|\d))|(?:\s*[,–-]\s*|\s+)\(?[а-яё]\)?(?=\s*(?:$|[,;.:)—–]|-\s)))*/gi;
+  var V_OPT = /\((?:по желанию|по выбору|дополнительно|необязательно)\)/gi;
+  var V_TIP = /^(?:повтор\S*|вспомн\S*|запомн\S*|помни|подсказка)\s*:/i;
   function vHwItem(s) {
-    return esc(s).replace(V_NO, function (x, n, bu) { return '<b class="no">№ ' + n + '</b>' + (bu ? ' <b class="bu">' + bu.trim() + '</b>' : ''); })
+    return esc(s).replace(V_NO, '<b>$&</b>').replace(V_OPT, '<span class="v-opt">$&</span>')
       .replace(FMT_B, '$1<b>$2</b>').replace(FMT_U, '$1<u>$2</u>').replace(FMT_I, '$1<i>$2</i>');
   }
-  // «сделал» — отметка на этом устройстве, учителю не видна; помним последние 60 уроков
-  // у каждого ученика каждого журнала свои (телефон бывает общий у брата и сестры); «Выйти на этом устройстве» их стирает
-  function vHwKey(lid) { return J + '.' + meId + '.' + lid; }
-  function vHwOk(lid) { var o = lsGet('zh:hwok', {}); return (o && o[vHwKey(lid)]) || []; }
-  function vHwToggle(lid, k) {
-    var o = lsGet('zh:hwok', {}) || {}, id = vHwKey(lid), a = o[id] || [], i = a.indexOf(k);
-    if (i < 0) a.push(k); else a.splice(i, 1);
-    delete o[id]; if (a.length) o[id] = a;
-    var ks = Object.keys(o); ks.slice(0, Math.max(0, ks.length - 60)).forEach(function (x) { delete o[x]; });
-    lsSet('zh:hwok', o);
-    return i < 0;
-  }
-  function vDueWords(date) { var d = realDate(date); return d ? 'к ' + V_WD_DAT[d.getDay()] + ', ' + d.getDate() + ' ' + V_MON[d.getMonth()] : ''; }
-  // блок домашки: lid — у ученика (пункты отмечаются); '' — показ в окне дня у учителя, пункты не нажимаются.
-  // st — сдача, как кружок в календаре (ТЗ 22, E3): «sent» — кружки залиты, «ok» — с галочкой; тогда пункты не нажимаются
-  function vHwBox(subj, txt, due, lid, extra, st) {
-    var P = vHwParse(txt), ok = lid ? vHwOk(lid) : [], fix = st === 'sent' || st === 'ok';
-    var h = '<div class="v-hwb ' + vSj(subj).k + '"><div class="v-hwt">' + (P.due || due ? '📌 ' + esc(P.due || due) : 'Домашка') + '</div><div class="v-hwi">';
+  // блок домашки. due — строка срока сверху («Сдать к вт 10 ноября», показ в окне дня у учителя); false — срок стоит
+  // в шапке карточки урока, тут его нет: срок — один раз на экран
+  function vHwBox(subj, txt, due, extra) {
+    var P = vHwParse(txt), h = '<div class="v-hwb ' + vSj(subj).k + '">';
+    if (due !== false && (P.due || due)) h += '<div class="v-hwd">' + esc(P.due ? 'Сдать ' + P.due : due) + '</div>';
     P.items.forEach(function (x) {
-      if (x.h) { var ic = V_HICON.filter(function (r) { return r[0].test(x.h.toLowerCase()); })[0]; h += '<div class="v-hwh">' + (ic ? ic[1] + ' ' : '') + esc(x.h) + '</div>'; return; }
-      var on = ok.indexOf(x.k) >= 0;
-      if (fix) { h += '<div class="v-hi ' + (st === 'ok' ? 'on' : 'sent') + '"><i aria-hidden="true">' + (st === 'ok' ? '✓' : '') + '</i><span>' + vHwItem(x.t) + '</span></div>'; return; }
-      h += lid ? '<button class="v-hi' + (on ? ' on' : '') + '" data-va="hwok" data-id="' + lid + '" data-k="' + esc(x.k) + '" aria-pressed="' + on + '"><i aria-hidden="true">' + (on ? '✓' : '') + '</i><span>' + vHwItem(x.t) + '</span></button>'
-        : '<div class="v-hi"><i aria-hidden="true"></i><span>' + vHwItem(x.t) + '</span></div>';
+      if (x.h) { h += '<div class="v-hwh">' + esc(x.h) + '</div>'; return; }
+      h += V_TIP.test(x.k) ? '<div class="v-hi v-tip"><i aria-hidden="true">💡</i><span>' + vHwItem(x.t) + '</span></div>' : '<div class="v-hi">' + vHwItem(x.t) + '</div>';
     });
-    return h + (extra || '') + '</div></div>';
+    return h + (extra || '') + '</div>';
   }
-  // файлы домашки: одно фото — во всю ширину, несколько — плитками; остальные файлы — строками, как в материалах
+  // файлы домашки: картинка — строкой «Лист домашки, нажми, чтобы открыть ›» с миниатюрой 52×52 (ТЗ 26, шаг 2),
+  //, нажатие — на весь экран с увеличением; остальные файлы — строками «📄 Имя.pdf ›»
   function vHwFiles(F) {
     var im = F.filter(function (f) { return /^(png|jpe?g|webp)$/i.test(f.ext || ''); }), rest = F.filter(function (f) { return im.indexOf(f) < 0; });
-    return (im.length ? '<div class="v-files v-ph' + (im.length === 1 ? ' one' : '') + '">' + im.map(function (f, i) {
-      return '<button class="v-pht" data-act="openfile" data-id="' + f.id + '" aria-label="' + esc(vFileName(f, i + 1)) + '"><img data-ff="' + f.id + '" alt=""></button>';
-    }).join('') + '</div>' : '') + (rest.length ? vFilesHtml(rest) : '');
+    return im.map(function (f, i) {
+      var nm = fCap(f) ? vFileName(f, i + 1) : 'Лист домашки' + (im.length > 1 ? ' ' + (i + 1) : '');
+      return '<button class="v-lst" data-act="openfile" data-id="' + f.id + '"><img data-ff="' + f.id + '" alt=""><span class="t"><b>' + esc(nm) + '</b><span>нажми, чтобы открыть</span></span><span class="v-go">›</span></button>';
+    }).join('') + (rest.length ? vFilesHtml(rest) : '');
   }
-  // карточка урока — одна на все вкладки. Вопрос экрана: «Что сделать и как сдать?» → {h — экран, cta — кнопка у низа}
+  // открытый второй шанс на этом уроке (ТЗ 26): домашка или работа на уроке со сроком исправления. Открытый — раньше
+  // вышедшего, домашка — раньше работы на уроке. Есть — карточка про исправление, а не про домашку
+  // vDw — пришёл из полосы или списка долгов за этим долгом ('d' | 'u'): его и показываем, даже со сроком, который вышел.
+  // Иначе (из «Задано», «Уроков», «Оценок») экран долга — только у открытого шанса, и долг за работу на уроке не закрывает
+  // домашку, которую ещё надо сдать: её кнопка нужнее, а долг виден в оценках и на полосе
+  function vDebtOfBlock(B, hwTodo) {
+    if (!shansSrv) return null;
+    var C = [{ l: B.own, w: 'd' }].concat(B.les.map(function (l) { return { l: l, w: 'u' }; })), out = null;
+    C.forEach(function (c) {
+      c.m = S.mark[c.l.id + '.' + meId + '.' + c.w]; c.dbt = c.m ? debtOf(c.l, c.m) : null;
+      if (!c.dbt) return;
+      c.sid = c.w === 'd' ? c.l.id + '.' + meId : c.l.id + '.' + meId + '.u'; c.sub = S.sub[c.sid];
+      if (vDw) { if (!out && c.w === vDw && (c.w === 'd' || c.l.id === vLes)) out = c; return; }
+      if (c.dbt.left < 0 || (c.w === 'u' && hwTodo)) return;
+      if (!out) out = c;
+    });
+    if (vDw && !out) { vDw = ''; return vDebtOfBlock(B, hwTodo); }   // долг уже закрыт — обычная карточка
+    return out;
+  }
+  // карточка урока — одна на все вкладки. Вопрос экрана: «Что сделать и к какому дню?» → {h — экран, cta — кнопка у низа}.
+  // Вид — ТЗ 26, шаг 2 «Небо и коралл». Домашка: одна белая карточка урока (обложка 2:1 целиком, предмет и дата, тема,
+  // плашка срока) → задание (лист домашки строкой) → моя сдача → об уроке (заметка, файлы) → оценки → «Написать учителю».
+  // Долг: обложка во всю ширину, в углу оценка и срок (срок — только тут) → «Что исправить» поверх обложки → «Вспомнить урок»
+  // (та же карточка без экрана долга, vPlain) → «Было задано» → «Написать учителю»
   function vCardHtml(B) {
-    var own = B.own, sj = vSj(own.subj), many = B.les.length > 1, due = vDue(B.L, own), cv = null, tops = [], MF = [];
+    var own = B.own, sj = vSj(own.subj), many = B.les.length > 1, due = vDue(B.L, own), cv = null, tops = [], MF = [], DB = null;
     B.les.forEach(function (l) {
       cv = cv || coverOf(l.id); MF = MF.concat(filesOf(l.id));
       var t = plain(topicOf(l).t || '').trim().replace(/\.$/, ''); if (t && tops.indexOf(t) < 0) tops.push(t);
     });
     var h = '<button class="v-back" data-va="back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Назад</button>';
-    if (cv) h += '<button class="v-cover" data-act="openfile" data-id="' + cv.id + '" title="Открыть обложку урока" aria-label="Открыть обложку урока"><img data-ff="' + cv.id + '" alt=""></button>';
-    h += '<span class="v-cap"><span class="v-dot ' + sj.k + '"></span>' + esc(sj.short) + ', ' + esc(vDay(own.date)) + (many ? ', ' + vN(B.les.length, 'урок', 'урока', 'уроков') : '') + '</span>' +
-      (tops.length ? tops : ['Урок']).map(function (t, i) { return (i ? '<h2' : '<h1') + ' class="v-h1"' + (i ? '' : ' style="margin-top:4px"') + '>' + esc(t) + (i ? '</h2>' : '</h1>'); }).join('');
-    B.les.forEach(function (l) { if (l.nt) h += '<p class="v-note">' + fmt(l.nt) + '</p>'; });   // заметка учителя к уроку (D 16.10)
+    var cvBtn = cv ? '<button class="v-hcv" data-act="openfile" data-id="' + cv.id + '" title="Открыть обложку урока" aria-label="Открыть обложку урока"><img data-ff="' + cv.id + '" alt=""></button>' : '';
+    var titles = (tops.length ? tops : ['Урок']).map(function (t, i) { return (i ? '<h2' : '<h1') + ' class="v-h1">' + esc(t) + (i ? '</h2>' : '</h1>'); }).join('');
 
     var txt = vHwText(own), HF = hwFiles(own), web = autoUrl(own.ad), has = !!(txt || HF.length || web), webOnly = !!web && !txt && !HF.length;
-    var sub = S.sub[own.id + '.' + meId], m = S.mark[own.id + '.' + meId + '.d'], sm = splitMark(m), inf = markInfo(m && m.v), st = vStatus(own);
-    if (!has) h += '<div class="v-lbl">Домашка</div><div class="v-card v-pad"><span class="v-cap">К этому уроку ничего не задано.</span>';
-    else {
-      h += vHwBox(own.subj, txt, due ? vDueWords(due.date) : '', own.id,
-        (webOnly ? '<p class="v-hwp">Домашка на телефоне или ноутбуке. Балл сам появится в журнале; можно перерешать — считается лучший результат.</p>' : '') +
-        (HF.length ? vHwFiles(HF) : '') +
-        (web && !webOnly ? '<div class="v-links"><a class="v-out" href="' + esc(web) + '" target="_blank" rel="noopener">🕹 Открыть веб-домашку ↗</a></div>' : ''), vHwDot(own));
-      // слова учителя о домашке — здесь, один раз, и выше отметки: сначала что исправить, потом цифра (ТЗ 22, A7)
-      h += '<div class="v-card v-pad v-stc" style="margin-top:10px">' + (vSay(sm.c) ? '<p class="v-tc"><span class="v-cap">Учитель:</span> ' + esc(sm.c) + '</p>' : '') +
-        '<div class="v-status"><span class="v-cap">Статус:</span><span class="v-st ' + st.k + '">' + esc(st.full) + '</span></div>';
-      if (sub && (sub.ph || []).length) h += thumbsHtml(sub.ph, own.id + '.' + meId) +
-        (sub.ink && Object.keys(sub.ink).length ? '<span class="v-hist">✏️ На фото — разбор учителя. Нажми, чтобы открыть крупно, и перепиши исправления в тетрадь.</span>' : '');
-      // вопрос по домашке — тем же чатом, первая строка уже говорит, о какой (D 23.10: отдельного поля комментария нет)
-      h += '<button class="v-ask" data-va="ask" data-t="' + esc('Вопрос по домашке: ' + sj.short + ', ' + vDay(own.date) + '. ') + '">💬 Написать учителю про эту домашку</button>';
-    }
-    h += '</div>';
+    var sub = S.sub[own.id + '.' + meId], m = S.mark[own.id + '.' + meId + '.d'], sm = splitMark(m), inf = markInfo(m && m.v), st = vStatus(own, due), P = vHwParse(txt);
+    if (!vPlain) DB = vDebtOfBlock(B, has && !!st.todo);
+    var hwExtra = (webOnly ? '<p class="v-hwp">Домашка на телефоне или ноутбуке. Балл сам появится в журнале; можно перерешать — считается лучший результат.</p>' : '') +
+      (HF.length ? vHwFiles(HF) : '') + (web && !webOnly ? '<div class="v-links"><a class="v-out" href="' + esc(web) + '" target="_blank" rel="noopener">🕹 Открыть веб-домашку ↗</a></div>' : '');
+    var inkNote = function (s) { return s && s.ink && Object.keys(s.ink).length ? '<span class="v-hist">✏️ На фото — разбор учителя. Нажми, чтобы открыть крупно, и перепиши исправления в тетрадь.</span>' : ''; };
+    var ask = function (what) { return '<button class="v-askc" data-va="ask" data-t="' + esc('Вопрос по ' + what + ': ' + sj.short + ', ' + vDay((DB ? DB.l : own).date) + '. ') + '"><span>💬 Написать учителю про ' + (what === 'домашке' ? 'эту домашку' : 'эту работу') + '</span><span class="v-go">›</span></button>'; };
 
-    // материалы свёрнуты: ученик пришёл за домашкой, теория — по нажатию
-    var go = siteLink(B.les[0]), srez = B.les.map(function (l) { return autoUrl(l.au); }).filter(Boolean)[0], bits = [];
-    if (MF.length) bits.push(vN(MF.length, 'файл', 'файла', 'файлов'));
-    if (go) bits.push('урок на сайте');
-    if (srez) bits.push('срез');
-    if (bits.length) h += '<div class="v-card"><button class="v-row" data-va="mat" aria-expanded="' + vMat + '"><span class="v-body"><b>Материалы урока</b><span class="v-cap">' + bits.join(', ') + '</span></span><span class="v-go">' + (vMat ? '⌄' : '›') + '</span></button>' +
-      (vMat ? '<div class="v-pad" style="padding-top:0">' + (MF.length ? vFilesHtml(MF) : '') + (go || srez ? '<div class="v-links">' + (go ? '<a class="v-out" href="' + go + '">Урок на сайте ↗</a>' : '') +
-        (srez ? '<a class="v-out" href="' + esc(srez) + '" target="_blank" rel="noopener">🎯 Срез: ввести ответы ↗</a>' : '') + '</div>' : '') + '</div>' : '') + '</div>';
+    if (DB) {   // долг (вариант Д): срок пишется только в углу обложки, старый срок домашки не показываем
+      var dsm = splitMark(DB.m), dsent = DB.sub && DB.sub.st === 'sent', dnone = vNone(DB.m), late = DB.dbt.left < 0;
+      var tag = '<span class="v-tag' + (dsent && !late ? ' calm' : '') + '">' + (dsm.g ? '<span class="v-b2">' + esc(dsm.g) + '</span>' : '') +
+        esc(late ? 'срок прошёл' : dsent ? 'отправлено' : 'до ' + vDayS(DB.dbt.until)) + '</span>';
+      h += '<div class="v-hero ' + sj.k + (cv ? '' : ' none') + '">' + cvBtn + tag + '</div>';
+      var dph = DB.sub && (DB.sub.ph || []).length ? thumbsHtml(DB.sub.ph, DB.sid) + inkNote(DB.sub) : '';
+      var fixT = vSay(dsm.c) ? dsm.c : dnone ? (DB.w === 'd' ? 'Сделай домашку и сдай фото.' : 'Сдай работу с урока.') : 'Учитель не написал замечания — посмотри разбор на фото или спроси в чате.';
+      h += '<div class="v-over' + (cv ? '' : ' flat') + '"><div class="who">' + (late ? 'Срок прошёл — подойди к учителю' : dsent ? 'Отправлено, ждёт проверки' : dnone ? 'Что сдать' : 'Что исправить') + '</div><p class="v-fix">' + esc(fixT) + '</p>' + dph + '</div>';
+      if (dnone && DB.w === 'd' && has) h += vHwBox(own.subj, txt, false, hwExtra);   // работы не было — задание целиком
+      h += '<button class="v-rem" data-va="remind"><span class="ic" aria-hidden="true">📖</span><span class="t"><b>Вспомнить урок</b><span>' +
+        esc(sj.short + ', ' + (DB.w === 'd' ? 'домашка' : 'работа на уроке') + ' от ' + vDayL(DB.l.date) + (tops[0] ? ', «' + tops[0] + '»' : '')) + '</span></span><span class="v-go">›</span></button>';
+      if (!dnone && DB.w === 'd' && has) h += '<p class="v-was">Было задано: ' + esc(vHwLine(own)) + '</p>' + (HF.length || web ? '<div class="v-card v-pad v-hwx">' + hwExtra + '</div>' : '');
+      h += ask(DB.w === 'd' ? 'домашке' : 'работе');
+      var cta = '', canD = !late && (DB.w === 'd' ? isDebt(DB.m) : canU(DB.l, DB.m));
+      if (canD && sdachaOn) cta = '<span class="v-cap" id="subSt">До 12 фото. Можно и устно — подойди к учителю.</span><label class="v-btn">' + (dsent ? 'Дослать фото' : dnone ? (DB.w === 'd' ? 'Сдать фото домашки' : 'Сдать фото работы') : 'Сдать исправление') +
+        '<input type="file" id="subIn" data-lid="' + DB.l.id + '" data-mark="' + DB.l.id + '.' + meId + '.' + DB.w + '" accept="image/*" multiple></label>';
+      else if (canD) cta = '<span class="v-cap">Приём домашек через журнал пока выключен.</span>';
+      return { h: h, cta: cta };
+    }
+
+    // домашка (вариант 2): обложка и тема — одна карточка; плашка срока и статуса под темой (словарь шага 1)
+    var pill = '';
+    var dueTxt = P.due ? 'сдать ' + P.due : due ? 'сдать к ' + vDayL(due.date) : '';
+    if (has && !vPlain) pill = st.due ? vPillHtml(st, due, true, P.due ? vCap1(dueTxt) : '')
+      : vPillHtml(st, due, true, dueTxt && !/^проверено|^срок/.test(st.t) ? vCap1(dueTxt) + ' · ' + st.full : '');   // отправлено, вернули — и к какому дню   // «Вспомнить урок»: срок — в строке оценки, второй раз не пишем
+    h += '<div class="v-hc ' + sj.k + (cv ? '' : ' nocv') + '">' + cvBtn + '<div class="in"><span class="v-meta"><span class="v-dot ' + sj.k + '"></span>' +
+      esc(sj.short + ', урок ' + vDayL(own.date) + (many ? ', ' + vN(B.les.length, 'урок', 'урока', 'уроков') : '')) + '</span>' + titles + pill + '</div></div>';
+    if (!has) h += '<div class="v-card v-pad"><span class="v-cap">К этому уроку ничего не задано.</span></div>';
+    else {
+      // слова учителя о домашке — выше задания и отметки: сначала что исправить, потом цифра (ТЗ 22, A7)
+      if (vSay(sm.c)) h += '<div class="v-card v-pad v-say"><span class="v-cap">Учитель</span><p>' + esc(sm.c) + '</p></div>';
+      h += vHwBox(own.subj, txt, false, hwExtra);
+      if (sub && (sub.ph || []).length) h += '<div class="v-lbl">Моя сдача</div><div class="v-card v-pad">' + thumbsHtml(sub.ph, own.id + '.' + meId) + inkNote(sub) + '</div>';
+    }
+
+    // об уроке: заметка учителя (резюме урока) и файлы открытым списком; больше трёх файлов — под «Файлы урока»
+    var go = siteLink(B.les[0]), srez = B.les.map(function (l) { return autoUrl(l.au); }).filter(Boolean)[0];
+    var notes = B.les.map(function (l) { return l.nt ? '<p class="v-note">' + fmt(l.nt) + '</p>' : ''; }).join('');   // заметка учителя к уроку (D 16.10)
+    var fl = !MF.length ? '' : MF.length > 3 && !vMat ? '<button class="v-frow" data-va="mat" aria-expanded="false"><span aria-hidden="true">📄</span><span class="fz">Файлы урока: ' + MF.length + '</span><span class="v-go">›</span></button>' : vFilesHtml(MF);
+    if (notes || fl || go || srez) h += '<div class="v-lbl">Об уроке</div><div class="v-card v-pad">' + notes + fl + (go || srez ? '<div class="v-links">' + (go ? '<a class="v-out" href="' + go + '">Урок на сайте ↗</a>' : '') +
+      (srez ? '<a class="v-out" href="' + esc(srez) + '" target="_blank" rel="noopener">🎯 Срез: ввести ответы ↗</a>' : '') + '</div>' : '') + '</div>';
 
     var MK = B.les.map(function (l, i) { return vMarkHtml(l, 'u', many ? ', ' + (i + 1) + '-й урок' : ''); }).join('') + vMarkHtml(own, 'd', '');
     var graded = !!splitMark(m).g || B.les.some(function (l) { var mu = S.mark[l.id + '.' + meId + '.u'], su = splitMark(mu); return !!mu && (!!su.g || vSay(su.c)); });
     if (MK) h += '<div class="v-lbl">' + (graded ? 'Мои оценки за урок' : 'Работа на уроке') + '</div><div class="v-card">' + MK + '</div>';
+    if (has) h += ask('домашке');
+    if (vPlain) return { h: h, cta: '' };   // «Вспомнить урок» — посмотреть; сдают с экрана долга
 
     // сдавать можно, пока не проверено; 1 и 2 — «не сдано»: исправил и сдаёт заново. Хорошая оценка без фото (тетрадь на уроке) — сдавать нечего
-    var dbtD = isDebt(m), good = /^m[345]$/.test(inf.cls), can = has && (sub ? sub.st !== 'checked' || dbtD : !good) && !((noChance(m) && !(sub && sub.st === 'redo')) || (m && m.sc && !dbtD)), cta = '';
-    if (webOnly) cta = '<a class="v-btn" href="' + esc(web) + '" target="_blank" rel="noopener">Открыть домашку ↗</a>';
-    else if (can && sdachaOn) cta = '<span class="v-cap" id="subSt">Можно несколько страниц сразу, до 12 фото.</span><label class="v-btn">' + (sub && sub.st === 'sent' ? 'Дослать фото домашки' : sub || inf.red || (shansSrv && dbtD) ? 'Сдать домашку заново' : 'Сдать фото домашки') +
-      '<input type="file" id="subIn" data-lid="' + own.id + '" data-mark="' + own.id + '.' + meId + '.d" accept="image/*" multiple></label>' +
-      (shansSrv && dbtD ? '<span class="v-cap">Можно и устно — подойди к учителю.</span>' : '');
-    else if (can) cta = '<span class="v-cap">Приём домашек через журнал пока выключен.</span>';
-    return { h: h, cta: cta };
+    var cta2 = '', dbtD = isDebt(m), good = /^m[345]$/.test(inf.cls), can = has && (sub ? sub.st !== 'checked' || dbtD : !good) && !((noChance(m) && !(sub && sub.st === 'redo')) || (m && m.sc && !dbtD));
+    if (webOnly) cta2 = '<a class="v-btn" href="' + esc(web) + '" target="_blank" rel="noopener">Открыть домашку ↗</a>';
+    else if (can && sdachaOn) cta2 = '<span class="v-cap" id="subSt">Можно несколько страниц, до 12 фото.</span><label class="v-btn">' + (sub && sub.st === 'sent' ? 'Дослать фото домашки' : sub || inf.red ? 'Сдать домашку заново' : 'Сдать фото домашки') +
+      '<input type="file" id="subIn" data-lid="' + own.id + '" data-mark="' + own.id + '.' + meId + '.d" accept="image/*" multiple></label>';
+    else if (can) cta2 = '<span class="v-cap">Приём домашек через журнал пока выключен.</span>';
+    return { h: h, cta: cta2 };
   }
   /* ── «Оценки» (ТЗ 19, шаг 3). Вопрос экрана: «Какие у меня оценки и за что?» Над всем — четверти; плитки среднего
      цветом предмета (нажатие — в ленте один предмет); ниже лента своих оценок, новые сверху: обложка урока, оценка, тема,
@@ -5055,7 +5320,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var what = r.w === 'd' ? 'домашка' : inf.cls === 'mn' ? 'не было на уроке' : 'работа на уроке';
     var sub = S.sub[subOfCell(r.l.id + '.' + meId + '.' + r.w)], dbt = debtOf(r.l, r.m), tail = '';
     if (dbt && sub && sub.st === 'sent') tail = '<span class="v-hist wait">Сдано заново — ждёт проверки</span>';
-    else if (dbt) tail = '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок пересдачи вышел' : (shansSrv ? 'Второй шанс: ' : 'Пересдать: ') + vDebtLeft(dbt)) + '</span>';
+    else if (dbt) tail = '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок исправления прошёл' : 'Исправить до ' + esc(vDayS(dbt.until)) + ' · ' + vLeftW(dbt.left)) + '</span>';
     return '<button class="v-row v-gr" data-va="urok" data-id="' + r.l.id + '">' + (vF ? '' : '<span class="v-gc ' + sj.k + '">' + esc(sj.short.charAt(0)) + (cv ? '<img data-ff="' + cv.id + '" alt="">' : '') + '</span>') +   // выбран один предмет — буква не нужна (A3)
       vMkTile(r.g, inf.cls, r.m.pv && splitMark({ v: r.m.pv }).g) +
       '<span class="v-body"><b>' + esc(tp) + '</b><span class="v-cap">' + esc(what + ', ' + vDay(r.l.date)) + (r.m.pv && r.m.gt ? ', исправлено ' + ddmm(new Date(r.m.gt)) : '') + '</span>' +
@@ -5132,7 +5397,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         var k = dkey(x.l.date), b = seen[x.own.id];
         g.has[k] = 1;
         if (b) { b.les.push(x.l); return; }
-        b = seen[x.own.id] = { own: x.own, les: [x.l], k: k };
+        b = seen[x.own.id] = { own: x.own, les: [x.l], k: k, L: g.L };
         (by[k] = by[k] || []).push(b); all.push(b);
       });
     });
@@ -5165,14 +5430,14 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   // цвета предмета, сегодня — слово «сегодня», каникулы бледные
   // кружок дня (ТЗ 22, A6) — домашка, заданная на этом уроке; у будущих дней и уроков без домашки кружка нет
   var V_HWD = { no: 'домашка не сдана', sent: 'домашка сдана', ok: 'домашка проверена' };
-  function vHwDot(own) {
+  function vHwDot(own, L) {
     if (!vHwHas(own)) return '';
-    var st = vStatus(own);   // «срок вышел» и «не сдано» без шанса — не сдана; «проверено: 2» — проверена
+    var st = vStatus(own, L ? vDue(L, own) : undefined);   // «срок вышел» и «не сдано» без шанса — не сдана; «проверено: 2» — проверена
     return st.k === 'wait' ? 'sent' : st.k === 'ok' || /^проверено/.test(st.t) ? 'ok' : 'no';
   }
   function vCellHtml(x, other) {
     var subs = vSubsOf(x), s0 = subs[0], cls = 'v-dc';
-    var hd = x.off || other || x.fut ? [] : x.B.map(function (b) { return vHwDot(b.own); }).filter(Boolean).slice(0, 4);
+    var hd = x.off || other || x.fut ? [] : x.B.map(function (b) { return vHwDot(b.own, b.L); }).filter(Boolean).slice(0, 4);
     if (other) cls += ' oth';
     else if (x.off) cls += ' off';
     else if (s0) cls += ' ' + s0.k + (x.B.length && !x.fut ? ' was' : ' bud');   // сегодня только «по расписанию» — урока ещё не было
@@ -5318,9 +5583,10 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         (t[0] === 'chat' && document.querySelector('#dock .vopros.est-otvet') ? '<span class="v-badge" aria-label="новый ответ учителя">1</span>' : '') + '<svg viewBox="0 0 24 24" aria-hidden="true">' + t[2] + '</svg>' + t[1] + '</button>';
     }).join(''));
     if (B) { var c = vCardHtml(B); cta = c.cta; if (vPut($('vU'), c.h)) { fillFileThumbs($('vU')); fillThumbs($('vU')); } }
-    else if (vTab === 'zadano') vPut($('vZb'), vZadHtml(rows));
+    else if (vTab === 'zadano') { if (vPut($('vZb'), vZadHtml(rows))) fillFileThumbs($('vZb')); }   // обложки уроков в карточках
     else if (vTab === 'ocenki') { if (vPut($('vX'), vOcHtml())) vLazy($('vX')); }
     else vUrRender();
+    $('vZ').classList.toggle('sc', vScList && shansSrv);   // список долгов — без шапки «Задано»
     $('vU').classList.toggle('cta', !!cta);
     $('vCta').hidden = !cta; vPut($('vCta'), cta);
   }
@@ -5339,13 +5605,13 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     markTheme();
   }
   var vFromOld = false;   // карточку открыли из таблицы («Таблицей») — закрыли, и снова таблица
-  function vClose() { if (!vLes) return; vLes = ''; if (vFromOld) { vFromOld = false; vidOld = true; render(); window.scrollTo(0, vY); return; } if (vidOn()) { vRender(); window.scrollTo(0, vY); } }
+  function vClose() { if (!vLes) return; vLes = ''; vPlain = false; vDw = ''; if (vFromOld) { vFromOld = false; vidOld = true; render(); window.scrollTo(0, vY); return; } if (vidOn()) { vRender(); window.scrollTo(0, vY); } }
   // карточка урока и любое окно поверх (настройки, файл, фото, чат) — шаги в истории браузера: «Назад» на телефоне
   // закрывает их, а не уводит со страницы (D 12.10: с телефона ученика «Назад» выбрасывало из журнала)
   // вкладка и прежняя таблица — тоже шаги (D 23.10): «Назад» телефона с «Оценок» и «Уроков» ведёт в «Задано», из таблицы —
   // в новый вид. Шаг хранит экран целиком, по нему экран и восстанавливается (vApply); d — сколько своих шагов от входа
   function vStep(x) {
-    var s = { vtab: vTab, vles: vLes, vold: vidOld || vFromOld ? 1 : 0, d: ((history.state || {}).d || 0) + 1 };
+    var s = { vtab: vTab, vles: vLes, vold: vidOld || vFromOld ? 1 : 0, vpl: vPlain ? 1 : 0, vsc: vScList ? 1 : 0, vdw: vDw, d: ((history.state || {}).d || 0) + 1 };
     for (var k in x) s[k] = x[k];
     return s;
   }
@@ -5361,8 +5627,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (document.body.classList.contains('vq-otkryto') && q) q.click();
     }
     if (les !== vLes) vMat = false;
-    vTab = st.vtab || 'zadano'; vLes = les; vFromOld = !!st.vold && !!les; vidOld = old;
-    render(); window.scrollTo(0, les ? 0 : wasLes ? vY : 0);   // из карточки — туда, где был в списке или таблице
+    var wasSc = vScList;
+    vTab = st.vtab || 'zadano'; vLes = les; vFromOld = !!st.vold && !!les; vidOld = old; vPlain = !!st.vpl && !!les; vScList = !!st.vsc; vDw = les && st.vdw || '';
+    render(); window.scrollTo(0, les ? 0 : wasLes ? vY : wasSc && !vScList ? vYz : 0);   // из карточки — туда, где был в списке или таблице; из списка долгов — в «Задано» на место
   }
   var vOv = false, vSkip = 0;
   function vOvOpen() { return !!($('dlg').firstChild || document.querySelector('.view') || document.body.classList.contains('vq-otkryto')); }
@@ -5401,6 +5668,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (b.dataset.id === 'chat') { vStat('chat'); var q = document.querySelector('#dock .vopros'); if (q) q.click(); else alert('Чат не загрузился. Обнови страницу.'); return; }   // чат — то же окно, что за знаком «?»
       if (vSkip) { setTimeout(function () { vAct(b); }, 80); return; }   // шаг закрытого окна ещё снимается — счёт шагов после него
       var to = b.dataset.id, st = history.state || {};
+      if (to === vTab && vScList) { if (st.vsc) history.back(); else { vScList = false; vRender(); } return; }   // «Задано» из списка долгов — домой
       if (to === vTab) { window.scrollTo(0, 0); return; }
       vStat(to);
       if (to === 'zadano' && st.d > 0) { history.go(-st.d); return; }   // домой — все свои шаги разом, «Задано» покажет popstate
@@ -5410,12 +5678,14 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       vRender(); window.scrollTo(0, 0);
     }
     else if (a === 'urok') {
-      vY = window.pageYOffset; vLes = b.dataset.id; vMat = false; vStat('card');
+      vY = window.pageYOffset; vLes = b.dataset.id; vMat = false; vPlain = false; vDw = b.dataset.w || ''; vStat('card');
       var B0 = vBlock(vLes); if (B0) vSeenMark(B0.own);   // открыл — «Новое» ушло
       vPush(); vRender(); window.scrollTo(0, 0);
     }
     else if (a === 'back') { if (history.state && history.state.vles) history.back(); else vClose(); }
-    else if (a === 'scmore') { vScAll = true; vRender(); }
+    else if (a === 'remind') { vPlain = true; vMat = false; vPush(); vRender(); window.scrollTo(0, 0); }   // «Вспомнить урок» из долга
+    else if (a === 'sclist') { vYz = window.pageYOffset; vScList = true; vPush(); vRender(); window.scrollTo(0, 0); }   // полоса долгов → список
+    else if (a === 'scback') { if (history.state && history.state.vsc) history.back(); else { vScList = false; vRender(); window.scrollTo(0, vYz); } }
     else if (a === 'ask') {   // открыть чат и подставить, о какой домашке; ученик не вошёл в чат — окно входа, текст не нужен
       var qa = document.querySelector('#dock .vopros'), pre = b.dataset.t;
       if (!qa) { alert('Чат не загрузился. Обнови страницу.'); return; }
@@ -5431,12 +5701,6 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       })(0);
     }
     else if (a === 'mat') { vMat = !vMat; vRender(); }
-    else if (a === 'hwok') {   // отметку ставим прямо в строке: перерисовка карточки заново грузила бы её картинки
-      var on = vHwToggle(b.dataset.id, b.dataset.k);
-      b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); b.firstChild.textContent = on ? '✓' : '';
-      var B1 = vLes ? vBlock(vLes) : null;
-      if (B1) $('vU')._h = vCardHtml(B1).h;   // вид карточки уже такой — следующая сверка её не перерисует
-    }
     else if (a === 'uday') { vSel = vMid(new Date(b.dataset.id + 'T00:00')); vRender(); }
     else if (a === 'ucal') vCalGo(+b.dataset.id);
     else if (a === 'vq') { vQ = +b.dataset.id; vRender(); }
