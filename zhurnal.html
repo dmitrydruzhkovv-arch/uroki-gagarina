@@ -793,7 +793,8 @@ html.vid[data-theme="night"] body{ background:#000; }
 [data-theme="night"] #vid .v-back{ box-shadow:0 0 0 1px var(--v-line), 0 8px 20px -8px rgba(0,0,0,.9); }
 #vid .v-back svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
 #vid .v-cover{ display:block; width:100%; aspect-ratio:2/1; border-radius:16px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--v-line); margin-bottom:14px; }
-#vid .v-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
+#vid .v-cover img{ width:100%; height:100%; object-fit:contain; display:block; }
+#vid .v-cover{ background:var(--t, var(--v-calm)); }
 #vid .v-tasks{ white-space:pre-line; line-height:1.4; overflow-wrap:anywhere; }
 #vid .v-files{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
 #vid .v-file{ display:inline-flex; align-items:center; gap:8px; max-width:100%; padding:6px 12px 6px 6px; border-radius:12px; box-shadow:inset 0 0 0 1px var(--v-line); font-size:var(--t3); font-weight:700; color:var(--v-ink); }
@@ -885,8 +886,10 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-gc{ position:relative; flex:none; width:44px; height:44px; border-radius:10px; overflow:hidden; background:var(--g); color:var(--on); display:grid; place-items:center; font-size:var(--t2); font-weight:800; }
 #vid .v-gc img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 #vid .v-gc img:not([src]), #vid .v-gc i{ display:none; }
-#vid .v-mm{ flex:none; display:inline-flex; align-items:center; gap:5px; }
-#vid .v-pv{ font-size:var(--t2); font-weight:800; color:var(--v-sub); text-decoration-thickness:2px; }
+/* прежняя оценка — меткой в левом верхнем углу плитки: оценки стоят ровно столбиком, ничего не сдвигает (D 07.11) */
+#vid .v-mm{ position:relative; flex:none; display:inline-flex; }
+#vid .v-pv{ position:absolute; z-index:1; top:-7px; left:-7px; min-width:18px; max-width:30px; height:18px; padding:0 4px; border-radius:5px; display:block; text-align:center;
+  overflow:hidden; white-space:nowrap; text-overflow:ellipsis; line-height:18px; font-size:11px; font-weight:800; line-height:1; color:var(--v-sub); background:var(--v-card); box-shadow:0 0 0 1px var(--v-line); text-decoration:line-through; text-decoration-thickness:1.5px; }
 #vid .v-gr .v-body > b{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; }
 #vid .v-gr .v-hist{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; margin-top:2px; }
 #vid .v-hist.wait{ color:var(--v-wait); font-weight:700; }
@@ -938,14 +941,15 @@ html.vid[data-theme="night"] body{ background:#000; }
 #vid .v-fc{ display:block; width:100%; text-align:left; border-radius:16px; overflow:hidden; color:inherit; background:var(--v-card); box-shadow:inset 0 0 0 1px var(--v-line); }
 #vid .v-fcv{ display:block; aspect-ratio:2/1; background:linear-gradient(100deg, var(--v-line) 30%, var(--v-card) 50%, var(--v-line) 70%) 0 0/220% 100%; animation:v-shim 1.4s linear infinite; }
 #vid .v-fcv:has(img[src]), #vid .v-fcv:has(i){ animation:none; }
-#vid .v-fcv img{ width:100%; height:100%; object-fit:cover; display:block; }
+#vid .v-fcv:has(img[src]){ background:var(--t, var(--v-calm)); }   /* обложка не 2:1 — поля цветом предмета, а не застывшей «загрузкой» */
+#vid .v-fcv img{ width:100%; height:100%; object-fit:contain; display:block; }
 #vid .v-fcv i{ display:none; }
 #vid .v-fb{ display:block; padding:12px 14px 14px; }
 #vid .v-fb .v-cap .v-dot{ display:inline-block; margin:0 6px 1px 0; vertical-align:middle; }
 #vid .v-fb b{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; margin-top:2px; font-weight:700; overflow-wrap:anywhere; }
 @media (prefers-reduced-motion:reduce){ #vid .v-fcv{ animation:none; } }
 /* ── ТЗ 26, шаг 0 — азбука (Атлас 06.11): у цвета и формы одна работа. Фон ничего не значит (нейтральный, не сиреневый);
-   карточка — белая с тонкой рамкой, без цветной тени, радиус 14 (D 06.11: вариант 2 «чуть острее»); кнопка 2 — белая с рамкой, радиус 12, от 44 px;
+   карточка — белая с тонкой рамкой, без цветной тени, радиус 10 (D 07.11: вариант 3 «острее»); кнопка 2 — белая с рамкой, радиус 12, от 44 px;
    ссылка — текст без рамки; предмет — точка; статус — цвет текста: красный горит, зелёный проверено, серый ждёт ── */
 #vid{ --v-bg:#f5f5f7; --v-card:#fff; --v-line:#e7e7ec; --v-wait:var(--v-sub); --v-link:#4338ca; }
 [data-theme="night"] #vid{ --v-bg:var(--h-bg); --v-card:var(--h-panel); --v-line:var(--h-line); --v-wait:var(--v-sub); --v-link:#c4b5fd; }
@@ -953,7 +957,7 @@ html.vid body{ background:#e9e9ee; }
 html.vid[data-theme="night"] body{ background:#000; }
 html:not([data-theme="night"]) #vid .v-head{ background:var(--v-bg); }
 #vid .v-head .gif-wall::after{ background:linear-gradient(90deg, var(--v-bg) 0%, color-mix(in srgb, var(--v-bg) 78%, transparent) 34%, color-mix(in srgb, var(--v-bg) 26%, transparent) 66%, color-mix(in srgb, var(--v-bg) 14%, transparent) 100%); }
-#vid .v-card, #vid .v-tiles .v-row, #vid .v-fc{ border-radius:14px; }
+#vid .v-card, #vid .v-tiles .v-row, #vid .v-fc{ border-radius:10px; }
 #vid .v-tiles .v-row.fill{ box-shadow:none; }
 #vid .v-out{ min-height:44px; }
 #vid .v-st.due{ color:var(--v-sub); }
@@ -980,14 +984,14 @@ html:not([data-theme="night"]) #vid .v-head{ background:var(--v-bg); }
 #vid .v-was{ margin:14px 2px 0; color:var(--v-sub); overflow-wrap:anywhere; }
 /* домашка (ТЗ 26): без кружков и плашек — строки текстом, номера жирным, «по желанию» серым, «Повторить: …» подсказкой.
    Без #vid: тот же блок — в окне дня у учителя, «так увидит ученик» */
-.v-hwb{ padding:12px 16px 14px; border-radius:14px; }
+.v-hwb{ padding:12px 16px 14px; border-radius:10px; }
 .v-hwd{ font-weight:800; margin-bottom:4px; }
 .v-hwb .v-hwh{ margin:12px 0 0; }
 .v-hwb > .v-hwh:first-child, .v-hwd + .v-hwh{ margin-top:4px; }
 .v-hi{ display:block; margin-top:3px; padding:0; border-radius:0; background:none; }
 .v-hi b{ font-weight:800; }
 .v-hi .v-opt{ color:var(--h-soft); }
-.v-hi.v-tip{ display:flex; gap:8px; margin-top:12px; padding:10px 12px; border-radius:12px; font-size:14px; color:var(--h-soft); background:color-mix(in srgb, var(--h-soft) 9%, transparent); }
+.v-hi.v-tip{ display:flex; gap:8px; margin-top:12px; padding:10px 12px; border-radius:8px; font-size:14px; color:var(--h-soft); background:color-mix(in srgb, var(--h-soft) 9%, transparent); }
 .v-hi.v-tip i{ flex:none; width:auto; height:auto; border-radius:0; box-shadow:none; background:none; font-size:16px; line-height:1.3; color:inherit; }
 /* ── ТЗ 26, шаг 2 — «Небо и коралл» (выбор D 06–07.11 по макетам Атласа: домашка 2, «Задано» В, долг Д; заменяет
    «Ночную шапку» и углы «чуть острее»). Роли — шага 0: коралл — только главное действие и «горит» (завтра, сегодня,
@@ -1003,13 +1007,13 @@ html.vid:not([data-theme="night"]) body{ background:#E3EDFB; }
 html:not([data-theme="night"]) #vid .k-algebra{ --g:linear-gradient(135deg,#F2457F 0%,#C8125C 100%); --s:#D81B65; --on:#fff; --t:#FFE4EE; --d:#9E0E46; --glow:rgba(216,27,101,.45); }
 html:not([data-theme="night"]) #vid .k-geometriya{ --g:linear-gradient(135deg,#6C6CFF 0%,#3F35D8 100%); --s:#4A3FE0; --on:#fff; --t:#E9E8FF; --d:#2E25A8; --glow:rgba(74,63,224,.45); }
 html:not([data-theme="night"]) #vid .k-veroyatnost{ --g:linear-gradient(135deg,#21B39B 0%,#0B8573 100%); --s:#0E8A78; --on:#fff; --t:#DDF5F0; --d:#0A6B5C; --glow:rgba(14,138,120,.45); }
-/* общее: карточка белая без рамки, всплывает тенью; подписи разделов — капс 12.5; радиусы: карточка 20, кнопка 16, кнопка 2 и поле 12, метка 10 */
-#vid .v-card, #vid .v-tiles .v-row, #vid .v-fc, #vid .v-cover, #vid .v-tabs{ border-radius:20px; }
+/* общее: карточка белая без рамки, всплывает тенью; подписи разделов — капс 12.5; радиусы (D 07.11, вариант 3): карточка и кнопка 10, кнопка 2 и поле 8, метка 5, нижняя панель 14 */
+#vid .v-card, #vid .v-tiles .v-row, #vid .v-fc, #vid .v-cover, #vid .v-tabs{ border-radius:10px; }
 html:not([data-theme="night"]) #vid .v-card, html:not([data-theme="night"]) #vid .v-tiles .v-row, html:not([data-theme="night"]) #vid .v-fc{ box-shadow:var(--v-sh); }
-#vid .v-pht, #vid .v-out, #vid .v-file, #vid .v-m, #vid .v-seg, #vid .v-arr, #vid .v-tdy, #vid .v-av, #vid .v-gc, #vid .v-dc, .v-hi.v-tip{ border-radius:12px; }
-#vid .v-btnu, #vid .v-cta .v-btn{ border-radius:16px; }
-#vid .v-seg button{ border-radius:9px; }
-#vid .v-tiles .fill .v-st, #vid .v-new{ border-radius:8px; }
+#vid .v-pht, #vid .v-out, #vid .v-file, #vid .v-m, #vid .v-seg, #vid .v-arr, #vid .v-tdy, #vid .v-av, #vid .v-gc, #vid .v-dc, .v-hi.v-tip{ border-radius:8px; }
+#vid .v-btnu, #vid .v-cta .v-btn{ border-radius:10px; }
+#vid .v-seg button{ border-radius:5px; }
+#vid .v-tiles .fill .v-st, #vid .v-new{ border-radius:5px; }
 #vid .v-lbl{ font-size:12.5px; letter-spacing:.06em; margin:18px 2px 8px; }
 html:not([data-theme="night"]) #vid .v-lbl{ color:#4E6487; }
 #vid .v-dot{ width:8px; height:8px; }
@@ -1026,25 +1030,26 @@ html:not([data-theme="night"]) #vid .v-gear{ background:rgba(255,255,255,.85); c
 #vid .v-date{ font-size:15px; color:var(--v-sub); margin:2px 4px 0; }
 #vid #vZ.sc .v-head{ display:none; }
 /* второй шанс — одна коралловая полоса: сколько и какой ближайший; нажал — список (один долг — сразу он) */
-#vid .v-sum{ display:flex; align-items:center; gap:12px; width:100%; margin-top:14px; padding:12px 14px; border-radius:20px; color:#fff; text-align:left;
+#vid .v-sum{ display:flex; align-items:center; gap:12px; width:100%; margin-top:14px; padding:12px 14px; border-radius:10px; color:#fff; text-align:left;
   background:linear-gradient(135deg,#FF6A80,#F23D5C); box-shadow:0 12px 26px -10px rgba(255,68,102,.7); }
-#vid .v-sum .big{ flex:none; width:44px; height:44px; border-radius:14px; display:grid; place-items:center; font-size:26px; font-weight:800; line-height:1; background:rgba(255,255,255,.22); }
+#vid .v-sum .big{ flex:none; width:44px; height:44px; border-radius:8px; display:grid; place-items:center; font-size:26px; font-weight:800; line-height:1; background:rgba(255,255,255,.22); }
 #vid .v-sum .t{ flex:1; min-width:0; } #vid .v-sum .t b{ display:block; font-size:16.5px; font-weight:700; }
 #vid .v-sum .t span{ display:block; font-size:13.5px; opacity:.92; margin-top:1px; }
 #vid .v-sum .v-go{ color:#fff; opacity:.9; }
 #vid .v-sum.calm{ color:var(--v-ink); background:var(--v-card); box-shadow:var(--v-sh); }
 #vid .v-sum.calm .big{ background:var(--v-calm); color:var(--v-calmt); } #vid .v-sum.calm .t span{ color:var(--v-sub); opacity:1; } #vid .v-sum.calm .v-go{ color:var(--v-dim); }
-#vid .v-b2{ flex:none; display:inline-grid; place-items:center; min-width:26px; height:26px; padding:0 4px; border-radius:8px; font-size:14px; font-weight:800; color:#fff;
+#vid .v-b2{ flex:none; display:inline-grid; place-items:center; min-width:26px; height:26px; padding:0 4px; border-radius:5px; font-size:14px; font-weight:800; color:#fff;
   background:linear-gradient(135deg,#FF6A80,#F23D5C); box-shadow:0 6px 14px -6px rgba(242,61,92,.7); }
 #vid .v-scl .v-row{ align-items:center; padding:12px 14px; }
-#vid .v-scl .v-b2{ min-width:34px; height:34px; border-radius:10px; font-size:17px; }
+#vid .v-scl .v-b2{ min-width:34px; height:34px; border-radius:8px; font-size:17px; }
 #vid .v-scl .v-body b{ display:block; font-size:16.5px; } #vid .v-scl .v-body .v-cap{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 #vid .v-scl .v-st{ font-size:14px; } #vid .v-scl .v-st.due{ color:var(--v-sub); font-weight:600; }
 #vid .v-sch{ margin:4px 4px 2px; font-size:28px; }
 /* «К следующим урокам»: карточка с обложкой урока; сданное — бледной карточкой без обложки ниже */
 #vid .v-zl{ display:grid; gap:12px; }
-#vid .v-zc{ display:block; width:100%; padding:0; overflow:hidden; text-align:left; color:inherit; background:var(--v-card); border-radius:20px; box-shadow:var(--v-sh); }
-#vid .v-zc .zimg{ display:block; width:100%; height:112px; object-fit:cover; object-position:left top; background:var(--t, var(--v-calm)); }
+#vid .v-zc{ display:block; width:100%; padding:0; overflow:hidden; text-align:left; color:inherit; background:var(--v-card); border-radius:10px; box-shadow:var(--v-sh); }
+/* обложка — везде 2:1 и целиком (D 07.11): у Хирона все 1500×750; чужая картинка другой формы не режется, а встаёт целиком на фон */
+#vid .v-zc .zimg{ display:block; width:100%; height:auto; aspect-ratio:2/1; object-fit:contain; background:var(--t, var(--v-calm)); }
 #vid .v-zc .zin{ display:flex; align-items:center; gap:10px; padding:10px 14px 12px; }
 #vid .v-zc .zt{ flex:1; min-width:0; }
 #vid .v-zc .zt b{ display:flex; align-items:center; gap:7px; font-size:16.5px; font-weight:700; }
@@ -1054,16 +1059,16 @@ html:not([data-theme="night"]) #vid .v-gear{ background:rgba(255,255,255,.85); c
 #vid .v-zc.done{ background:rgba(255,255,255,.65); box-shadow:inset 0 0 0 1px #D9E4F5; }
 [data-theme="night"] #vid .v-zc.done{ background:transparent; box-shadow:inset 0 0 0 1px var(--v-line); }
 #vid .v-zc.done .zt b{ color:var(--v-calmt); }
-#vid .v-pl{ flex:none; font-size:13px; font-weight:700; padding:4px 10px; border-radius:10px; white-space:nowrap; background:var(--v-hotbg); color:var(--v-hot); }
+#vid .v-pl{ flex:none; font-size:13px; font-weight:700; padding:4px 10px; border-radius:5px; white-space:nowrap; background:var(--v-hotbg); color:var(--v-hot); }
 #vid .v-pl.calm{ background:var(--v-calm); color:var(--v-calmt); }
 #vid .v-pl.ok{ background:color-mix(in srgb, var(--v-ok) 12%, transparent); color:var(--v-ok); }
 /* карточка урока: «‹ Назад» строкой; обложка и тема — одна белая карточка, под темой плашка срока */
 #vid .v-back{ min-height:52px; font-size:16px; font-weight:600; margin-bottom:6px; }
 html:not([data-theme="night"]) #vid .v-back{ color:var(--v-link); background:rgba(214,231,255,.86); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:none; }
 #vid .v-back svg{ width:20px; height:20px; }
-#vid .v-hc{ background:var(--v-card); border-radius:20px; overflow:hidden; box-shadow:var(--v-sh); }
+#vid .v-hc{ background:var(--v-card); border-radius:10px; overflow:hidden; box-shadow:var(--v-sh); }
 #vid .v-hcv{ display:block; width:100%; aspect-ratio:2/1; padding:0; background:var(--t, var(--v-calm)); }
-#vid .v-hcv img{ width:100%; height:100%; object-fit:cover; display:block; }
+#vid .v-hcv img{ width:100%; height:100%; object-fit:contain; display:block; }
 #vid .v-hc .in{ padding:12px 16px 14px; }
 #vid .v-meta{ display:flex; align-items:center; gap:6px; font-size:13.5px; font-weight:500; color:var(--v-sub); }
 #vid .v-meta .v-dot{ margin:0; }
@@ -1073,34 +1078,34 @@ html:not([data-theme="night"]) #vid .v-back{ color:var(--v-link); background:rgb
 #vid .v-hc .v-pl{ display:inline-flex; margin-top:10px; font-size:15px; font-weight:650; padding:6px 10px; white-space:normal; }
 #vid .v-hc + .v-card, #vid .v-hc + .v-hwb{ margin-top:12px; }
 /* задание: белая карточка; номера жирным, «по желанию» серым, подсказка 💡 серым; лист домашки — строкой с миниатюрой */
-#vid .v-hwb{ margin-top:12px; background:var(--v-card); border-radius:20px; padding:14px 16px; box-shadow:var(--v-sh); }
+#vid .v-hwb{ margin-top:12px; background:var(--v-card); border-radius:10px; padding:14px 16px; box-shadow:var(--v-sh); }
 #vid .v-hwb .v-hwh{ font-size:12.5px; font-weight:700; letter-spacing:.06em; color:var(--v-sub); margin:0 0 6px; }
 #vid .v-hwb .v-hi:not(.v-tip){ font-size:17px; line-height:1.25; padding:4px 0; margin:0; }
 #vid .v-hwb .v-hi b{ font-weight:750; }
 #vid .v-hwb .v-opt{ color:var(--v-sub); font-size:15px; }
 #vid .v-hwb .v-hi.v-tip{ margin-top:8px; padding:0; background:none; font-size:14.5px; line-height:1.3; color:var(--v-sub); }
 #vid .v-lst{ display:flex; align-items:center; gap:12px; width:100%; margin-top:10px; text-align:left; color:inherit; }
-#vid .v-lst img{ flex:none; width:52px; height:52px; border-radius:10px; object-fit:cover; object-position:top; background:var(--v-calm); box-shadow:inset 0 0 0 1px rgba(0,0,0,.08); }
+#vid .v-lst img{ flex:none; width:52px; height:52px; border-radius:8px; object-fit:cover; object-position:top; background:var(--v-calm); box-shadow:inset 0 0 0 1px rgba(0,0,0,.08); }
 #vid .v-lst .t{ flex:1; min-width:0; line-height:1.25; } #vid .v-lst .t b{ display:block; font-size:16px; font-weight:650; } #vid .v-lst .t span{ font-size:13.5px; color:var(--v-sub); }
 #vid .v-frow{ color:var(--v-link); }
 #vid .v-frow .v-go{ color:var(--v-dim); }
 #vid .v-note{ font-size:15.5px; line-height:1.32; }
 /* «Написать учителю» и «Вспомнить урок» — белые строки-карточки во всю ширину */
-#vid .v-askc, #vid .v-rem{ display:flex; align-items:center; gap:12px; width:100%; margin-top:12px; padding:13px 14px; text-align:left; background:var(--v-card); border-radius:20px; box-shadow:var(--v-sh); }
+#vid .v-askc, #vid .v-rem{ display:flex; align-items:center; gap:12px; width:100%; margin-top:12px; padding:13px 14px; text-align:left; background:var(--v-card); border-radius:10px; box-shadow:var(--v-sh); }
 #vid .v-askc{ font-size:16px; font-weight:650; color:var(--v-link); }
 #vid .v-askc span:first-child{ flex:1; }
 #vid .v-rem{ color:inherit; }
-#vid .v-rem .ic{ flex:none; width:40px; height:40px; border-radius:12px; display:grid; place-items:center; font-size:20px; background:var(--v-ic); }
+#vid .v-rem .ic{ flex:none; width:40px; height:40px; border-radius:8px; display:grid; place-items:center; font-size:20px; background:var(--v-ic); }
 #vid .v-rem .t{ flex:1; min-width:0; } #vid .v-rem .t b{ display:block; font-size:16.5px; } #vid .v-rem .t span{ display:block; font-size:13.5px; line-height:1.3; color:var(--v-sub); margin-top:2px; }
 /* долг: обложка во всю ширину, в углу — оценка и срок; «Что исправить» наезжает на обложку снизу */
 #vid .v-hero{ position:relative; margin:-6px -16px 0; }
 #vid .v-hero .v-hcv{ aspect-ratio:2/1; }
 #vid .v-hero.none{ min-height:48px; }
-#vid .v-tag{ position:absolute; right:14px; top:10px; display:inline-flex; align-items:center; gap:8px; padding:6px 12px 6px 6px; border-radius:12px; font-size:15px; font-weight:700;
+#vid .v-tag{ position:absolute; right:14px; top:10px; display:inline-flex; align-items:center; gap:8px; padding:6px 12px 6px 6px; border-radius:5px; font-size:15px; font-weight:700;
   background:#fff; color:#F23D5C; box-shadow:0 8px 18px -8px rgba(242,61,92,.6); }
 #vid .v-tag.calm{ color:#3B4A66; box-shadow:0 8px 18px -8px rgba(30,80,170,.4); }
 #vid .v-tag.calm .v-b2{ background:#9AA7BD; box-shadow:none; }
-#vid .v-over{ position:relative; margin-top:-34px; padding:16px 18px; background:var(--v-card); border-radius:20px; box-shadow:var(--v-sh); }
+#vid .v-over{ position:relative; margin-top:-34px; padding:16px 18px; background:var(--v-card); border-radius:10px; box-shadow:var(--v-sh); }
 #vid .v-over.flat{ margin-top:8px; }
 #vid .v-over .who{ font-size:12.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--v-hot); margin-bottom:6px; }
 #vid .v-over .v-fix{ font-size:20px; line-height:1.3; font-weight:700; }
@@ -1112,7 +1117,7 @@ html:not([data-theme="night"]) #vid .v-back{ color:var(--v-link); background:rgb
 #vid .v-cta .v-btn{ display:flex; align-items:center; justify-content:center; min-height:56px; padding:0 16px; font-size:17.5px; font-weight:700; letter-spacing:.005em;
   background:var(--v-pri); box-shadow:0 12px 26px -10px var(--v-glow); }
 #vid .v-cta .v-cap:empty{ display:none; }
-#vid .v-tabs{ border-radius:24px; }
+#vid .v-tabs{ border-radius:14px; }
 html:not([data-theme="night"]) #vid .v-tabs{ box-shadow:0 10px 30px -10px rgba(30,60,140,.35); }
 #vid .v-tabs .on svg{ stroke:#F23D5C; }
 [data-theme="night"] #vid .v-tabs .on svg{ stroke:#ff8fa3; }
@@ -5110,8 +5115,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       return '<button class="v-frow" data-act="' + (canShow(f) ? 'openfile' : 'dl') + '" data-id="' + f.id + '"><span aria-hidden="true">' + (img ? '🖼' : '📄') + '</span><span class="fz">' + esc(nm) + '</span><span class="v-go">›</span></button>';
     }).join('') + '</div>';
   }
-  // плитка оценки; исправленная — перед ней прежняя, серая и зачёркнутая: видна, но в средний не идёт (D 12.10)
+  // плитка оценки; у исправленной прежняя — зачёркнутой меткой в углу (D 12.10, 07.11); прочерк не показываем — он читается как дефис
   function vMkTile(g, cls, pv) {
+    if (pv && scAuto(pv)) pv = '';
     return '<span class="v-mm">' + (pv ? '<s class="v-pv" title="прежняя оценка">' + esc(pv) + '</s>' : '') +
       '<span class="v-m ' + cls + (g.length > 2 ? ' long' : '') + '">' + esc(g) + '</span></span>';
   }
@@ -5323,7 +5329,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     else if (dbt) tail = '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок исправления прошёл' : 'Исправить до ' + esc(vDayS(dbt.until)) + ' · ' + vLeftW(dbt.left)) + '</span>';
     return '<button class="v-row v-gr" data-va="urok" data-id="' + r.l.id + '">' + (vF ? '' : '<span class="v-gc ' + sj.k + '">' + esc(sj.short.charAt(0)) + (cv ? '<img data-ff="' + cv.id + '" alt="">' : '') + '</span>') +   // выбран один предмет — буква не нужна (A3)
       vMkTile(r.g, inf.cls, r.m.pv && splitMark({ v: r.m.pv }).g) +
-      '<span class="v-body"><b>' + esc(tp) + '</b><span class="v-cap">' + esc(what + ', ' + vDay(r.l.date)) + (r.m.pv && r.m.gt ? ', исправлено ' + ddmm(new Date(r.m.gt)) : '') + '</span>' +
+      '<span class="v-body"><b>' + esc(tp) + '</b><span class="v-cap">' + esc(what + ', ' + vDay(r.l.date)) + (r.m.pv && r.m.gt ? (scAuto(r.m.pv) ? ', сдано ' : ', исправлено ') + ddmm(new Date(r.m.gt)) : '') + '</span>' +
       (vSay(sm.c) ? '<span class="v-hist">Учитель: ' + esc(sm.c) + '</span>' : '') + tail + '</span><span class="v-go">›</span></button>';
   }
   function vOcHtml() {
@@ -5341,7 +5347,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var F = vF ? R.filter(function (r) { return r.l.subj === vF; }) : R;
     h += '<div class="v-lbl">' + (vF ? esc(vSj(vF).short) + ', ' : '') + (q > 3 ? 'За год' : V_Q[q][0]) + '</div>';
     h += F.length ? '<div class="v-card">' + F.map(vGrRow).join('') + '</div>' : '<div class="v-card v-pad"><span class="v-cap">' + (q > 3 ? 'Оценок пока нет.' : 'В этой четверти оценок пока нет.') + '</span></div>';
-    if (F.some(function (r) { return r.m.pv; })) h += '<span class="v-cap" style="margin-top:10px">Зачёркнутая — прежняя оценка. В средний идёт только новая.</span>';
+    if (F.some(function (r) { return r.m.pv && !scAuto(r.m.pv); })) h += '<span class="v-cap" style="margin-top:10px">Зачёркнутая в уголке — прежняя оценка. В средний идёт только новая.</span>';
     return h;
   }
   // итоги четверти (D 22.10): по предмету — средняя за ДЗ, КР и оценка за четверть; её ставит учитель.
