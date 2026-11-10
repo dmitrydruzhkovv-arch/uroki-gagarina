@@ -311,12 +311,18 @@ function onKlik(e){
   else if (a.dataset.vq === 'kto') ktoProchital(+a.dataset.id);
   else if (a.dataset.vq === 'kto-x'){ const ov = okno.querySelector('.vq-ktookno'); if (ov) ov.remove(); }
   else if (a.dataset.vq === 'napomnit') napomnit(a);
+  else if (a.dataset.vq === 'mat') materialy();
   else if (a.dataset.vq === 'pin-x'){ const p = bPins[pinIdx % bPins.length]; if (p) zakrepit(p.id, false); }
   else if (a.dataset.vq === 'red-net') bezPravki(true);
   else if (a.dataset.vq === 'at') vstavitImya(a.dataset.imya);
   else if (a.dataset.vq === 'sostav'){ const b = okno.querySelector('.vq-sostav'); b.classList.toggle('raskryt'); a.setAttribute('aria-expanded', b.classList.contains('raskryt')); }
   else if (a.dataset.vq === 'otv-net'){ otvetNa = 0; risovatOtvet(); }
   else if (a.dataset.vq === 'k-soobshcheniyu'){
+    if (a.closest('.vq-ktookno')){                     // из «Материалов»: сообщение в ленте — закрыть лист и к нему
+      const est = okno.querySelector(`.vq-msg[data-id="${+a.dataset.id}"], .vq-msg[data-ids~="${+a.dataset.id}"]`);
+      if (!est){ a.classList.toggle('raskryt'); return; }   // старое, в ленте его нет — показать целиком здесь же
+      a.closest('.vq-ktookno').remove();
+    }
     if (a.classList.contains('vq-pin-t') && bPins.length > 1){ pinIdx = (pinIdx + 1) % bPins.length; risovatPin(); }   // как в Телеграме: дальше — следующий закреп
     const el = okno.querySelector(`.vq-msg[data-id="${+a.dataset.id}"], .vq-msg[data-ids~="${+a.dataset.id}"]`);
     if (el){ el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.classList.add('vq-mig'); setTimeout(() => el.classList.remove('vq-mig'), 1200); }
@@ -1137,7 +1143,7 @@ async function otpravitVChat(body, tip, vid, vernut){
    Прочитано — сообщение побывало на экране при открытой беседе (vidnoDo → seen). Учитель видит «Прочитали 4 из 6»
    и кто именно, ученик у своих — ✓✓ без имён. Уведомления в Телеграм шлёт сервер (одно на серию, ночью тихо, @имя — всегда). */
 let komnata = '', besedy = [];                         // открытая беседа ('' — личный чат) и мои беседы с сервера
-let bYa = '', bLyudi = [], bChit = {}, bProchli = 0, bChitVid = '', bPins = [], pinIdx = 0, bVidel = 0, otlozheno = false;
+let bYa = '', bLyudi = [], bChit = {}, bProchli = 0, bChitVid = '', bPins = [], pinIdx = 0, bNmat = 0, bVidel = 0, otlozheno = false;
 let bMoi = -1, bNovoeOt = 0;                           // до чего я дочитал при входе; с какого сообщения черта «Новые»
 /* Выключатель один — на сервере (BESEDA, BESEDA_PROBA в .env). Проба: беседа видна только там, где открыли
    страницу с ?beseda=1; без пробы — всем, кому сервер её отдаёт. До ответа сервера — не показываем */
@@ -1145,7 +1151,7 @@ let besedaProba = true;
 const besedaVidna = () => mem.get(BESEDA_KEY) === '1' || !besedaProba;
 const kuda = () => (komnata ? 'b:' + komnata : komu);   // куда сейчас пишем: беседа или ученик (у учителя)
 const nekomu = () => uchitel() && !komu && !komnata;
-function bSbros(){ bYa = ''; bLyudi = []; bChit = {}; bProchli = 0; bChitVid = ''; bPins = []; pinIdx = 0; bVidel = 0; otlozheno = false; bMoi = -1; bNovoeOt = 0; }
+function bSbros(){ bYa = ''; bLyudi = []; bChit = {}; bProchli = 0; bChitVid = ''; bPins = []; pinIdx = 0; bNmat = 0; bVidel = 0; otlozheno = false; bMoi = -1; bNovoeOt = 0; }
 const fileUrl = name => `${chatBase}/chat/beseda/file/${encodeURIComponent(name)}?j=${encodeURIComponent(komnata)}&k=${encodeURIComponent(chatKey())}`;
 const neFoto = f => /^video\//.test(f.type) || f.type === 'application/pdf' || /\.(pdf|mp4|mov|webm)$/i.test(f.name || '');
 const bChel = w => bLyudi.find(p => p.w === w);
@@ -1314,6 +1320,7 @@ async function tyanutB(pervyi){
       pinIdx = stare.size && nov >= 0 ? nov : i >= 0 ? i : 0;   // появился новый закреп — показываем его; снят показанный — первый
       risovatPin();
     }
+    if ('nmat' in d) bNmat = d.nmat || 0;
     if (d.eds){                                        // автор поправил текст — у всех новый, с подписью «изменено»
       const ed = new Map(d.eds);
       lenta.forEach(m => { if (m.id && ed.has(m.id) && !m.del && (m.text !== ed.get(m.id) || !m.ed)){ m.text = ed.get(m.id); m.ed = 1; novoe = true; } });
@@ -1433,13 +1440,15 @@ function risovatSostav(){
   /* себя в полосе не показываем (D 07.11: «ученик сам себя не видит») — и в счёте «в сети» только другие */
   const drugie = bLyudi.filter(p => p.w !== bYa);
   const on = drugie.filter(p => p.on).length;
-  const vid = JSON.stringify([bYa, drugie.map(p => [p.w, p.n, p.on, bylKogda(p)])]);
+  const vid = JSON.stringify([bYa, bNmat > 0, drugie.map(p => [p.w, p.n, p.on, bylKogda(p)])]);
   if (vid === box._v) return;
   box._v = vid;
   const sdvig = (box.querySelector('.vq-sostav-r') || {}).scrollLeft || 0;
   const kto = drugie.filter(p => p.on).map(p => imyaPervoe(p.n)).join(', ');
   /* у учителя на телефоне над лентой уже кружки учеников — здесь одна строка, нажал — аватарки (стиль .vq-sostav) */
-  box.innerHTML = `<button type="button" class="vq-sostav-t" data-vq="sostav" aria-expanded="${box.classList.contains('raskryt')}"><i class="vq-on"></i>в сети: <b>${on}</b> из ${drugie.length}${kto ? `<span class="kto"> · ${esc(kto)}</span>` : ''}<span class="str">›</span></button><div class="vq-sostav-r">`
+  /* «📎 Материалы» — справа в той же строке и только когда есть что показать (D 07.11) */
+  box.innerHTML = `<div class="vq-sostav-h"><button type="button" class="vq-sostav-t" data-vq="sostav" aria-expanded="${box.classList.contains('raskryt')}"><i class="vq-on"></i>в сети: <b>${on}</b> из ${drugie.length}${kto ? `<span class="kto"> · ${esc(kto)}</span>` : ''}<span class="str">›</span></button>`
+    + (bNmat > 0 ? '<button type="button" class="vq-mat-b" data-vq="mat">📎 Материалы</button>' : '') + '</div><div class="vq-sostav-r">'
     + drugie.map(p => `<div class="vq-sost${p.on ? ' on' : ''}${p.vhod ? '' : ' net'}" title="${esc(p.n)} — ${p.on ? 'в сети' : esc(bylKogda(p, true))}">${avatar(p.w, p.n, p.on)}<span class="i">${esc(imyaPervoe(p.n))}</span><span class="s">${p.on ? 'в сети' : esc(bylKogda(p))}</span></div>`).join('')
     + '</div>';
   box.querySelector('.vq-sostav-r').scrollLeft = sdvig;
@@ -1554,6 +1563,38 @@ async function ktoProchital(id){
       ${mozhno ? `<button type="button" class="vq-send vq-nap" data-vq="napomnit" data-id="${id}"${d.tiho ? ' disabled' : ''}>Напомнить в Телеграме</button>
         <p class="vq-note">${d.tiho ? 'Ночью не напоминаем — утром можно.' : d.nap ? 'Уже напоминал ' + esc(bylKogda({ vhod: true, byl: d.nap }, true)) + '. Снова — через час.' : 'Придёт тем, кто не прочитал: ' + mozhno + '.'}</p>` : ''}
     </div>`;
+  } catch (_) {
+    baseP = null;
+    if (ov.isConnected) ov.innerHTML = shapka + '<div class="vq-pusto">Не получилось загрузить. Проверь интернет.</div>';
+  }
+}
+/* «📎 Материалы» (D 07.11): закрепы, файлы, видео и фото учителя одним листом — новые сверху */
+async function materialy(){
+  if (!komnata || !okno) return;
+  menuZakryt();
+  let ov = okno.querySelector('.vq-ktookno');
+  if (!ov){ ov = document.createElement('div'); ov.className = 'vq-ktookno'; okno.appendChild(ov); }
+  const shapka = '<div class="vq-kto-h"><b>Материалы</b><button type="button" class="vq-x" data-vq="kto-x" aria-label="Закрыть">✕</button></div>';
+  ov.innerHTML = shapka + '<div class="vq-pusto">Загружаю…</div>';
+  try {
+    const base = await serverBase();
+    const j = komnata;
+    const r = await timedFetch(`${base}/chat/beseda/materialy?j=${encodeURIComponent(j)}`, { cache: 'no-store', headers: zagolovki() }, 15000);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if (!ov.isConnected || komnata !== j) return;      // ссылки на файлы несут комнату — другая комната, лист не наш
+    const kogda = m => `<em>${esc(denPodpis(new Date(m.ts)))}</em>`;
+    const podpis = (m, net) => esc(m.text ? kratko(m) : net);
+    const pins = d.pins.map(p => ({ ...p, who: p.w })), zakr = new Set(pins.map(p => p.id));
+    const svoi = d.files.filter(m => !zakr.has(m.id));   // закреплённый файл — только в «Закреплено», без повтора
+    const fajly = svoi.filter(m => m.ft === 'file'), video = svoi.filter(m => m.ft === 'video'), foto = svoi.filter(m => m.ft === 'photo');
+    const sek = (t, n, h) => n ? `<div class="vq-kto-sec">${t} · ${n}</div>${h}` : '';
+    const ssylka = (m, znak, imya) => `<a class="vq-fajl vq-mat-r" href="${esc(fileUrl(m.f))}" target="_blank" rel="noopener">${znak} <span>${imya}</span>${kogda(m)}</a>`;
+    const telo = sek('📌 Закреплено', pins.length, pins.map(m => `<button type="button" class="vq-mat-pin" data-vq="k-soobshcheniyu" data-id="${m.id}"><span>${esc(kratko(m))}</span>${kogda(m)}${m.text ? `<div class="vq-mat-full">${tekstHtml(m.text)}</div>` : ''}</button>`).join(''))
+      + sek('📄 Файлы', fajly.length, fajly.map(m => ssylka(m, '📄', esc(m.fn || 'Файл'))).join(''))
+      + sek('🎬 Видео', video.length, video.map(m => ssylka(m, '🎬', podpis(m, 'Видео'))).join(''))
+      + sek('📷 Фото', foto.length, `<div class="vq-mat-foto">${foto.map(m => `<img src="${esc(fileUrl(m.f))}" alt="${podpis(m, 'Фото')}" loading="lazy" data-vq="uvelichit">`).join('')}</div>`);
+    ov.innerHTML = shapka + `<div class="vq-kto-telo">${telo || `<div class="vq-pusto">${uchitel() ? 'Пока пусто. Файлы, видео и фото, которые ты пришлёшь в беседу, и закреплённые сообщения соберутся здесь.' : 'Пока пусто. Здесь будут файлы и видео от учителя.'}</div>`}</div>`;
   } catch (_) {
     baseP = null;
     if (ov.isConnected) ov.innerHTML = shapka + '<div class="vq-pusto">Не получилось загрузить. Проверь интернет.</div>';

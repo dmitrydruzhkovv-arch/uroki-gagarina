@@ -1041,3 +1041,22 @@ a.vq-tg:not([aria-disabled="true"]):active{ transform:translateY(2px); box-shado
 }
 /* «изменено» под исправленным сообщением (правка своего, D 07.11) */
 .vq-ed{ margin-right:3px; font-style:italic; }
+
+/* «📎 Материалы» (беседа, D 07.11): кнопка справа в строке «в сети», лист поверх беседы */
+.vq-sostav-h{ display:flex; align-items:center; }
+.vq-sostav-h .vq-sostav-t{ flex:1 1 auto; min-width:0; width:auto; }
+.vq-mat-b{ position:relative; flex:0 0 auto; margin:0 14px 6px 6px; min-height:32px; padding:4px 11px; border-radius:10px; font-size:13px; font-weight:700; color:var(--ink); background:rgba(0,0,0,.06); -webkit-tap-highlight-color:transparent; }
+[data-theme="night"] .vq-mat-b{ background:rgba(255,255,255,.1); }
+@media (max-width:700px){ .vq-lyudi ~ .vq-sostav:not(.raskryt) .vq-mat-b{ margin-bottom:0; } }
+.vq-mat-r, .vq-mat-pin{ display:flex; align-items:center; gap:8px; width:100%; min-height:48px; margin:0 0 6px; text-align:left; }
+.vq-mat-r em, .vq-mat-pin em{ margin-left:auto; flex:0 0 auto; font-style:normal; font-size:12px; font-weight:600; color:var(--muted); }
+.vq-mat-r span{ flex:1 1 auto; }
+.vq-mat-pin{ padding:8px 12px; border-radius:12px; background:rgba(244,169,31,.12); font-size:14.5px; }
+.vq-mat-pin span{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vq-mat-foto{ display:grid; grid-template-columns:repeat(auto-fill, minmax(96px, 1fr)); gap:4px; }
+.vq-mat-foto img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; cursor:zoom-in; background:rgba(0,0,0,.06); }
+.vq-mat-b::before{ content:''; position:absolute; inset:-6px -4px; }   /* палец попадает в 44 px, на вид кнопка 32 */
+.vq-mat-pin{ flex-wrap:wrap; }
+.vq-mat-full{ display:none; flex:0 0 100%; margin-top:6px; font-size:15px; line-height:1.4; white-space:pre-wrap; overflow-wrap:anywhere; }
+.vq-mat-pin.raskryt .vq-mat-full{ display:block; }
+.vq-mat-pin.raskryt > span{ display:none; }
