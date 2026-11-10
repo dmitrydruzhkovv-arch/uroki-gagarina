@@ -293,7 +293,9 @@ function onKlik(e){
   }
   else if (a.dataset.vq === 'otpravit') otpravit();
   else if (a.dataset.vq === 'poslat') poslat();
-  else if (a.dataset.vq === 'foto') okno.querySelector('.vq-file').click();
+  else if (a.dataset.vq === 'foto'){ if (komnata && uchitel() && bOpOn) skrepkaMenu(a); else okno.querySelector('.vq-file').click(); }
+  else if (a.dataset.vq === 'golos') golosovat(+a.dataset.id, +a.dataset.n);
+  else if (a.dataset.vq && a.dataset.vq.startsWith('op-')) oprosForma(a);
   else if (a.dataset.vq === 'bystro') poslat(a.dataset.tekst);
   else if (a.dataset.vq === 'uvelichit') uvelichit(a.getAttribute('src'));
   else if (a.dataset.vq === 'signal'){ okno.classList.remove('vq-chat'); nachat(); }
@@ -309,7 +311,7 @@ function onKlik(e){
   }
   else if (a.dataset.vq === 'komnata') vybratKomnatu(a.dataset.j || '');
   else if (a.dataset.vq === 'kto') ktoProchital(+a.dataset.id);
-  else if (a.dataset.vq === 'kto-x'){ const ov = okno.querySelector('.vq-ktookno'); if (ov) ov.remove(); }
+  else if (a.dataset.vq === 'kto-x'){ const ov = okno.querySelector('.vq-ktookno'); if (ov) ov.remove(); opSbrosKart(); opV = []; }
   else if (a.dataset.vq === 'napomnit') napomnit(a);
   else if (a.dataset.vq === 'mat') materialy();
   else if (a.dataset.vq === 'pin-x'){ const p = bPins[pinIdx % bPins.length]; if (p) zakrepit(p.id, false); }
@@ -795,7 +797,7 @@ function denPodpis(d){
 }
 const vremya = d => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
-const kratko = m => (m.del ? 'сообщение удалено' : m.text ? (m.text.length > 70 ? m.text.slice(0, 69) + '…' : m.text)
+const kratko = m => (m.del ? 'сообщение удалено' : m.text ? (m.ft === 'opros' ? '📊 ' : '') + (m.text.length > 70 ? m.text.slice(0, 69) + '…' : m.text)
   : m.ft === 'video' ? '🎬 видео' : m.ft === 'file' ? '📄 ' + (m.fn || 'файл') : '📷 фото');
 /* чьё сообщение — подпись в цитате */
 function chyo(m){
@@ -963,6 +965,7 @@ function menu(el){
     else if ('kto' in b.dataset){ menuZakryt(); ktoProchital(id); }
     else if ('pin' in b.dataset){ menuZakryt(); zakrepit(id, !bPins.some(p => p.id === id)); }
     else if ('red' in b.dataset){ menuZakryt(); nachatPravku(id); }
+    else if ('stop' in b.dataset){ menuZakryt(); zavershitOpros(id); }
     else if ('del' in b.dataset){ menuZakryt(); udalit((el.dataset.ids || String(id)).split(' ').map(Number).filter(Boolean)); }
     else if ('plus' in b.dataset){
       mn.querySelector('.vq-menu-r').innerHTML = '<input class="vq-menu-in" placeholder="Смайлик с клавиатуры" maxlength="16" aria-label="Смайлик">';
@@ -1143,7 +1146,7 @@ async function otpravitVChat(body, tip, vid, vernut){
    Прочитано — сообщение побывало на экране при открытой беседе (vidnoDo → seen). Учитель видит «Прочитали 4 из 6»
    и кто именно, ученик у своих — ✓✓ без имён. Уведомления в Телеграм шлёт сервер (одно на серию, ночью тихо, @имя — всегда). */
 let komnata = '', besedy = [];                         // открытая беседа ('' — личный чат) и мои беседы с сервера
-let bYa = '', bLyudi = [], bChit = {}, bProchli = 0, bChitVid = '', bPins = [], pinIdx = 0, bNmat = 0, bVidel = 0, otlozheno = false;
+let bYa = '', bLyudi = [], bChit = {}, bProchli = 0, bChitVid = '', bPins = [], pinIdx = 0, bNmat = 0, bOprosy = {}, bOpOn = false, opGen = 0, bVidel = 0, otlozheno = false;
 let bMoi = -1, bNovoeOt = 0;                           // до чего я дочитал при входе; с какого сообщения черта «Новые»
 /* Выключатель один — на сервере (BESEDA, BESEDA_PROBA в .env). Проба: беседа видна только там, где открыли
    страницу с ?beseda=1; без пробы — всем, кому сервер её отдаёт. До ответа сервера — не показываем */
@@ -1151,7 +1154,7 @@ let besedaProba = true;
 const besedaVidna = () => mem.get(BESEDA_KEY) === '1' || !besedaProba;
 const kuda = () => (komnata ? 'b:' + komnata : komu);   // куда сейчас пишем: беседа или ученик (у учителя)
 const nekomu = () => uchitel() && !komu && !komnata;
-function bSbros(){ bYa = ''; bLyudi = []; bChit = {}; bProchli = 0; bChitVid = ''; bPins = []; pinIdx = 0; bNmat = 0; bVidel = 0; otlozheno = false; bMoi = -1; bNovoeOt = 0; }
+function bSbros(){ bYa = ''; bLyudi = []; bChit = {}; bProchli = 0; bChitVid = ''; bPins = []; pinIdx = 0; bNmat = 0; bOprosy = {}; bVidel = 0; otlozheno = false; bMoi = -1; bNovoeOt = 0; }
 const fileUrl = name => `${chatBase}/chat/beseda/file/${encodeURIComponent(name)}?j=${encodeURIComponent(komnata)}&k=${encodeURIComponent(chatKey())}`;
 const neFoto = f => /^video\//.test(f.type) || f.type === 'application/pdf' || /\.(pdf|mp4|mov|webm)$/i.test(f.name || '');
 const bChel = w => bLyudi.find(p => p.w === w);
@@ -1279,6 +1282,7 @@ async function tyanutB(pervyi){
   try {
     chatBase = await serverBase();
     const seen = vidnoDo();
+    const og = opGen;                                   // голос, отданный после этого запроса, ответ не затирает
     const r = await timedFetch(`${chatBase}/chat/beseda/history?j=${encodeURIComponent(j)}&after=${lastId}&open=1&rv=${rv}${seen ? '&seen=' + seen : ''}`,
       { cache: 'no-store', headers: zagolovki() }, 15000);
     if (!tot()) return;
@@ -1321,11 +1325,17 @@ async function tyanutB(pervyi){
       risovatPin();
     }
     if ('nmat' in d) bNmat = d.nmat || 0;
+    bOpOn = !!d.op;
+    let opStaroe = false;
+    if (d.oprosy){
+      if (og === opGen){ bOprosy = {}; d.oprosy.forEach(o => { bOprosy[o.id] = o; }); novoe = true; }
+      else opStaroe = true;                            // пока шёл запрос, человек проголосовал — опросы перечитаем
+    }
     if (d.eds){                                        // автор поправил текст — у всех новый, с подписью «изменено»
       const ed = new Map(d.eds);
       lenta.forEach(m => { if (m.id && ed.has(m.id) && !m.del && (m.text !== ed.get(m.id) || !m.ed)){ m.text = ed.get(m.id); m.ed = 1; novoe = true; } });
     }
-    rv = d.rv; estReakcii = true;
+    rv = opStaroe ? -1 : d.rv; estReakcii = true;
     bLyudi = d.lyudi || bLyudi;
     risovatSostav();
     const chit = JSON.stringify([d.chit, d.prochli]);
@@ -1409,11 +1419,11 @@ function risovatB(vniz){
     const niz = zhdet ? 'отправляю…' : (m.ed ? '<span class="vq-ed">изменено</span> ' : '') + vremya(konec) + (moe && !uchitel() && mid ? ` <span class="vq-gal${bProchli >= mid ? ' vse' : ''}" data-id="${mid}">${galki(mid)}</span>` : '');
     const chit = uchitel() && m.who === 'd' && mid && !zhdet
       ? `<button type="button" class="vq-chit" data-vq="kto" data-id="${mid}" data-avtor="d">${chitTekst(mid, 'd')}</button>` : '';
-    html += `<div class="vq-ryad ${moe ? 'moe' : 'ego'}${nach ? ' nach' : ''}">${ava}<div class="vq-msg ${moe ? 'moe' : 'ego'}${m.who === 'd' && !moe ? ' uch' : ''}${zhdet ? ' zhdet' : ''}${fotki.length > 1 ? ' alb' : ''}${m.ft === 'video' ? ' vid' : ''}"${m.id ? ` data-vq="menu" data-id="${m.id}"` : ''}${mid ? ` data-mid="${mid}"` : ''}${g.length > 1 ? ` data-ids="${g.map(x => x.id || '').join(' ')}"` : ''}>
+    html += `<div class="vq-ryad ${moe ? 'moe' : 'ego'}${nach ? ' nach' : ''}">${ava}<div class="vq-msg ${moe ? 'moe' : 'ego'}${m.who === 'd' && !moe ? ' uch' : ''}${zhdet ? ' zhdet' : ''}${fotki.length > 1 ? ' alb' : ''}${m.ft === 'video' ? ' vid' : ''}${m.ft === 'opros' ? ' op' : ''}"${m.id ? ` data-vq="menu" data-id="${m.id}"` : ''}${mid ? ` data-mid="${mid}"` : ''}${g.length > 1 ? ` data-ids="${g.map(x => x.id || '').join(' ')}"` : ''}>
       ${!moe && nach ? `<div class="vq-avtor${m.who === 'd' ? ' uch' : ''}"${m.who === 'd' ? '' : ` style="color:${cvet(m.who)}"`}>${esc(imya)}</div>` : ''}
       ${m.re ? citata(m.re) : ''}
       ${fotki.length > 1 ? `<div class="vq-alb${fotki.length % 2 ? ' nechet' : ''}">${fotki.map(img).join('')}</div>` : fotki.map(img).join('')}${fajl}
-      ${m.text ? `<div class="t">${tekstHtml(m.text)}</div>` : ''}
+      ${m.ft === 'opros' ? oprosHtml(m) : m.text ? `<div class="t">${tekstHtml(m.text)}</div>` : ''}
       <div class="vr">${niz}</div>${reakciiB(m)}${chit}</div></div>`;
   });
   box.innerHTML = html;
@@ -1469,8 +1479,10 @@ function menuBesedy(id){
   if (!komnata) return '';
   const m = lenta.find(x => x.id === id);
   if (!m || m.del) return '';
-  const moe = m.who === ya() && m.text && (uchitel() || Date.now() - new Date(m.ts) < 864e5);   // ученик — в течение суток
-  return (moe ? '<button type="button" class="vq-menu-o" data-red>✏️ Изменить</button>' : '')
+  const moe = m.who === ya() && m.text && m.ft !== 'opros' && (uchitel() || Date.now() - new Date(m.ts) < 864e5);   // ученик — в течение суток
+  const op = uchitel() && m.ft === 'opros' && bOprosy[id] && !bOprosy[id].closed;
+  return (op ? '<button type="button" class="vq-menu-o" data-stop>⏹ Завершить опрос</button>' : '')
+    + (moe ? '<button type="button" class="vq-menu-o" data-red>✏️ Изменить</button>' : '')
     + (uchitel() ? `<button type="button" class="vq-menu-o" data-pin>📌 ${bPins.some(p => p.id === id) ? 'Открепить' : 'Закрепить'}</button>
     <button type="button" class="vq-menu-o" data-kto>👁 Кто прочитал</button>` : '')
     + (uchitel() || m.who === ya() ? '<button type="button" class="vq-menu-o vq-menu-del" data-del>🗑 Удалить</button>' : '');
@@ -1568,6 +1580,157 @@ async function ktoProchital(id){
     if (ov.isConnected) ov.innerHTML = shapka + '<div class="vq-pusto">Не получилось загрузить. Проверь интернет.</div>';
   }
 }
+/* ═══ ОПРОСЫ (D 07.11): учитель спрашивает, варианты — текст, число или картинка; ученик нажимает свой вариант ═══
+   Итог полосками ученик видит, когда проголосовал или опрос завершён; учитель — всегда и поимённо. */
+function oprosHtml(m){
+  const o = bOprosy[m.id];
+  const shapka = `<div class="vq-op-h">📊 Опрос</div><div class="vq-op-q">${tekstHtml(m.text || '')}</div>`;
+  if (!o) return shapka;
+  const vsego = o.n.reduce((a, b) => a + b, 0), u = uchitel();
+  const vidno = u || o.moj !== null || o.closed;
+  const v = o.v.map((x, i) => {
+    const pr = vsego ? Math.round(o.n[i] * 100 / vsego) : 0, moj = o.moj === i;
+    const golos = !o.closed && !u, tag = golos ? 'button' : 'div';
+    return `<${tag}${golos ? ` type="button" data-vq="golos" data-id="${m.id}" data-n="${i}"` : ''} class="vq-op-v${moj ? ' moj' : ''}${x.f ? ' kart' : ''}">
+      ${vidno ? `<i class="bar" style="width:${pr}%"></i>` : ''}
+      ${x.f ? `<img src="${esc(fileUrl(x.f))}" alt="Картинка варианта — нажми, чтобы увеличить" loading="lazy" data-vq="uvelichit">` : ''}
+      <span class="t">${moj ? '✓ ' : ''}${esc(x.t)}</span>${vidno ? `<span class="pr">${o.n[i]} · ${pr}%</span>` : ''}</${tag}>`
+      + (u && o.kto && o.kto[i].length ? `<div class="vq-op-kto">${esc(o.kto[i].join(', '))}</div>` : '');
+  }).join('');
+  const niz = o.closed ? `Опрос завершён · голосов: ${vsego}` : u ? (vsego ? `Голосов: ${vsego}` : 'Пока никто не выбрал')
+    : o.moj === null ? 'Нажми свой вариант' : `Голосов: ${vsego} · передумал — нажми другой`;
+  return shapka + `<div class="vq-op-sp">${v}</div><div class="vq-op-niz">${niz}</div>`;
+}
+async function golosovat(id, n){
+  const o = bOprosy[id];
+  if (!o || o.closed || uchitel() || !(n >= 0)) return;
+  opGen++;
+  const bylo = { n: o.n.slice(), moj: o.moj };
+  const novyj = o.moj === n ? -1 : n;                  // нажал свой — голос снят
+  if (o.moj !== null) o.n[o.moj]--;
+  if (novyj >= 0) o.n[novyj]++;
+  o.moj = novyj >= 0 ? novyj : null;
+  risovat();
+  try {
+    const r = await postB('/chat/beseda/golos', { id, n: novyj });
+    if (r.status === 409){ Object.assign(o, bylo, { closed: true }); risovat(); oshibka('Опрос уже завершён.'); return; }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    oshibka(''); rv = -1;
+  } catch (_) { Object.assign(o, bylo); risovat(); baseP = null; oshibka('Голос не сохранился. Попробуй ещё раз.'); }
+}
+async function zavershitOpros(id){
+  if (!confirm('Завершить опрос? Голосовать больше будет нельзя.')) return;
+  try {
+    const r = await postB('/chat/beseda/opros_stop', { id });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    rv = -1; tyanut(false);
+  } catch (_) { baseP = null; oshibka('Не получилось. Попробуй ещё раз.'); }
+}
+
+/* скрепка учителя в беседе: «Фото, видео или файл» / «Опрос» */
+function skrepkaMenu(el){
+  const bylo = mn && mn.dataset.skr;
+  menuZakryt();
+  if (bylo) return;
+  mn = document.createElement('div');
+  mn.className = 'vq-menu'; mn.dataset.skr = '1';
+  mn.innerHTML = '<button type="button" class="vq-menu-o" data-f>📎 Фото, видео или файл</button><button type="button" class="vq-menu-o" data-op>📊 Опрос</button>';
+  document.body.appendChild(mn);
+  const r = el.getBoundingClientRect(), h = mn.offsetHeight;
+  mn.style.left = Math.max(8, Math.min(r.left, innerWidth - mn.offsetWidth - 8)) + 'px';
+  mn.style.top = Math.max(8, r.top - h - 6) + 'px';
+  mn.addEventListener('click', ev => {
+    const b = ev.target.closest('button');
+    if (!b) return;
+    menuZakryt();
+    if ('f' in b.dataset) okno.querySelector('.vq-file').click(); else noviyOpros();
+  });
+}
+
+/* лист «Новый опрос»: вопрос, варианты (текст и/или картинка), быстрые наборы «1 2 3 4», «Да / Нет», «А Б В Г» */
+let opV = [];
+function opSbrosKart(){ opV.forEach(v => { if (v.url) URL.revokeObjectURL(v.url); }); }
+function noviyOpros(){
+  if (!komnata || !uchitel() || !okno) return;
+  const staryj = okno.querySelector('.vq-ktookno'); if (staryj) staryj.remove();   // свой лист заново: слушатели — один раз
+  const ov = document.createElement('div'); ov.className = 'vq-ktookno'; okno.appendChild(ov);
+  opSbrosKart(); opV = [{ t: '' }, { t: '' }];
+  ov.innerHTML = `<div class="vq-kto-h"><b>Новый опрос</b><button type="button" class="vq-x" data-vq="kto-x" aria-label="Закрыть">✕</button></div>
+    <div class="vq-kto-telo vq-opf">
+      <textarea class="vq-op-in vq-op-vopr" rows="2" maxlength="300" placeholder="Вопрос классу"></textarea>
+      <div class="vq-op-bystro"><button type="button" data-vq="op-gotovo" data-v="1|2|3|4">1 2 3 4</button><button type="button" data-vq="op-gotovo" data-v="Да|Нет">Да / Нет</button><button type="button" data-vq="op-gotovo" data-v="А|Б|В|Г">А Б В Г</button></div>
+      <div class="vq-op-varianty"></div>
+      <button type="button" class="vq-op-plus" data-vq="op-plus">＋ Вариант</button>
+      <input type="file" class="vq-op-file" accept="image/*" hidden>
+      <p class="vq-err vq-op-err" hidden></p>
+      <button type="button" class="vq-send" data-vq="op-go">Отправить опрос</button>
+    </div>`;
+  ov.addEventListener('input', e => { if (e.target.matches('.vq-op-t')) opV[+e.target.dataset.i].t = e.target.value; });
+  ov.querySelector('.vq-op-file').addEventListener('change', async e => {
+    const f = (e.target.files || [])[0], i = +ov.dataset.ki;
+    e.target.value = '';
+    if (!f || !opV[i]) return;
+    const b = await szhat(f);
+    if (!b){ opOshibka(ov, 'Это не картинка. Выбери фото.'); return; }
+    if (opV[i].url) URL.revokeObjectURL(opV[i].url);
+    opV[i].file = b; opV[i].url = URL.createObjectURL(b);
+    risovatOpV(ov);
+  });
+  risovatOpV(ov);
+  ov.querySelector('.vq-op-vopr').focus({ preventScroll: true });
+}
+function risovatOpV(ov){
+  ov.querySelector('.vq-op-varianty').innerHTML = opV.map((v, i) => `<div class="vq-op-r">
+    <textarea class="vq-op-in vq-op-t" rows="1" maxlength="100" data-i="${i}" placeholder="Вариант ${i + 1}">${esc(v.t)}</textarea>
+    <button type="button" class="vq-op-kn${v.url ? ' est' : ''}" data-vq="op-kart" data-i="${i}" aria-label="${v.url ? 'Убрать картинку' : 'Картинка к варианту'}">${v.url ? `<img src="${v.url}" alt="">` : '🖼'}</button>
+    ${opV.length > 2 ? `<button type="button" class="vq-op-kn" data-vq="op-ubrat" data-i="${i}" aria-label="Убрать вариант">✕</button>` : ''}</div>`).join('');
+  ov.querySelector('.vq-op-plus').hidden = opV.length >= 10;
+}
+function opOshibka(ov, t){ const e = ov.querySelector('.vq-op-err'); e.textContent = t; e.hidden = !t; }
+async function oprosForma(a){
+  const ov = a.closest('.vq-ktookno');
+  if (!ov) return;
+  const k = a.dataset.vq, i = +a.dataset.i;
+  opOshibka(ov, '');
+  if (k === 'op-gotovo'){
+    if (opV.some(x => x.t.trim() || x.url) && !confirm('Заменить варианты на «' + a.textContent + '»?')) return;
+    opSbrosKart(); opV = a.dataset.v.split('|').map(t => ({ t })); risovatOpV(ov);
+  }
+  else if (k === 'op-plus' && opV.length < 10){ opV.push({ t: '' }); risovatOpV(ov); ov.querySelector(`.vq-op-t[data-i="${opV.length - 1}"]`).focus(); }
+  else if (k === 'op-ubrat' && opV.length > 2){ if (opV[i].url) URL.revokeObjectURL(opV[i].url); opV.splice(i, 1); risovatOpV(ov); }
+  else if (k === 'op-kart'){
+    if (opV[i].url){ URL.revokeObjectURL(opV[i].url); delete opV[i].url; delete opV[i].file; risovatOpV(ov); }
+    else { ov.dataset.ki = i; ov.querySelector('.vq-op-file').click(); }
+  }
+  else if (k === 'op-go'){
+    const q = ov.querySelector('.vq-op-vopr').value.trim();
+    const v = opV.map(x => ({ t: x.t.trim(), file: x.file })).filter(x => x.t || x.file);
+    if (!q){ opOshibka(ov, 'Напиши вопрос.'); return; }
+    if (v.length < 2){ opOshibka(ov, 'Нужно хотя бы два варианта.'); return; }
+    const fd = new FormData();
+    fd.append('j', komnata); fd.append('q', q); fd.append('v', JSON.stringify(v.map(x => x.t)));
+    v.forEach((x, n) => { if (x.file) fd.append('f' + n, x.file, 'v' + n + '.jpg'); });
+    a.disabled = true; a.textContent = 'Отправляю…';
+    try {
+      const base = await serverBase();
+      const r = await timedFetch(base + '/chat/beseda/opros', { method: 'POST', cache: 'no-store', headers: zagolovki(), body: fd }, 60000);
+      if (r.status === 413 || r.status === 400){
+        const e = (await r.json().catch(() => ({}))).error;
+        a.disabled = false; a.textContent = 'Отправить опрос';
+        opOshibka(ov, r.status === 413 || e === 'big' ? 'Картинки слишком большие. Убери одну или возьми поменьше.'
+          : e === 'ne-tot' ? 'Одна из картинок не подходит. Нужно обычное фото.' : 'Проверь вопрос и варианты: у каждого — текст или картинка.');
+        return;
+      }
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      opSbrosKart(); opV = [];
+      ov.remove(); rv = -1; tyanut(false);
+    } catch (_) {
+      baseP = null; a.disabled = false; a.textContent = 'Отправить опрос';
+      opOshibka(ov, 'Не отправилось. Проверь интернет и попробуй ещё раз.');
+    }
+  }
+}
+
 /* «📎 Материалы» (D 07.11): закрепы, файлы, видео и фото учителя одним листом — новые сверху */
 async function materialy(){
   if (!komnata || !okno) return;
