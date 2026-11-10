@@ -309,6 +309,8 @@ td.c.long{ font-size:11px; white-space:normal; line-height:1.1; font-weight:600;
 .srow-ph{ grid-column:1 / 3; font-size:14px; }
 .srow-call{ grid-column:3 / -1; display:flex; align-items:center; justify-content:center; border-radius:10px; box-shadow:inset 0 0 0 1px var(--z-line2); text-decoration:none; }
 .srow-call[hidden]{ display:none; }
+.srow-z{ grid-column:1 / -1; font-size:12.5px; color:var(--muted); margin:-2px 0 4px 4px; }
+.srow-z[hidden]{ display:none; } .srow-z.on{ color:#16a34a; } .srow-z.on::before{ content:'● '; }
 .srow button{ border-radius:10px; text-align:center; box-shadow:inset 0 0 0 1px var(--z-line2); color:#dc2626; }
 
 .vyg-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px; font-size:13px; color:var(--muted); }
@@ -4398,7 +4400,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function openStudents() {
     var P = students();
     var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true"><h3>Ученики</h3>' +
-      '<div class="meta">' + (SUBJ.length > 1 ? 'Общие для всех предметов журнала. ' : '') + 'Правка сохраняется сама.</div>';
+      '<div class="meta">' + (SUBJ.length > 1 ? 'Общие для всех предметов журнала. ' : '') + 'Правка сохраняется сама.</div>' +
+      '<div class="meta" id="zSum" hidden></div>';
     var opts = function (cur) {
       var list = tgPeople || [];
       if (cur && !list.some(function (x) { return x.tg === cur; })) list = list.concat([{ tg: cur, name: 'связан (' + cur.split(':')[1] + ')' }]);
@@ -4414,12 +4417,15 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         '<select data-f="tg" class="srow-tg">' + opts(p.tg) + '</select>' +
         // телефон: вписал D — в поле; поделился в боте сам ученик — серым подсказкой. Видит только D (02.10)
         '<input data-f="ph" class="srow-ph" type="tel" inputmode="tel" maxlength="24" autocomplete="off" value="' + esc(p.ph || '') + '">' +
-        '<a class="srow-call" title="Позвонить" hidden>📞</a></div>';
+        '<a class="srow-call" title="Позвонить" hidden>📞</a><span class="srow-z" data-z="' + esc(p.id) + '" hidden></span></div>';
     });
     h += '<div class="note">Телеграм — кто этот ученик в боте. Связанный ученик входит в журнал через бота и сдаёт фото домашки в свою клетку.' +
       '<span id="tgLoad">' + (uMode ? ' Список людей из бота — только на устройстве с ключом Кабинета.' : tgPeople ? '' : ' Загружаю список из бота…') + '</span></div>';
-    h += '<div class="row"><button class="btn" data-act="addstu">＋ Ученик</button><span class="sp"></span><button class="btn pri" data-act="close">Готово</button></div></div>';
+    h += '<div class="row"><button class="btn" data-act="addstu">＋ Ученик</button>' +
+      (P.length ? '<button class="btn" data-act="qrsheet" title="Листок для печати: у каждого ученика свой QR-код входа">🖨 QR-коды</button>' : '') +
+      '<span class="sp"></span><button class="btn pri" data-act="close">Готово</button></div></div>';
     $('dlg').innerHTML = h; phFill();
+    zahody();
     // список берём при каждом открытии: подпись «в каком журнале» меняется после привязки (D, 02.10).
     // Вошедшему по паролю сервер его не отдаёт: он шире журнала (все, кто дал согласие боту, с телефонами)
     if (!uMode) post('/zhurnal/tgpeople', {}, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
@@ -4443,6 +4449,145 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     });
   }
   var tgPeople = null;
+
+  /* ── кто заходил (D 10.11): у каждого ученика — последний вход в журнал; пока окно «Ученики» открыто — раз в 15 с.
+     Без статистики на сервере (ZHURNAL_STAT) адрес отвечает 404 — строк нет, окно как раньше ── */
+  var zahT = null;
+  function zahody() {
+    clearTimeout(zahT);
+    if (!$('zSum')) return;   // окно закрыли или открыли другое — опрос кончился
+    var jAsk = J, again = function () { clearTimeout(zahT); zahT = setTimeout(zahody, 15000); };
+    post('/zhurnal/zahody', { j: J }, { Authorization: 'Bearer ' + teacherKey }).then(function (r) {
+      if (jAsk !== J || !$('zSum') || r.status === 404 || r.status === 401) return;   // нет статистики или ключа — молчим
+      if (r.status !== 200 || !r.data.ok) return again();   // сервер перезапускается — спросим позже
+      var last = r.data.last || {}, now = r.data.now || Date.now(), was = 0, fresh = 0, all = 0;
+      $('dlg').querySelectorAll('.srow-z').forEach(function (el) {
+        var t = last[el.dataset.z] || 0, on = !!t && now - t < 10 * 60000;
+        all++; if (t) was++; if (on) fresh++;
+        el.textContent = zWhen(t, now); el.classList.toggle('on', on); el.hidden = false;
+      });
+      $('zSum').textContent = 'Заходили в журнал: ' + was + ' из ' + all + (fresh ? ' · за последние 10 минут — ' + fresh : '');
+      $('zSum').hidden = !all;
+      again();
+    }, again);
+  }
+  function zWhen(t, now) {
+    if (!t) return 'входа ещё не было';
+    var min = Math.floor((now - t) / 60000), d = new Date(t), n = new Date(), p2 = function (x) { return ('0' + x).slice(-2); };
+    if (min < 2) return 'вход: только что';
+    if (min < 60) return 'вход: ' + min + ' мин назад';
+    var day = function (x) { return new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(); };
+    var dd = Math.round((day(n) - day(d)) / 864e5), hm = p2(d.getHours()) + ':' + p2(d.getMinutes());
+    return 'вход: ' + (dd <= 0 ? 'сегодня в ' + hm : dd === 1 ? 'вчера в ' + hm : p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + (d.getFullYear() !== n.getFullYear() ? '.' + d.getFullYear() : ''));
+  }
+
+  /* ── QR-коды (D 10.11): лист для печати, у каждого ученика журнала свой код личной ссылки — раздать на уроке, ребёнок
+     наводит камеру и входит в свой журнал без Телеграма. Коды рисует lib/qr.js здесь же: ключи никуда не уходят.
+     Ключи — как у 🔗: сначала с сервера (у связанного с Телеграмом ключ мог появиться там — новый отсюда погасил бы его
+     значок), недостающим — новые. Лист показываем, только когда ключи сохранены: иначе по нему никто не войдёт ── */
+  var qrLib = null;
+  function loadQR() {
+    if (window.zhQR) return Promise.resolve(window.zhQR);
+    if (!qrLib) qrLib = new Promise(function (ok, bad) {
+      var sc = document.createElement('script');
+      sc.src = 'lib/qr.js';
+      sc.onload = function () { if (window.zhQR) ok(window.zhQR); else { qrLib = null; bad('lib'); } };
+      sc.onerror = function () { qrLib = null; bad('lib'); };
+      document.head.appendChild(sc);
+    });
+    return qrLib;
+  }
+  function stuSaved(ms) {
+    var t0 = Date.now();
+    return new Promise(function (ok, bad) {
+      (function look() {
+        if (!outbox.some(function (o) { return o.k === 'stu'; })) return ok();
+        if (Date.now() - t0 > ms) return bad('net');
+        setTimeout(look, 300);
+      })();
+    });
+  }
+  function qrSheet() {
+    var w = window.open('', '_blank');   // окно — сразу по нажатию: открытое позже браузер считает всплывающим и не пускает
+    if (!w) { alert('Браузер не открыл окно с QR-кодами. Разреши всплывающие окна для этого сайта и нажми «QR-коды» ещё раз.'); return; }
+    w.document.write('<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      '<title>QR-коды — ' + esc(META.title) + '</title></head><body><p style="font:17px/1.45 system-ui,sans-serif;padding:28px">Делаю листок…</p></body></html>');
+    w.document.close();
+    var jAsk = J;
+    Promise.all([loadQR(), post('/zhurnal/sync', { ops: [], j: J }, { Authorization: 'Bearer ' + teacherKey })]).then(function (res) {
+      var r = res[1];
+      if (jAsk !== J) throw 'j';
+      if (r.status !== 200 || !r.data.ok) throw 'net';
+      (r.data.objects || []).forEach(function (o) {
+        if (o.k === 'stu' && o.d && o.d.key && S.stu[o.id] && !S.stu[o.id].key) S.stu[o.id].key = o.d.key;
+      });
+      students().forEach(function (p) {
+        if (p.key) return;
+        // правка этой строки ещё в очереди (D сменил Телеграм или телефон без сети) — ключ добавляем к ней: новая операция
+        // вытеснила бы её из очереди. Иначе Телеграм и телефон не шлём — сервер оставит их как есть (см. saveStudentRow)
+        var pend = outbox.filter(function (o) { return o.k === 'stu' && o.id === p.id && o.t === 'put'; })[0], d = {};
+        if (pend) Object.keys(pend.d).forEach(function (k) { d[k] = pend.d[k]; });
+        else Object.keys(p).forEach(function (k) { if (k !== 'id' && k !== 'ts' && k !== 'tg' && k !== 'ph') d[k] = p[k]; });
+        d.key = newKey(); put('stu', p.id, d);
+        if (!('tg' in d) && p.tg) S.stu[p.id].tg = p.tg;
+        if (!('ph' in d) && p.ph) S.stu[p.id].ph = p.ph;
+      });
+      return stuSaved(20000);
+    }).then(function () {
+      // очередь пуста — ещё не значит «записано»: сервер молча пропускает устаревшую правку. Ключи на лист — только те, что
+      // сервер отдаёт сам, и только если они у всех
+      return post('/zhurnal/sync', { ops: [], j: J }, { Authorization: 'Bearer ' + teacherKey });
+    }).then(function (r) {
+      if (jAsk !== J) throw 'j';
+      if (r.status !== 200 || !r.data.ok) throw 'net';
+      var srv = {};
+      (r.data.objects || []).forEach(function (o) { if (o.k === 'stu' && o.d && o.d.key) srv[o.id] = o.d.key; });
+      if (students().some(function (p) { return !srv[p.id] || srv[p.id] !== p.key; })) throw 'net';
+      if ($('zSum')) $('dlg').querySelectorAll('.srow button.lnk').forEach(function (b) { b.classList.add('on'); });   // 🔗 загорелись — окно не перерисовываем: D мог что-то печатать
+      if (!w.closed) qrDraw(w);
+    }).catch(function (e) {
+      if (w.closed) return;
+      w.document.body.innerHTML = '<p style="font:17px/1.45 system-ui,sans-serif;padding:28px;max-width:560px">' +
+        (e === 'j' ? 'Пока делался листок, открыли другой журнал. Закрой это окно и нажми «QR-коды» ещё раз.'
+          : e === 'lib' ? 'Не загрузилась часть страницы, которая рисует коды. Обнови журнал и нажми «QR-коды» ещё раз.'
+          : 'Нет связи с сервером: ссылки не сохранились, по такому листку никто не войдёт. Закрой окно и нажми «QR-коды» ещё раз, когда в журнале загорится «сохранено».') + '</p>';
+    });
+  }
+  function qrDraw(w) {
+    var P = students().filter(function (p) { return p.key; }), pages = '';
+    var card = function (p) {
+      return '<div class="c"><div class="t">' + esc(META.title) + '</div><div class="n">' + esc(((p.fam || '') + ' ' + (p.name || '')).trim()) + '</div>' +
+        window.zhQR.svg(pageUrl() + '?s=' + J + '.' + p.key) +
+        '<ol><li>Наведи камеру телефона на код</li><li>Нажми на ссылку — откроется твой журнал</li><li>Нажми «📱 Значок на экран телефона»</li></ol>' +
+        '<div class="s">Это твой личный вход — не давай его другим</div></div>';
+    };
+    for (var i = 0; i < P.length; i += 8) {
+      pages += '<section class="pg"><div class="g">' + P.slice(i, i + 8).map(card).join('') + '</div>' +
+        '<div class="f">© ' + new Date().getFullYear() + ' Дмитрий Дружков</div></section>';
+    }
+    w.document.title = 'QR-коды — ' + META.title;
+    w.document.head.insertAdjacentHTML('beforeend', '<style>' +
+      '@page{ size:A4; margin:8mm; } *{ box-sizing:border-box; } body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; color:#111; background:#f3f1f6; }' +
+      '.bar{ position:sticky; top:0; display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; padding:12px 16px; background:#16131a; color:#fff; font-size:15px; }' +
+      '.bar button{ font:inherit; font-weight:700; padding:10px 22px; min-height:44px; border:0; border-radius:10px; background:#7c3aed; color:#fff; cursor:pointer; }' +
+      '.bar span{ color:#cfc8d8; font-size:13.5px; flex:1 1 300px; }' +
+      '.pg{ width:194mm; margin:12px auto; background:#fff; padding:0; page-break-after:always; break-after:page; }' +
+      '.pg:last-child{ page-break-after:auto; break-after:auto; }' +
+      '.g{ display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:68mm; }' +
+      '.c{ border:1px dashed #b9b3c2; margin:-.5px; padding:4mm 5mm; display:grid; grid-template-columns:40mm 1fr; grid-template-rows:auto auto 1fr auto; column-gap:4mm; break-inside:avoid; }' +
+      '.c .t{ grid-column:1 / -1; font-size:10pt; color:#6b6475; }' +
+      '.c .n{ grid-column:1 / -1; font-size:15pt; font-weight:800; margin:1mm 0 2mm; overflow-wrap:anywhere; }' +
+      '.c svg{ width:40mm; height:40mm; grid-row:3 / 5; align-self:start; }' +
+      '.c ol{ margin:0; padding-left:5mm; font-size:10.5pt; line-height:1.35; } .c li{ margin-bottom:1.5mm; }' +
+      '.c .s{ font-size:8.5pt; color:#6b6475; align-self:end; }' +
+      '.f{ text-align:right; font-size:7.5pt; color:#8a8494; padding:2mm 1mm 0; }' +
+      '@media print{ body{ background:#fff; } .bar{ display:none; } .pg{ margin:0; } }' +
+      '</style>');
+    w.document.body.innerHTML = '<div class="bar"><button onclick="print()">Печать</button><b>' + esc(META.title) + ': ' + P.length + ' QR-код' +
+      (P.length % 10 === 1 && P.length % 100 !== 11 ? '' : P.length % 10 >= 2 && P.length % 10 <= 4 && (P.length % 100 < 12 || P.length % 100 > 14) ? 'а' : 'ов') + '</b>' +
+      '<span>Разрежь по пунктиру и раздай. Потерял листок — в журнале «Ученики» → 🔗 → «Новая ссылка»: старая перестанет работать.</span></div>' + pages;
+  }
+
   function waitingSubs() {
     return vals(S.sub).filter(function (x) { var q = x.id.split('.'); return x.st === 'sent' && S.les[q[0]] && S.stu[q[1]]; });
   }
@@ -5839,6 +5984,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       else if (act === 'newjournal') openNewJournal();
       else if (act === 'mkjournal') makeJournal();
       else if (act === 'stulink') stuLink(a.dataset.id);
+      else if (act === 'qrsheet') qrSheet();
       else if (act === 'stulinknew') { if (confirm('Сделать новую ссылку? Старая перестанет работать.')) stuLink(a.dataset.id, true); }
       else if (act === 'copylink') {
         var li = $('lnkIn'); li.select();
