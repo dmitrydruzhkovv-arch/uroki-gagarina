@@ -1443,6 +1443,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
   var krMode = false;   // журнал открыт по ссылке классного руководителя
   var krSrv = false;    // сервер умеет такие ссылки (говорит в ответе /sync): без этого учителю кнопку не показываем
+  var krRab = false;    // по ссылке руководителя сервер отдаёт и работы детей (ZHURNAL_KR_RAB, D 10.11): клетка с 📷 открывает фото
   // сервер ведёт итоги четверти (ZHURNAL_ITOG, D 22.10; говорит в /sync, /view, /me): у класса журнал листается четвертями, в конце таблицы —
   // итоги. Помним между заходами: журнал учителя рисуется из памяти устройства раньше ответа сервера — без этого мелькали бы месяцы
   var itogSrv = lsGet('zh:itog', false) === true;
@@ -2001,7 +2002,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (!krUrl()) krPut(kr());   // пришла без ключа в адресе (ссылка «Журнал» с сайта уроков) — вернуть: закладка его запомнит
         if (r.data.j) J = r.data.j;
         if (r.data.meta) setMeta(r.data.meta);
-        itogSrv = !!r.data.itog; shansSrv = !!r.data.shans; S = fromObjects(r.data.objects); loaded = true; render();
+        itogSrv = !!r.data.itog; shansSrv = !!r.data.shans; krRab = !!r.data.krrab; meId = null; S = fromObjects(r.data.objects); loaded = true; render();
         krFoot();
       })
       .catch(function (e) {
@@ -2013,7 +2014,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   }
   // подвал в режиме классного руководителя: что это за режим и как из него выйти (иначе ссылка «прилипает» к устройству)
   function krFoot() {
-    $('footLinks').innerHTML = (krMode ? 'Вы смотрите журнал по ссылке классного руководителя: оценки можно смотреть и выгружать, менять нельзя | ' : '') +
+    $('footLinks').innerHTML = (krMode ? 'Вы смотрите журнал по ссылке классного руководителя: ' + (krRab ? 'оценки и работы можно смотреть, оценки — выгружать' : 'оценки можно смотреть и выгружать') + ', менять нельзя | ' : '') +
       '<button class="link" data-act="krexit">Выйти из этого режима</button>';
   }
   function gate(err) {
@@ -2385,7 +2386,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         li('<i class="m5">5</i><i class="m4">4</i><i class="m3">3</i><i class="m2">2</i>', 'за урок или домашку') +
         li('<i class="m5">85</i>', 'баллы из 100') +
         li('<i class="m4">зач</i>', 'зачёт') +
-        li('<i class="mn">н</i>', 'не было на уроке') + '</ul></div>' +
+        li('<i class="mn">н</i>', 'не было на уроке') +
+        (krMode && krRab ? li('<i class="m4">📷</i>', 'работа ученика — нажмите на клетку') : '') + '</ul></div>' +
       '<div class="dbt"><h4>' + (shansSrv ? 'Второй шанс' : 'Долги') + '</h4><ul>' +
         li('<i class="m2">2<small>9д</small></i>', (shansSrv ? 'можно пересдать' : 'пересдать за ' + DEBT_DAYS + ' дней') + '; в углу — сколько осталось') +
         li('<i class="m2">2<small class="late">!</small></i>', 'срок пересдачи вышел') +
@@ -3748,8 +3750,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   function photoUrl(name) {
     if (!photoCache[name]) {
       var h = { 'Content-Type': 'application/json' };
-      if (mode === 'teacher') h.Authorization = 'Bearer ' + teacherKey; else { var sh2 = stuH(); Object.keys(sh2).forEach(function (k) { h[k] = sh2[k]; }); }
-      photoCache[name] = fetch(API + '/zhurnal/photo', { method: 'POST', headers: h, body: JSON.stringify({ f: name, j: J }) })
+      var pb = { f: name, j: J };
+      if (mode === 'teacher') h.Authorization = 'Bearer ' + teacherKey; else if (krMode) pb.kr = kr(); else { var sh2 = stuH(); Object.keys(sh2).forEach(function (k) { h[k] = sh2[k]; }); }
+      photoCache[name] = fetch(API + '/zhurnal/photo', { method: 'POST', headers: h, body: JSON.stringify(pb) })
         .then(function (r) { if (!r.ok) throw r.status; return r.blob(); })
         .then(function (b) { return URL.createObjectURL(b); })
         .catch(function (e) { delete photoCache[name]; throw e; });
@@ -4267,6 +4270,23 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (sub) h += thumbsHtml(sub.ph, subOfCell(markId));
     if (can) h += '<label class="btn pri upl" style="margin-top:6px">📷 ' + (sub && sub.st === 'sent' ? 'Дослать фото' : 'Сдать фото') +
       '<input type="file" id="subIn" data-lid="' + l.id + '" data-mark="' + markId + '" accept="image/*" multiple></label><div class="note" id="subSt">Можно несколько страниц сразу, до 12 фото.</div>';
+    h += '<div class="row"><span class="sp"></span><button class="btn" data-act="close">Закрыть</button></div></div>';
+    $('dlg').innerHTML = h; fillThumbs($('dlg'));
+  }
+  // классный руководитель (D 10.11): работа ученика — только смотреть. Оценка, комментарий, фото с разбором учителя
+  function openKrWork(markId) {
+    var q = markId.split('.'), l = S.les[q[0]], p = S.stu[q[1]], sid = subOfCell(markId), sub = S.sub[sid], m = S.mark[markId], sm = splitMark(m);
+    if (!l || !p || !sub) return;
+    var subj = ALLSUBJ.filter(function (x) { return x.id === l.subj; })[0] || { name: '' };
+    var h = '<div class="dlg-bg" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true">' +
+      '<h3>' + esc(p.fam + ' ' + p.name) + '</h3><div class="meta">' + esc(l.date) + ', ' + esc(subj.name) + ', ' + (q[2] === 'u' ? 'работа на уроке' : 'домашка') + (l.topic ? ', ' + esc(plain(l.topic)) : '') + '</div>';
+    if (m && (m.v || sm.c)) h += '<div class="lbl">Оценка</div><div class="big">' + (sm.g ? '<i class="' + markCls(m.v) + '">' + esc(sm.g) + '</i>' : '') + '<span>' + esc(sm.c || '') + '</span></div>';
+    // «Сдано 10.11 · проверено»; оценка уже стоит — «не проверил» не пишем, сбивает
+    var st = sub.st === 'redo' ? ' · учитель вернул на доработку' : sub.st === 'checked' ? ' · проверено' : m && m.v ? '' : ' · учитель ещё не проверил';
+    h += '<div class="note">Сдано' + (sub.at ? ' ' + ddmm(new Date(sub.at * 1000)) : '') + st + '</div>';
+    var dbt = debtOf(l, m), dw = shansSrv ? 'Второй шанс: ' : 'Долг: ';   // подсказка клетки по нажатию не видна — срок пересдачи здесь
+    if (dbt) h += '<div class="note">' + esc(dbt.left < 0 ? dw + 'срок пересдачи вышел ' + dbt.until : dw + 'пересдать до ' + dbt.until) + '.</div>';
+    h += thumbsHtml(sub.ph, sid) + '<div class="note">Нажмите на фото, чтобы открыть крупно' + (sub.ink && Object.keys(sub.ink).length ? '. ✏️ — на фото разбор учителя' : '') + '.</div>';
     h += '<div class="row"><span class="sp"></span><button class="btn" data-act="close">Закрыть</button></div></div>';
     $('dlg').innerHTML = h; fillThumbs($('dlg'));
   }
@@ -6036,6 +6056,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     }
     var cell = t.closest('td.c[data-c]');
     if (cell && mode === 'teacher') { hideTip(); openCell(cell.dataset.c); return; }
+    if (cell && krMode && S.sub[subOfCell(cell.dataset.c)]) { hideTip(); openKrWork(cell.dataset.c); return; }   // руководитель: клетка с 📷 — сама работа
     if (cell && vidOld && meId && cell.dataset.c.split('.')[1] === meId) {   // из таблицы нового вида — карточка урока со «Сдать фото»
       hideTip(); vFromOld = true; vidOld = false; vY = window.pageYOffset; vLes = cell.dataset.c.split('.')[0]; vMat = false;
       vPush(); render(); window.scrollTo(0, 0); return;
