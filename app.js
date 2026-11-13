@@ -330,14 +330,16 @@ function aktualnye(){
 function risovatZadano(){
   const list = aktualnye();
   const sec = $('#zadano');
+  // сервер молчит, показана память телефона (ТЗ 28) — одной строкой, без кнопок: сделать ребёнку тут нечего
+  const svyaz = bezSvyazi ? `<div class="bez-svyazi" style="margin:-6px 0 14px;font-size:14px;line-height:1.4;opacity:.75">Нет связи с журналом — показано, как было ${esc(bezSvyazi)}. Файлы могут не открыться.</div>` : '';
   if (!list.length){
-    sec.innerHTML = `<div class="sec-h"><h2>Домашка</h2></div><div class="all-done">Всё сдано. Можно выдохнуть 🎉</div>`;
+    sec.innerHTML = `<div class="sec-h"><h2>Домашка</h2></div>${svyaz}<div class="all-done">Всё сдано. Можно выдохнуть 🎉</div>`;
     return;
   }
   const u = list.find(x => `${x.kurs.id}|${x.n}` === fokus) || list[0];
   const ostalnye = list.filter(x => x !== u);
   sec.innerHTML = `
-    <div class="sec-h"><h2>Домашка</h2><span class="sec-sub">${ostalnye.length ? 'сначала ближайшая — остальное потом' : 'одна, и всё'}</span></div>
+    <div class="sec-h"><h2>Домашка</h2><span class="sec-sub">${ostalnye.length ? 'сначала ближайшая — остальное потом' : 'одна, и всё'}</span></div>${svyaz}
     <div class="dz-layout">
       ${bolshaya(u)}
       ${ostalnye.length ? `<div class="later">
@@ -827,25 +829,43 @@ function izZhurnala(lenta, api){
   });
   return novoe;
 }
+/* Телефон помнит последнюю ленту (ТЗ 28, D 07.11): сервер упал — ребёнок всё равно видит домашку и темы,
+   а над домашкой строку «нет связи, показано как было …». В ленте только темы, домашка и файлы — без учеников. */
+const ZH_PAMYAT = 'zh:lenta';
+let bezSvyazi = '';   // «07.11 в 18:40» — пока сайт показывает ленту из памяти телефона
+function pokazatZhurnal(d, api){   // лента → сайт; true — показали
+  const vse = () => { UROKI = sobratUroki(); risovatKalendar(); risovatDen(); risovatZadano(); risovatPredmety(); risovatVitrinu(); };
+  try {
+    if (!d || !d.ok || !izZhurnala(d, api)) return false;
+    vse();
+    const h = /^#([a-z]+)-(\d+)$/.exec(location.hash);
+    if (h && !document.body.classList.contains('sheet-open')) otkryt(h[1], h[2], false);
+    return true;
+  } catch (e) {   // запись журнала, которую сайт не смог показать, — возвращаемся к data.js, сеть тут ни при чём
+    try { console.error('журнал → сайт', e); } catch (_) {}
+    izZhurnala({ les: [], file: [] }, api); vse();
+    return false;
+  }
+}
+function izPamyati(){   // сервер не ответил или ответил ошибкой — лента, которую телефон видел последней (не старше месяца)
+  let p = null;
+  try { p = JSON.parse(localStorage.getItem(ZH_PAMYAT) || 'null'); } catch (_) {}
+  if (!p || !p.d || !p.t || Date.now() - p.t > 30 * DAY || !pokazatZhurnal(p.d, p.api)) return;
+  const t = new Date(p.t), dv = n => String(n).padStart(2, '0');
+  bezSvyazi = `${dv(t.getDate())}.${dv(t.getMonth() + 1)} в ${dv(t.getHours())}:${dv(t.getMinutes())}`;
+  risovatZadano();
+}
 function vzyatZhurnal(i = 0){
-  if (i >= ZH_API.length || typeof fetch !== 'function') return;
+  if (typeof fetch !== 'function') return;
+  if (i >= ZH_API.length) return izPamyati();
   const api = ZH_API[i], ctrl = typeof AbortController === 'function' ? new AbortController() : null;
   const t = setTimeout(() => ctrl && ctrl.abort(), 8000);
   fetch(api + '/zhurnal/lenta', { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
     .then(r => r.ok ? r.json() : Promise.reject(r.status))
     .then(d => {
       clearTimeout(t);
-      const vse = () => { UROKI = sobratUroki(); risovatKalendar(); risovatDen(); risovatZadano(); risovatPredmety(); risovatVitrinu(); };
-      try {
-        if (!d || !d.ok || !izZhurnala(d, api)) return;
-        vse();
-        const h = /^#([a-z]+)-(\d+)$/.exec(location.hash);
-        if (h && !document.body.classList.contains('sheet-open')) otkryt(h[1], h[2], false);
-      } catch (e) {   // запись журнала, которую сайт не смог показать, — возвращаемся к data.js, сеть тут ни при чём
-        try { console.error('журнал → сайт', e); } catch (_) {}
-        izZhurnala({ les: [], file: [] }, api); vse();
-      }
-    }, e => { clearTimeout(t); if (typeof e !== 'number') vzyatZhurnal(i + 1); });   // нет связи — запасной адрес; сервер ответил отказом — он не поможет
+      if (pokazatZhurnal(d, api)) try { localStorage.setItem(ZH_PAMYAT, JSON.stringify({ t: Date.now(), api, d })); } catch (_) {}
+    }, e => { clearTimeout(t); typeof e !== 'number' ? vzyatZhurnal(i + 1) : izPamyati(); });   // нет связи — запасной адрес; сервер ответил ошибкой (служба лежит) — память телефона
 }
 
 /* ═════════════════ СТАРТ ═════════════════ */
