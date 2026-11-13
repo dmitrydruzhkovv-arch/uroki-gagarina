@@ -217,6 +217,34 @@ td.c.long{ font-size:11px; white-space:normal; line-height:1.1; font-weight:600;
 .fmtbar{ margin-left:auto; display:inline-flex; gap:4px; text-transform:none; letter-spacing:0; }
 .fmtbar button{ width:30px; height:28px; padding:0; display:grid; place-items:center; line-height:1; border-radius:8px; font-size:14px; color:var(--ink); box-shadow:inset 0 0 0 1px var(--z-line2); background:var(--card); }
 .fmtbar button:hover{ background:var(--z-hover); }
+/* удобства ввода (D 09.11, флаг plan): отступ строки Tab — уровень иерархии; ⇥ ⇤ — только на телефоне, на Маке есть Tab */
+.tx-i{ display:block; padding-left:calc(var(--i) * 1.4em); }
+.li.tx-i{ padding-left:calc(1.05em + var(--i) * 1.4em); } .tl .li.tx-i{ padding-left:calc(.9em + var(--i) * 1.4em); }
+@media (hover:hover) and (pointer:fine){ .fmtbar .fmt-t{ display:none; } }
+.fmtbar .fmt-s{ font-size:15px; }
+.stk{ position:fixed; z-index:80; padding:10px; border-radius:14px; background:var(--card); color:var(--ink); box-shadow:var(--z-shadow), 0 0 0 1px var(--z-line2); }
+.stk-r{ display:flex; align-items:center; gap:4px; } .stk-r + .stk-r{ margin-top:6px; }
+.stk-r > span{ width:76px; font-size:11.5px; font-weight:700; color:var(--muted); }
+.stk-r button{ width:44px; height:44px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; border-radius:10px; font-size:20px; line-height:1; color:var(--ink); }
+.stk-r button:hover, .stk-r button:focus-visible{ background:var(--z-hover); }
+.stk-r button small{ font-size:9.5px; font-weight:700; color:var(--muted); letter-spacing:.02em; }
+html.zh-tx .dlg .lbl{ flex-wrap:wrap; row-gap:4px; }
+html.zh-tx .dlg textarea{ min-height:84px; max-height:60vh; overflow-y:auto; }
+html.zh-tx .dlg textarea.tx-one{ min-height:0; max-height:none; overflow:hidden; resize:none; }
+html.zh-tx #pop textarea, html.zh-tx .rv textarea{ max-height:40vh; overflow-y:auto; }
+/* план урока по минутам: «0–5 разминка», строки с Tab под этапом — его пункты */
+.zp{ display:grid; gap:8px; }
+.zp-in{ white-space:pre-line; }
+.zp-r{ display:grid; grid-template-columns:4.2em 1fr; gap:10px; align-items:baseline; }
+.zp-t{ font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--s, var(--ink)); }
+.zp-b{ min-width:0; white-space:pre-line; overflow-wrap:anywhere; }
+.zp-b > .zp-h{ display:block; font-weight:700; }
+.plchips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+.plchips button{ min-height:36px; padding:0 12px; border-radius:18px; font-size:14px; font-weight:700; color:var(--ink); box-shadow:inset 0 0 0 1px var(--z-line2); background:var(--card); }
+.plchips button:hover{ background:var(--z-hover); }
+.plchips .plsum{ margin-left:auto; align-self:center; font-size:13px; color:var(--muted); }
+.dplan{ margin:0 0 12px; font-size:15px; line-height:1.4; }
+.dplan .lbl{ margin:0 0 6px; }
 /* «Математика» — чёрная с белой М (D, 01.10) */
 .k-mat{ --g:linear-gradient(135deg,#3a3642 0%,#16131a 60%,#000 100%); --s:#16131a; --on:#fff; --t:#ecebef; --d:#16131a; --glow:rgba(0,0,0,.45); }
 [data-theme="night"] .k-mat{ --g:linear-gradient(135deg,#2c2436 0%,#0a070d 70%,#000 100%); --s:#f3ecff; --on:#fff; --t:rgba(255,255,255,.08); --d:#f3ecff; --glow:rgba(255,255,255,.35); }
@@ -1092,6 +1120,8 @@ html:not([data-theme="night"]) #vid .v-back{ color:var(--v-link); background:rgb
 #vid .v-frow{ color:var(--v-link); }
 #vid .v-frow .v-go{ color:var(--v-dim); }
 #vid .v-note{ font-size:15.5px; line-height:1.32; }
+#vid .v-plan{ margin:0 0 14px; font-size:15.5px; line-height:1.32; } #vid .v-plan .v-cap{ margin-bottom:6px; font-weight:700; }
+#vid .v-plan .zp-t{ color:var(--v-sub); } #vid .v-hwb .v-hi.tx-i{ padding-left:calc(var(--i) * 1.2em); }
 /* «Написать учителю» и «Вспомнить урок» — белые строки-карточки во всю ширину */
 #vid .v-askc, #vid .v-rem{ display:flex; align-items:center; gap:12px; width:100%; margin-top:12px; padding:13px 14px; text-align:left; background:var(--v-card); border-radius:10px; box-shadow:var(--v-sh); }
 #vid .v-askc{ font-size:16px; font-weight:650; color:var(--v-link); }
@@ -1291,16 +1321,49 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   var FMT_B = /(^|[\s(«"'>])\*\*(\S(?:.*?\S)?)\*\*(?=$|[\s.,;:!?)»"'<])/g,
     FMT_U = /(^|[\s(«"'>])__([^_\s](?:[^_]*[^_\s])?)__(?=$|[\s.,;:!?)»"'<])/g,
     FMT_I = /(^|[\s(«"'>])\*([^*\s](?:[^*]*[^*\s])?)\*(?=$|[\s.,;:!?)»"'<])/g;
+  // табуляция в начале строки — ступень (D 09.11: Tab вправо, ⇧Tab обратно): строка уходит вправо целиком, с переносами
+  function txLvl(ln) { return planSrv && /\S/.test(ln) ? /^\t*/.exec(ln)[0].length : 0; }   // без флага — как было; строка из одних табов — пустая строка
+  function txSty(n) { return ' style="--i:' + Math.min(n, 6) + '"'; }
   function fmt(t) {
     var L = esc(t).split('\n').map(function (ln) {
+      var n = txLvl(ln); if (n) ln = ln.slice(n);
       var li = /^\s*(?:•|-|–)\s+/.test(ln);
       if (li) ln = ln.replace(/^\s*(?:•|-|–)\s+/, '');
       ln = ln.replace(FMT_B, '$1<b>$2</b>').replace(FMT_U, '$1<u>$2</u>').replace(FMT_I, '$1<i>$2</i>');
-      return { li: li, h: li ? '<span class="li">' + ln + '</span>' : ln };
+      return { li: li || !!n, h: li ? '<span class="li' + (n ? ' tx-i"' + txSty(n) : '"') + '>' + ln + '</span>' : n ? '<span class="tx-i"' + txSty(n) + '>' + ln + '</span>' : ln };
     });
     // строка с точкой — сама с новой строки: перенос рядом с ней дал бы пустую строку
     return L.map(function (x, i) { return x.h + (i < L.length - 1 && !x.li && !L[i + 1].li ? '\n' : ''); }).join('');
   }
+  // текст без оформления, только ступени (комментарий к оценке — он показывается как есть, без **)
+  function txInd(t) {
+    var L = String(t || '').split('\n').map(function (ln) { var n = txLvl(ln); return { b: !!n, h: n ? '<span class="tx-i"' + txSty(n) + '>' + esc(ln.slice(n)) + '</span>' : esc(ln) }; });
+    return L.map(function (x, i) { return x.h + (i < L.length - 1 && !x.b && !L[i + 1].b ? '\n' : ''); }).join('');
+  }
+  // план урока (D 09.11): строка «0–5 разминка» (или «5-15: теория», «15–25 мин …») — этап с минутами урока;
+  // строки ниже него, со ступенью или без минут, — его пункты. Что до первого этапа — вступление («Цель: …»)
+  var PL_ST = /^(\d{1,3})\s*[–—-]\s*(\d{1,3})(?:\s*мин\.?)?(?:\s*[:.—–-])?(?:\s+(.*))?$/;
+  function planParse(t) {
+    var intro = [], st = [];
+    String(t || '').split('\n').forEach(function (ln) {
+      var m = !/^\t/.test(ln) && PL_ST.exec(ln.trim()), last = st[st.length - 1];
+      if (m && +m[2] > +m[1] && +m[2] - +m[1] <= 120 && (!last || +m[1] >= last.b)) st.push({ a: +m[1], b: +m[2], t: m[3] || '', sub: [] });
+      else if (st.length) st[st.length - 1].sub.push(ln);
+      else intro.push(ln);
+    });
+    while (intro.length && !intro[intro.length - 1].trim()) intro.pop();
+    st.forEach(function (s) { while (s.sub.length && !s.sub[s.sub.length - 1].trim()) s.sub.pop(); });
+    return { intro: intro, st: st, sum: st.reduce(function (n, s) { return n + s.b - s.a; }, 0), end: st.length ? st[st.length - 1].b : 0 };
+  }
+  function planHtml(t) {
+    var P = planParse(t), h = '';
+    if (P.intro.join('').trim()) h += '<div class="zp-in">' + fmt(P.intro.join('\n')) + '</div>';
+    P.st.forEach(function (s) {
+      h += '<div class="zp-r"><span class="zp-t">' + s.a + '–' + s.b + '</span><div class="zp-b">' + (s.t ? '<span class="zp-h">' + fmt(s.t) + '</span>' : '') + (s.sub.length ? fmt(s.sub.join('\n')) : '') + '</div></div>';
+    });
+    return h ? '<div class="zp">' + h + '</div>' : '';
+  }
+  function minN(n) { return n + ' мин'; }
   function plain(t) { return String(t || '').replace(FMT_B, '$1$2').replace(FMT_U, '$1$2').replace(FMT_I, '$1$2').replace(/^\s*•\s+/gm, ''); }
 
   /* ── адрес сервера: как у Кабинета — прямой RF и запасной через шлюз (с VPN) ── */
@@ -1897,6 +1960,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         vidSrv = !!r.data.vid; provSrv = !!r.data.prov; tsubSrv = !!r.data.tsub;   // вид ученика включён детям — в окне дня домашка показана так, как её увидят
         var itogNew = itogSrv !== !!r.data.itog;   // итоги включили или выключили — перерисовать, даже если записи те же
         if (itogNew) { itogSrv = !!r.data.itog; lsSet('zh:itog', itogSrv); }
+        if (planSrv !== !!r.data.plan) { planSrv = !!r.data.plan; lsSet('zh:plan', planSrv); itogNew = true; }   // план урока и удобства ввода (D 09.11): включили — перерисовать
+        document.documentElement.classList.toggle('zh-tx', planSrv);
         if (shansSrv !== !!r.data.shans) { shansSrv = !!r.data.shans; lsSet('zh:shans', shansSrv); itogNew = true; }   // и тогда перерисовать
         if (svodkaSrv !== !!r.data.svodka) { svodkaSrv = !!r.data.svodka; lsSet('zh:svodka', svodkaSrv); itogNew = true; }
         // значок открыли там, где память держится: ключ — ещё и в память, тогда ссылка «Журнал» с сайта уроков (адрес без ключа) тоже откроет журнал
@@ -1967,7 +2032,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (r.data.pass) lsSet(LS.pass, r.data.pass);
         if (r.data.j) J = r.data.j;
         if (r.data.meta) setMeta(r.data.meta);
-        itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; shansSrv = !!r.data.shans; meId = null; S = fromObjects(r.data.objects); loaded = true; render();   // по коду — кто смотрит, неизвестно
+        itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; shansSrv = !!r.data.shans; planSrv = !!r.data.plan; meId = null; S = fromObjects(r.data.objects); loaded = true; render();   // по коду — кто смотрит, неизвестно
         viewFoot();
       })
       .catch(function (e) {
@@ -2002,7 +2067,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (!krUrl()) krPut(kr());   // пришла без ключа в адресе (ссылка «Журнал» с сайта уроков) — вернуть: закладка его запомнит
         if (r.data.j) J = r.data.j;
         if (r.data.meta) setMeta(r.data.meta);
-        itogSrv = !!r.data.itog; shansSrv = !!r.data.shans; krRab = !!r.data.krrab; meId = null; S = fromObjects(r.data.objects); loaded = true; render();
+        itogSrv = !!r.data.itog; shansSrv = !!r.data.shans; krRab = !!r.data.krrab; planSrv = !!r.data.plan; meId = null; S = fromObjects(r.data.objects); loaded = true; render();
         krFoot();
       })
       .catch(function (e) {
@@ -2767,6 +2832,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
           '<b>' + (x.l.topic ? fmt(x.l.topic) : (topicOf(x.l).t ? esc(topicOf(x.l).t) : 'Тема не указана')) + '</b></div>' +
           (x.l.nt ? '<div class="dnote">' + fmt(x.l.nt) + '</div>' : '') +
           (edit && x.l.np ? '<div class="dnote me" title="Видишь только ты">🔒 ' + fmt(x.l.np) + '</div>' : '') +
+          (function (ph) { return ph ? '<div class="dplan"><div class="lbl">План урока</div>' + ph + '</div>' : ''; })(planSrv && x.l.pl ? planHtml(x.l.pl) : '') +
           (cv ? '<div class="cov"><button class="covb" data-act="openfile" data-id="' + cv.id + '" title="Обложка темы — открыть"><img data-ff="' + cv.id + '" alt=""></button>' +
             (edit ? '<button class="frm" data-act="rmfile" data-id="' + cv.id + '" title="Убрать обложку" aria-label="Убрать обложку">✕</button>' : '') + '</div>' : '') +
           (F.length ? tilesHtml(F, edit) : '<div class="note">' + (edit ? 'Файлов пока нет.' : 'К этому уроку файлов нет.') + '</div>') +
@@ -2900,14 +2966,28 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         return '<button type="button" class="' + x.k + '" data-sj="' + x.id + '" aria-pressed="' + (x.id === cur) + '" title="' + esc(x.name) + '">' + (x.id === 'mat' ? 'М' : esc(x.id === 'ver' ? 'Статистика' : x.name)) + '</button>';
       }).join('') + '</div>';
     };
-    var bar = function (id, li) { return '<span class="fmtbar" data-for="' + id + '"><button type="button" data-fmt="b" title="Жирный"><b>Ж</b></button><button type="button" data-fmt="i" title="Курсив"><i>К</i></button><button type="button" data-fmt="u" title="Подчёркнутый"><u>Ч</u></button>' + (li ? '<button type="button" data-fmt="li" title="Точка в начале строки">•</button>' : '') + '</span>'; };
+    var bar = function (id, li) { return '<span class="fmtbar" data-for="' + id + '"><button type="button" data-fmt="b" title="Жирный"><b>Ж</b></button><button type="button" data-fmt="i" title="Курсив"><i>К</i></button><button type="button" data-fmt="u" title="Подчёркнутый"><u>Ч</u></button>' + (li ? '<button type="button" data-fmt="li" title="Точка в начале строки">•</button>' : '') +
+      (planSrv ? (li ? '<button type="button" class="fmt-t" data-fmt="out" title="Отступ влево (⇧Tab)" aria-label="Отступ влево">⇤</button><button type="button" class="fmt-t" data-fmt="in" title="Отступ вправо (Tab)" aria-label="Отступ вправо">⇥</button>' : '') +
+        '<button type="button" class="fmt-s" data-fmt="stk" title="Стикеры" aria-label="Стикеры">☺</button>' : '') + '</span>'; };
+    // тема — одна строка; при флаге plan — поле, которое переносит длинную тему и растёт, а не прячет её хвост (D 09.11)
+    var one = function (id, v) { return planSrv ? '<textarea id="' + id + '" class="tx-one" rows="1" autocomplete="off" maxlength="400">' + esc(v) + '</textarea>' : '<input id="' + id + '" autocomplete="off" maxlength="400" value="' + esc(v) + '">'; };
+    // план урока (D 09.11): «0–5 разминка» — этап по минутам, Tab — пункт этапа; кнопки «＋5 мин» дописывают следующий этап
+    var plan = function (n, l) {
+      if (!planSrv) return '';
+      var pl = l && l.pl || '';
+      return '<details class="fnote fplan"' + (pl ? ' open' : '') + '><summary>＋ План урока</summary>' +
+        '<div class="lbl">' + bar('fL' + n, true) + '</div><div class="note fnote-h">Видят ученики класса в Дневнике, в карточке урока.</div>' +
+        '<textarea id="fL' + n + '" class="tx-plan" autocomplete="off" maxlength="2000" rows="4" placeholder="0–5 разминка&#10;5–20 новая тема&#10;20–40 решаем">' + esc(pl) + '</textarea>' +
+        '<div class="plchips" data-for="fL' + n + '">' + [5, 10, 15, 20].map(function (k) { return '<button type="button" data-plk="' + k + '">＋' + k + ' мин</button>'; }).join('') + '<span class="plsum"></span></div>' +
+        '<div class="fprev" hidden></div></details>';
+    };
     // заметка к уроку (D 16.10): ученикам — в карточке под темой; «только мне» ученики не получают вовсе (сервер не отдаёт)
     var notes = function (n, l) {
       var nt = l && l.nt || '', np = l && l.np || '';
       return '<details class="fnote"' + (nt || np ? ' open' : '') + '><summary>＋ Заметка к уроку</summary>' +
-        '<div class="lbl">Заметка ученикам</div><div class="note fnote-h">Видят все ученики класса и открытый сайт уроков. Долги и фамилии — в поле 🔒 Только мне.</div>' +   // ТЗ 22, A9
+        '<div class="lbl">Заметка ученикам' + (planSrv ? bar('fN' + n, true) : '') + '</div><div class="note fnote-h">Видят все ученики класса и открытый сайт уроков. Долги и фамилии — в поле 🔒 Только мне.</div>' +   // ТЗ 22, A9
         '<textarea id="fN' + n + '" autocomplete="off" maxlength="1200" rows="2">' + esc(nt) + '</textarea>' +
-        '<div class="lbl">🔒 Только мне</div><textarea id="fP' + n + '" autocomplete="off" maxlength="1200" rows="2" placeholder="ученики не видят">' + esc(np) + '</textarea></details>';
+        '<div class="lbl">🔒 Только мне' + (planSrv ? bar('fP' + n, true) : '') + '</div><textarea id="fP' + n + '" autocomplete="off" maxlength="1200" rows="2" placeholder="ученики не видят">' + esc(np) + '</textarea></details>';
     };
     var rd0 = date ? realDate(date) : null, y0 = (function () { var n = new Date(); return n.getMonth() >= 7 ? n.getFullYear() : n.getFullYear() - 1; })();
     var iso = function (d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); };
@@ -2917,10 +2997,10 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         : '<div class="meta">' + esc(subj.name) + (J === MAIN_J ? '. Оставишь поле пустым — журнал возьмёт тему и домашку с сайта уроков (серым — что там сейчас).' : '') + '</div>') +
       '<div class="lbl">Дата</div><input id="fDate" type="date" min="' + y0 + '-08-01" max="' + (y0 + 1) + '-07-31" value="' + (rd0 ? iso(rd0) : '') + '">' +
       '<label class="chk"><input type="checkbox" id="fTwo"' + (two ? ' checked' : '') + '> ' + (feed() ? 'Два урока в этот день (один предмет — домашка общая, разные — у каждого своя)' : 'Два урока в этот день: У1 | У2 | Д, домашка одна') + '</label>' +
-      '<div class="lbl">Тема 1-го урока' + '<span class="fmtbar" data-for="fT1"><button type="button" data-fmt="b" title="Жирный"><b>Ж</b></button><button type="button" data-fmt="i" title="Курсив"><i>К</i></button><button type="button" data-fmt="u" title="Подчёркнутый"><u>Ч</u></button></span>' + '</div><input id="fT1" autocomplete="off" maxlength="400" value="' + esc(D[0] ? D[0].topic : '') + '">' +
-      '<div class="fslot" data-slot="t1" data-slot2="c1"></div>' + notes(1, D[0]) +
+      '<div class="lbl">Тема 1-го урока' + bar('fT1') + '</div>' + one('fT1', D[0] ? D[0].topic : '') +
+      '<div class="fslot" data-slot="t1" data-slot2="c1"></div>' + notes(1, D[0]) + plan(1, D[0]) +
       '<div id="fT2box"' + (two ? '' : ' hidden') + '>' + (feed() ? '<div class="lbl">Предмет 2-го урока</div>' + pick('sjPick2', daySubj2) : '') +
-      '<div class="lbl">Тема 2-го урока' + bar('fT2') + '</div><input id="fT2" autocomplete="off" maxlength="400" value="' + esc(D[1] ? D[1].topic : '') + '"><div class="fslot" data-slot="t2" data-slot2="c2"></div>' + notes(2, D[1]) + '</div>' +
+      '<div class="lbl">Тема 2-го урока' + bar('fT2') + '</div>' + one('fT2', D[1] ? D[1].topic : '') + '<div class="fslot" data-slot="t2" data-slot2="c2"></div>' + notes(2, D[1]) + plan(2, D[1]) + '</div>' +
       '<div class="lbl"><span id="fHwLbl">Домашка</span>' + bar('fHw', true) + '</div><textarea id="fHw" autocomplete="off" maxlength="1200">' + esc(split0 ? D[0].hw : [D[0] && D[0].hw, D[1] && !D[1].sh && D[1].hw].filter(Boolean).join('\n')) + '</textarea>' +
       '<div class="fslot" data-slot="h1"></div>' +
       '<div id="fHw2box" hidden><div class="lbl"><span>Домашка 2-го урока</span>' + bar('fHw2', true) + '</div><textarea id="fHw2" autocomplete="off" maxlength="1200">' + esc(split0 ? D[1].hw : '') + '</textarea><div class="fslot" data-slot="h2"></div></div>' +
@@ -2945,6 +3025,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       var two2 = $('fTwo').checked, split = feed() && two2 && daySubj2 !== daySubj;
       $('fT2box').hidden = !two2; $('fHw2box').hidden = !split;
       $('fHwLbl').textContent = split ? 'Домашка 1-го урока' : 'Домашка';
+      if (planSrv) txInit($('fT2box'));
     };
     ['sjPick', 'sjPick2'].forEach(function (id) {
       if ($(id)) $(id).addEventListener('click', function (ev) {
@@ -2971,15 +3052,22 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     $('fHw').addEventListener('input', prev); $('fDate').addEventListener('input', prev); prev();
     $('fTwo').addEventListener('change', upd);
     upd(); hint();
+    if (planSrv) txInit($('dlg'));
     setTimeout(function () { var f = $(date ? 'fT1' : 'fDate'); if (f) f.focus(); }, 30);
+  }
+  // строки, которых касается выделение [a, b): выделение до начала следующей строки её не захватывает
+  function lineSpan(v, a, b) {
+    if (b > a && v[b - 1] === '\n') b--;
+    var st = a ? v.lastIndexOf('\n', a - 1) + 1 : 0, en = v.indexOf('\n', b);
+    return { st: st, en: en < 0 ? v.length : en };
   }
   function applyFmt(id, kind) {
     var el = $(id);
     if (!el) return;
+    if (kind === 'in' || kind === 'out') { txIndent(el, kind === 'out'); return; }   // ⇥ ⇤ на телефоне — то же, что Tab и ⇧Tab
     var a = el.selectionStart, b = el.selectionEnd, v = el.value;
     if (kind === 'li') {
-      if (b > a && v[b - 1] === '\n') b--;   // выделение до начала следующей строки — её не трогаем
-      var st = v.lastIndexOf('\n', a - 1) + 1, en = v.indexOf('\n', b); if (en < 0) en = v.length;
+      var sp = lineSpan(v, a, b), st = sp.st, en = sp.en;
       var lines = v.slice(st, en).split('\n'), full = lines.filter(function (x) { return x.trim(); });
       var on = full.length && full.every(function (x) { return /^\s*•\s/.test(x); });
       var out = lines.map(function (x) {
@@ -3029,7 +3117,11 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (two && !split && l2 && !l2.sh && $('fHw2').value.trim()) hw1 = [hw1, $('fHw2').value.trim()].filter(Boolean).join('\n');   // были раздельные, стала общая — вторую не теряем
     // галочки готовности и привязку автоматических заданий (au, ad) правка дня не стирает
     var keep = function (o, l) { if (l) { ['rt', 'rh'].forEach(function (f) { if (l[f]) o[f] = 1; }); ['au', 'ad'].forEach(function (f) { if (l[f]) o[f] = l[f]; }); } return o; };
-    var noted = function (o, n) { o.nt = $('fN' + n).value.trim(); o.np = $('fP' + n).value.trim(); return o; };   // пустая — стереть
+    var noted = function (o, n) {   // пустая — стереть
+      o.nt = $('fN' + n).value.trim(); o.np = $('fP' + n).value.trim();
+      if (planSrv && $('fL' + n)) o.pl = $('fL' + n).value.trim();   // как заметки: сервер края тоже обрезает
+      return o;
+    };
     put('les', id1, noted(keep({ subj: sj, date: date, topic: $('fT1').value.trim(), hw: hw1, ord: 1 }, l1), 1));
     var id2 = two ? (l2 ? l2.id : newId('l')) : null;
     if (two) put('les', id2, noted(keep(split ? { subj: sj2, date: date, topic: $('fT2').value.trim(), hw: $('fHw2').value.trim(), ord: 2 }
@@ -3404,7 +3496,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (want && r.data.j === want) { lsSet('zh:sj', want); lsSet('zh:sjt', Date.now()); }   // выбрал в переключателе и он открылся — в следующий раз откроется он
       if (!r.data.stu) { meId = null; freeRows = r.data.free || []; lsDel(LS.ckl); return 'nolink'; }   // строку отвязали — и чат по ссылке долой
       setMeta(r.data.meta);
-      meId = r.data.stu; sdachaOn = !!r.data.sdacha; sdelSrv = !!r.data.sdel; urabSrv = !!r.data.urab; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; shansSrv = !!r.data.shans; statSrv = !!r.data.stat; viewFoot();
+      meId = r.data.stu; planSrv = !!r.data.plan; sdachaOn = !!r.data.sdacha; sdelSrv = !!r.data.sdel; urabSrv = !!r.data.urab; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; shansSrv = !!r.data.shans; statSrv = !!r.data.stat; viewFoot();
       if (r.data.ck && !uchDevice()) lsSet(LS.ckl, r.data.ck); else lsDel(LS.ckl);   // чат без кода: пришёл по личной ссылке — чат узнаёт его сам (ТЗ 22, E5); у D — никогда
       if (znUrl()) lsSet('zh:zn', znUrl());   // отдельной записью: в деле только когда другого входа на устройстве нет (см. старт) // ключ значка — ещё и в память: ушёл на сайт уроков и вернулся по ссылке «Журнал» без ключа — кода класса не спросим (D 12.10)
       S = fromObjects(r.data.objects); loaded = true; render();
@@ -3975,6 +4067,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
      (cm: доли самого фото, как у штрихов). Справа оценка, комментарий, «На доработку», «Поставить и к следующему».
      Включается флагом сервера ZHURNAL_PROV (prov в /sync); без него — прежний просмотр фото. */
   var provSrv = false, tsubSrv = false;   // tsubSrv — учитель загружает фото работы за ученика и убирает лишнее (ТЗ 25)
+  var planSrv = lsGet('zh:plan', false) === true;   // план урока в окне дня, Tab-отступы, стикеры, поля по высоте текста (D 09.11, ZHURNAL_PLAN)
+  if (planSrv && mode === 'teacher') document.documentElement.classList.add('zh-tx');
   var RV_PIN = 13;   // радиус кружка с номером, px экрана
   function rvLessonHtml(l) {
     var D = layout(lessons(l.subj).filter(function (x) { return x.date === l.date; })), sj = vSj(l.subj), h = '<div class="rv-cap">' + esc(sj.short) + ', ' + esc(vDay(l.date)) + '</div>';
@@ -4036,7 +4130,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         '<label class="rv-lbl" for="rvCm">Комментарий ученику</label><textarea id="rvCm" maxlength="300" rows="3" autocomplete="off" placeholder="например: перепиши №3">' + esc(splitMark(m0).c) + '</textarea>' +
         '<button class="rv-redo" data-rv="redo">↺ На доработку</button>' + (tsubSrv ? '<button class="rv-pdel" data-rv="pdel">🗑 Удалить это фото</button>' : '') + '<div class="note">Оценка уйдёт ученику «проверено» в бот; на фото — твоё перо и пометки с номерами.</div>' +
         '<button class="rv-next" data-rv="next"></button></aside></div>';
-    document.body.appendChild(v); document.documentElement.classList.add('rv-on');
+    document.body.appendChild(v); document.documentElement.classList.add('rv-on'); txInit(v.querySelector('.rv-side'));
     var cv = v.querySelector('canvas'), stage = v.querySelector('.rv-stage'), mg = v.querySelector('.rv-mg'), work = v.querySelector('.rv-work'), lbody = v.querySelector('.rv-lbody');
     function setNext() { var n = v.querySelector('.rv-next'); n.textContent = pick ? 'Поставить ' + pick + ' и к следующему →' : (Q.filter(function (x) { return x !== subId; }).length ? 'К следующей работе →' : 'Готово, в журнал'); }
     function status() { var s0 = S.sub[subId] || {}; v.querySelector('.rv-st').textContent = '📷 ' + (s0.st === 'sent' ? 'Ждёт проверки' : s0.st === 'redo' ? 'На доработке' : 'Проверено') + (s0.at ? ', сдано ' + ddmm(new Date(s0.at * 1000)) : ''); }
@@ -4658,7 +4752,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (shansSrv) {
       pop.innerHTML = head + popTabsHtml(id, m, nextOn);
       pop.hidden = false;
-      fillThumbs(pop);
+      fillThumbs(pop); txInit(pop);
       $('popForm').onsubmit = function (ev) { ev.preventDefault(); setMark($('popIn').value); };
       $('popNext').onchange = function () { lsSet(LS.next, this.checked); };
       return;
@@ -4673,7 +4767,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       '<label><input type="checkbox" id="popNext"' + (nextOn ? ' checked' : '') + '> дальше вниз</label>' +
       '<button class="btn" data-act="popclose">Закрыть</button></div>';
     pop.hidden = false;
-    fillThumbs(pop);
+    fillThumbs(pop); txInit(pop);
     $('popForm').onsubmit = function (ev) { ev.preventDefault(); setMark($('popIn').value); };
     $('popNext').onchange = function () { lsSet(LS.next, this.checked); };
   }
@@ -5330,7 +5424,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (!p) return;
       if (!due && V_DUE.test(p)) { due = p.replace(/[.!]+$/, ''); return; }
       if ((h = /^(.{2,30}):$/.exec(p)) && h[1].indexOf('№') < 0) { out.push({ h: h[1] }); return; }
-      out.push({ t: s, k: p });
+      out.push({ t: s, k: p, i: txLvl(ln) });
     });
     return { due: due, items: out };
   }
@@ -5350,7 +5444,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (due !== false && (P.due || due)) h += '<div class="v-hwd">' + esc(P.due ? 'Сдать ' + P.due : due) + '</div>';
     P.items.forEach(function (x) {
       if (x.h) { h += '<div class="v-hwh">' + esc(x.h) + '</div>'; return; }
-      h += V_TIP.test(x.k) ? '<div class="v-hi v-tip"><i aria-hidden="true">💡</i><span>' + vHwItem(x.t) + '</span></div>' : '<div class="v-hi">' + vHwItem(x.t) + '</div>';
+      h += V_TIP.test(x.k) ? '<div class="v-hi v-tip"><i aria-hidden="true">💡</i><span>' + vHwItem(x.t) + '</span></div>' : '<div class="v-hi' + (x.i ? ' tx-i"' + txSty(x.i) : '"') + '>' + vHwItem(x.t) + '</div>';
     });
     return h + (extra || '') + '</div>';
   }
@@ -5435,7 +5529,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (!has) h += '<div class="v-card v-pad"><span class="v-cap">К этому уроку ничего не задано.</span></div>';
     else {
       // слова учителя о домашке — выше задания и отметки: сначала что исправить, потом цифра (ТЗ 22, A7)
-      if (vSay(sm.c)) h += '<div class="v-card v-pad v-say"><span class="v-cap">Учитель</span><p>' + esc(sm.c) + '</p></div>';
+      if (vSay(sm.c)) h += '<div class="v-card v-pad v-say"><span class="v-cap">Учитель</span><p>' + txInd(sm.c) + '</p></div>';
       h += vHwBox(own.subj, txt, false, hwExtra);
       if (sub && (sub.ph || []).length) h += '<div class="v-lbl">Моя сдача</div><div class="v-card v-pad">' + thumbsHtml(sub.ph, own.id + '.' + meId) + inkNote(sub) + '</div>';
     }
@@ -5443,6 +5537,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     // об уроке: заметка учителя (резюме урока) и файлы открытым списком; больше трёх файлов — под «Файлы урока»
     var go = siteLink(B.les[0]), srez = B.les.map(function (l) { return autoUrl(l.au); }).filter(Boolean)[0];
     var notes = B.les.map(function (l) { return l.nt ? '<p class="v-note">' + fmt(l.nt) + '</p>' : ''; }).join('');   // заметка учителя к уроку (D 16.10)
+    // план урока (D 09.11): сервер отдаёт его, только пока включён ZHURNAL_PLAN
+    notes += B.les.map(function (l, i) { var ph = l.pl && planSrv ? planHtml(l.pl) : ''; return ph ? '<div class="v-plan"><span class="v-cap">План урока' + (B.les.length > 1 ? ', ' + (i + 1) + '-й' : '') + '</span>' + ph + '</div>' : ''; }).join('');
     var fl = !MF.length ? '' : MF.length > 3 && !vMat ? '<button class="v-frow" data-va="mat" aria-expanded="false"><span aria-hidden="true">📄</span><span class="fz">Файлы урока: ' + MF.length + '</span><span class="v-go">›</span></button>' : vFilesHtml(MF);
     if (notes || fl || go || srez) h += '<div class="v-lbl">Об уроке</div><div class="v-card v-pad">' + notes + fl + (go || srez ? '<div class="v-links">' + (go ? '<a class="v-out" href="' + go + '">Урок на сайте ↗</a>' : '') +
       (srez ? '<a class="v-out" href="' + esc(srez) + '" target="_blank" rel="noopener">🎯 Срез: ввести ответы ↗</a>' : '') + '</div>' : '') + '</div>';
@@ -5676,7 +5772,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var F = U.all.filter(function (b) {
       if (b.k > tk || (b.k === tk && +vSel === +vMid(new Date()))) return false;   // сегодняшний стоит в «Сегодня» над лентой — в прошедшие со вчерашнего (ТЗ 22, E4); выбран другой день — сегодняшний в ленте
       b.tp = vTopics(b.les);
-      return b.tp.length || vHwHas(b.own) || b.les.some(function (l) { return filesOf(l.id, '*').length || l.nt; });
+      return b.tp.length || vHwHas(b.own) || b.les.some(function (l) { return filesOf(l.id, '*').length || l.nt || (planSrv && l.pl); });
     }).sort(function (a, b) { return b.k - a.k || (b.les[0].ord || 0) - (a.les[0].ord || 0); });
     if (!F.length) return '';
     return '<div class="v-lbl">Прошедшие уроки</div><div class="v-fd">' + F.map(function (b) {
@@ -5902,8 +5998,13 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (va) { vAct(va); return; }
     var tm = t.closest('[data-tema]');
     if (tm) { setTheme(tm.dataset.tema); return; }
+    var sk = t.closest('[data-stk]');
+    if (sk) { var se = $(sk.closest('.stk').dataset.for); stkClose(); if (se) stkPut(se, sk.dataset.stk); return; }
+    if (!t.closest('.stk, [data-fmt="stk"]')) stkClose();
     var fb = t.closest('[data-fmt]');
-    if (fb) { applyFmt(fb.closest('.fmtbar').dataset.for, fb.dataset.fmt); return; }
+    if (fb) { var fid = fb.closest('.fmtbar').dataset.for; if (fb.dataset.fmt === 'stk') stkOpen(fb, fid); else applyFmt(fid, fb.dataset.fmt); return; }
+    var pk = t.closest('[data-plk]');
+    if (pk) { plAdd(pk.closest('.plchips').dataset.for, +pk.dataset.plk); return; }
     var jb = t.closest('[data-jr]');
     if (jb) { switchJournal(jb.dataset.jr); return; }
     var nxc = t.closest('[data-nx]');
@@ -6134,7 +6235,122 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   });
 
   // кнопка оформления не забирает фокус — выделение в поле остаётся
-  document.addEventListener('mousedown', function (ev) { if (ev.target.closest && ev.target.closest('[data-fmt]')) ev.preventDefault(); });
+  document.addEventListener('mousedown', function (ev) { if (ev.target.closest && ev.target.closest('[data-fmt], [data-stk]')) ev.preventDefault(); });
+
+  /* ── удобства ввода учителя (D 09.11, флаг plan): Tab — ступень вправо, ⇧Tab — обратно; Enter продолжает ступень и точку;
+     ⌘B ⌘I ⌘U — как кнопки Ж К Ч; стикеры: ⌥1…5 — пометки, ⇧⌥1…5 — похвала, ⌃⌥1…5 — план урока; поля растут под текст ── */
+  var STK = [['Пометки', '⌥', ['✅', '❗', '⭐', '❓', '✏️']], ['Похвала', '⇧⌥', ['👍', '🔥', '💪', '🎯', '🌟']], ['План урока', '⌃⌥', ['📖', '✍️', '🗣', '⏱', '🏠']]];
+  function txField(el) { return planSrv && mode === 'teacher' && !!el && el.tagName === 'TEXTAREA' && !!el.closest('.dlg, #pop, .rv'); }
+  // заменить [a, b) на s так, чтобы ⌘Z отменял: insertText кладёт правку в историю поля; не вышло — пишем значение сами
+  function txPut(el, a, b, s, selA, selB) {
+    var v = el.value, want = v.slice(0, a) + s + v.slice(b);
+    if (el.maxLength > 0 && want.length > el.maxLength && want.length > v.length) return false;   // не влезет — ничего не режем молча
+    el.focus(); el.setSelectionRange(a, b);
+    var ok = false;
+    try { ok = s ? document.execCommand('insertText', false, s) : a === b || document.execCommand('delete'); } catch (e) { ok = false; }
+    if (!ok || el.value !== want) { el.value = want; el.dispatchEvent(new Event('input', { bubbles: true })); }
+    var e = a + s.length;
+    el.setSelectionRange(selA == null ? e : selA, selB == null ? (selA == null ? e : selA) : selB);
+    return true;
+  }
+  function txIndent(el, out) {
+    var v = el.value, a = el.selectionStart, b = el.selectionEnd;
+    var sp = lineSpan(v, a, b), st = sp.st, en = sp.en;
+    var old = v.slice(st, en), lines = old.split('\n'), d0 = 0;
+    var res = lines.map(function (x, i) {
+      var nx = out ? x.replace(/^(?:\t| {1,4})/, '') : x.trim() || lines.length === 1 ? '\t' + x : x;   // пустые строки в выделении не сдвигаем
+      if (!i) d0 = nx.length - x.length;
+      return nx;
+    }).join('\n');
+    if (res === old) return;
+    var one = a === b || lines.length === 1;
+    txPut(el, st, en, res, one ? Math.max(st, a + d0) : st, one ? Math.max(st, b + d0) : st + res.length);
+  }
+  // Enter в строке со ступенью или точкой — новая строка с тем же началом; пустой пункт — Enter снимает точку, потом ступень
+  function txEnter(el) {
+    var v = el.value, a = el.selectionStart, b = el.selectionEnd, st = lineSpan(v, a, a).st;
+    var m = /^(\t*)((?:•|-|–) )?/.exec(v.slice(st, a)), pre = m[0];
+    if (!pre) return false;
+    var en = v.indexOf('\n', a); if (en < 0) en = v.length;
+    if (a === b && v.slice(st, en) === pre) { txPut(el, st, en, m[2] ? m[1] : m[1].slice(1)); return true; }
+    return txPut(el, a, b, '\n' + pre);
+  }
+  function stkPut(el, s) {
+    var v = el.value, a = el.selectionStart, b = el.selectionEnd;
+    txPut(el, a, b, (a > 0 && !/\s/.test(v[a - 1]) ? ' ' : '') + s + (/\s/.test(v[b] || '') ? '' : ' '));
+  }
+  function stkClose() { var o = document.querySelector('.stk'); if (o) o.remove(); }
+  function stkOpen(btn, forId) {
+    var o = document.querySelector('.stk');
+    if (o) { o.remove(); if (o.dataset.for === forId) return; }
+    var p = document.createElement('div');
+    p.className = 'stk'; p.dataset.for = forId; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', 'Стикеры');
+    p.innerHTML = STK.map(function (r) {
+      return '<div class="stk-r"><span>' + r[0] + '</span>' + r[2].map(function (x, i) { return '<button type="button" data-stk="' + x + '" aria-label="' + x + ', ' + r[1] + (i + 1) + '">' + x + '<small>' + r[1] + (i + 1) + '</small></button>'; }).join('') + '</div>';
+    }).join('');
+    document.body.appendChild(p);
+    var r = btn.getBoundingClientRect(), w = p.offsetWidth, h = p.offsetHeight;
+    p.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.right - w)) + 'px';
+    p.style.top = (r.bottom + 6 + h > window.innerHeight ? Math.max(8, r.top - h - 6) : r.bottom + 6) + 'px';
+  }
+  // поле по высоте текста (D 09.11: «растягивать окна, чтобы видеть всё»); прокрутку окна не дёргаем
+  function txGrow(el) {
+    if (!el || el.tagName !== 'TEXTAREA' || !el.offsetParent) return;
+    var sc = el.closest('.dlg, #pop, .rv-side'), top = sc ? sc.scrollTop : 0;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + el.offsetHeight - el.clientHeight + 'px';
+    if (sc) sc.scrollTop = top;
+  }
+  function txInit(root) {
+    if (!planSrv || !root) return;
+    root.querySelectorAll('textarea').forEach(txGrow);
+    root.querySelectorAll('textarea.tx-plan').forEach(plPrev);
+  }
+  // кнопка «＋10 мин»: следующий этап с конца последнего, курсор — писать, что делаем
+  function plAdd(id, k) {
+    var el = $(id);
+    if (!el) return;
+    var v = el.value, a = planParse(v).end;
+    txPut(el, v.length, v.length, (v && !/\n$/.test(v) ? '\n' : '') + a + '–' + (a + k) + ' ');
+  }
+  function plPrev(el) {
+    var box = el.closest('.fplan');
+    if (!box) return;
+    var P = planParse(el.value), pv = box.querySelector('.fprev'), sm = box.querySelector('.plsum'), h = P.st.length || /\t/.test(el.value) ? planHtml(el.value) : '';
+    if (sm) sm.textContent = P.st.length ? 'Всего ' + minN(P.sum) : '';
+    if (pv) { pv.hidden = !h; pv.innerHTML = h ? '<span class="fprev-h">Так увидят:</span>' + h : ''; }
+  }
+  document.addEventListener('keydown', function (ev) {
+    if (!planSrv || mode !== 'teacher') return;
+    if (ev.key === 'Escape' && document.querySelector('.stk')) { ev.preventDefault(); ev.stopImmediatePropagation(); stkClose(); return; }
+    var el = ev.target;
+    if (!txField(el) || ev.isComposing || ev.keyCode === 229) return;
+    if (ev.altKey && !ev.metaKey && /^Digit[1-5]$/.test(ev.code)) {   // по коду клавиши: и в русской раскладке, и в английской
+      ev.preventDefault(); ev.stopImmediatePropagation();
+      stkPut(el, STK[ev.ctrlKey ? 2 : ev.shiftKey ? 1 : 0][2][+ev.code.slice(5) - 1]);
+      return;
+    }
+    if ((ev.metaKey || ev.ctrlKey) && !ev.altKey && !ev.shiftKey && /^Key[BIU]$/.test(ev.code) && el.id && document.querySelector('.fmtbar[data-for="' + el.id + '"]')) {
+      ev.preventDefault(); applyFmt(el.id, { KeyB: 'b', KeyI: 'i', KeyU: 'u' }[ev.code]); return;
+    }
+    if (el.classList.contains('tx-one')) { if (ev.key === 'Enter') ev.preventDefault(); return; }   // тема — одна строка; Tab уводит к следующему полю, как везде
+    if (ev.key === 'Tab' && !ev.metaKey && !ev.ctrlKey && !ev.altKey) { ev.preventDefault(); txIndent(el, ev.shiftKey); return; }
+    if (ev.key === 'Enter' && !ev.shiftKey && !ev.metaKey && !ev.ctrlKey && !ev.altKey && txEnter(el)) ev.preventDefault();
+  }, true);
+  document.addEventListener('input', function (ev) {
+    var el = ev.target;
+    if (!txField(el)) return;
+    if (el.classList.contains('tx-one') && /\n/.test(el.value)) { var c = el.selectionStart; el.value = el.value.replace(/[ \t]*\n+[ \t]*/g, ' '); el.setSelectionRange(Math.min(c, el.value.length), Math.min(c, el.value.length)); }   // вставили с переносами
+    txGrow(el);
+    if (el.classList.contains('tx-plan')) plPrev(el);
+  });
+  document.addEventListener('focusin', function (ev) { if (txField(ev.target)) txGrow(ev.target); });
+  document.addEventListener('toggle', function (ev) { if (ev.target.matches && ev.target.matches('.dlg details[open]')) txInit(ev.target); }, true);   // открыли «＋ План урока» — поля по тексту
+  var txRaf = 0;
+  window.addEventListener('resize', function () {
+    if (!planSrv || txRaf || !document.querySelector('.dlg')) return;
+    txRaf = requestAnimationFrame(function () { txRaf = 0; txInit(document.querySelector('.dlg')); });
+  });
 
   document.addEventListener('change', function (ev) {
     if (ev.target.classList && ev.target.classList.contains('upFile') && ev.target.files.length) { uploadFiles(ev.target.dataset.lid, ev.target.files, ev.target.dataset.w); return; }
