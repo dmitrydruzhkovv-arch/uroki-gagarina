@@ -2871,6 +2871,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       dl.classList.add('day'); dl.style.setProperty('--nb', nb); dl.style.width = 'min(' + Math.max(2, nb) * 394 + 'px, calc(100vw - 16px))';
     }
     fillFileThumbs($('dlg'));
+    dlgSnap = dlgSig();
     setTimeout(function () { var f = $(isNew ? 'fTopic' : 'fDate'); if (f) f.focus(); }, 30);
   }
   function saveLesson(id) {
@@ -2906,6 +2907,23 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     closeDlg(); render();
   }
   function closeDlg() { $('dlg').innerHTML = ''; }
+  // нажал мимо окна правки урока или дня — сохраняем, как «Сохранить» (D 13.11: «не листать вниз к кнопке»).
+  // Ничего не менял — просто закрыть. Не сохранилось (дата не та и т. п.) — окно остаётся с подсказкой, ничего не теряется
+  var dlgSnap = '';
+  function dlgSig() {
+    var dl = document.querySelector('#dlg .dlg');
+    if (!dl) return '';
+    return Array.prototype.map.call(dl.querySelectorAll('input, textarea, select, [aria-pressed]'), function (e) {
+      if (e.type === 'checkbox' || e.type === 'radio') return String(e.checked);
+      return e.tagName === 'BUTTON' ? e.getAttribute('aria-pressed') : e.value;
+    }).join('\u0001');
+  }
+  function dlgAutoSave() {
+    var b = document.querySelector('#dlg .dlg [data-act="saveday"], #dlg .dlg [data-act="savelesson"]');
+    if (!b || dlgSig() === dlgSnap) return false;
+    b.click();
+    return true;
+  }
   // автоматические задания урока (D, 01.10): au — срез с телефона, балл сам ляжет в клетку урока;
   // ad — веб-домашка, балл в клетку ДЗ. Адрес — из hw_id: «t-<тест>» → сайт мини-тестов, «dz_<тема>_urok<N>» → её сайт
   var GH = 'https://dmitrydruzhkovv-arch.github.io/';
@@ -3053,6 +3071,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     $('fTwo').addEventListener('change', upd);
     upd(); hint();
     if (planSrv) txInit($('dlg'));
+    dlgSnap = dlgSig();
     setTimeout(function () { var f = $(date ? 'fT1' : 'fDate'); if (f) f.focus(); }, 30);
   }
   // строки, которых касается выделение [a, b): выделение до начала следующей строки её не захватывает
@@ -6063,7 +6082,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var a = t.closest('[data-act]');
     if (a) {
       var act = a.dataset.act;
-      if (act === 'close') closeDlg();
+      if (act === 'close') { if (!(a.classList.contains('dlg-bg') && dlgAutoSave())) closeDlg(); }
       else if (act === 'popclose') closeCell();
       else if (act === 'ptab') {   // вкладка панели оценки — без перерисовки, поле комментария не теряется
         popTab = a.dataset.id;
