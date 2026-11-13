@@ -4447,12 +4447,37 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       input.disabled = false;
     }, function () { nextApi(); if (st) st.textContent = 'Нет связи. Проверь интернет и попробуй ещё раз.'; input.disabled = false; });
   }
-  // D загружает фото работы за ученика (ТЗ 25): работа встаёт в «Ждут проверки», ученик видит её у себя как сданную
+  // PDF → картинка на каждую страницу (D 13.11: записи урока с планшета). Длинная сторона 2800: мелкий текст листа внутри записи читается при увеличении, страница до ~1 МБ
+  function isPdf(f) { return f.type === 'application/pdf' || /\.pdf$/i.test(f.name || ''); }
+  function pdfPages(file, max) {
+    return Promise.all([loadPdfLib(), file.arrayBuffer()]).then(function (r) { return r[0].getDocument({ data: r[1] }).promise; }).then(function (doc) {
+      var out = [], chain = Promise.resolve();
+      for (var n = 1; n <= Math.min(doc.numPages, max); n++) (function (n) {
+        chain = chain.then(function () { return doc.getPage(n); }).then(function (pg) {
+          var v0 = pg.getViewport({ scale: 1 }), vp = pg.getViewport({ scale: 2800 / Math.max(v0.width, v0.height) }), c = document.createElement('canvas');
+          c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+          var cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);   // прозрачный фон PDF в JPEG стал бы чёрным
+          return pg.render({ canvasContext: cx, viewport: vp }).promise.then(function () {
+            return new Promise(function (ok) { c.toBlob(function (b) { if (b) out.push(b); c.width = c.height = 0; ok(); }, 'image/jpeg', 0.85); });   // холст сразу отдаём: Safari на телефоне держит память холстов
+          });
+        });
+      })(n);
+      return chain.then(function () { var k = doc.numPages; doc.destroy(); return { blobs: out, total: k }; }, function (e) { doc.destroy(); throw e; });
+    });
+  }
+  // D загружает фото работы за ученика (ТЗ 25): работа встаёт в «Ждут проверки», ученик видит её у себя как сданную. PDF — страницами-картинками
   function tsubPhotos(input) {
-    var id = input.dataset.c, q = id.split('.'), all = input.files.length, files = Array.prototype.slice.call(input.files, 0, 12), st = $('tsubSt');
-    if (st) st.textContent = 'Готовлю ' + files.length + ' фото…';
+    var id = input.dataset.c, q = id.split('.'), picked = Array.prototype.slice.call(input.files), st = $('tsubSt'), all = 0, files = [];
+    if (st) st.textContent = picked.some(isPdf) ? 'Готовлю страницы PDF…' : 'Готовлю ' + Math.min(picked.length, 12) + ' фото…';
     input.disabled = true;
-    Promise.all(files.map(function (f) { return shrink(f); })).then(function (blobs) {
+    picked.reduce(function (p, f) {
+      return p.then(function (acc) {
+        if (acc.length >= 12) { all++; return acc; }
+        if (!isPdf(f)) { all++; return shrink(f).then(function (b) { return acc.concat([b]); }); }
+        return pdfPages(f, 12 - acc.length).then(function (r) { if (!r.blobs.length) throw { pdf: 1 }; all += r.total; return acc.concat(r.blobs); }, function () { throw { pdf: 1 }; });
+      });
+    }, Promise.resolve([])).then(function (blobs) {
+      files = blobs;
       var fd = new FormData();
       fd.append('les', q[0]); fd.append('stu', q[1]); fd.append('w', q[2]); fd.append('j', J);
       blobs.forEach(function (b, i) { fd.append('photo', b, 'foto' + (i + 1) + '.jpg'); });
@@ -4468,13 +4493,17 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (td) { var cv = cellView(id); td.className = cv.cls + (td.classList.contains('dend') ? ' dend' : '') + (cur === id ? ' cur' : ''); td.innerHTML = cv.inner; }
         if (cur === id) openCell(id);
         var s2 = $('tsubSt');
-        if (s2) s2.textContent = '✅ Загружено: ' + files.length + ' фото' + (all > files.length ? ' (больше 12 за раз нельзя)' : '') + (d.st === 'checked' ? '. Работа уже проверена — поставь оценку заново, если нужно.' : '. Работа — в «Ждут проверки».');
+        if (s2) s2.textContent = '✅ Загружено: ' + files.length + (picked.some(isPdf) ? ' стр.' : ' фото') + (all > files.length ? ' (больше 12 за раз нельзя — взяли первые 12)' : '') + (d.st === 'checked' ? '. Работа уже проверена — поставь оценку заново, если нужно.' : '. Работа — в «Ждут проверки».');
         return;
       }
-      var why = { 409: 'В одной работе — до 12 фото. Лишние сначала удали.', 415: 'Это не фото. Нужна картинка (JPG, PNG).', 413: 'Фото слишком большие.',
+      var why = { 409: 'В одной работе — до 12 фото. Лишние сначала удали.', 415: 'Это не фото. Нужна картинка (JPG, PNG) или PDF.', 413: 'Фото слишком большие.',
         401: 'Вход учителя устарел — войди заново.', 404: 'Урока или ученика уже нет — обнови страницу.', 503: 'Загрузка за ученика пока выключена.' };
       if (st) st.textContent = why[r.status] || 'Не получилось загрузить. Попробуй ещё раз.';
-    }, function () { nextApi(); input.disabled = false; input.value = ''; if (st) st.textContent = 'Нет связи. Проверь интернет и попробуй ещё раз.'; });
+    }, function (e) {
+      input.disabled = false; input.value = '';
+      if (e && e.pdf) { if (st) st.textContent = 'Не получилось открыть PDF. Попробуй выгрузить его ещё раз или загрузи страницы картинками.'; return; }
+      nextApi(); if (st) st.textContent = 'Нет связи. Проверь интернет и попробуй ещё раз.';
+    });
   }
   // D: «проверено» / «на доработку» — сервер пишет статус и шлёт ученику в Телеграм
   function review(subId, st, v, c) {
@@ -4745,7 +4774,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       (parts[2] === 'd' ? '<button data-act="submove" title="Ученик сдал не в тот день — перенести фото и разбор в другой">↪ В другой день</button>' : '') + '</div><div id="popMove"></div></div>';
     // ТЗ 25: D фотографирует работу ученика своим телефоном — сел телефон, контрольная, олимпиада
     if (tsubSrv && mode === 'teacher') src += '<label class="btn upl pop-up">📷 ' + (sb ? 'Добавить фото' : parts[2] === 'u' ? 'Загрузить работу' : 'Загрузить домашку') +
-      '<input type="file" id="tsubIn" data-c="' + id + '" accept="image/*" multiple></label><span class="pop-upst" id="tsubSt"></span>';
+      '<input type="file" id="tsubIn" data-c="' + id + '" accept="image/*,application/pdf,.pdf" multiple></label><span class="pop-upst" id="tsubSt"></span>';
     var pop = $('pop');
     var head = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(l.date) + ', ' +
       (parts[2] === 'd' ? (nSh > 1 ? 'ДЗ, общая на ' + nSh + ' урока' : 'ДЗ') : 'урок') + (l.topic ? '<br>' + esc(plain(l.topic).slice(0, 60)) : '') + '</span></div>' + src;
