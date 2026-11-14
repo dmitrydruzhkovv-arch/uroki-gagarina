@@ -520,6 +520,8 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .pop-sub .pop-x button.redo{ color:#c026d3; }
 /* D загружает фото работы за ученика (ТЗ 25) — кнопка во всю ширину, палец попадает (44 px) */
 .pop-up{ width:100%; justify-content:center; min-height:44px; margin:0 0 4px; border-radius:12px; font-weight:700; font-size:14px; box-shadow:inset 0 0 0 1px var(--z-line2); }
+.pop-up.pop-clipb{ box-shadow:none; font-weight:600; color:var(--sub); }   /* вторая кнопка загрузки — тише первой */
+.pop-clip{ display:block; margin-top:4px; padding:12px; border-radius:12px; border:1.5px dashed var(--z-line2); font-size:14px; color:var(--ink); -webkit-user-select:text; user-select:text; }
 .pop-upst{ display:block; min-height:16px; margin:0 0 8px; font-size:12px; color:var(--sub); text-align:center; }
 .dlg .big{ display:flex; align-items:center; gap:12px; margin:6px 0; }
 .dlg .big i{ font-style:normal; display:grid; place-items:center; min-width:48px; height:48px; padding:0 8px; border-radius:12px; font-size:22px; font-weight:800; box-shadow:inset 0 0 0 1px var(--z-line2); }
@@ -585,6 +587,7 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 :root .zt td.c.m3{ --z-tile:var(--m3b); }
 :root .zt td.c.m2{ --z-tile:var(--m2b); z-index:1; }
 :root .zt td.c.mn{ --z-tile:var(--mnb); }
+:root .zt td.c.nz{ --z-tile:var(--mnb); color:var(--sub); font-style:italic; }   /* графа без учёта (D 13.11): цифра стоит, без цвета и света */
 /* свет — отдельным слоем точно по плитке; красный горит ровно, у пятёрки на ноутбуке дышит прозрачностью (без перерисовки тени) */
 :root .zt td.c.m5::after, :root .zt td.c.m2::after{ content:''; position:absolute; inset:0; border-radius:9px; pointer-events:none; }
 :root .zt td.c.m5::after{ box-shadow:var(--m5s); }
@@ -732,6 +735,7 @@ ol.zn{ margin:12px 0 4px; padding-left:22px; line-height:1.5; } ol.zn li{ margin
 .pp-sw{ flex:none; position:relative; width:46px; height:28px; border-radius:99px; background:var(--z-line2); }
 .pp-sw i{ position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:left .15s; }
 .pp-sc.on .pp-sw{ background:#16a34a; } .pp-sc.on .pp-sw i{ left:21px; }
+.pp-nz{ margin-top:8px; }
 .btn.talk{ color:#b42318; box-shadow:inset 0 0 0 1.5px #f3a8a1; }
 .zt th.nm.flash{ box-shadow:inset 0 0 0 3px #f97316; }
 .pp-ch{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; }
@@ -1155,7 +1159,7 @@ html:not([data-theme="night"]) #vid .v-tabs{ box-shadow:0 10px 30px -10px rgba(3
 [data-theme="night"] #vid .v-tabs .on svg{ stroke:#ff8fa3; }
 
 /* ── экран проверки работы (ТЗ 20, сессия 6) ── */
-html.rv-on, html.rv-on body{ overflow:hidden; }
+html.rv-on, html.rv-on body{ overflow:hidden; overscroll-behavior-x:none; }   /* два пальца по экрану проверки на Маке не уводят «назад» (Атлас 24.10) */
 .rv{ position:fixed; inset:0; z-index:60; display:flex; flex-direction:column; background:var(--paper); color:var(--ink); touch-action:manipulation; }
 .rv button{ font:inherit; color:inherit; text-align:center; justify-content:center; }
 .rv-q button, .rv-marks button, .rv-redo, .rv-next, .rv-seg button{ display:flex; align-items:center; justify-content:center; padding:0 8px; }
@@ -1178,10 +1182,19 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
 .rv-doc{ display:flex; flex-direction:column; gap:8px; } .rv-doc img, .rv-doc canvas{ width:100%; height:auto; border-radius:8px; background:#fff; box-shadow:0 0 0 1px var(--z-line2); }
 .rv-sel{ width:100%; min-height:40px; margin-bottom:10px; border-radius:10px; border:1px solid var(--z-line2); background:var(--store); color:var(--ink); font:inherit; padding:0 8px; }
 .rv-drop{ display:block; padding:22px 14px; margin-bottom:10px; border-radius:12px; border:2px dashed var(--z-line2); color:var(--muted); text-align:center; font-size:13.5px; cursor:pointer; }
-.rv-work{ position:relative; overflow:auto; overscroll-behavior:contain; background:#2a2631; }
-.rv-pen{ position:sticky; top:10px; left:0; z-index:3; display:flex; width:max-content; max-width:calc(100% - 20px); margin:10px auto 0; gap:4px; align-items:center; padding:5px; border-radius:14px; background:#16131a; color:#fff; box-shadow:0 10px 30px -10px rgba(0,0,0,.6); overflow-x:auto; }
+.rv-work{ position:relative; overflow:auto; overscroll-behavior:contain; overscroll-behavior-x:none; background:#2a2631; }
+.rv-les, .rv-side{ overscroll-behavior-x:none; }
+/* «Фокус» — только фото и поле пометок; «Шире» — лист урока крупно рядом с фото (Атлас 24.10, до iPad) */
+.rv.focus .rv-wrap{ grid-template-columns:1fr; } .rv.focus .rv-les, .rv.focus .rv-side{ display:none; }
+.rv.les-wide .rv-wrap{ grid-template-columns:minmax(340px,46%) 1fr 280px; }
+.rv.focus.les-wide .rv-wrap{ grid-template-columns:minmax(340px,46%) 1fr; } .rv.focus.les-wide .rv-les{ display:block; }   /* лист крупно + фокус: лист и фото рядом, оценка — по F */
+.rv-wide{ width:100%; min-height:40px; margin:-4px 0 12px; border-radius:10px; font-size:13px; font-weight:700; color:var(--sub); box-shadow:inset 0 0 0 1px var(--z-line2); }
+.rv-stu{ min-height:44px; border-radius:12px; box-shadow:inset 0 0 0 1px var(--z-line2); font-weight:700; }
+.rv-pen svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.rv-pen{ position:sticky; top:10px; left:0; z-index:3; display:flex; width:max-content; max-width:calc(100% - 20px); margin:10px auto 0; gap:4px; align-items:center; padding:5px; border-radius:14px; background:#16131a; color:#fff; box-shadow:0 10px 30px -10px rgba(0,0,0,.6); flex-wrap:wrap; justify-content:center; }   /* узко (iPad боком, три колонки) — второй строкой, а не за край: толщина и маркер (13.11) вытолкнули масштаб */
 .rv-pen button{ flex:none; min-width:44px; height:44px; border-radius:10px; display:grid; place-items:center; font-size:18px; color:#fff !important; }
 .rv-pen button[aria-pressed="true"]{ background:rgba(255,255,255,.16); } .rv-pen button span{ width:18px; height:18px; border-radius:50%; }
+.rv-pw b{ display:block; border-radius:50%; background:currentColor; }
 .rv-pen .rv-zv{ font-size:13px; font-weight:700; min-width:54px; } .rv-sep{ flex:none; width:1px; height:28px; background:rgba(255,255,255,.18); }
 .rv-sheet{ display:flex; align-items:flex-start; width:max-content; margin:14px auto 30px; padding:0 12px; }
 .rv-stage canvas{ display:block; box-shadow:0 20px 50px -20px rgba(0,0,0,.7); }
@@ -1214,7 +1227,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   .rv-sheet{ flex-direction:column; width:auto; margin:10px 0; padding:0 12px; }
   .rv-mg{ width:100%; border-left:0; border-top:2px solid #f3c1c1; min-height:0 !important; }
   .rv-mc{ position:relative; top:auto !important; left:auto; right:auto; margin:8px; }
-  .rv-pen .rv-zb{ display:none; }
+  .rv-pen .rv-zb, .rv-wide{ display:none; }
   .rv-side{ border:0; } .rv-next{ position:sticky; bottom:10px; }
 }
 /* ученик: пометки с номерами под своим фото */
@@ -1694,7 +1707,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (old.sx) d.sx = old.sx;
       return d;
     }
-    if (scOffer(d.v)) d.sc = scAuto(d.v) && !(l && id && scOpenN(id.split('.')[1], l.subj, id) >= SC_CAP) ? scPlus(SC_DAYS) : '';
+    if (scOffer(d.v)) d.sc = scAuto(d.v) && !(l && id && (scOpenN(id.split('.')[1], l.subj, id) >= SC_CAP || nzc(l, id.split('.')[2]))) ? scPlus(SC_DAYS) : '';   // без учёта — «–» шанс сам не открывает
     else if (d.v && old && l && debtOf(l, old)) d.sx = Date.now();
     else if (d.v && old && old.sx) d.sx = old.sx;   // 4 → 5 после закрытого шанса — он по-прежнему закрыт
     return d;
@@ -1703,6 +1716,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   // m — запись оценки; строка — старый вызов, как запись без поля sc
   function debtOf(l, m) {
     if (!m || typeof m !== 'object') m = { v: m };
+    if (!m.sc && m.id && nzc(l, String(m.id).split('.')[2])) return null;   // графа без учёта: долг — только по шансу, включённому руками
     var d;
     if ('sc' in m) { if (!m.sc) return null; d = realDate(m.sc); }
     else if (!markInfo(m.v).red) return null;
@@ -1721,7 +1735,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   // клетка целиком: класс, содержимое, подсказка
   function cellView(id) {
     var parts = id.split('.'), l = S.les[parts[0]], m = S.mark[id], v = m ? m.v : '';
-    var inf = markInfo(v), dbt = l ? debtOf(l, m) : null, cls = 'c ' + parts[2] + ' ' + inf.cls + (splitMark(m).g.length > 3 ? ' long' : '');
+    var inf = markInfo(v), nz = nzc(l, parts[2]), dbt = l ? debtOf(l, m) : null;
+    var cls = 'c ' + parts[2] + ' ' + (nz && !dbt ? (v ? 'nz' : '') : inf.cls) + (splitMark(m).g.length > 3 ? ' long' : '');
     var sm = splitMark(m), inner = esc(sm.g);
     if (/[0-9a-zа-яё]/i.test(sm.c)) inner += '<i class="cmt" aria-label="есть комментарий"></i>';
     if (dbt) { cls += ' debt' + (dbt.left < 0 ? ' zlate' : ''); inner += '<sup>' + (dbt.left < 0 ? '!' : dbt.left + 'д') + '</sup>'; }
@@ -1750,6 +1765,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (m.by === 'auto') t += '\nПоставила автоматика' + (m.an ? ': ' + esc(m.an) : '');
     else if (m.av) t += '\nD исправил. Автоматика ставила ' + esc(m.av) + (m.an ? ' (' + esc(m.an) + ')' : '');
     var dbt = debtOf(l, m);
+    if (nzc(l, parts[2])) t += '\nБез учёта: в средний балл не идёт';
     var sb0 = S.sub[subOfCell(id)];
     if (sb0) t += '\n📷 ' + ({ sent: 'Сдано, ждёт проверки', redo: 'На доработке', checked: 'Сдано и проверено' }[sb0.st] || '');
     var dw = shansSrv ? 'Второй шанс: ' : 'Долг: ';
@@ -1835,13 +1851,17 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (of || m[3] || n > 5) { var pc = Math.min(100, of ? n / of * 100 : n); return pc >= 85 ? 5 : pc >= 65 ? 4 : pc >= 45 ? 3 : 2; }
     return Math.max(1, Math.min(5, n));
   }
+  // графа без учёта (D 13.11: олимпиада по 100-балльной): оценки стоят, но в средний и итоги не идут и красным не горят.
+  // Признак урока nz — «u», «d» или «ud»: какая из его граф. Второй шанс включён руками — красное возвращается
+  function bare(o) { var d = {}; Object.keys(o || {}).forEach(function (k) { if (k !== 'id' && k !== 'ts') d[k] = o[k]; }); return d; }   // запись без служебных id и ts — для put
+  function nzc(l, w) { return !!l && typeof l.nz === 'string' && !!w && l.nz.indexOf(w) >= 0; }
   // средний по строке за показанный период — только поставленные оценки. Пустая клетка ничего не значит:
   // несданную домашку D отмечает сам (D 23.10; прежнее «несданное вовремя — двойка» от 01.10 снято)
   function rowAvg(sid, LY) {
     var sum = 0, n = 0;
     LY.forEach(function (x) {
       x.cols.forEach(function (c) {
-        var g = gradeVal(splitMark(S.mark[c.l.id + '.' + sid + '.' + c.w]).g);
+        var g = nzc(c.l, c.w) ? null : gradeVal(splitMark(S.mark[c.l.id + '.' + sid + '.' + c.w]).g);
         if (g != null) { sum += g; n++; }
       });
     });
@@ -1957,7 +1977,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if ('kr' in r.data) krSrv = !!r.data.kr;
         if (ssylSrv !== !!r.data.ssyl) { ssylSrv = !!r.data.ssyl; lsSet('zh:ssyl', ssylSrv); }
         uchSrv = !!r.data.uch;
-        vidSrv = !!r.data.vid; provSrv = !!r.data.prov; tsubSrv = !!r.data.tsub;   // вид ученика включён детям — в окне дня домашка показана так, как её увидят
+        vidSrv = !!r.data.vid; provSrv = !!r.data.prov; tsubSrv = !!r.data.tsub; nzSrv = !!r.data.nz;   // вид ученика включён детям — в окне дня домашка показана так, как её увидят
         var itogNew = itogSrv !== !!r.data.itog;   // итоги включили или выключили — перерисовать, даже если записи те же
         if (itogNew) { itogSrv = !!r.data.itog; lsSet('zh:itog', itogSrv); }
         if (planSrv !== !!r.data.plan) { planSrv = !!r.data.plan; lsSet('zh:plan', planSrv); itogNew = true; }   // план урока и удобства ввода (D 09.11): включили — перерисовать
@@ -2067,7 +2087,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         if (!krUrl()) krPut(kr());   // пришла без ключа в адресе (ссылка «Журнал» с сайта уроков) — вернуть: закладка его запомнит
         if (r.data.j) J = r.data.j;
         if (r.data.meta) setMeta(r.data.meta);
-        itogSrv = !!r.data.itog; shansSrv = !!r.data.shans; krRab = !!r.data.krrab; planSrv = !!r.data.plan; meId = null; S = fromObjects(r.data.objects); loaded = true; render();
+        itogSrv = !!r.data.itog; shansSrv = !!r.data.shans; planSrv = !!r.data.plan; krRab = !!r.data.krrab; meId = null; S = fromObjects(r.data.objects); loaded = true; render();
         krFoot();
       })
       .catch(function (e) {
@@ -2893,7 +2913,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     }
     var d = { subj: subj, date: date, topic: $('fTopic').value.trim(), hw: $('fHw').value.trim(), ord: ord };
     if (sh) d.sh = 1;
-    if (old) ['nt', 'np', 'rt', 'rh', 'au', 'ad'].forEach(function (f) { if (old[f]) d[f] = old[f]; });   // заметки, галочки готовности и автоматические задания этим окном не правятся — не теряем
+    if (old) ['nt', 'np', 'rt', 'rh', 'au', 'ad', 'nz'].forEach(function (f) { if (old[f]) d[f] = old[f]; });   // заметки, галочки готовности и автоматические задания этим окном не правятся — не теряем
     put('les', lid, d);
     goMonth(d);   // урок другого месяца — показать его, а не прятать
     closeDlg(); render();
@@ -3135,7 +3155,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var hw1 = $('fHw').value.trim();
     if (two && !split && l2 && !l2.sh && $('fHw2').value.trim()) hw1 = [hw1, $('fHw2').value.trim()].filter(Boolean).join('\n');   // были раздельные, стала общая — вторую не теряем
     // галочки готовности и привязку автоматических заданий (au, ad) правка дня не стирает
-    var keep = function (o, l) { if (l) { ['rt', 'rh'].forEach(function (f) { if (l[f]) o[f] = 1; }); ['au', 'ad'].forEach(function (f) { if (l[f]) o[f] = l[f]; }); } return o; };
+    var keep = function (o, l) { if (l) { ['rt', 'rh'].forEach(function (f) { if (l[f]) o[f] = 1; }); ['au', 'ad', 'nz'].forEach(function (f) { if (l[f]) o[f] = l[f]; }); } return o; };
     var noted = function (o, n) {   // пустая — стереть
       o.nt = $('fN' + n).value.trim(); o.np = $('fP' + n).value.trim();
       if (planSrv && $('fL' + n)) o.pl = $('fL' + n).value.trim();   // как заметки: сервер края тоже обрезает
@@ -3888,11 +3908,20 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
      Ученик снял тетрадь боком — D поворачивает фото на 90° (D, 07.10): поворот хранится рядом с разбором (sub.rot)
      и нужен только для показа. Сам файл цел, штрихи — как и раньше, в долях самого (неповёрнутого) фото:
      страница старой версии поворота не видит, но разбор у неё лежит на фото так же точно. ── */
-  var PEN_COLORS = ['#e11d48', '#16a34a', '#2563eb'], PEN_W = { s: 0.0025, m: 0.0045, l: 0.008 };
+  var PEN_COLORS = ['#e11d48', '#16a34a', '#2563eb'], PEN_W = { s: 0.0025, m: 0.0045, l: 0.009 };   // жирное — толще прежнего 0,008 (D 13.11)
+  // экран проверки (D 13.11: «бывает хочу очень жирно, а бывает очень тонко»): кнопка толщины перебирает три; маркер — широкий полупрозрачный
+  var RV_W = [{ k: 's', w: PEN_W.s, t: 'Тонко', d: 4 }, { k: 'm', w: PEN_W.m, t: 'Средне', d: 8 }, { k: 'l', w: PEN_W.l, t: 'Жирно', d: 13 }], RV_MK = 0.022;
   var TURN_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
   function drawInk(g, strokes, W, H) {
     (strokes || []).forEach(function (st) {
       var P = st.p; g.strokeStyle = st.c; g.fillStyle = st.c; g.lineCap = 'round'; g.lineJoin = 'round';
+      if (st.m) {   // маркер: одной линией постоянной ширины — иначе стыки отрезков темнеют пятнами
+        g.save(); g.globalAlpha = 0.35; g.globalCompositeOperation = 'multiply'; g.lineWidth = st.w * W;
+        g.beginPath(); g.moveTo(P[0][0] * W, P[0][1] * H);
+        for (var j = 1; j < P.length; j++) g.lineTo(P[j][0] * W, P[j][1] * H);
+        if (P.length === 1) g.lineTo(P[0][0] * W + 0.1, P[0][1] * H);
+        g.stroke(); g.restore(); return;
+      }
       if (P.length === 1) { g.beginPath(); g.arc(P[0][0] * W, P[0][1] * H, st.w * W * (0.45 + P[0][2] * 1.1) / 2, 0, 7); g.fill(); return; }
       for (var k = 1; k < P.length; k++) {
         g.lineWidth = st.w * W * (0.45 + (P[k - 1][2] + P[k][2]) / 2 * 1.1);
@@ -3900,10 +3929,10 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       }
     });
   }
-  function openViewer(subId, i) {
+  function openViewer(subId, i, asStu) {   // asStu — учитель смотрит, как увидит ученик (с экрана проверки): без пера
     var sb = S.sub[subId];
     if (!sb || !sb.ph || !sb.ph.length) return;
-    var list = sb.ph, edit = mode === 'teacher', v = document.createElement('div');
+    var list = sb.ph, edit = mode === 'teacher' && !asStu, v = document.createElement('div');
     // своя сдача ученика: пока не проверена, фото можно убрать (D 23.10) — в новом виде, за флагом сервера
     var mine = !edit && !!meId && subId.split('.')[1] === meId && sdachaOn && sdelSrv && (vidSrv || vidUrl), seq = 0;
     var tdel = edit && tsubSrv;   // учитель убирает лишнее фото — своё снятое криво или чужое (ТЗ 25)
@@ -3914,6 +3943,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         '<button data-v="undo" title="Отменить (Ctrl+Z)">↶</button><button data-v="clear">Стереть всё</button>' +
         '<button class="vrot" data-v="rl" title="Повернуть фото влево на 90°" aria-label="Повернуть фото влево">' + TURN_SVG + '<path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>90°</button>' +
         '<button class="vrot" data-v="rr" title="Повернуть фото вправо на 90°" aria-label="Повернуть фото вправо">90°' + TURN_SVG + '<path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button><span class="vst" id="vSt">Рисуй пером, мышкой или пальцем · Shift — прямая</span></div>' : '') +
+      (asStu ? '<div class="vst" style="padding:calc(12px + env(safe-area-inset-top,0px)) 10px 4px;font-size:14px">👁 Так увидит ученик</div>' : '') +
       '<div class="vstage"><canvas></canvas></div><div class="vnotes" hidden></div>' +
       '<div class="vbar"><button data-v="-1">←</button><span id="vN"></span><button data-v="1">→</button>' +
       (mine || tdel ? '<button class="vdel" data-v="del" aria-label="Удалить фото"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Удалить</button>' : '') +
@@ -4085,14 +4115,15 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
      в центре фото с пером — приближается только фото, страница и панели стоят; рядом поле с пометками-номерами
      (cm: доли самого фото, как у штрихов). Справа оценка, комментарий, «На доработку», «Поставить и к следующему».
      Включается флагом сервера ZHURNAL_PROV (prov в /sync); без него — прежний просмотр фото. */
-  var provSrv = false, tsubSrv = false;   // tsubSrv — учитель загружает фото работы за ученика и убирает лишнее (ТЗ 25)
+  var provSrv = false, tsubSrv = false, nzSrv = false;   // nzSrv — переключатель «Без учёта» в окне клетки (ZHURNAL_NZ); сами графы без учёта видны и без него   // tsubSrv — учитель загружает фото работы за ученика и убирает лишнее (ТЗ 25)
   var planSrv = lsGet('zh:plan', false) === true;   // план урока в окне дня, Tab-отступы, стикеры, поля по высоте текста (D 09.11, ZHURNAL_PLAN)
   if (planSrv && mode === 'teacher') document.documentElement.classList.add('zh-tx');
   var RV_PIN = 13;   // радиус кружка с номером, px экрана
   function rvLessonHtml(l) {
     var D = layout(lessons(l.subj).filter(function (x) { return x.date === l.date; })), sj = vSj(l.subj), h = '<div class="rv-cap">' + esc(sj.short) + ', ' + esc(vDay(l.date)) + '</div>';
     D.forEach(function (x) {
-      h += '<h2 class="rv-h">' + (x.l.topic ? fmt(x.l.topic) : 'Тема не указана') + '</h2>' + (x.l.nt ? '<div class="dnote">' + fmt(x.l.nt) + '</div>' : '') +
+      var tp = x.l.topic ? fmt(x.l.topic) : esc(topicOf(x.l).t || '');   // темы нет в журнале — из плана сайта; нет и там — без заголовка: день и предмет уже над ним
+      h += (tp ? '<h2 class="rv-h">' + tp + '</h2>' : '') + (x.l.nt ? '<div class="dnote">' + fmt(x.l.nt) + '</div>' : '') +
         (x.l.np ? '<div class="dnote me">🔒 ' + fmt(x.l.np) + '</div>' : '');
       if (!x.joinedNext) {
         var hw = hwOf(x.own).t;
@@ -4132,24 +4163,30 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var q = subId.split('.'), les = S.les[q[0]], stu = S.stu[q[1]], cellId = cellOfSub(subId);
     if (!les || !stu) return;
     var list = sb.ph, sj = vSj(les.subj), v = document.createElement('div'), from = document.activeElement;
-    var color = PEN_COLORS[0], width = PEN_W.m, tool = 'pen', strokes = [], notes = [], stk = null, img = null, W = 0, H = 0, bw = 0, bh = 0, zoom = 1, rot = 0, dirty = false, raf = 0, docSeq = 0;
+    var color = PEN_COLORS[0], width = PEN_W.m, tool = 'pen', strokes = [], notes = [], acts = [], erase = null, ownLast = null, stk = null, img = null, W = 0, H = 0, bw = 0, bh = 0, zoom = 1, rot = 0, dirty = false, raf = 0, docSeq = 0, phSeq = 0;
     var m0 = S.mark[cellId], pick = splitMark(m0).g;
     var Q = waitingSubs().sort(function (x, y) { return (x.at || 0) - (y.at || 0); }).map(function (x) { return x.id; });
     v.className = 'rv ' + sj.k;
     v.innerHTML = '<div class="rv-top"><button class="rv-back" data-rv="x">← Журнал</button><div class="rv-who"><b>' + esc((stu.fam + ' ' + stu.name).trim()) + '</b><span>' + esc(sj.short + ', ' + vDay(les.date) + (/\.u$/.test(subId) ? ', работа на уроке' : ', домашка')) + '</span></div>' +
         (Q.length ? '<div class="rv-q"><span>Ждут проверки: ' + Q.length + '</span><button data-rv="qp" aria-label="Предыдущая работа">‹</button><button data-rv="qn" aria-label="Следующая работа">›</button></div>' : '') + '</div>' +
-      '<div class="rv-wrap"><aside class="rv-les"><button class="rv-lesx" data-rv="lesx">✕ Свернуть урок</button><div class="rv-seg"><button data-rv="sg" data-s="this" aria-pressed="true">Этот урок</button><button data-rv="sg" data-s="other" aria-pressed="false">Другой урок</button><button data-rv="sg" data-s="own" aria-pressed="false">Свой файл</button></div><div class="rv-lbody"></div></aside>' +
+      '<div class="rv-wrap"><aside class="rv-les"><button class="rv-lesx" data-rv="lesx">✕ Свернуть урок</button><div class="rv-seg"><button data-rv="sg" data-s="this" aria-pressed="true">Этот урок</button><button data-rv="sg" data-s="other" aria-pressed="false">Другой урок</button><button data-rv="sg" data-s="own" aria-pressed="false">Свой файл</button></div><button class="rv-wide" data-rv="wide">⇆ Лист крупнее</button><div class="rv-lbody"></div></aside>' +
       '<main class="rv-work"><button class="rv-lesb" data-rv="lesb">📘 Урок и файлы ›</button>' +
         '<div class="rv-pen" role="toolbar" aria-label="Перо">' + PEN_COLORS.map(function (c, k) { return '<button data-pc="' + c + '" aria-pressed="' + (k === 0) + '" title="Перо"><span style="background:' + c + '"></span></button>'; }).join('') +
+        '<button data-rv="pw" class="rv-pw" title="Толщина пера" aria-label="Толщина пера"><b></b></button>' +
+        '<button data-rv="mkr" aria-pressed="false" title="Маркер: широкий и прозрачный — обвести" aria-label="Маркер"><svg viewBox="0 0 24 24"><path d="m15 4 5 5-9 9H6v-5z"/><path d="M4 21h9" stroke-width="4" stroke-opacity=".45"/></svg></button>' +
+        '<button data-rv="er" aria-pressed="false" title="Ластик: проведи по линии пера" aria-label="Ластик"><svg viewBox="0 0 24 24"><path d="M7 21h10"/><path d="M5.5 14.5 14 6a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8L12 18H8.5z"/><path d="m9 11 5 5"/></svg></button>' +
         '<i class="rv-sep"></i><button data-rv="cm" aria-pressed="false" title="Пометка с номером: нажми на место в работе">💬</button><button data-rv="undo" title="Отменить (Ctrl+Z)">↶</button>' +
-        '<button data-rv="rr" title="Повернуть фото на 90°">⟳</button><i class="rv-sep rv-zb"></i><button class="rv-zb" data-rv="zo" title="Мельче">−</button><button class="rv-zb rv-zv" data-rv="z1" title="Обычный размер">100%</button><button class="rv-zb" data-rv="zi" title="Крупнее">＋</button></div>' +
+        '<button data-rv="clr" title="Стереть моё перо и пометки на этом фото" aria-label="Стереть моё на этом фото"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>' +
+        '<button data-rv="rr" title="Повернуть фото на 90°">⟳</button><i class="rv-sep rv-zb"></i><button class="rv-zb" data-rv="focus" aria-pressed="false" title="Фокус: только фото (F)">⛶</button><button class="rv-zb" data-rv="zo" title="Мельче">−</button><button class="rv-zb rv-zv" data-rv="z1" title="Обычный размер">100%</button><button class="rv-zb" data-rv="zi" title="Крупнее">＋</button></div>' +
         '<div class="rv-sheet"><div class="rv-stage"><canvas></canvas></div><div class="rv-mg"></div></div>' +
         (list.length > 1 ? '<div class="rv-ph"><button data-rv="p-1">←</button><span class="rv-pn"></span><button data-rv="p1">→</button></div>' : '') + '</main>' +
       '<aside class="rv-side"><div class="rv-st"></div><div class="rv-lbl">Оценка</div><div class="rv-marks">' + ['5', '4', '3', '2', '1'].map(function (g) { return '<button class="' + markCls(g) + '" data-rv="mk" data-g="' + g + '" aria-pressed="' + (g === pick) + '">' + g + '</button>'; }).join('') + '</div>' +
         '<label class="rv-lbl" for="rvCm">Комментарий ученику</label><textarea id="rvCm" maxlength="300" rows="3" autocomplete="off" placeholder="например: перепиши №3">' + esc(splitMark(m0).c) + '</textarea>' +
-        '<button class="rv-redo" data-rv="redo">↺ На доработку</button>' + (tsubSrv ? '<button class="rv-pdel" data-rv="pdel">🗑 Удалить это фото</button>' : '') + '<div class="note">Оценка уйдёт ученику «проверено» в бот; на фото — твоё перо и пометки с номерами.</div>' +
+        '<button class="rv-redo" data-rv="redo">↺ На доработку</button>' + (tsubSrv ? '<button class="rv-pdel" data-rv="pdel">🗑 Удалить это фото</button>' : '') + '<button class="rv-stu" data-rv="stu">👁 Как увидит ученик</button><div class="note">Оценка уйдёт ученику «проверено» в бот; на фото — твоё перо и пометки с номерами.</div>' +
         '<button class="rv-next" data-rv="next"></button></aside></div>';
     document.body.appendChild(v); document.documentElement.classList.add('rv-on'); txInit(v.querySelector('.rv-side'));
+    if (lsGet('zh:rvfocus', false) === true) { v.classList.add('focus'); v.querySelector('[data-rv="focus"]').setAttribute('aria-pressed', 'true'); }
+    if (lsGet('zh:rvwide', false) === true) { v.classList.add('les-wide'); v.querySelector('[data-rv="wide"]').textContent = '⇆ Лист обычный'; }
     var cv = v.querySelector('canvas'), stage = v.querySelector('.rv-stage'), mg = v.querySelector('.rv-mg'), work = v.querySelector('.rv-work'), lbody = v.querySelector('.rv-lbody');
     function setNext() { var n = v.querySelector('.rv-next'); n.textContent = pick ? 'Поставить ' + pick + ' и к следующему →' : (Q.filter(function (x) { return x !== subId; }).length ? 'К следующей работе →' : 'Готово, в журнал'); }
     function status() { var s0 = S.sub[subId] || {}; v.querySelector('.rv-st').textContent = '📷 ' + (s0.st === 'sent' ? 'Ждёт проверки' : s0.st === 'redo' ? 'На доработке' : 'Проверено') + (s0.at ? ', сдано ' + ddmm(new Date(s0.at * 1000)) : ''); }
@@ -4165,6 +4202,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     }
     function ownFile(f) {
       if (!f) return;
+      ownLast = f;
       var my = ++docSeq, box = lbody.querySelector('.rv-doc');
       rvShowDoc(box, Promise.resolve(f), /\.pdf$/i.test(f.name) || f.type === 'application/pdf', function () { return my === docSeq; });
     }
@@ -4191,6 +4229,28 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       });
     }
     function soon() { if (!raf) raf = requestAnimationFrame(redraw); }
+    // отмена: 0 — новый штрих (снять последний), {s, n} — снимок до ластика или «стереть моё» (вернуть). Пусто — как раньше, снять последний штрих
+    function undo() {
+      var a = acts.pop();
+      if (a && a.s) { strokes = a.s; if (a.n) { notes = a.n; margin(); } } else strokes.pop();
+      dirty = true; soon();
+    }
+    function snap(withNotes) { var o = { s: JSON.parse(JSON.stringify(strokes)) }; if (withNotes) o.n = JSON.parse(JSON.stringify(notes)); return o; }
+    // ластик: убирает штрих, если провести рядом с любым его отрезком (радиус в точках экрана)
+    function eraseAt(p) {
+      var side = rot % 2, w0 = side ? H : W, h0 = side ? W : H, r = 12;
+      var near = function (st) {
+        var q = st.p, rr = r + (st.w || 0) * w0 / 2;   // w — доля ширины фото: у маркера толстая линия, ластик берёт её за край
+        for (var k = 0; k < q.length; k++) {
+          var a = q[k], b = q[k + 1] || a, ax = a[0] * w0, ay = a[1] * h0, bx = b[0] * w0, by = b[1] * h0, px = p[0] * w0, py = p[1] * h0;
+          var dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy, t = L ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / L)) : 0;
+          if (Math.hypot(ax + t * dx - px, ay + t * dy - py) <= rr) return true;
+        }
+        return false;
+      };
+      var left = strokes.filter(function (st) { return !near(st); });
+      if (left.length !== strokes.length) { strokes = left; dirty = true; soon(); }
+    }
     function fit() {
       if (!img) return;
       var iw = rot % 2 ? img.height : img.width, ih = rot % 2 ? img.width : img.height, wide = window.innerWidth > 900;
@@ -4246,12 +4306,14 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       });
     }
     function show() {
-      img = null; zoom = 1; var s0 = S.sub[subId] || {};
+      img = null; zoom = 1; acts = []; var s0 = S.sub[subId] || {};
       strokes = JSON.parse(JSON.stringify((s0.ink || {})[list[i]] || []));
       notes = JSON.parse(JSON.stringify((s0.cm || {})[list[i]] || []));
       rot = (+(s0.rot || {})[list[i]] || 0) % 4;
       var pn = v.querySelector('.rv-pn'); if (pn) pn.textContent = 'фото ' + (i + 1) + ' из ' + list.length;
-      photoUrl(list[i]).then(function (u) { var im = new Image(); im.onload = function () { img = im; fit(); }; im.src = u; });
+      margin();   // пометки нового фото — сразу: size() перерисует поле, только если размер другой, а фото с одного телефона одного размера (D 13.11)
+      var my = ++phSeq;   // листнули дальше, пока грузилось, — прежнее фото на экран не ставим
+      photoUrl(list[i]).then(function (u) { var im = new Image(); im.onload = function () { if (my === phSeq) { img = im; fit(); } }; im.src = u; });
     }
     // перо: один палец или мышь — рисует (💬 — ставит номер); два пальца — двигают и приближают фото
     var touches = {}, pinch = null;
@@ -4262,7 +4324,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         touches[ev.pointerId] = [ev.clientX, ev.clientY];
         var ids = Object.keys(touches);
         if (ids.length === 2) {
-          if (stk) { strokes.pop(); stk = null; soon(); }   // второй палец — это жест, а не штрих
+          if (stk) { strokes.pop(); acts.pop(); stk = null; soon(); }   // второй палец — это жест, а не штрих
+          if (erase) { if (erase.s.length !== strokes.length) acts.push(erase); erase = null; }
           var a = touches[ids[0]], b = touches[ids[1]];
           pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: zoom, cx: (a[0] + b[0]) / 2, cy: (a[1] + b[1]) / 2 };
           return;
@@ -4270,8 +4333,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       }
       if (tool === 'cm' && notes.length >= 40) { alert('На одном фото — до 40 пометок. Допиши в уже поставленные или в комментарий ученику.'); return; }
       if (tool === 'cm') { var p = pt(ev); notes.push({ x: p[0], y: p[1], t: '' }); dirty = true; soon(); margin(); mg.querySelector('[aria-label="Пометка ' + lab(notes.length - 1) + '"]').focus(); return; }
+      if (tool === 'er') { cv.setPointerCapture(ev.pointerId); erase = snap(); eraseAt(pt(ev)); return; }
       if (strokes.length >= 580) return;
-      cv.setPointerCapture(ev.pointerId); stk = { c: color, w: width, p: [pt(ev)] }; strokes.push(stk); dirty = true; soon();
+      cv.setPointerCapture(ev.pointerId); stk = tool === 'mk' ? { c: color, w: RV_MK, m: 1, p: [pt(ev)] } : { c: color, w: width, p: [pt(ev)] }; strokes.push(stk); acts.push(0); dirty = true; soon();
     });
     cv.addEventListener('pointermove', function (ev) {
       if (ev.pointerType === 'touch' && touches[ev.pointerId]) touches[ev.pointerId] = [ev.clientX, ev.clientY];
@@ -4282,6 +4346,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         setZoom(pinch.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d, cx, cy);
         return;
       }
+      if (erase) { (ev.getCoalescedEvents ? ev.getCoalescedEvents() : [ev]).forEach(function (x) { eraseAt(pt(x)); }); return; }
       if (!stk) return;
       if (ev.shiftKey) stk.p = [stk.p[0], pt(ev)];
       else (ev.getCoalescedEvents ? ev.getCoalescedEvents() : [ev]).forEach(function (x) {
@@ -4290,7 +4355,10 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       });
       soon();
     });
-    ['pointerup', 'pointercancel'].forEach(function (n) { cv.addEventListener(n, function (ev) { delete touches[ev.pointerId]; if (Object.keys(touches).length < 2) pinch = null; stk = null; }); });
+    ['pointerup', 'pointercancel'].forEach(function (n) { cv.addEventListener(n, function (ev) {
+      delete touches[ev.pointerId]; if (Object.keys(touches).length < 2) pinch = null; stk = null;
+      if (erase) { if (erase.s.length !== strokes.length) acts.push(erase); erase = null; }   // одно движение ластика — один шаг отмены
+    }); });
     // щипок на трекпаде Мака приходит колесом с Ctrl: приближаем фото, а не страницу
     work.addEventListener('wheel', function (ev) { if (!ev.ctrlKey && !ev.metaKey) return; ev.preventDefault(); setZoom(zoom * Math.exp(-ev.deltaY / 200), ev.clientX, ev.clientY); }, { passive: false });
     ['gesturestart', 'gesturechange'].forEach(function (n) { v.addEventListener(n, function (ev) { ev.preventDefault(); }); });   // Safari: жест не приближает страницу
@@ -4327,27 +4395,58 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     function go(id) { rvSave().then(function (ok) { if (!ok) return; v.remove(); document.documentElement.classList.remove('rv-on'); document.removeEventListener('keydown', key, true); window.removeEventListener('resize', fit); render(); openReview(id, 0); }); }
     function nextId(d) { var R = Q.filter(function (x) { return x !== subId && S.sub[x] && S.sub[x].st === 'sent'; }); if (!R.length) return ''; var k = Q.indexOf(subId); if (k < 0) return R[0]; for (var s = 1; s <= Q.length; s++) { var x = Q[(k + d * s + Q.length * s) % Q.length]; if (R.indexOf(x) >= 0) return x; } return R[0]; }
     function key(ev) {
+      if (v.nextElementSibling && v.nextElementSibling.classList.contains('view')) return;   // поверх открыт «Как увидит ученик» — клавиши его
       if (ev.target.matches && ev.target.matches('textarea, input, select')) { if (ev.key === 'Escape') { ev.stopPropagation(); ev.target.blur(); } return; }
       if (ev.key === 'Escape') { ev.stopPropagation(); if (v.classList.contains('les-open')) v.classList.remove('les-open'); else close(); }
-      else if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); ev.stopPropagation(); strokes.pop(); dirty = true; soon(); }
+      else if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); ev.stopPropagation(); undo(); }
+      else if (!ev.ctrlKey && !ev.metaKey && !ev.altKey && ev.key.toLowerCase() === 'f' && window.innerWidth > 900) { ev.preventDefault(); setFocus(!v.classList.contains('focus')); }
+    }
+    function setFocus(on) { v.classList.toggle('focus', on); v.querySelector('[data-rv="focus"]').setAttribute('aria-pressed', String(on)); lsSet('zh:rvfocus', on); fit(); }
+    function setTool(t) {
+      tool = t;
+      v.querySelector('[data-rv="cm"]').setAttribute('aria-pressed', String(t === 'cm'));
+      v.querySelector('[data-rv="er"]').setAttribute('aria-pressed', String(t === 'er'));
+      v.querySelector('[data-rv="mkr"]').setAttribute('aria-pressed', String(t === 'mk'));
+      v.querySelectorAll('[data-pc]').forEach(function (x) { x.setAttribute('aria-pressed', String((t === 'pen' || t === 'mk') && x.dataset.pc === color)); });
+      cv.style.cursor = t === 'cm' ? 'copy' : t === 'er' ? 'cell' : 'crosshair';
+    }
+    function setW(k) {   // толщина пера: тонко → средне → жирно; помнится на этом устройстве
+      var o = RV_W.filter(function (x) { return x.k === k; })[0] || RV_W[1], b = v.querySelector('[data-rv="pw"]');
+      width = o.w; lsSet('zh:rvpw', o.k);
+      b.title = 'Толщина пера: ' + o.t.toLowerCase(); b.setAttribute('aria-label', b.title);
+      b.firstChild.style.width = b.firstChild.style.height = o.d + 'px';
     }
     document.addEventListener('keydown', key, true);
     window.addEventListener('resize', fit);
     v.addEventListener('click', function (ev) {
       ev.stopPropagation();
       var c = ev.target.closest('[data-pc]'), b = ev.target.closest('[data-rv]'), a = b && b.dataset.rv;
-      if (c) { color = c.dataset.pc; tool = 'pen'; v.querySelectorAll('[data-pc]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === c)); }); v.querySelector('[data-rv="cm"]').setAttribute('aria-pressed', 'false'); cv.style.cursor = 'crosshair'; return; }
+      if (c) { color = c.dataset.pc; setTool(tool === 'mk' ? 'mk' : 'pen'); return; }   // цвет при маркере — цвет маркера
       if (!b) return;
       if (a === 'x') close();
+      else if (a === 'pw') { var wk = RV_W.map(function (x) { return x.w; }).indexOf(width); setW(RV_W[(wk + 1) % RV_W.length].k); if (tool !== 'pen') setTool('pen'); }
+      else if (a === 'mkr') setTool(tool === 'mk' ? 'pen' : 'mk');
       else if (a === 'lesb') v.classList.add('les-open');
       else if (a === 'lesx') v.classList.remove('les-open');
       else if (a === 'sg') lesPanel(b.dataset.s);
       else if (a === 'lf') { var my = ++docSeq, f = S.file[b.dataset.id]; lbody.querySelectorAll('[data-rv="lf"]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); if (f) rvShowDoc(lbody.querySelector('.rv-doc'), fileData(f.id), /^pdf$/i.test(f.ext), function () { return my === docSeq; }); }
-      else if (a === 'cm') { tool = tool === 'cm' ? 'pen' : 'cm'; b.setAttribute('aria-pressed', String(tool === 'cm')); v.querySelectorAll('[data-pc]').forEach(function (x) { x.setAttribute('aria-pressed', String(tool === 'pen' && x.dataset.pc === color)); }); cv.style.cursor = tool === 'cm' ? 'copy' : 'crosshair'; }
+      else if (a === 'cm' || a === 'er') setTool(tool === a ? 'pen' : a);
+      else if (a === 'clr') {
+        if (!strokes.length && !notes.some(function (n) { return !n.ai; })) return;
+        if (!confirm('Стереть твоё перо и пометки на этом фото? Отменить можно кнопкой ↶.')) return;
+        acts.push(snap(true)); strokes = []; notes = notes.filter(function (n) { return n.ai; }); dirty = true; soon(); margin();   // черновик ИИ — не твой, остаётся
+      }
+      else if (a === 'focus') setFocus(!v.classList.contains('focus'));
+      else if (a === 'wide') {
+        var wd = !v.classList.contains('les-wide'); v.classList.toggle('les-wide', wd); b.textContent = wd ? '⇆ Лист обычный' : '⇆ Лист крупнее'; lsSet('zh:rvwide', wd); fit();
+        var on = lbody.querySelector('[data-rv="lf"][aria-pressed="true"]');   // открытый файл — перерисовать под новую ширину
+        if (on) on.click(); else if (ownLast && lbody.querySelector('.rv-drop')) ownFile(ownLast);
+      }
+      else if (a === 'stu') rvSave().then(function (ok) { if (ok) openViewer(subId, i, true); });
       else if (a === 'pdel') rvDel(b);
       else if (a === 'cmx') { notes.splice(+b.dataset.k, 1); dirty = true; soon(); margin(); }
       else if (a === 'cmok') { delete notes[+b.dataset.k].ai; dirty = true; soon(); margin(); }   // принял — пометка его, ученик видит её красной
-      else if (a === 'undo') { strokes.pop(); dirty = true; soon(); }
+      else if (a === 'undo') undo();
       else if (a === 'rr') { rot = (rot + 1) % 4; dirty = true; fit(); }
       else if (a === 'zi' || a === 'zo') setZoom(zoom * (a === 'zi' ? 1.25 : 0.8));
       else if (a === 'z1') setZoom(1);
@@ -4369,7 +4468,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         var n3 = nextId(1); if (n3) go(n3); else close();
       }
     });
-    status(); setNext(); lesPanel('this'); show();
+    setW(lsGet('zh:rvpw', 'm')); status(); setNext(); lesPanel('this'); show();
   }
 
   // сдать работу с урока по второму шансу (ТЗ 22 C, D 24.10) — в таблице ученика, тем же потоком фото, что домашку
@@ -4485,8 +4584,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     });
   }
   // D загружает фото работы за ученика (ТЗ 25): работа встаёт в «Ждут проверки», ученик видит её у себя как сданную. PDF — страницами-картинками
-  function tsubPhotos(input) {
-    var id = input.dataset.c, q = id.split('.'), picked = Array.prototype.slice.call(input.files), st = $('tsubSt'), all = 0, files = [];
+  function tsubPhotos(input, given) {   // given — картинки из буфера (D 13.11) вместо выбранных в поле; поле на время отправки всё равно глушим
+    var id = input.dataset.c, q = id.split('.'), picked = Array.prototype.slice.call(given || input.files), st = $('tsubSt'), all = 0, files = [];
     if (st) st.textContent = picked.some(isPdf) ? 'Готовлю страницы PDF…' : 'Готовлю ' + Math.min(picked.length, 12) + ' фото…';
     input.disabled = true;
     picked.reduce(function (p, f) {
@@ -4523,6 +4622,32 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       if (e && e.pdf) { if (st) st.textContent = 'Не получилось открыть PDF. Попробуй выгрузить его ещё раз или загрузи страницы картинками.'; return; }
       nextApi(); if (st) st.textContent = 'Нет связи. Проверь интернет и попробуй ещё раз.';
     });
+  }
+  // картинка из буфера (D 13.11: скопировал на Маке — на iPad «Добавить фото» буфера не предлагает) → фото работы за ученика.
+  // Кнопка читает буфер сама; браузер не дал — поле «нажми и удерживай → Вставить» (вставка в нём идёт через paste ниже)
+  function clipImgs(list) {
+    return Array.prototype.filter.call(list || [], function (f) { return /^image\/(png|jpeg|webp|heic)$/.test(f.type); });
+  }
+  function tsubClip() {
+    var inp = $('tsubIn'), st = $('tsubSt');
+    if (!inp || inp.disabled) return;
+    var ask = function () {
+      if (!st) return;
+      st.innerHTML = '<span class="pop-clip" contenteditable="true" role="textbox" aria-label="Вставь сюда картинку">Нажми сюда и удерживай → «Вставить»</span>';
+      var c = st.querySelector('.pop-clip'); c.focus();
+      c.addEventListener('input', function () { c.textContent = ''; });   // вставился текст, а не картинка — поле чистое
+    };
+    if (!navigator.clipboard || !navigator.clipboard.read) { ask(); return; }
+    navigator.clipboard.read().then(function (items) {
+      return Promise.all(items.map(function (it) {
+        var t = it.types.filter(function (x) { return /^image\/(png|jpeg|webp)$/.test(x); })[0];
+        return t ? it.getType(t).then(function (b) { return new File([b], 'bufer.' + t.split('/')[1].replace('jpeg', 'jpg'), { type: t }); }) : null;
+      }));
+    }).then(function (fs) {
+      fs = fs.filter(Boolean);
+      if (!fs.length) { if (st) st.textContent = 'В буфере нет картинки. Скопируй фото и нажми ещё раз.'; return; }
+      if (!inp.disabled && document.contains(inp)) tsubPhotos(inp, fs);
+    }, ask);
   }
   // D: «проверено» / «на доработку» — сервер пишет статус и шлёт ученику в Телеграм
   function review(subId, st, v, c) {
@@ -4793,7 +4918,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       (parts[2] === 'd' ? '<button data-act="submove" title="Ученик сдал не в тот день — перенести фото и разбор в другой">↪ В другой день</button>' : '') + '</div><div id="popMove"></div></div>';
     // ТЗ 25: D фотографирует работу ученика своим телефоном — сел телефон, контрольная, олимпиада
     if (tsubSrv && mode === 'teacher') src += '<label class="btn upl pop-up">📷 ' + (sb ? 'Добавить фото' : parts[2] === 'u' ? 'Загрузить работу' : 'Загрузить домашку') +
-      '<input type="file" id="tsubIn" data-c="' + id + '" accept="image/*,application/pdf,.pdf" multiple></label><span class="pop-upst" id="tsubSt"></span>';
+      '<input type="file" id="tsubIn" data-c="' + id + '" accept="image/*,application/pdf,.pdf" multiple></label>' +
+      '<button class="btn pop-up pop-clipb" data-act="tsubclip" title="Картинка, скопированная на этом устройстве или на Маке (общий буфер)">📋 Из буфера</button><span class="pop-upst" id="tsubSt"></span>';
     var pop = $('pop');
     var head = '<div class="pop-h"><b>' + esc(p.fam + ' ' + p.name) + '</b><span>' + esc(l.date) + ', ' +
       (parts[2] === 'd' ? (nSh > 1 ? 'ДЗ, общая на ' + nSh + ' урока' : 'ДЗ') : 'урок') + (l.topic ? '<br>' + esc(plain(l.topic).slice(0, 60)) : '') + '</span></div>' + src;
@@ -4810,6 +4936,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       '<div class="pop-x"><button class="m4" data-q="зачёт">зачёт</button><button class="m2" data-q="незачёт">незачёт</button></div>' +
       '<label class="pop-l" for="popIn">Своя оценка</label><form class="pop-t" id="popForm" autocomplete="off"><input id="popIn" maxlength="20" autocomplete="off" placeholder="например 85 или 4/5" value="' + esc(splitMark(m).g) + '">' +
       '<button class="btn pri" type="submit">OK</button></form>' +
+      '<div id="popNz">' + nzBoxHtml(id) + '</div>' +
       '<label class="pop-l" for="popCm">Комментарий ученику</label><textarea id="popCm" class="pop-cm" maxlength="300" rows="2" autocomplete="off" placeholder="например: перепиши №3">' + esc(splitMark(m).c) + '</textarea>' +
       '<div class="pop-f"><button class="btn danger" data-q="" data-wipe="1">Стереть</button>' +
       '<label><input type="checkbox" id="popNext"' + (nextOn ? ' checked' : '') + '> дальше вниз</label>' +
@@ -4833,7 +4960,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       pane('z', '<div class="pop-x"><button class="m4' + on('зачёт') + '" data-q="зачёт">зачёт</button><button class="m2' + on('незачёт') + '" data-q="незачёт">незачёт</button></div>' +
         '<label class="pop-l" for="popIn">Своя оценка</label><form class="pop-t" id="popForm" autocomplete="off"><input id="popIn" maxlength="20" autocomplete="off" placeholder="например 85 или 4/5" value="' + esc(g) + '">' +
         '<button class="btn pri" type="submit">OK</button></form>') +
-      '<div id="popSc">' + scBoxHtml(id) + '</div>' +
+      '<div id="popSc">' + scBoxHtml(id) + '</div><div id="popNz">' + nzBoxHtml(id) + '</div>' +
       '<label class="pop-l" for="popCm">Комментарий ученику</label><textarea id="popCm" class="pop-cm" maxlength="300" rows="2" autocomplete="off" placeholder="например: перепиши №3">' + esc(splitMark(m).c) + '</textarea>' +
       '<div class="pop-f"><button class="btn danger" data-q="" data-wipe="1">Стереть</button>' +
       '<label><input type="checkbox" id="popNext"' + (nextOn ? ' checked' : '') + '> После отметки — к следующему</label>' +
@@ -4851,6 +4978,28 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     return '<div class="pp-sc' + (dbt ? ' on' : '') + '"><button class="pp-sch" data-act="sc" data-id="' + (dbt ? 'off' : 'on') + '" aria-pressed="' + !!dbt + '"><span>Второй шанс' +
       '<small>' + (!dbt ? (full ? 'выключен: у ученика уже ' + SC_CAP + ' по предмету — поговорить' : 'выключен') : dbt.left < 0 ? 'срок вышел ' + esc(vDay(dbt.until)) : 'до ' + esc(vDay(dbt.until)) + (hw ? ', ученик сдаст сам' : ', пересдача на уроке')) + '</small></span><i class="pp-sw" aria-hidden="true"><i></i></i></button>' +
       (dbt ? '<div class="pp-ch">' + chips + '<label class="pp-dt' + (any ? '' : ' on') + '">своя дата<input type="date" id="scDate" value="' + iso + '"></label></div>' : '') + '</div>';
+  }
+  // «Без учёта» (D 13.11): переключатель на всю графу — урок или ДЗ этого дня. Виден у клетки с оценкой или когда уже включён
+  function nzBoxHtml(id) {
+    var q = id.split('.'), l = S.les[q[0]], m = S.mark[id];
+    if (!nzSrv || mode !== 'teacher' || !l || isItog(id) || !(nzc(l, q[2]) || (m && splitMark(m).g))) return '';
+    var on = nzc(l, q[2]);
+    return '<div class="pp-sc pp-nz' + (on ? ' on' : '') + '"><button class="pp-sch" data-act="nz" aria-pressed="' + on + '"><span>Без учёта' +
+      '<small>' + (on ? 'вся графа: в средний не идёт, красным не горит' : 'олимпиада, диагностика: баллы стоят, в средний не идут') + '</small></span><i class="pp-sw" aria-hidden="true"><i></i></i></button></div>';
+  }
+  function nzSet() {
+    var q = String(cur || '').split('.'), l = S.les[q[0]], w = q[2];
+    if (!l || isItog(cur) || (w !== 'u' && w !== 'd')) return;
+    var on = !nzc(l, w), d = bare(l);
+    d.nz = ['u', 'd'].filter(function (x) { return x === w ? on : nzc(l, x); }).join('');   // пусто — сервер стирает признак
+    put('les', l.id, d);
+    scMapC = null; pendingRender = true;   // средний у фамилии и итоги — после закрытия окна
+    document.querySelectorAll('td.c[data-c^="' + l.id + '."]').forEach(function (td) {
+      if (td.dataset.c.split('.')[2] !== w) return;
+      var cv = cellView(td.dataset.c); td.className = cv.cls + (td.classList.contains('dend') ? ' dend' : '') + (cur === td.dataset.c ? ' cur' : ''); td.innerHTML = cv.inner;
+    });
+    $('popNz').innerHTML = nzBoxHtml(cur);
+    if ($('popSc')) $('popSc').innerHTML = scBoxHtml(cur);
   }
   // переключатель и срок второго шанса: on — включить на SC_DAYS дней, off — выключить, «ДД.ММ» — срок
   function scSet(val) {
@@ -4970,7 +5119,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     var u = [], d = [], kl = null, kv = '';
     C.LY.forEach(function (x) {
       x.cols.forEach(function (c) {
-        var g = gradeVal(splitMark(S.mark[c.l.id + '.' + sid + '.' + c.w]).g);
+        var g = nzc(c.l, c.w) ? null : gradeVal(splitMark(S.mark[c.l.id + '.' + sid + '.' + c.w]).g);
         if (g != null) (c.w === 'u' ? u : d).push(g);
       });
       if (isQkr(x.l)) {   // контрольную переписывали (два урока) — берём последнюю оценку; оценок нет — последнюю отметку («н»)
@@ -5618,7 +5767,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
       layout(LA).forEach(function (x) {
         x.cols.forEach(function (c) {
           var m = S.mark[c.l.id + '.' + meId + '.' + c.w], sm = splitMark(m);
-          if (sm.g) out.push({ l: c.l, x: x, w: c.w, m: m || {}, g: sm.g, gv: gradeVal(sm.g), n: n++ });
+          if (sm.g) out.push({ l: c.l, x: x, w: c.w, m: m || {}, g: sm.g, gv: nzc(c.l, c.w) ? null : gradeVal(sm.g), nz: nzc(c.l, c.w), n: n++ });
         });
       });
     });
@@ -5637,9 +5786,9 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
     if (dbt && sub && sub.st === 'sent') tail = '<span class="v-hist wait">Сдано заново — ждёт проверки</span>';
     else if (dbt) tail = '<span class="v-hist bad">' + (dbt.left < 0 ? 'Срок исправления прошёл' : 'Исправить до ' + esc(vDayS(dbt.until)) + ' · ' + vLeftW(dbt.left)) + '</span>';
     return '<button class="v-row v-gr" data-va="urok" data-id="' + r.l.id + '">' + (vF ? '' : '<span class="v-gc ' + sj.k + '">' + esc(sj.short.charAt(0)) + (cv ? '<img data-ff="' + cv.id + '" alt="">' : '') + '</span>') +   // выбран один предмет — буква не нужна (A3)
-      vMkTile(r.g, inf.cls, r.m.pv && splitMark({ v: r.m.pv }).g) +
+      vMkTile(r.g, r.nz && !dbt ? 'mn' : inf.cls, r.m.pv && splitMark({ v: r.m.pv }).g) +
       '<span class="v-body"><b>' + esc(tp) + '</b><span class="v-cap">' + esc(what + ', ' + vDay(r.l.date)) + (r.m.pv && r.m.gt ? (scAuto(r.m.pv) ? ', сдано ' : ', исправлено ') + ddmm(new Date(r.m.gt)) : '') + '</span>' +
-      (vSay(sm.c) ? '<span class="v-hist">Учитель: ' + esc(sm.c) + '</span>' : '') + tail + '</span><span class="v-go">›</span></button>';
+      (vSay(sm.c) ? '<span class="v-hist">Учитель: ' + esc(sm.c) + '</span>' : '') + (r.nz ? '<span class="v-hist">Без учёта — в средний не идёт</span>' : '') + tail + '</span><span class="v-go">›</span></button>';
   }
   function vOcHtml() {
     var cur = vQOf(todayStr()), q = vQ < 0 ? cur : vQ, all = vGrades(), R = q > 3 ? all : all.filter(function (r) { return vQOf(r.l.date) === q; });
@@ -6090,6 +6239,8 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
         document.querySelectorAll('#pop .pp-p').forEach(function (x) { x.hidden = x.dataset.p !== popTab; });
       }
       else if (act === 'sc') scSet(a.dataset.id);
+      else if (act === 'nz') nzSet();
+      else if (act === 'tsubclip') tsubClip();
       else if (act === 'retry') { if (znUrl()) location.reload(); else view(''); }
       else if (act === 'addles') openDay(null);
       else if (act === 'saveday') saveDay(a.dataset.date);
@@ -6271,6 +6422,17 @@ html.rv-on, html.rv-on body{ overflow:hidden; }
   document.addEventListener('mouseover', function (ev) { hot = dropTarget(ev.target) || hot; });
   // ⌘V: картинка из буфера — в строку, где стоит курсор (окно «День»), иначе в блок под мышкой, иначе в домашку
   document.addEventListener('paste', function (ev) {
+    var tin = $('tsubIn');
+    if (mode === 'teacher' && tin && !$('pop').hidden && !$('dlg').innerHTML && !document.querySelector('.view, .rv')) {   // окно клетки: картинка — фото работы за ученика
+      var inClip = !!(ev.target.closest && ev.target.closest('.pop-clip'));
+      if (!inClip && ev.target.matches && ev.target.matches('input, textarea')) return;   // вставка в оценку или комментарий — обычная, текстом
+      var tf = clipImgs(ev.clipboardData && ev.clipboardData.files);
+      if (tf.length && (inClip || !(ev.clipboardData.getData('text/plain') || '').trim())) {   // из Word или Excel — текст и его картинка разом: это не фото работы
+        ev.preventDefault(); if (!tin.disabled) tsubPhotos(tin, tf); return;
+      }
+      if (inClip) { ev.preventDefault(); ev.target.closest('.pop-clip').textContent = 'Там не картинка — скопируй фото и вставь сюда ещё раз'; }
+      return;
+    }
     if (mode !== 'teacher' || !$('dlg').innerHTML || document.querySelector('.view')) return;
     var files = Array.prototype.filter.call((ev.clipboardData && ev.clipboardData.files) || [], function (f) { return /^image\/(png|jpeg|webp)$/.test(f.type); });
     if (!files.length || (ev.clipboardData.getData('text/plain') || '').trim()) return;   // скопировано из Word или Excel: там и текст, и его картинка — вставляем текст
