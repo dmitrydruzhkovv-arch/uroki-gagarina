@@ -3522,25 +3522,76 @@ html.rv-on, html.rv-on body{ overflow:hidden; overscroll-behavior-x:none; }   /*
 
   /* ── сдача ДЗ (шаг 4): ученик входит через бота, сдаёт фото в свою клетку ── */
   // ученик с ключом: журнал класса + свои сдачи. → true | 'nolink' | false (ключ не годен)
-  function meLoad(want) {
+  // again: 1 — повтор через запасной адрес перед памятью телефона; 2 — тихая попытка из «нет связи»: сбой не трогает экран
+  function meLoad(want, again, gen) {
     // at — когда ученик сам выбрал запомненный журнал: подключили к новому позже — сервер откроет новый (D, 01.10)
     var body = want ? { j: want } : { j: lsGet('zh:sj', ''), at: lsGet('zh:sjt', 0) || 1 }, seq0 = subSeq;
     if (uchDevice()) body.t = 1;   // на устройстве вход учителя: D смотрит глазами ученика — в статистику не идёт
+    if (again !== 2) { meGen++; if (meOff) { meOff = 0; clearTimeout(meOffT); offBar(); } }   // новая загрузка (другой журнал, «Ещё раз») — старая тихая попытка больше не нужна
     return post('/zhurnal/me', body, stuH()).then(function (r) {
       if (seq0 !== subSeq && r.status === 200) return meLoad(want);   // пока шёл запрос, ученик сдал фото — этот снимок старше сдачи, берём свежий
-      if (r.status === 401) { lsDel(LS.ckl); if (!znUrl()) lsDel(sk() ? LS.sk : LS.ck); return false; }   // ключ значка — в адресе, память не при чём
+      if (r.status === 401) {   // ключ значка — в адресе, память не при чём; ключ погас — и снимок долой
+        lsDel(LS.ckl); lsDel(ME_MEM); if (!znUrl()) lsDel(sk() ? LS.sk : LS.ck);
+        if (again === 2) { meOff = 0; offBar(); location.reload(); }   // погас, пока смотрел снимок без связи: старт сам решит, куда вести
+        return false;
+      }
       if (r.status !== 200 || !r.data.ok) throw { http: r.status };
+      if (again === 2 && gen !== meGen) return true;   // тихая попытка опоздала: ученик уже открыл другое — её ответ не рисуем
       lsSet(LS.api, API.indexOf('https://hw.') === 0 ? API : '');
-      JOURNALS = r.data.journals || []; J = r.data.j || MAIN_J; renderJournals();
-      if (want && r.data.j === want) { lsSet('zh:sj', want); lsSet('zh:sjt', Date.now()); }   // выбрал в переключателе и он открылся — в следующий раз откроется он
-      if (!r.data.stu) { meId = null; freeRows = r.data.free || []; lsDel(LS.ckl); return 'nolink'; }   // строку отвязали — и чат по ссылке долой
-      setMeta(r.data.meta);
-      meId = r.data.stu; planSrv = !!r.data.plan; sdachaOn = !!r.data.sdacha; sdelSrv = !!r.data.sdel; urabSrv = !!r.data.urab; znSrv = !!r.data.zn; vidSrv = !!r.data.vid; itogSrv = !!r.data.itog; svoiSrv = !!r.data.svoi; shansSrv = !!r.data.shans; statSrv = !!r.data.stat; viewFoot();
-      if (r.data.ck && !uchDevice()) lsSet(LS.ckl, r.data.ck); else lsDel(LS.ckl);   // чат без кода: пришёл по личной ссылке — чат узнаёт его сам (ТЗ 22, E5); у D — никогда
-      if (znUrl()) lsSet('zh:zn', znUrl());   // отдельной записью: в деле только когда другого входа на устройстве нет (см. старт) // ключ значка — ещё и в память: ушёл на сайт уроков и вернулся по ссылке «Журнал» без ключа — кода класса не спросим (D 12.10)
-      S = fromObjects(r.data.objects); loaded = true; render();
-      return true;
-    }, function (e) { nextApi(); throw e; });
+      var res = meApply(r.data, want);
+      if (res === true && !uchDevice()) lsSet(ME_MEM, { t: Date.now(), k: meTag(), w: want || '', d: r.data });   // у D на устройстве — не помним
+      if (meOff) { meOff = 0; clearTimeout(meOffT); offBar(); }   // связь вернулась
+      return res;
+    }, function (e) { nextApi(); throw e; })
+      .catch(function (e) { return meMemo(e, want, again); });
+  }
+  function meApply(d, want) {   // ответ /zhurnal/me (свежий или из памяти телефона) → экран
+    JOURNALS = d.journals || []; J = d.j || MAIN_J; renderJournals();
+    if (want && d.j === want) { lsSet('zh:sj', want); lsSet('zh:sjt', Date.now()); }   // выбрал в переключателе и он открылся — в следующий раз откроется он
+    if (!d.stu) { meId = null; freeRows = d.free || []; lsDel(LS.ckl); return 'nolink'; }   // строку отвязали — и чат по ссылке долой
+    setMeta(d.meta);
+    meId = d.stu; planSrv = !!d.plan; sdachaOn = !!d.sdacha; sdelSrv = !!d.sdel; urabSrv = !!d.urab; znSrv = !!d.zn; vidSrv = !!d.vid; itogSrv = !!d.itog; svoiSrv = !!d.svoi; shansSrv = !!d.shans; statSrv = !!d.stat; viewFoot();
+    if (d.ck && !uchDevice()) lsSet(LS.ckl, d.ck); else lsDel(LS.ckl);   // чат без кода: пришёл по личной ссылке — чат узнаёт его сам (ТЗ 22, E5); у D — никогда
+    if (znUrl()) lsSet('zh:zn', znUrl());   // отдельной записью: в деле только когда другого входа на устройстве нет (см. старт) // ключ значка — ещё и в память: ушёл на сайт уроков и вернулся по ссылке «Журнал» без ключа — кода класса не спросим (D 12.10)
+    S = fromObjects(d.objects); loaded = true; render();
+    return true;
+  }
+  /* ── Дневник помнит последний снимок (ТЗ 28, D 13.11): сервер упал — ученик видит, что было, с пометкой
+     «Нет связи — показано, как было …»; раз в 30 с тихо пробуем снова. Без связи сдать фото нельзя — кнопки сдачи прячем.
+     Снимок — ответ сервера этому же ученику, на его же телефоне; другой ключ на устройстве — чужой снимок не покажем. */
+  var ME_MEM = 'zh:memo', meOff = 0, meOffT = 0, meGen = 0;
+  function meTag() { var h = stuH(); return String(h['X-Stu-Key'] || h['X-Chat-Key'] || '').slice(-12); }
+  function meMemo(e, want, again) {
+    if (again === 2 || (e && e.http && e.http < 500)) throw e;   // тихая попытка или сервер ответил отказом — память не поможет
+    var m = lsGet(ME_MEM, null);
+    if (!m || !m.d || !m.t || !meTag() || m.k !== meTag() || (m.w || '') !== (want || '') || Date.now() - m.t > 30 * 864e5) throw e;
+    if (!again && !(e && e.http)) return meLoad(want, 1);   // сеть подвела — сперва запасной адрес (nextApi уже переключил)
+    var res = meApply(m.d, want);
+    if (res !== true) throw e;
+    meOff = m.t; sdachaOn = false; render(); offBar();
+    clearTimeout(meOffT);
+    var g = meGen;
+    meOffT = setTimeout(function retry() {
+      if (g !== meGen) return;
+      meLoad(want, 2, g).catch(function () { if (g === meGen) meOffT = setTimeout(retry, 30000); });
+    }, 30000);
+    return true;
+  }
+  function offBar() {
+    var b = document.getElementById('offbar');
+    if (!meOff) { if (b) b.remove(); return; }
+    if (!b) {
+      b = document.createElement('div'); b.id = 'offbar'; b.setAttribute('role', 'status');
+      b.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);transform:translateX(-50%);z-index:9999;' +
+        'max-width:calc(100% - 24px);padding:9px 14px;border-radius:10px;background:rgba(40,36,48,.94);color:#fff;' +
+        'font:600 13px/1.35 system-ui,-apple-system,sans-serif;text-align:center;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.2)';
+      document.body.appendChild(b);
+    }
+    // над панелью вкладок Дневника, а не поверх неё: вкладки должны оставаться видны
+    var tabs = document.querySelector('.v-tabs'), r = tabs && tabs.getClientRects().length ? tabs.getBoundingClientRect() : null;
+    b.style.bottom = r ? (window.innerHeight - r.top + 8) + 'px' : 'calc(env(safe-area-inset-bottom,0px) + 12px)';
+    var t = new Date(meOff), dv = function (n) { return (n < 10 ? '0' : '') + n; };
+    b.textContent = 'Нет связи — показано, как было ' + dv(t.getDate()) + '.' + dv(t.getMonth() + 1) + ' в ' + dv(t.getHours()) + ':' + dv(t.getMinutes());
   }
   // вошёл через бота, а строка ни с кем не связана — ученик сам жмёт свою фамилию, D приходит уведомление
   var freeRows = [], subSeq = 0;   // subSeq растёт при каждой сдаче фото
