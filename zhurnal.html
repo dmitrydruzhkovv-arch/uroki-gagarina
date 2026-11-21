@@ -1023,6 +1023,11 @@ html:not([data-theme="night"]) #vid .v-head{ background:var(--v-bg); }
 .v-hwb .v-hwh{ margin:12px 0 0; }
 .v-hwb > .v-hwh:first-child, .v-hwd + .v-hwh{ margin-top:4px; }
 .v-hi{ display:block; margin-top:3px; padding:0; border-radius:0; background:none; }
+/* ступень (Tab) и пункт с «- » / «• » — и в Дневнике, и в «Так увидит ученик» у учителя (D 21.11: превью их терял) */
+.v-hwb .v-hi.tx-i{ padding-left:calc(var(--i) * 1.2em); }
+.v-hwb .v-hi.v-li{ padding-left:calc(1.05em + var(--i, 0) * 1.2em); text-indent:-1.05em; }
+.v-hwb .v-hi:not(.v-tip) i, .v-hwb .v-hi.v-tip span i{ all:unset; font-style:italic; }   /* *курсив* — не кружок галочки .v-hi i */
+.v-hwb .v-hi.v-li::before{ content:'•'; display:inline-block; width:1.05em; text-indent:0; color:var(--s, currentColor); font-weight:900; }
 .v-hi b{ font-weight:800; }
 .v-hi .v-opt{ color:var(--h-soft); }
 .v-hi.v-tip{ display:flex; gap:8px; margin-top:12px; padding:10px 12px; border-radius:8px; font-size:14px; color:var(--h-soft); background:color-mix(in srgb, var(--h-soft) 9%, transparent); }
@@ -1126,6 +1131,7 @@ html:not([data-theme="night"]) #vid .v-back{ color:var(--v-link); background:rgb
 #vid .v-note{ font-size:15.5px; line-height:1.32; }
 #vid .v-plan{ margin:0 0 14px; font-size:15.5px; line-height:1.32; } #vid .v-plan .v-cap{ margin-bottom:6px; font-weight:700; }
 #vid .v-plan .zp-t{ color:var(--v-sub); } #vid .v-hwb .v-hi.tx-i{ padding-left:calc(var(--i) * 1.2em); }
+#vid .v-hwb .v-hi.v-li{ padding-left:calc(1.05em + var(--i, 0) * 1.2em); }
 /* «Написать учителю» и «Вспомнить урок» — белые строки-карточки во всю ширину */
 #vid .v-askc, #vid .v-rem{ display:flex; align-items:center; gap:12px; width:100%; margin-top:12px; padding:13px 14px; text-align:left; background:var(--v-card); border-radius:10px; box-shadow:var(--v-sh); }
 #vid .v-askc{ font-size:16px; font-weight:650; color:var(--v-link); }
@@ -1331,13 +1337,21 @@ html.rv-on, html.rv-on body{ overflow:hidden; overscroll-behavior-x:none; }   /*
   // оформление темы и домашки (D, 01.10): **жирный**, *курсив*, __подчёркнутый__, строка с «• » или «- » — точка.
   // Сначала esc — HTML из текста не пройдёт
   // маркер — на границе слова (начало строки, пробел, скобка, кавычка), внутри — не пробел с краёв.
-  // Жирный ** можно и внутри русского слова (D 21.11: «**Ч**етность», «не**чет**ность» — первые буквы жирным):
-  // русская буква перед ** и русская после; латиница и цифры не трогаются (см**2, x**2, a**n — это степень).
-  // В жирном нет другого ** — две пары в строке не склеиваются. __ и * — строго по границам слова (2*3*4 — умножение).
-  // «;» перед и «&» после — это конец и начало экранированной кавычки (&quot; &#39;): "**важно**" в прямых кавычках тоже работает
-  var FMT_B = /(^|[\s(«"'>;]|[А-Яа-яЁё](?=\*\*[А-Яа-яЁё]))\*\*((?!\*\*)\S(?:(?:(?!\*\*).)*?(?!\*\*)\S)?)\*\*(?=$|[\s.,;:!?)»"'<&]|[А-Яа-яЁё])/g,
+  // «;» перед и «&» после — это конец и начало экранированной кавычки (&quot; &#39;): "**важно**" в прямых кавычках тоже работает.
+  // В жирном нет другого ** — две пары в строке не склеиваются.
+  var FMT_B = /(^|[\s(«"'>;])\*\*((?!\*\*)\S(?:(?:(?!\*\*).)*?(?!\*\*)\S)?)\*\*(?=$|[\s.,;:!?)»"'<&])/g,
     FMT_U = /(^|[\s(«"'>;])__([^_\s](?:[^_]*[^_\s])?)__(?=$|[\s.,;:!?)»"'<&])/g,
     FMT_I = /(^|[\s(«"'>;])\*([^*\s](?:[^*]*[^*\s])?)\*(?=$|[\s.,;:!?)»"'<&])/g;
+  // внутри русского слова (D 21.11: «**Ч**етность», «не**чет**ность», «по-**другому**»; кнопка Ч на части слова — «в__аав__»):
+  // между маркерами — только русские буквы, без пробелов и цифр: см**2, x**2, a**n, фото__1__2, пропуски «к__рова, м__локо» не трогаются;
+  // подчёркнутое — от двух букв («к__р__ва» — два пропуска). Курсив внутри слова не берём: «АВ*ВС*АС», «а*в*с» — это умножение
+  var FMT_BW = /(^|[\s(«"'>;\-–]|[А-Яа-яЁё])\*\*([А-Яа-яЁё]+)\*\*(?=$|[\s.,;:!?)»"'<&\-–]|[А-Яа-яЁё])/g,
+    FMT_UW = /(^|[\s(«"'>;\-–]|[А-Яа-яЁё])__([А-Яа-яЁё]{2,})__(?=$|[\s.,;:!?)»"'<&\-–]|[А-Яа-яЁё])/g;
+  // разметка строки: b, u, i — во что обернуть (пусто — просто снять маркеры, как в plain)
+  function fmtMarks(s, b, u, i) {
+    var w = function (t) { return t ? '$1<' + t + '>$2</' + t + '>' : '$1$2'; };
+    return s.replace(FMT_B, w(b)).replace(FMT_BW, w(b)).replace(FMT_U, w(u)).replace(FMT_UW, w(u)).replace(FMT_I, w(i));
+  }
   // табуляция в начале строки — ступень (D 09.11: Tab вправо, ⇧Tab обратно): строка уходит вправо целиком, с переносами
   function txLvl(ln) { return planSrv && /\S/.test(ln) ? /^\t*/.exec(ln)[0].length : 0; }   // без флага — как было; строка из одних табов — пустая строка
   function txSty(n) { return ' style="--i:' + Math.min(n, 6) + '"'; }
@@ -1346,7 +1360,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; overscroll-behavior-x:none; }   /*
       var n = txLvl(ln); if (n) ln = ln.slice(n);
       var li = /^\s*(?:•|-|–)\s+/.test(ln);
       if (li) ln = ln.replace(/^\s*(?:•|-|–)\s+/, '');
-      ln = ln.replace(FMT_B, '$1<b>$2</b>').replace(FMT_U, '$1<u>$2</u>').replace(FMT_I, '$1<i>$2</i>');
+      ln = fmtMarks(ln, 'b', 'u', 'i');
       return { li: li || !!n, h: li ? '<span class="li' + (n ? ' tx-i"' + txSty(n) : '"') + '>' + ln + '</span>' : n ? '<span class="tx-i"' + txSty(n) + '>' + ln + '</span>' : ln };
     });
     // строка с точкой — сама с новой строки: перенос рядом с ней дал бы пустую строку
@@ -1381,7 +1395,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; overscroll-behavior-x:none; }   /*
     return h ? '<div class="zp">' + h + '</div>' : '';
   }
   function minN(n) { return n + ' мин'; }
-  function plain(t) { return String(t || '').replace(FMT_B, '$1$2').replace(FMT_U, '$1$2').replace(FMT_I, '$1$2').replace(/^\s*•\s+/gm, ''); }
+  function plain(t) { return fmtMarks(String(t || ''), '', '', '').replace(/^\s*•\s+/gm, ''); }
 
   /* ── адрес сервера: как у Кабинета — прямой RF и запасной через шлюз (с VPN) ── */
   var APIS = (function () {
@@ -5672,11 +5686,11 @@ html.rv-on, html.rv-on body{ overflow:hidden; overscroll-behavior-x:none; }   /*
   function vHwParse(t) {
     var due = '', out = [];
     String(t || '').split('\n').forEach(function (ln) {
-      var s = ln.replace(/^\s*(?:•|-|–|—)\s+/, '').trim(), p = plain(s).trim(), h;
+      var li = /^\s*(?:•|-|–)\s+/.test(ln), s = ln.replace(/^\s*(?:•|-|–)\s+/, '').trim(), p = plain(s).trim(), h;
       if (!p) return;
       if (!due && V_DUE.test(p)) { due = p.replace(/[.!]+$/, ''); return; }
       if ((h = /^(.{2,30}):$/.exec(p)) && h[1].indexOf('№') < 0) { out.push({ h: h[1] }); return; }
-      out.push({ t: s, k: p, i: txLvl(ln) });
+      out.push({ t: s, k: p, i: txLvl(ln), li: li });   // «- » / «• » в начале — точкой, как у учителя (D 21.11)
     });
     return { due: due, items: out };
   }
@@ -5686,8 +5700,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; overscroll-behavior-x:none; }   /*
   var V_OPT = /\((?:по желанию|по выбору|дополнительно|необязательно)\)/gi;
   var V_TIP = /^(?:повтор\S*|вспомн\S*|запомн\S*|помни|подсказка)\s*:/i;
   function vHwItem(s) {
-    return esc(s).replace(V_NO, '<b>$&</b>').replace(V_OPT, '<span class="v-opt">$&</span>')
-      .replace(FMT_B, '$1<b>$2</b>').replace(FMT_U, '$1<u>$2</u>').replace(FMT_I, '$1<i>$2</i>');
+    return fmtMarks(esc(s).replace(V_NO, '<b>$&</b>').replace(V_OPT, '<span class="v-opt">$&</span>'), 'b', 'u', 'i');
   }
   // блок домашки. due — строка срока сверху («Сдать к вт 10 ноября», показ в окне дня у учителя); false — срок стоит
   // в шапке карточки урока, тут его нет: срок — один раз на экран
@@ -5696,7 +5709,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; overscroll-behavior-x:none; }   /*
     if (due !== false && (P.due || due)) h += '<div class="v-hwd">' + esc(P.due ? 'Сдать ' + P.due : due) + '</div>';
     P.items.forEach(function (x) {
       if (x.h) { h += '<div class="v-hwh">' + esc(x.h) + '</div>'; return; }
-      h += V_TIP.test(x.k) ? '<div class="v-hi v-tip"><i aria-hidden="true">💡</i><span>' + vHwItem(x.t) + '</span></div>' : '<div class="v-hi' + (x.i ? ' tx-i"' + txSty(x.i) : '"') + '>' + vHwItem(x.t) + '</div>';
+      h += V_TIP.test(x.k) ? '<div class="v-hi v-tip"><i aria-hidden="true">💡</i><span>' + vHwItem(x.t) + '</span></div>' : '<div class="v-hi' + (x.li ? ' v-li' : '') + (x.i ? ' tx-i"' + txSty(x.i) : '"') + '>' + vHwItem(x.t) + '</div>';
     });
     return h + (extra || '') + '</div>';
   }
