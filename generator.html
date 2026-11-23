@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Генератор</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b0716">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="_движок/fonts/gf.css">
+<!--
+  Генератор случайных номеров (D, 24.11.2026). Открывается из журнала кнопкой «🎲 Генератор»:
+  generator.html?n=<учеников в журнале>&j=<журнал>. Номер = место ученика в списке журнала.
+  Имён и оценок здесь нет и сюда не приходит — только число учеников.
+  Без n — обычный генератор, диапазон задаётся в настройках (кнопка с диапазоном справа сверху).
+  Тот же файл лежит в школьном журнале (shkola_zhurnal/site) — отличается только путь к шрифтам.
+-->
+<style>
+[hidden]{ display:none !important; }
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; overflow:hidden; }
+body{
+  font-family:'Onest',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; color:#fff;
+  background:#0b0716; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none;
+  touch-action:manipulation;
+}
+button{ font:inherit; color:inherit; border:0; background:none; cursor:pointer; }
+/* фон: тёмное небо + свечение в цвет шара */
+#sky{ position:fixed; inset:0; background:radial-gradient(120vmax 90vmax at 50% 45%, var(--glow,#3b1d6e) 0%, #120a24 38%, #07040f 75%); transition:background .6s; }
+#fx{ position:fixed; inset:0; width:100%; height:100%; pointer-events:none; }
+#stage{ position:fixed; inset:0; display:grid; place-items:center; cursor:pointer; }
+/* шар с номером */
+#ball{
+  --d:min(74vmin,820px);
+  width:var(--d); height:var(--d); border-radius:50%; display:grid; place-items:center; position:relative;
+  background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.55) 0, rgba(255,255,255,0) 22%), linear-gradient(145deg, var(--c1,#7c3aed), var(--c2,#ec4899));
+  box-shadow:0 0 calc(var(--d)*.18) calc(var(--d)*.02) var(--c1,#7c3aed), inset 0 calc(var(--d)*-.05) calc(var(--d)*.12) rgba(0,0,0,.28), inset 0 calc(var(--d)*.03) calc(var(--d)*.06) rgba(255,255,255,.35);
+  transition:background .25s, box-shadow .25s;
+  will-change:transform;
+}
+#num{
+  font-weight:800; line-height:1; letter-spacing:-.03em; font-variant-numeric:tabular-nums;
+  font-size:calc(var(--d) * var(--k,.56));
+  text-shadow:0 calc(var(--d)*.012) 0 rgba(0,0,0,.18), 0 0 calc(var(--d)*.06) rgba(255,255,255,.35);
+}
+#ball.idle{ animation:breath 2.4s ease-in-out infinite; }
+#ball.idle #num{ opacity:.95; }
+@keyframes breath{ 50%{ transform:scale(1.04); } }
+#ball.spin{ animation:wob .16s linear infinite; }
+@keyframes wob{ 25%{ transform:rotate(-3deg) scale(.96); } 75%{ transform:rotate(3deg) scale(.96); } }
+#ball.pop{ animation:pop .7s cubic-bezier(.2,1.6,.4,1); }
+@keyframes pop{ 0%{ transform:scale(.6); } 60%{ transform:scale(1.08); } 100%{ transform:scale(1); } }
+#hint{ position:fixed; left:0; right:0; bottom:calc(9vh + env(safe-area-inset-bottom)); text-align:center; font-size:clamp(15px,2.2vmin,22px); font-weight:600; color:rgba(255,255,255,.62); pointer-events:none; }
+/* уже выпавшие в этом круге — маленькой строкой снизу */
+#hist{ position:fixed; left:0; right:0; bottom:calc(14px + env(safe-area-inset-bottom)); display:flex; flex-wrap:wrap; justify-content:center; gap:6px; padding:0 70px; pointer-events:none; }
+#hist span{ min-width:30px; height:30px; padding:0 7px; border-radius:15px; display:grid; place-items:center; font-weight:700; font-size:14px; background:rgba(255,255,255,.1); color:rgba(255,255,255,.7); }
+#hist span.last{ background:rgba(255,255,255,.24); color:#fff; }
+/* углы: диапазон и «на весь экран» */
+.corner{ position:fixed; top:calc(12px + env(safe-area-inset-top)); right:calc(12px + env(safe-area-inset-right)); display:flex; gap:8px; z-index:3; }
+.cbtn{ height:48px; min-width:48px; padding:0 16px; border-radius:24px; background:rgba(255,255,255,.12); font-weight:700; font-size:17px; display:flex; align-items:center; justify-content:center; gap:8px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+.cbtn:hover{ background:rgba(255,255,255,.2); }
+.cbtn svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+/* настройки */
+#set{ position:fixed; inset:0; z-index:5; display:grid; place-items:center; background:rgba(5,2,12,.6); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
+.card{ width:min(420px,calc(100vw - 24px)); background:#1b1430; border-radius:24px; padding:22px 20px 18px; box-shadow:0 30px 80px -20px #000; }
+.card h2{ font-size:21px; font-weight:800; margin-bottom:16px; }
+.rng{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0; }
+.rng .lab{ font-size:17px; font-weight:600; color:rgba(255,255,255,.75); width:32px; }
+.step{ display:flex; align-items:center; gap:6px; }
+.step button{ width:52px; height:52px; border-radius:16px; background:rgba(255,255,255,.1); font-size:26px; font-weight:700; line-height:1; }
+.step button:active{ background:rgba(255,255,255,.22); }
+.step .val{ min-width:92px; height:52px; border-radius:16px; background:rgba(255,255,255,.06); font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; }
+.tog{ display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; margin:16px 0 4px; padding:12px 0; text-align:left; font-size:17px; font-weight:600; }
+.tog i{ flex:none; width:52px; height:32px; border-radius:16px; background:rgba(255,255,255,.18); position:relative; transition:background .2s; }
+.tog i::after{ content:''; position:absolute; top:3px; left:3px; width:26px; height:26px; border-radius:50%; background:#fff; transition:transform .2s; }
+.tog[aria-checked="true"] i{ background:#22c55e; }
+.tog[aria-checked="true"] i::after{ transform:translateX(20px); }
+.row{ display:flex; gap:10px; margin-top:18px; }
+.btn{ flex:1; height:52px; border-radius:16px; font-size:17px; font-weight:700; background:rgba(255,255,255,.1); }
+.btn.pri{ background:linear-gradient(135deg,#8b5cf6,#ec4899); }
+@media (prefers-reduced-motion: reduce){ #ball.idle, #ball.spin, #ball.pop{ animation:none; } }
+</style>
+</head>
+<body>
+<div id="sky"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div id="stage">
+  <div id="ball" class="idle"><span id="num">?</span></div>
+</div>
+<div id="say" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
+<div id="hint">Нажми, чтобы выбрать номер</div>
+<div id="hist" aria-hidden="true"></div>
+<div class="corner">
+  <button class="cbtn" id="rngBtn" title="Диапазон чисел" aria-label="Диапазон чисел"></button>
+  <button class="cbtn" id="fsBtn" title="На весь экран" aria-label="На весь экран" hidden><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+</div>
+<div id="set" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="setH">
+    <h2 id="setH">Числа</h2>
+    <div class="rng"><span class="lab">от</span><div class="step"><button data-st="lo" data-d="-1" aria-label="Меньше">−</button><button class="val" id="vLo" data-ask="lo"></button><button data-st="lo" data-d="1" aria-label="Больше">+</button></div></div>
+    <div class="rng"><span class="lab">до</span><div class="step"><button data-st="hi" data-d="-1" aria-label="Меньше">−</button><button class="val" id="vHi" data-ask="hi"></button><button data-st="hi" data-d="1" aria-label="Больше">+</button></div></div>
+    <button class="tog" id="tgRep" role="switch" aria-checked="true"><span>Не повторять, пока не выпадут все</span><i></i></button>
+    <div class="row"><button class="btn" id="byJ" hidden></button><button class="btn pri" id="setOk">Готово</button></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var Q = new URLSearchParams(location.search);
+  var MAXN = 99999;
+  var clampN = function (v) { v = Math.round(+v); return isFinite(v) ? Math.max(0, Math.min(MAXN, v)) : 0; };
+  var N = clampN(Q.get('n'));                  // учеников в журнале; 0 — открыли не из журнала
+  var J = (Q.get('j') || '').replace(/[^\w.-]/g, '').slice(0, 40);
+  var SITE = location.pathname.split('/')[1] || '';
+  var SK = 'gen:' + SITE + ':' + (N ? J + ':' + N : 'free');   // круг этой вкладки: обновил страницу — круг тот же
+  var store = function (s, k, v) { try { if (v === undefined) return JSON.parse(s.getItem(k)); s.setItem(k, JSON.stringify(v)); } catch (_) { return null; } };
+
+  // ── состояние ──
+  var st = store(sessionStorage, SK) || {};
+  var lo = clampN(st.lo), hi = clampN(st.hi);
+  if (st.hi == null) {
+    if (N) { lo = 1; hi = N; }
+    else { var fr = store(localStorage, 'gen:free') || {}; lo = fr.lo == null ? 1 : clampN(fr.lo); hi = fr.hi == null ? 30 : clampN(fr.hi); }
+  }
+  if (lo > hi) { var t0 = lo; lo = hi; hi = t0; }
+  var drawn = Array.isArray(st.drawn) ? st.drawn.filter(function (x) { return x >= lo && x <= hi; }) : [];
+  var norep = store(localStorage, 'gen:norep'); if (norep === null) norep = true;
+  function save() {
+    store(sessionStorage, SK, { lo: lo, hi: hi, drawn: drawn });
+    if (!N) store(localStorage, 'gen:free', { lo: lo, hi: hi });
+    store(localStorage, 'gen:norep', norep);
+  }
+
+  // честный случай: crypto, без перекоса по модулю
+  function rnd(n) {
+    if (n <= 1) return 0;
+    var a = new Uint32Array(1), lim = Math.floor(4294967296 / n) * n;
+    do { crypto.getRandomValues(a); } while (a[0] >= lim);
+    return a[0] % n;
+  }
+  var R = function (a, b) { return a + Math.random() * (b - a); };
+  var RI = function (a, b) { return Math.floor(R(a, b + 1)); };
+  var PICK = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
+
+  function next() {
+    var size = hi - lo + 1;
+    if (!norep) return lo + rnd(size);
+    var prev = null;
+    if (drawn.length >= size) { prev = drawn[drawn.length - 1]; drawn = []; }   // все выпали — новый круг; последний не выпадет первым — подряд одного не вызовем
+    var seen = {}; drawn.forEach(function (x) { seen[x] = 1; });
+    if (prev !== null && size > 1) seen[prev] = 1;
+    if (size - drawn.length > 4000) { var v; do { v = lo + rnd(size); } while (seen[v]); return v; }
+    var left = []; for (var i = lo; i <= hi; i++) if (!seen[i]) left.push(i);
+    return left[rnd(left.length)];
+  }
+
+  // ── цвета: яркие пары для шара ──
+  var PAL = [
+    ['#ff3d77', '#ff9a3d'], ['#7c3aed', '#ec4899'], ['#06b6d4', '#3b82f6'], ['#22c55e', '#06b6d4'],
+    ['#f59e0b', '#ef4444'], ['#8b5cf6', '#06b6d4'], ['#f43f5e', '#8b5cf6'], ['#10b981', '#84cc16'],
+    ['#fb7185', '#f59e0b'], ['#0ea5e9', '#a855f7'], ['#e11d48', '#f97316'], ['#6366f1', '#22d3ee'],
+    ['#d946ef', '#facc15'], ['#14b8a6', '#6366f1']
+  ];
+  var lastPal = -1;
+  function pickPal() { var i; do { i = rnd(PAL.length); } while (i === lastPal); lastPal = i; return PAL[i]; }
+  var ball = $('ball'), num = $('num');
+  function paint(p) {
+    ball.style.setProperty('--c1', p[0]); ball.style.setProperty('--c2', p[1]);
+    $('sky').style.setProperty('--glow', p[0] + '66');
+  }
+  function show(v) {
+    var s = String(v), k = [0, .62, .56, .42, .32, .26][Math.min(s.length, 5)];
+    ball.style.setProperty('--k', k); num.textContent = s;
+  }
+
+  // ── вид ──
+  function renderRange() { $('rngBtn').textContent = lo + '–' + hi; }
+  function renderHist() {
+    var h = $('hist');
+    if (!norep || !drawn.length) { h.innerHTML = ''; return; }
+    var last = drawn.slice(-40);
+    h.innerHTML = last.map(function (x, i) { return '<span' + (i === last.length - 1 ? ' class="last"' : '') + '>' + x + '</span>'; }).join('');
+  }
+
+  // ── выбор номера: перебор ~1 с, потом вспышка ──
+  var busy = false, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function draw() {
+    if (busy) return;
+    busy = true; $('hint').hidden = true;
+    var v = next(), size = hi - lo + 1, steps = reduce ? 0 : 14, k = 0;
+    ball.classList.remove('idle', 'pop'); ball.classList.add('spin');
+    (function tick() {
+      if (k < steps) {
+        var f = size > 1 ? lo + rnd(size) : lo;
+        show(f); paint(PAL[rnd(PAL.length)]);
+        k++; setTimeout(tick, 35 + k * k * 0.9);   // замедляется к концу
+        return;
+      }
+      ball.classList.remove('spin'); void ball.offsetWidth; ball.classList.add('pop');
+      var p = pickPal(); paint(p); show(v);
+      drawn.push(v); save(); renderHist(); $('say').textContent = v;
+      if (!reduce) boom(p);
+      setTimeout(function () { busy = false; }, 450);
+    })();
+  }
+
+  /* ════ фейерверки: один canvas за шаром, без библиотек ════ */
+  var cv = $('fx'), cx = cv.getContext('2d'), W = 0, H = 0, P = [], T = [], raf = 0, last = 0, now = 0;
+  function resize() {
+    var d = Math.min(2, window.devicePixelRatio || 1);
+    W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; cx.setTransform(d, 0, 0, d, 0, 0);
+  }
+  resize(); addEventListener('resize', resize);
+  function C() { var r = ball.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: ball.offsetWidth / 2 }; }   // радиус без сжатия «pop»
+  function later(ms, fn) { T.push({ at: performance.now() + ms, fn: fn }); run(); }
+  function add(o) { if (P.length < 2600) P.push(o); run(); }
+  function run() { if (!raf) { last = performance.now(); now = now || last; raf = requestAnimationFrame(loop); } }
+  function rgba(hex, a) { var n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a.toFixed(3) + ')'; }
+  function mix(p) { return p.concat(['#ffffff', '#fde68a', PICK(['#fbbf24', '#f0abfc', '#a5f3fc', '#bbf7d0'])]); }
+
+  function loop(t) {
+    var dt = Math.max(0, Math.min(0.033, (t - last) / 1000)); last = t; now = t;   // первый кадр бывает «раньше» run() — без минуса
+    for (var i = T.length - 1; i >= 0; i--) if (T[i].at <= now) { var f = T[i].fn; T.splice(i, 1); f(); }
+    cx.clearRect(0, 0, W, H);
+    for (var j = P.length - 1; j >= 0; j--) {
+      var o = P[j];
+      o.age += dt;
+      if (o.age >= o.life) { if (o.end) o.end(o); P.splice(j, 1); continue; }
+      step(o, dt); paintP(o);
+    }
+    cx.globalCompositeOperation = 'source-over'; cx.globalAlpha = 1;
+    if (P.length || T.length) raf = requestAnimationFrame(loop); else { raf = 0; cx.clearRect(0, 0, W, H); }
+  }
+  function step(o, dt) {
+    if (o.k === 'ring' || o.k === 'rays' || o.k === 'flash') return;
+    if (o.emit) o.emit(o, dt);
+    var dr = Math.pow(o.drag || 1, dt * 60);
+    o.vx *= dr; o.vy = o.vy * dr + (o.g || 0) * dt;
+    if (o.k === 'conf') { o.vx += Math.sin(o.age * o.wf + o.ph) * 30 * dt; o.rot += o.vr * dt; }
+    if (o.k === 'star') o.rot += o.vr * dt;
+    if (o.hist) { o.hist.push(o.x, o.y); if (o.hist.length > o.hl) o.hist.splice(0, 2); }
+    o.x += o.vx * dt; o.y += o.vy * dt;
+  }
+  function paintP(o) {
+    var q = o.age / o.life, a = o.fade === 'late' ? (q < .65 ? 1 : 1 - (q - .65) / .35) : 1 - q;
+    if (o.flick && q > .45 && Math.random() < .35) a *= .2;
+    cx.globalCompositeOperation = o.k === 'conf' ? 'source-over' : 'lighter';
+    cx.globalAlpha = Math.max(0, Math.min(1, a));
+    switch (o.k) {
+      case 'spark': {
+        var sl = o.sl || .045;
+        cx.strokeStyle = o.c; cx.lineWidth = o.s; cx.lineCap = 'round';
+        cx.beginPath(); cx.moveTo(o.x - o.vx * sl, o.y - o.vy * sl); cx.lineTo(o.x, o.y); cx.stroke();
+        break;
+      }
+      case 'trail': {
+        var h = o.hist; if (h.length < 4) break;
+        cx.strokeStyle = o.c; cx.lineCap = 'round';
+        for (var i = 2; i < h.length; i += 2) {
+          cx.globalAlpha = Math.max(0, a * (i / h.length)); cx.lineWidth = o.s * (i / h.length);
+          cx.beginPath(); cx.moveTo(h[i - 2], h[i - 1]); cx.lineTo(h[i], h[i + 1]); cx.stroke();
+        }
+        cx.globalAlpha = Math.max(0, a); cx.fillStyle = '#fff';
+        cx.beginPath(); cx.arc(o.x, o.y, o.s * .7, 0, 6.283); cx.fill();
+        break;
+      }
+      case 'dot':
+        cx.fillStyle = o.c; cx.beginPath(); cx.arc(o.x, o.y, o.s * (o.shrink ? 1 - q * .7 : 1), 0, 6.283); cx.fill();
+        break;
+      case 'conf': {
+        cx.save(); cx.translate(o.x, o.y); cx.rotate(o.rot); cx.scale(1, Math.cos(o.age * o.ff + o.ph));
+        cx.fillStyle = o.c; cx.fillRect(-o.s, -o.s * .45, o.s * 2, o.s * .9); cx.restore();
+        break;
+      }
+      case 'star': {
+        cx.save(); cx.translate(o.x, o.y); cx.rotate(o.rot); cx.fillStyle = o.c; cx.beginPath();
+        for (var s = 0; s < 10; s++) { var rr = s % 2 ? o.s * .45 : o.s, an = s * Math.PI / 5 - Math.PI / 2; cx.lineTo(Math.cos(an) * rr, Math.sin(an) * rr); }
+        cx.closePath(); cx.fill(); cx.restore();
+        break;
+      }
+      case 'ring': {
+        var e = 1 - Math.pow(1 - q, 3), r = o.r0 + (o.r1 - o.r0) * e;
+        cx.strokeStyle = o.c; cx.lineWidth = Math.max(.5, o.s * (1 - q)); cx.beginPath(); cx.arc(o.x, o.y, r, 0, 6.283); cx.stroke();
+        break;
+      }
+      case 'rays': {
+        var ee = 1 - Math.pow(1 - q, 2), len = o.r0 + (o.r1 - o.r0) * ee, rot = o.rot + o.vr * o.age, wd = Math.PI / o.n * o.w;
+        cx.globalAlpha = Math.max(0, a * .55);
+        for (var n = 0; n < o.n; n++) {
+          var an2 = rot + n * 2 * Math.PI / o.n;
+          var g = cx.createLinearGradient(o.x, o.y, o.x + Math.cos(an2) * len, o.y + Math.sin(an2) * len);
+          g.addColorStop(0, rgba(o.cs[n % o.cs.length], .9)); g.addColorStop(1, rgba(o.cs[n % o.cs.length], 0));
+          cx.fillStyle = g; cx.beginPath(); cx.moveTo(o.x, o.y);
+          cx.arc(o.x, o.y, len, an2 - wd / 2, an2 + wd / 2); cx.closePath(); cx.fill();
+        }
+        break;
+      }
+      case 'flash': {
+        var fr = o.r0 + (o.r1 - o.r0) * Math.sqrt(q), gg = cx.createRadialGradient(o.x, o.y, 0, o.x, o.y, fr);
+        gg.addColorStop(0, rgba(o.c, .9)); gg.addColorStop(.4, rgba(o.c, .35)); gg.addColorStop(1, rgba(o.c, 0));
+        cx.fillStyle = gg; cx.beginPath(); cx.arc(o.x, o.y, fr, 0, 6.283); cx.fill();
+        break;
+      }
+    }
+  }
+
+  // ── строительные блоки ──
+  function flash(x, y, c, r1, life) { add({ k: 'flash', x: x, y: y, c: c, r0: 4, r1: r1, age: 0, life: life || .35 }); }
+  function burst(x, y, cols, o) {
+    o = o || {};
+    var n = o.n || RI(90, 140), sp = o.sp || R(200, 360), shape = o.shape || PICK(['sphere', 'sphere', 'ring', 'double', 'twotone']);
+    var c1 = PICK(cols), c2 = PICK(cols);
+    flash(x, y, '#ffffff', sp * .45, .3);
+    for (var i = 0; i < n; i++) {
+      var an = (i / n) * 6.283 + R(-.05, .05), v;
+      if (shape === 'ring') v = sp * R(.92, 1);
+      else if (shape === 'double') v = (i % 2 ? sp : sp * .55) * R(.9, 1);
+      else v = sp * Math.sqrt(Math.random());
+      var col = shape === 'twotone' ? (i % 2 ? c1 : c2) : shape === 'sphere' ? PICK(cols) : c1;
+      add({ k: o.trail ? 'trail' : 'spark', hist: o.trail ? [] : null, hl: 18, x: x, y: y, vx: Math.cos(an) * v, vy: Math.sin(an) * v,
+        g: o.g == null ? 150 : o.g, drag: o.drag || .955, c: col, s: o.s || R(1.6, 2.8), age: 0, life: (o.life || 1.3) * R(.75, 1.15),
+        flick: o.flick == null ? Math.random() < .5 : o.flick, fade: 'late' });
+    }
+  }
+  function awayFromBall(x, y, c, pad) {   // точка вспышки не прячется за шаром
+    var dx = x - c.x, dy = y - c.y, d = Math.hypot(dx, dy), need = c.r + pad;
+    if (d >= need) return [x, y];
+    if (d < 1) { dx = 0; dy = -1; d = 1; }
+    return [c.x + dx / d * need, c.y + dy / d * need];
+  }
+  function rocket(x0, tx, ty, cols, then) {
+    var dur = R(.6, .9), vy = (ty - (H + 10)) / dur, vx = (tx - x0) / dur;
+    add({ k: 'trail', hist: [], hl: 14, x: x0, y: H + 10, vx: vx, vy: vy, g: 0, drag: 1, c: '#fde68a', s: 2.6, age: 0, life: dur, fade: 'none',
+      end: function (o) { then(o.x, o.y); } });
+  }
+
+  // ── эффекты (каждый раз — случайный, подряд не повторяется) ──
+  var FX = {
+    salut: function (p) {   // ракеты снизу и разрывы
+      var c = C(), n = RI(3, 6), cols = mix(p);
+      for (var i = 0; i < n; i++) (function (i) {
+        later(i * RI(110, 240), function () {
+          var pt = awayFromBall(R(.1, .9) * W, R(.1, .5) * H, c, 60);
+          rocket(R(.1, .9) * W, pt[0], pt[1], cols, function (x, y) { burst(x, y, cols); });
+        });
+      })(i);
+    },
+    puh: function (p) {     // «пу-пу-пу»: много маленьких хлопков по всему экрану
+      var c = C(), n = RI(12, 20), cols = mix(p);
+      for (var i = 0; i < n; i++) later(i * R(60, 130), function () {
+        var pt = awayFromBall(R(.05, .95) * W, R(.05, .95) * H, c, 30), col = PICK(cols);
+        flash(pt[0], pt[1], col, R(40, 90), .3);
+        burst(pt[0], pt[1], [col, '#ffffff'], { n: RI(22, 38), sp: R(90, 190), life: .8, s: 1.8, shape: 'sphere', g: 60 });
+      });
+    },
+    luchi: function (p) {   // лучи-солнце из-за шара + искры от края
+      var c = C(), cols = mix(p);
+      add({ k: 'rays', x: c.x, y: c.y, n: RI(14, 26), w: R(.5, .8), r0: c.r * .8, r1: Math.max(W, H) * .75, rot: R(0, 6.28), vr: PICK([-1, 1]) * R(.3, .8), cs: cols, age: 0, life: 1.8 });
+      flash(c.x, c.y, p[0], c.r * 2.4, .6);
+      for (var i = 0; i < 160; i++) {
+        var an = R(0, 6.283), v = R(260, 620);
+        add({ k: 'spark', x: c.x + Math.cos(an) * c.r * .95, y: c.y + Math.sin(an) * c.r * .95, vx: Math.cos(an) * v, vy: Math.sin(an) * v, g: 40, drag: .95, c: PICK(cols), s: R(1.5, 3), age: 0, life: R(.7, 1.3), fade: 'late', sl: .03 });
+      }
+    },
+    volny: function (p) {   // кольца-волны от шара
+      var c = C(), cols = mix(p), n = RI(4, 7), far = Math.max(W, H) * .8;
+      for (var i = 0; i < n; i++) (function (i) {
+        later(i * 130, function () {
+          add({ k: 'ring', x: c.x, y: c.y, r0: c.r * .98, r1: far, c: cols[i % cols.length], s: R(8, 18), age: 0, life: 1.4 });
+          for (var k = 0, m = 36; k < m; k++) {
+            var an = k / m * 6.283 + i * .2, v = R(380, 520);
+            add({ k: 'dot', x: c.x + Math.cos(an) * c.r, y: c.y + Math.sin(an) * c.r, vx: Math.cos(an) * v, vy: Math.sin(an) * v, g: 0, drag: .975, c: cols[(i + 1) % cols.length], s: R(2, 3.5), age: 0, life: 1.1, shrink: 1 });
+          }
+        });
+      })(i);
+    },
+    konfetti: function (p) { // конфетти: из двух пушек снизу или дождём сверху
+      var cols = mix(p).concat(['#22c55e', '#3b82f6', '#f43f5e', '#facc15']), rain = Math.random() < .4;
+      for (var i = 0; i < 220; i++) {
+        var o = { k: 'conf', c: PICK(cols), s: R(5, 10), rot: R(0, 6.28), vr: R(-8, 8), wf: R(3, 7), ff: R(5, 12), ph: R(0, 6.28), age: 0, life: R(2.4, 3.6), fade: 'late' };
+        if (rain) { o.x = R(0, W); o.y = R(-H * .6, -10); o.vx = R(-40, 40); o.vy = R(120, 260); o.g = 60; o.drag = .99; }
+        else {
+          var left = i % 2 === 0, an = left ? R(-1.35, -.75) : R(-2.4, -1.8), v = R(700, 1300) * Math.min(1, H / 800 + .3);
+          o.x = left ? -10 : W + 10; o.y = H + 10; o.vx = Math.cos(an) * v; o.vy = Math.sin(an) * v; o.g = 700; o.drag = .965;
+        }
+        add(o);
+      }
+    },
+    iva: function (p) {      // плакучая ива: долгие золотые хвосты вниз
+      var c = C(), n = RI(2, 3), cols = ['#fde68a', '#fbbf24', '#fff7d6', p[0]];
+      for (var i = 0; i < n; i++) (function (i) {
+        later(i * 320, function () {
+          var pt = awayFromBall(R(.15, .85) * W, R(.12, .35) * H, c, 80);
+          rocket(R(.2, .8) * W, pt[0], pt[1], cols, function (x, y) {
+            burst(x, y, cols, { n: RI(70, 100), sp: R(160, 240), life: 2.6, g: 90, drag: .965, trail: true, s: 2.2, flick: true, shape: 'sphere' });
+          });
+        });
+      })(i);
+    },
+    spiral: function (p) {   // спираль-галактика из центра
+      var c = C(), cols = mix(p), arms = RI(3, 6), dir = PICK([-1, 1]), t = 0;
+      add({ k: 'dot', x: c.x, y: c.y, vx: 0, vy: 0, g: 0, c: '#000', s: 0, age: 0, life: 1.2, emit: function (o, dt) {
+        t += dt;
+        for (var a = 0; a < arms; a++) for (var k = 0; k < 2; k++) {
+          var an = dir * t * 5 + a * 6.283 / arms + R(-.08, .08), v = R(300, 460);
+          add({ k: 'spark', x: c.x + Math.cos(an) * c.r * .9, y: c.y + Math.sin(an) * c.r * .9, vx: Math.cos(an) * v, vy: Math.sin(an) * v, g: 0, drag: .97, c: cols[a % cols.length], s: R(1.8, 3), age: 0, life: R(.8, 1.2), fade: 'late', sl: .035 });
+        }
+      } });
+    },
+    zvezdy: function (p) {   // звёздочки разлетаются и кружатся
+      var c = C(), cols = mix(p), n = RI(18, 30);
+      flash(c.x, c.y, '#ffffff', c.r * 2, .4);
+      for (var i = 0; i < n; i++) {
+        var an = R(0, 6.283), v = R(260, 640);
+        add({ k: 'star', x: c.x + Math.cos(an) * c.r * .7, y: c.y + Math.sin(an) * c.r * .7, vx: Math.cos(an) * v, vy: Math.sin(an) * v, g: 260, drag: .975, c: PICK(cols), s: R(8, 22), rot: R(0, 6.28), vr: R(-6, 6), age: 0, life: R(1.4, 2.2), fade: 'late' });
+      }
+    },
+    figura: function (p) {   // фигура из искр вокруг шара: сердце, звезда или ромашка
+      var c = C(), cols = mix(p), sh = PICK(['heart', 'star', 'flower']), n = 170, col = PICK(cols), pts = [], mx = 0, my = 0, md = 0;
+      flash(c.x, c.y, col, c.r * 2.2, .5);
+      for (var i = 0; i < n; i++) {
+        var t = i / n * 6.283, x, y;
+        if (sh === 'heart') { x = 16 * Math.pow(Math.sin(t), 3); y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)); }
+        else if (sh === 'star') { var rr = 17 * (0.55 + 0.45 * Math.cos(5 * t)); x = Math.cos(t - Math.PI / 2) * rr; y = Math.sin(t - Math.PI / 2) * rr; }
+        else { var rf = 17 * (0.6 + 0.4 * Math.abs(Math.cos(3 * t))); x = Math.cos(t) * rf; y = Math.sin(t) * rf; }
+        pts.push([x, y]); mx += x / n; my += y / n;
+      }
+      pts.forEach(function (q) { q[0] -= mx; q[1] -= my; md = Math.max(md, Math.hypot(q[0], q[1])); });
+      pts.forEach(function (q, i) {
+        // каждая точка — снаружи шара: расстояние = край шара + доля размера фигуры; при drag .93 путь ≈ v / 4.2
+        var d = Math.hypot(q[0], q[1]) || 1, dist = c.r * 1.12 + d / md * c.r * .85, v = dist * 60 * (1 - .93);
+        add({ k: 'spark', x: c.x, y: c.y, vx: q[0] / d * v, vy: q[1] / d * v, g: 30, drag: .93, c: i % 7 ? col : '#ffffff', s: 4, age: 0, life: 1.8, fade: 'late', flick: true, sl: .02 });
+      });
+    }
+  };
+  var lastFx = '';
+  function boom(p) {
+    var names = Object.keys(FX), a; do { a = PICK(names); } while (a === lastFx); lastFx = a;
+    if (FX[Q.get('fx')]) a = Q.get('fx');   // ?fx=salut — один эффект (для проверки)
+    FX[a](p);
+    if (Math.random() < .35) {   // иногда — второй, лёгкий слой
+      var b = PICK(['volny', 'luchi', 'puh'].filter(function (x) { return x !== a; }));
+      later(250, function () { FX[b](p); });
+    }
+  }
+
+  // ── настройки ──
+  var setEl = $('set'), was = null;
+  function renderSet() {
+    $('vLo').textContent = lo; $('vHi').textContent = hi;
+    $('tgRep').setAttribute('aria-checked', String(norep));
+    var bj = $('byJ'); bj.hidden = !N || (lo === 1 && hi === N); bj.textContent = 'Как в журнале: 1–' + N;
+  }
+  function openSet() { was = lo + ':' + hi + ':' + norep; renderSet(); setEl.hidden = false; }
+  function closeSet() {
+    setEl.hidden = true; if (document.activeElement) document.activeElement.blur();   // иначе пробел «нажмёт» кнопку ещё раз
+    if (was !== lo + ':' + hi + ':' + norep) { drawn = []; save(); renderHist(); }   // поменяли числа — круг заново
+    renderRange();
+  }
+  function setVal(w, v) {
+    v = clampN(v);
+    if (w === 'lo') lo = Math.min(v, hi); else hi = Math.max(v, lo);
+    renderSet();
+  }
+  $('rngBtn').onclick = function (e) { e.stopPropagation(); openSet(); };
+  $('setOk').onclick = closeSet;
+  setEl.addEventListener('click', function (e) { if (e.target === setEl) closeSet(); });
+  $('tgRep').onclick = function () { norep = !norep; renderSet(); };
+  $('byJ').onclick = function () { lo = 1; hi = N; renderSet(); };
+  // − и +: нажал — шаг; держишь — бежит всё быстрее
+  var hold = null;
+  function stopHold() { if (hold) { clearTimeout(hold); hold = null; } }
+  setEl.querySelectorAll('[data-st]').forEach(function (b) {
+    b.addEventListener('pointerdown', function (e) {
+      if (e.button) return;
+      e.preventDefault(); stopHold();
+      var w = b.dataset.st, d = +b.dataset.d, n = 0;
+      (function go() { setVal(w, (w === 'lo' ? lo : hi) + d * (n > 25 ? 10 : 1)); n++; hold = setTimeout(go, n === 1 ? 420 : n > 10 ? 50 : 110); })();
+    });
+    ['pointerup', 'pointerleave', 'pointercancel', 'contextmenu'].forEach(function (ev) { b.addEventListener(ev, stopHold); });
+    b.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setVal(b.dataset.st, (b.dataset.st === 'lo' ? lo : hi) + +b.dataset.d); } });
+  });
+  addEventListener('blur', stopHold);
+  // число целиком — нажать на него (поле ввода на айфоне в Яндекс Браузере не берёт касание, поэтому prompt)
+  setEl.querySelectorAll('[data-ask]').forEach(function (b) {
+    b.onclick = function () {
+      var w = b.dataset.ask, v = prompt(w === 'lo' ? 'От какого числа' : 'До какого числа', w === 'lo' ? lo : hi);
+      if (v === null || !/\d/.test(v)) return;
+      v = clampN(v.replace(/[^\d]/g, ''));
+      if (w === 'lo') { lo = v; if (hi < lo) hi = lo; } else { hi = v; if (lo > hi) lo = hi; }
+      renderSet();
+    };
+  });
+
+  // ── на весь экран (на айфоне нет — кнопки не будет) ──
+  var de = document.documentElement, fsOk = !!(de.requestFullscreen || de.webkitRequestFullscreen);
+  $('fsBtn').hidden = !fsOk;
+  $('fsBtn').onclick = function (e) {
+    e.stopPropagation();
+    var r = document.fullscreenElement || document.webkitFullscreenElement ? (document.exitFullscreen || document.webkitExitFullscreen).call(document) : (de.requestFullscreen || de.webkitRequestFullscreen).call(de);
+    if (r && r.catch) r.catch(function () {});
+  };
+
+  // ── экран не гаснет, пока генератор открыт (на уроке у доски) ──
+  var lock = null;
+  function wake() { if (navigator.wakeLock && document.visibilityState === 'visible') navigator.wakeLock.request('screen').then(function (l) { lock = l; }).catch(function () {}); }
+  document.addEventListener('visibilitychange', wake); wake();
+
+  // ── запуск ──
+  $('stage').addEventListener('click', draw);
+  addEventListener('keydown', function (e) {
+    if (!setEl.hidden) { if (e.key === 'Escape') closeSet(); return; }
+    if (e.target.closest && e.target.closest('button')) return;   // кнопка в фокусе — пусть нажмётся она
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); draw(); }
+  });
+  paint(PAL[1]); renderRange(); renderHist();
+  if (drawn.length) { show(drawn[drawn.length - 1]); ball.classList.remove('idle'); $('hint').hidden = true; }
+})();
+</script>
+</body>
+</html>
