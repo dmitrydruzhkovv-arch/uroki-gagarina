@@ -2315,6 +2315,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; overscroll-behavior-x:none; }   /*
       '<button class="btn" data-act="students">Ученики</button>' +
       // генератор случайных номеров (D 24.11): номер = место ученика в списке; имена в него не уходят — только сколько учеников
       (students().length > 1 ? '<a class="btn" href="generator.html?n=' + students().length + '&j=' + encodeURIComponent(J) + '" target="_blank" rel="noopener" style="text-decoration:none" title="Случайный номер ученика по списку журнала — откроется в новой вкладке">🎲 Генератор</a>' : '') +
+      (students().length > 1 ? '<button class="btn" data-act="zhrebiy" title="Шар, кубик или колесо — по именам или номерам">🎡 Жребий</button>' : '') +
       // сводки недели родителям (ТЗ 22 D, D 28.10); адрес — со своим ?test= и ?api=, чтобы тестовый журнал вёл в тестового бота и свой сервер
       (svodkaSrv ? '<a class="btn" href="svodki.html' + esc(location.search) + '" style="text-decoration:none">Сводки</a>' : '') +
       (META.kind !== 'cls' ? '<span class="codebox">Ученикам — кнопка «📒 Мой журнал» в боте или личная ссылка (🔗 в «Учениках»)</span>'
@@ -4755,6 +4756,19 @@ html.rv-on, html.rv-on body{ overflow:hidden; overscroll-behavior-x:none; }   /*
   }
   window.addEventListener('scroll', hideTip, true);
 
+  // жребий (D 25.11): имена — в окно журнала, новая вкладка забирает их через window.opener и держит до закрытия.
+  // В адрес и на сервер имена не попадают. Двойные имена — с первой буквой фамилии
+  function openZhrebiy() {
+    var P = students(), cnt = {};
+    var nm = P.map(function (p) { return String(p.name || p.fam || '').trim(); });
+    nm.forEach(function (x) { cnt[x] = (cnt[x] || 0) + 1; });
+    var lab = nm.map(function (x, i) { var f = String(P[i].fam || '').trim(); return !x ? String(i + 1) : cnt[x] > 1 && P[i].name && f ? x + ' ' + f.charAt(0) + '.' : x; }), c2 = {};
+    lab.forEach(function (x) { c2[x] = (c2[x] || 0) + 1; });
+    window.ZR_NAMES = { j: J, list: lab.map(function (x, i) { return c2[x] > 1 ? x + ' (' + (i + 1) + ')' : x; }) };   // всё ещё одинаковые — с номером по списку
+    var w = window.open('zhrebiy.html?n=' + P.length + '&j=' + encodeURIComponent(J), '_blank');
+    if (!w) alert('Браузер не дал открыть новую вкладку — разреши всплывающие окна для этого сайта.');
+  }
+
   /* ── ученики (D) ── */
   function openStudents() {
     var P = students();
@@ -6370,6 +6384,7 @@ html.rv-on, html.rv-on body{ overflow:hidden; overscroll-behavior-x:none; }   /*
       else if (act === 'vygprint') vygPrint();
       else if (act === 'vygcsv') vygCsv();
       else if (act === 'students') openStudents();
+      else if (act === 'zhrebiy') openZhrebiy();
       else if (act === 'ssyl') openSsyl();
       else if (act === 'ssylsave') saveSsyl();
       else if (act === 'newjournal') openNewJournal();
